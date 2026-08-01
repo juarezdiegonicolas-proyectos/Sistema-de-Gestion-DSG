@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Escritorio DALO - DSG</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { margin: 0; font-family: 'Roboto', sans-serif; display: flex; height: 100vh; background-color: #f4f1ea; }
+        .sidebar { width: 260px; background-color: #1a3a5f; color: white; padding: 25px 20px; display: flex; flex-direction: column; }
+        
+        .bienvenida-box { background-color: #2d5a8e; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; border: 1px solid #5d8dbb; }
+        .bienvenida-box h3 { margin: 0; font-size: 14px; font-weight: 300; color: #cce7ff; }
+        .bienvenida-box p { margin: 5px 0 0 0; font-size: 16px; font-weight: bold; }
+        .sidebar-header-title { min-height: 50px; margin-bottom: 15px; display: flex; align-items: center; }
+        .sidebar-header-title h2 { font-size: 20px; margin: 0; }
+
+        .menu-links { flex: 1; }
+        .menu-item { display: block; color: #ddd; padding: 15px; text-decoration: none; border-bottom: 1px solid #5d8dbb; font-weight: 500; cursor: pointer; }
+        .menu-item:hover { background-color: #5d8dbb; color: white; }
+        .btn-accion-global { width: 100%; padding: 15px; margin-bottom: 10px; background: #28a745; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .btn-cerrar { margin-top: 10px; padding: 15px; background: #d32f2f; color: white; text-align: center; text-decoration: none; border-radius: 6px; font-weight: bold; }
+        .contenido { flex: 1; padding: 40px; overflow-y: auto; }
+        .seccion { display: none; background: white; padding: 40px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .seccion.activo { display: block; } 
+        .info-hoja { display: flex; justify-content: space-between; margin-bottom: 15px; font-weight: bold; color: #1a3a5f; align-items: center;}
+        
+        .hoja { background-color: #fff; padding: 0 40px; border: 1px solid #ccc; min-height: 900px; position: relative; }
+        
+        #editor-reporte { 
+            width: 100%; 
+            min-height: 900px; 
+            border: none; 
+            font-size: 18px; 
+            line-height: 30px; 
+            outline: none; 
+            font-family: 'Courier New', Courier, monospace; 
+            white-space: pre-wrap; 
+            word-wrap: break-word; 
+            background-image: linear-gradient(#e0e0e0 1px, transparent 1px);
+            background-size: 100% 30px;
+            padding-top: 30px;
+        }
+        
+        .tabla-dalo { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; table-layout: fixed; }
+        .tabla-dalo th, .tabla-dalo td { border: 1px solid #000; padding: 6px; text-align: center; word-wrap: break-word; }
+        .tabla-dalo th { background-color: #1a3a5f; color: white; height: 40px; }
+        .col-hora { width: 85px; }
+        .input-c { width: 95%; border: none; text-align: center; }
+        .input-fecha, .input-select { border: 1px solid #ccc; padding: 8px; border-radius: 4px; font-family: inherit; cursor: pointer; }
+        .btn-borrar { background: red; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 12px; }
+        .area-acciones { margin-top: 20px; display: flex; gap: 10px; }
+        .btn-gestion { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; }
+        .btn-imprimir { background: #6c757d; color: white; }
+        #info-supervisor { margin-bottom: 20px; color: #1a3a5f; font-weight: bold; border: 1px solid #ddd; padding: 10px; border-radius: 6px; background: #f9f9f9; }
+        .header-logos { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+        .header-logos img { height: 110px; width: auto; object-fit: contain; }
+        .filtros-historicos { display: flex; gap: 15px; background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #eee; align-items: center; }
+        .celda-asistencia { cursor: pointer; width: 25px; height: 25px; border: 2px solid #333; display: inline-block; transition: background 0.3s; margin: auto; }
+        .estado-P { background-color: #28a745 !important; }
+        .estado-A { background-color: #dc3545 !important; }
+        .estado-L { background-color: #ffc107 !important; }
+        .botonera-porcentaje { background-color: #1a3a5f; color: white; padding: 12px 20px; border-radius: 8px; font-weight: bold; margin-bottom: 10px; display: inline-block; width: 250px; text-align: left; }
+
+        #rrhh .tabla-dalo { width: 99.5% !important; border-right: 1px solid #000 !important; }
+
+        @media print {
+            .sidebar, .btn-accion-global, .btn-cerrar, .menu-item, .no-imprimir, .btn-imprimir, .btn-borrar { display: none !important; }
+            #planillas .tabla-dalo th:first-child, 
+            #planillas .tabla-dalo td:first-child { display: none !important; }
+            body, html, .contenido, .seccion.activo, .hoja { background-color: white !important; margin: 0 !important; padding: 0 !important; width: 100% !important; height: auto !important; overflow: visible !important; box-shadow: none !important; display: block !important; }
+            .seccion { display: none !important; }
+            .seccion.activo { display: block !important; } 
+            .hoja { border: none !important; min-height: auto !important; }
+            #editor-reporte { 
+                background-image: linear-gradient(#e0e0e0 1px, transparent 1px);
+                background-size: 100% 30px;
+                line-height: 30px;
+                padding-top: 30px;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                overflow: visible !important;
+                height: auto !important;
+                min-height: auto !important;
+            }
+        }
+        @page { size: auto; margin: 1cm; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="bienvenida-box">
+            <h3>Bienvenido Agente:</h3>
+            <p id="nombre-supervisor-sidebar">---</p>
+        </div>
+        <div class="sidebar-header-title">
+            <h2>Panel <span id="titulo-panel">DALO</span></h2>
+        </div>
+        <div class="menu-links">
+            <div class="menu-item" onclick="mostrar('reportes', 'Reportes')">📊 Reportes</div>
+            <div class="menu-item" onclick="mostrar('planillas', 'Planillas (Operativa)')">🛠 Planillas (Operativa)</div>
+            <div class="menu-item" onclick="mostrar('historicos', 'Registros Históricos')">📂 Registros Históricos</div>
+            <div class="menu-item" onclick="mostrar('novedades', 'Novedades')">📢 Novedades</div>
+            <div class="menu-item" onclick="mostrar('rrhh', 'RR.HH.')">👥 RR.HH.</div>
+            <div class="menu-item" onclick="mostrar('resoluciones', 'Resoluciones')">⚖️ Resoluciones</div>
+        </div>
+        <button class="btn-accion-global" onclick="cerrarJornadaGlobal()">📥 CERRAR JORNADA</button>
+        <a href="index.html" class="btn-cerrar">CERRAR SESIÓN</a>
+    </div>
+
+    <div class="contenido">
+        <div id="reportes" class="seccion activo">
+            <div class="header-logos">
+                <img src="logo_hospi.png" alt="Logo Hospital">
+                <h1 style="margin: 0; text-align: center; flex: 1;">Reportes</h1>
+                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+            </div>
+            <div id="info-supervisor">Supervisor: <span id="display-nombre-rep">---</span> | Turno: <span id="display-turno-rep">---</span> | Depto: <span id="display-depto-rep">---</span></div>
+            <div class="info-hoja">
+                <span>Fecha: <input type="date" id="fecha-reporte" class="input-fecha" onchange="guardarDatos()"></span>
+                <span>Hoja N°: <span id="numero-hoja">001</span></span>
+            </div>
+            <div class="hoja">
+                <div id="editor-reporte" contenteditable="true" oninput="guardarDatos()"></div>
+            </div>
+            <div class="area-acciones"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button></div>
+        </div>
+
+        <div id="planillas" class="seccion">
+            <div class="header-logos">
+                <img src="logo_hospi.png" alt="Logo Hospital">
+                <h1 style="margin: 0; text-align: center; flex: 1; font-size: 30px;">Auxiliares Técnicos</h1>
+                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+            </div>
+            <div id="info-supervisor">Supervisor: <span id="display-nombre">---</span> | Turno: <span id="display-turno">---</span> | Depto: <span id="display-depto">---</span></div>
+            <table class="tabla-dalo" id="tabla-exportar">
+                <thead>
+                    <tr><th style="width:30px;"></th><th class="col-hora">HORA</th><th>N° DE CAMA</th><th>APELLIDO Y NOMBRE</th><th>DESTINO</th><th class="col-hora">HORA ESTADÍA</th><th>MOVILIDAD</th><th>OPERARIO</th><th>OBSERVACIONES</th></tr>
+                </thead>
+                <tbody id="cuerpo-tabla" onkeydown="detectarEnter(event)"></tbody>
+            </table>
+            <div class="area-acciones"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button></div>
+        </div>
+
+        <div id="historicos" class="seccion">
+            <div class="header-logos">
+                <img src="logo_hospi.png" alt="Logo Hospital">
+                <h1 style="margin: 0; text-align: center; flex: 1;">Registros Históricos</h1>
+                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+            </div>
+            <div id="info-supervisor">Departamento: <span id="depto-hist-label">---</span></div>
+            <div class="filtros-historicos">
+                <select id="select-depto" class="input-select" disabled>
+                    <option value="DALO">DALO</option>
+                </select>
+                <select id="select-tipo" class="input-select">
+                    <option value="planilla">Planilla Operativa</option>
+                    <option value="reporte">Reporte Diario</option>
+                    <option value="asistencia">Asistencia de Personal</option>
+                </select>
+                <select id="select-turno" class="input-select">
+                    <option value="Mañana">Turno Mañana</option>
+                    <option value="Tarde">Turno Tarde</option>
+                    <option value="Noche A">Turno Noche A</option>
+                    <option value="Noche B">Turno Noche B</option>
+                    <option value="Sadofe">Sadofe</option>
+                </select>
+                <input type="date" id="filtro-fecha-hist" class="input-fecha">
+                <button class="btn-gestion no-imprimir" style="background: #1a3a5f; color: white;" onclick="cargarHistoricos()">Buscar Registros</button>
+            </div>
+            <div id="contenedor-historicos" style="border: 1px solid #ccc; padding: 20px; border-radius: 8px;">
+                <p>Selecciona filtros y presiona "Buscar" para visualizar registros.</p>
+            </div>
+            <div class="area-acciones"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir Resultados</button></div>
+        </div>
+        
+        <div id="novedades" class="seccion">
+            <div class="header-logos">
+                <img src="logo_hospi.png" alt="Logo Hospital">
+                <h1 style="margin: 0; text-align: center; flex: 1;">Novedades</h1>
+                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+            </div>
+        </div>
+
+        <div id="rrhh" class="seccion">
+            <div class="header-logos">
+                <img src="logo_hospi.png" alt="Logo Hospital">
+                <h1 style="margin: 0; text-align: center; flex: 1;">Personal - Turno: <span id="display-turno-rrhh">---</span></h1>
+                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+            </div>
+            <table class="tabla-dalo" style="table-layout: auto;">
+                <thead><tr><th>LEGAJO</th><th>APELLIDO Y NOMBRE</th><th>PRESENTE</th><th>AUSENTE</th><th>LICENCIA</th></tr></thead>
+                <tbody id="cuerpo-rrhh"></tbody>
+            </table>
+            <div class="area-acciones">
+                <button class="btn-gestion no-imprimir" style="background: #28a745; color: white;" onclick="guardarAsistencia()">💾 Guardar Asistencia</button>
+                <button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
+            </div>
+            
+            <div style="margin-top: 30px; text-align: center; color: #1a3a5f; font-weight: bold; font-size: 20px; margin-bottom: 10px;">Control de Asistencia</div>
+            <div style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #ddd; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; justify-content: center; align-items: center; gap: 50px;">
+                <div id="resumen-rrhh" style="font-weight:bold; color: #1a3a5f; font-size: 16px; line-height: 2.0; display: flex; flex-direction: column;"></div>
+                <div style="width: 220px; height: 220px;">
+                    <canvas id="graficoRRHH"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div id="resoluciones" class="seccion">
+            <div class="header-logos">
+                <img src="logo_hospi.png" alt="Logo Hospital">
+                <h1 style="margin: 0; text-align: center; flex: 1;">Resoluciones</h1>
+                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const cuerpoTabla = document.getElementById('cuerpo-tabla');
+        const editorReporte = document.getElementById('editor-reporte');
+        const spanHoja = document.getElementById('numero-hoja');
+        const inputFecha = document.getElementById('fecha-reporte');
+        let chartRRHH;
+        
+        const agentesBase = [{legajo:"120369", nombre:"VEGA JUAN CARLOS", turno:"Mañana"},{legajo:"122011", nombre:"GONZALEZ CARLOS HECTOR", turno:"Mañana"},{legajo:"128217", nombre:"CARLOTTO GABRIEL HORACIO", turno:"Mañana"},{legajo:"130087", nombre:"GARAY LEONARDO EMILIO", turno:"Mañana"},{legajo:"130187", nombre:"CISNEROS NESTOR EDUARDO", turno:"Mañana"},{legajo:"131954", nombre:"GORENA JORGE RICARDO", turno:"Mañana"},{legajo:"132059", nombre:"BUSTO JUAN MANUEL", turno:"Mañana"},{legajo:"132831", nombre:"GORT PEDRO ALBERTO", turno:"Mañana"},{legajo:"144694", nombre:"LEDESMA HECTOR CARLOS", turno:"Mañana"},{legajo:"145765", nombre:"BARRAZA CRISTIAN JAVIER", turno:"Mañana"},{legajo:"147812", nombre:"RODRIGUEZ GONZALO LEANDRO", turno:"Mañana"},{legajo:"147944", nombre:"MORENO FERNANDO DANIEL", turno:"Mañana"},{legajo:"147946", nombre:"ALVAREZ ANTONIO OSCAR", turno:"Mañana"},{legajo:"151978", nombre:"LUZI CHRISTIAN DARIO", turno:"Mañana"},{legajo:"151979", nombre:"ALMEIDA CARLOS ALBERTO", turno:"Mañana"},{legajo:"151980", nombre:"GONZALEZ PATRICIO ALBERTO", turno:"Mañana"},{legajo:"151982", nombre:"VARELA EDUARDO JOSE", turno:"Mañana"},{legajo:"151983", nombre:"MARCIANO MARCELO DANIEL", turno:"Mañana"},{legajo:"151996", nombre:"FIDEL RUBEN DARIO", turno:"Mañana"},{legajo:"152016", nombre:"PAPINI JUAN JOSE", turno:"Mañana"},{legajo:"152301", nombre:"CISNEROS LEONARDO SEBASTIAN", turno:"Mañana"},{legajo:"152302", nombre:"BAZAN DIEGO ANTONIO", turno:"Mañana"},{legajo:"153090", nombre:"OLIVA CRISTIAN RUBEN", turno:"Mañana"},{legajo:"153572", nombre:"CANABIDEZ CRISTIAN ALBERTO", turno:"Mañana"},{legajo:"154334", nombre:"VAZQUEZ JORGE OSVALDO", turno:"Mañana"},{legajo:"154335", nombre:"SANTORO CHRISTIAN RODRIGO", turno:"Mañana"},{legajo:"154973", nombre:"HIDALGO SEBASTIAN ARIEL", turno:"Mañana"},{legajo:"164370", nombre:"VASCONCELLO SERGIO EDUARDO", turno:"Mañana"},{legajo:"164669", nombre:"DIAZ BELFOR ALBERTO", turno:"Mañana"},{legajo:"166919", nombre:"BARRAGAN MARIANO JAVIER", turno:"Mañana"},{legajo:"167190", nombre:"MORALES EREZUMA LEONARDO AND", turno:"Mañana"},{legajo:"168007", nombre:"ICAÑO MARTIN FABIAN", turno:"Mañana"},{legajo:"169981", nombre:"KAMINOVICH LEONARDO MARTIN", turno:"Mañana"},{legajo:"176828", nombre:"REYNA SANCHEZ EDUARDO GASTON", turno:"Mañana"},{legajo:"195446", nombre:"VASQUEZ JORGE ALFREDO", turno:"Mañana"},{legajo:"195452", nombre:"FLORES RODRIGO NICOLAS", turno:"Mañana"},{legajo:"216727", nombre:"MIRANDA NORBERTO MATIAS", turno:"Mañana"},{legajo:"235008", nombre:"BARROCA GERARDO EZEQUIEL", turno:"Mañana"},{legajo:"243734", nombre:"VARGAS AXEL BRIAN", turno:"Mañana"},{legajo:"249665", nombre:"SANSOGNE MATIAS MAURICIO", turno:"Mañana"},{legajo:"250625", nombre:"SOTO NAHUEL MARCELO", turno:"Mañana"},{legajo:"251466", nombre:"DOMINGUEZ HECTOR OMAR CIRO", turno:"Mañana"},{legajo:"261471", nombre:"VERON NORBERTO MARIO MANUEL", turno:"Mañana"},{legajo:"259586", nombre:"LOPEZ VICTOR HUGO", turno:"Mañana"},{legajo:"244105", nombre:"REA JUAN GABRIEL", turno:"Mañana"},{legajo:"242264", nombre:"ELIAS GUSTAVO DANIEL", turno:"Mañana"},{legajo:"195453", nombre:"BARROCA FRANCO DANIEL", turno:"Mañana"}];
+        let usuariosRegistrados = JSON.parse(localStorage.getItem('usuarios_sistema') || "[]");
+        let agentes = agentesBase.concat(usuariosRegistrados.filter(u => u.depto === "DALO" || !u.depto));
+
+        function obtenerFechaHoyISO() { return new Date().toISOString().split('T')[0]; }
+
+        let contadorHoja = parseInt(localStorage.getItem('dsg_dalo_contador_hoja')) || 1;
+        spanHoja.innerText = String(contadorHoja).padStart(3, '0');
+        inputFecha.value = localStorage.getItem('dsg_dalo_fecha') || obtenerFechaHoyISO();
+        document.getElementById('filtro-fecha-hist').value = obtenerFechaHoyISO();
+
+        function actualizarGrafico(p, a, l) {
+            const ctx = document.getElementById('graficoRRHH').getContext('2d');
+            if (chartRRHH) chartRRHH.destroy();
+            chartRRHH = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Presentes', 'Ausentes', 'Licencias'],
+                    datasets: [{ data: [p, a, l], backgroundColor: ['#28a745', '#dc3545', '#ffc107'] }]
+                },
+                options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+            });
+        }
+
+        function cargarRRHH() {
+            const body = document.getElementById('cuerpo-rrhh');
+            const turnoActual = localStorage.getItem('usuario_turno') || "Mañana";
+            document.getElementById('display-turno-rrhh').innerText = turnoActual;
+            const filtrados = agentes.filter(a => a.turno === turnoActual);
+            const asistenciasGuardadas = JSON.parse(localStorage.getItem('dsg_dalo_asistencia_rrhh') || "{}");
+            body.innerHTML = '';
+            let p=0, a=0, l=0;
+            filtrados.forEach(agent => {
+                const estado = asistenciasGuardadas[agent.legajo] || "";
+                if(estado === 'P') p++; else if(estado === 'A') a++; else if(estado === 'L') l++;
+                body.innerHTML += `<tr><td>${agent.legajo}</td><td>${agent.nombre}</td>
+                    <td><div class="celda-asistencia ${estado === 'P' ? 'estado-P' : ''}" id="P-${agent.legajo}" onclick="marcar('${agent.legajo}', 'P')"></div></td>
+                    <td><div class="celda-asistencia ${estado === 'A' ? 'estado-A' : ''}" id="A-${agent.legajo}" onclick="marcar('${agent.legajo}', 'A')"></div></td>
+                    <td><div class="celda-asistencia ${estado === 'L' ? 'estado-L' : ''}" id="L-${agent.legajo}" onclick="marcar('${agent.legajo}', 'L')"></div></td>
+                    <input type="hidden" id="estado-${agent.legajo}" value="${estado}"></tr>`;
+            });
+            if(p+a+l > 0) {
+                document.getElementById('resumen-rrhh').innerHTML = 
+                    `<div class="botonera-porcentaje">Presentismo: ${((p/(p+a+l))*100).toFixed(1)}% (${p})</div>
+                     <div class="botonera-porcentaje">Ausentismo: ${((a/(p+a+l))*100).toFixed(1)}% (${a})</div>
+                     <div class="botonera-porcentaje">Licencias: ${((l/(p+a+l))*100).toFixed(1)}% (${l})</div>`;
+                actualizarGrafico(p, a, l);
+            }
+        }
+
+        function marcar(legajo, estado) {
+            ['P', 'A', 'L'].forEach(e => document.getElementById(`${e}-${legajo}`).className = 'celda-asistencia');
+            document.getElementById(`${estado}-${legajo}`).className = `celda-asistencia estado-${estado}`;
+            document.getElementById(`estado-${legajo}`).value = estado;
+        }
+
+        function guardarAsistencia() {
+            let registro = {}, presentes = 0, ausentes = 0, licencias = 0;
+            const turnoActual = localStorage.getItem('usuario_turno') || "Mañana";
+            const agentesTurno = agentes.filter(a => a.turno === turnoActual);
+            const totalAgentes = agentesTurno.length;
+
+            if (totalAgentes === 0) {
+                alert("No hay agentes cargados para este turno.");
+                return;
+            }
+            
+            agentesTurno.forEach(a => {
+                let val = document.getElementById(`estado-${a.legajo}`).value;
+                registro[a.legajo] = val;
+                if (val === 'P') presentes++;
+                else if (val === 'A') ausentes++;
+                else if (val === 'L') licencias++;
+            });
+            
+            let noMarcados = totalAgentes - (presentes + ausentes + licencias);
+            if (noMarcados > 0) {
+                alert("¡Atención! Falta cargar la totalidad de los agentes. Hay " + noMarcados + " agentes sin estado asignado.");
+                return;
+            }
+            
+            let pP = ((presentes / totalAgentes) * 100).toFixed(1);
+            let pA = ((ausentes / totalAgentes) * 100).toFixed(1);
+            let pL = ((licencias / totalAgentes) * 100).toFixed(1);
+            
+            localStorage.setItem('dsg_dalo_asistencia_rrhh', JSON.stringify(registro));
+            document.getElementById('resumen-rrhh').innerHTML = 
+                `<div class="botonera-porcentaje">Presentismo: ${pP}% (${presentes})</div>
+                 <div class="botonera-porcentaje">Ausentismo: ${pA}% (${ausentes})</div>
+                 <div class="botonera-porcentaje">Licencias: ${pL}% (${licencias})</div>`;
+            actualizarGrafico(presentes, ausentes, licencias);
+            alert(`¡Asistencia completa!\nPresentismo: ${pP}%\nAusentismo: ${pA}%\nLicencias: ${pL}%`);
+        }
+
+        function guardarDatos() {
+            document.querySelectorAll('#cuerpo-tabla input').forEach(i => i.setAttribute('value', i.value));
+            localStorage.setItem('dsg_dalo_tabla', cuerpoTabla.innerHTML);
+            localStorage.setItem('dsg_dalo_reporte', editorReporte.innerHTML);
+            localStorage.setItem('dsg_dalo_fecha', inputFecha.value);
+        }
+
+        function cerrarJornadaGlobal() {
+            if (!confirm("¿Cerrar jornada? Se consolidarán los datos y se reiniciará el sistema.")) return;
+            
+            const cierre = { 
+                fecha: inputFecha.value, 
+                turno: localStorage.getItem('usuario_turno') || "Mañana", 
+                depto: "DALO", 
+                reporte: editorReporte.innerHTML, 
+                tabla: cuerpoTabla.innerHTML, 
+                asistencia: JSON.parse(localStorage.getItem('dsg_dalo_asistencia_rrhh') || "{}"), 
+                timestamp: new Date().toISOString() 
+            };
+            
+            let historial = JSON.parse(localStorage.getItem('historial_jornadas') || "[]");
+            historial.push(cierre);
+            localStorage.setItem('historial_jornadas', JSON.stringify(historial));
+            
+            localStorage.removeItem('dsg_dalo_tabla'); 
+            localStorage.removeItem('dsg_dalo_asistencia_rrhh'); 
+            localStorage.removeItem('dsg_dalo_reporte');
+            localStorage.setItem('dsg_dalo_contador_hoja', contadorHoja + 1);
+            
+            alert("Jornada cerrada con éxito.");
+            location.reload();
+        }
+
+        function cargarHistoricos() {
+            const f = document.getElementById('filtro-fecha-hist').value; 
+            const t = document.getElementById('select-turno').value; 
+            const tipo = document.getElementById('select-tipo').value;
+            const hist = JSON.parse(localStorage.getItem('historial_jornadas') || "[]");
+            const reg = hist.find(r => r.fecha === f && r.turno === t && r.depto === "DALO");
+            const cont = document.getElementById('contenedor-historicos');
+            
+            if (!reg) { cont.innerHTML = "No se encontraron registros para esta selección."; return; }
+            
+            cont.style.display = "block";
+
+            if (tipo === 'planilla') {
+                cont.innerHTML = `
+                    <style>
+                        #contenedor-historicos .tabla-dalo th:first-child, 
+                        #contenedor-historicos .tabla-dalo td:first-child { display: none !important; }
+                        #contenedor-historicos input { border: none !important; background: transparent !important; pointer-events: none !important; }
+                    </style>
+                    <div style="border: 2px solid #1a3a5f; padding: 20px;">
+                        <h3>PLANILLA OPERATIVA</h3>
+                        <table class="tabla-dalo" style="width: 100%;">
+                            <thead>
+                                <tr><th></th><th>HORA</th><th>N° DE CAMA</th><th>APELLIDO Y NOMBRE</th><th>DESTINO</th><th>HORA ESTADÍA</th><th>MOVILIDAD</th><th>OPERARIO</th><th>OBSERV.</th></tr>
+                            </thead>
+                            <tbody>${reg.tabla}</tbody>
+                        </table>
+                    </div>`;
+            } else if (tipo === 'asistencia') {
+                let p = 0, a = 0, l = 0;
+                let rowsHTML = "";
+                
+                agentes.forEach(ag => {
+                    const estado = reg.asistencia[ag.legajo] || "";
+                    if(estado === 'P') p++; else if(estado === 'A') a++; else if(estado === 'L') l++;
+                    
+                    rowsHTML += `
+                        <tr style="height: 40px;">
+                            <td style="border: 1px solid #1a3a5f; text-align: center;">${ag.legajo}</td>
+                            <td style="border: 1px solid #1a3a5f; padding-left: 10px;">${ag.nombre}</td>
+                            <td style="border: 1px solid #1a3a5f; text-align: center;"><div class="celda-asistencia ${estado === 'P' ? 'estado-P' : ''}"></div></td>
+                            <td style="border: 1px solid #1a3a5f; text-align: center;"><div class="celda-asistencia ${estado === 'A' ? 'estado-A' : ''}"></div></td>
+                            <td style="border: 1px solid #1a3a5f; text-align: center;"><div class="celda-asistencia ${estado === 'L' ? 'estado-L' : ''}"></div></td>
+                        </tr>`;
+                });
+
+                const total = p + a + l || 1;
+                cont.innerHTML = `
+                    <div style="border: 2px solid #1a3a5f; padding: 20px;">
+                        <h3>ASISTENCIA DE PERSONAL</h3>
+                        <table style="width: 100%; border-collapse: collapse; border: 2px solid #1a3a5f;">
+                            <thead style="background-color: #1a3a5f; color: white;">
+                                <tr>
+                                    <th style="padding: 10px; border: 1px solid white;">LEGAJO</th>
+                                    <th style="padding: 10px; border: 1px solid white;">APELLIDO Y NOMBRE</th>
+                                    <th style="padding: 10px; border: 1px solid white;">PRESENTE</th>
+                                    <th style="padding: 10px; border: 1px solid white;">AUSENTE</th>
+                                    <th style="padding: 10px; border: 1px solid white;">LICENCIA</th>
+                                </tr>
+                            </thead>
+                            <tbody>${rowsHTML}</tbody>
+                        </table>
+                        <div style="margin-top: 20px; background: #f9f9f9; padding: 15px; border: 1px solid #ddd;">
+                            <div style="font-weight:bold; color: #1a3a5f;">
+                                <div>Resumen Consolidado:</div>
+                                <div>Presentismo: ${((p / total) * 100).toFixed(1)}% (${p})</div>
+                                <div>Ausentismo: ${((a / total) * 100).toFixed(1)}% (${a})</div>
+                                <div>Licencias: ${((l / total) * 100).toFixed(1)}% (${l})</div>
+                            </div>
+                        </div>
+                    </div>`;
+            } else {
+                const estiloRenglones = `background-image: linear-gradient(#e0e0e0 1px, transparent 1px); background-size: 100% 30px; line-height: 30px; padding-left: 10px; font-family: 'Courier New', Courier, monospace; min-height: 400px; white-space: pre-wrap; display: block;`;
+                cont.innerHTML = `
+                    <div style="border: 2px solid #1a3a5f; padding: 20px;">
+                        <h3>REPORTE ENCONTRADO</h3>
+                        <div style="${estiloRenglones}">${reg.reporte}</div>
+                    </div>`;
+            }
+        }
+
+        window.onload = () => {
+            const nombre = localStorage.getItem('usuario_nombre') || "Invitado"; 
+            const turno = localStorage.getItem('usuario_turno') || "Mañana"; 
+            const depto = "DALO";
+            
+            document.getElementById('nombre-supervisor-sidebar').innerText = nombre;
+            document.getElementById('display-nombre').innerText = nombre; 
+            document.getElementById('display-turno').innerText = turno; 
+            document.getElementById('display-depto').innerText = depto;
+            document.getElementById('display-nombre-rep').innerText = nombre; 
+            document.getElementById('display-turno-rep').innerText = turno; 
+            document.getElementById('display-depto-rep').innerText = depto;
+            document.getElementById('depto-hist-label').innerText = depto;
+            
+            const t = localStorage.getItem('dsg_dalo_tabla');
+            if (t) cuerpoTabla.innerHTML = t; else cuerpoTabla.innerHTML = '<tr>' + crearFilaHTML() + '</tr>';
+            editorReporte.innerHTML = localStorage.getItem('dsg_dalo_reporte') || "";
+            cargarRRHH();
+        };
+
+        function crearFilaHTML() { return '<td><button class="btn-borrar" onclick="borrarFila(this)">X</button></td><td><input class="input-c" type="text" onclick="registrarHora(this)"></td><td><input class="input-c" type="text" oninput="guardarDatos()"></td><td><input class="input-c" type="text" oninput="guardarDatos()"></td><td><input class="input-c" type="text" oninput="guardarDatos()"></td><td><input class="input-c" type="time" onchange="guardarDatos()"></td><td><input class="input-c" type="text" oninput="guardarDatos()"></td><td><input class="input-c" type="text" oninput="guardarDatos()"></td><td><input class="input-c" type="text" oninput="guardarDatos()"></td>'; }
+        function registrarHora(input) { if (input.value === "") { const ahora = new Date(); input.value = ahora.getHours().toString().padStart(2, '0') + ":" + ahora.getMinutes().toString().padStart(2, '0'); input.setAttribute('readonly', 'readonly'); guardarDatos(); } }
+        function borrarFila(btn) { const tr = btn.closest('tr'); if (cuerpoTabla.getElementsByTagName('tr').length > 1) tr.remove(); else { tr.querySelectorAll('input').forEach(i => { i.value = ''; i.removeAttribute('readonly'); }); } guardarDatos(); }
+        function detectarEnter(e) { if (e.key === 'Enter') { e.preventDefault(); const tr = document.createElement('tr'); tr.innerHTML = crearFilaHTML(); cuerpoTabla.appendChild(tr); tr.querySelectorAll('input')[1].focus(); } }
+        function mostrar(id, titulo) { document.querySelectorAll('.seccion').forEach(s => s.classList.remove('activo')); document.getElementById(id).classList.add('activo'); document.getElementById('titulo-panel').innerText = titulo; }
+    </script>
+</body>
+</html>

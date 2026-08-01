@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Escritorio de Trabajo - DSG</title>
+    <style>
+        body { margin: 0; font-family: 'Roboto', sans-serif; display: flex; height: 100vh; background-color: #f4f1ea; }
+        .sidebar { width: 260px; background-color: #1a3a5f; color: white; padding: 25px 20px; display: flex; flex-direction: column; }
+        .menu-links { flex: 1; }
+        .menu-item { display: block; color: #ddd; padding: 15px; text-decoration: none; border-bottom: 1px solid #5d8dbb; font-weight: 500; cursor: pointer; }
+        .menu-item:hover { background-color: #5d8dbb; color: white; }
+        .btn-accion-global { width: 100%; padding: 15px; margin-bottom: 10px; background: #28a745; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .btn-cerrar { margin-top: 10px; padding: 15px; background: #d32f2f; color: white; text-align: center; text-decoration: none; border-radius: 6px; font-weight: bold; }
+        .contenido { flex: 1; padding: 40px; overflow-y: auto; }
+        
+        .seccion { display: none; background: white; padding: 40px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .seccion.activo { display: block; } 
+
+        .info-hoja { display: flex; justify-content: space-between; margin-bottom: 15px; font-weight: bold; color: #1a3a5f; }
+        .hoja { background-color: #fff; padding: 40px; padding-top: 20px; border: 1px solid #ccc; min-height: 400px; background-image: linear-gradient(#e0e0e0 1px, transparent 1px); background-size: 100% 30px; background-position: 0 50px; }
+        textarea { width: 100%; height: 350px; border: none; font-size: 18px; line-height: 30px; background: transparent; outline: none; resize: none; font-family: 'Courier New', Courier, monospace; }
+        
+        .tabla-camilleros { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; margin-left: 30px; }
+        .tabla-camilleros th, .tabla-camilleros td { border: 1px solid #000; padding: 8px; text-align: center; }
+        .tabla-camilleros th { background-color: #1a3a5f; color: white; }
+        .input-c { width: 80%; border: none; text-align: center; }
+        .cabecera-planilla { display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: bold; border-bottom: 2px solid #1a3a5f; padding-bottom: 5px; margin-left: 30px; }
+        
+        /* La cruz ahora es fija y está afuera a la izquierda */
+        .fila-contenedor { position: relative; }
+        .btn-borrar { position: absolute; left: -30px; top: 50%; transform: translateY(-50%); background: red; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 12px; line-height: 1; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Panel <span id="titulo-panel">Administrador</span></h2>
+        <div class="menu-links">
+            <div class="menu-item" onclick="mostrar('reportes', 'Reportes')">📊 Reportes</div>
+            <div class="menu-item" onclick="mostrar('planillas', 'Planillas (Operativa)')">🛠 Planillas (Operativa)</div>
+            <div class="menu-item" onclick="mostrar('novedades', 'Novedades')">📢 Novedades</div>
+            <div class="menu-item" onclick="mostrar('rrhh', 'RR.HH.')">👥 RR.HH.</div>
+            <div class="menu-item" onclick="mostrar('resoluciones', 'Resoluciones')">⚖️ Resoluciones</div>
+        </div>
+        <button class="btn-accion-global" onclick="cerrarJornadaGlobal()">📥 CERRAR JORNADA</button>
+        <a href="index.html" class="btn-cerrar">CERRAR SESIÓN</a>
+    </div>
+
+    <div class="contenido">
+        <div id="reportes" class="seccion activo">
+            <h1 id="titulo-dinamico">Reportes</h1>
+            <div class="info-hoja"><span>Fecha de Registro: <span id="fecha-actual"></span></span> <span>Hoja N°: 001</span></div>
+            <div class="hoja"><textarea placeholder="Comience a escribir el reporte del día..."></textarea></div>
+        </div>
+
+        <div id="planillas" class="seccion">
+            <h1>Planillas (Operativa)</h1>
+            <p>Cargue los datos. Use <b>ENTER</b> para nueva fila.</p>
+            
+            <div id="area-camilleros" class="fila-contenedor">
+                <div class="cabecera-planilla">
+                    <span>AUXILIARES TÉCNICOS DE TRASLADO</span>
+                    <span id="turno-text">TURNO: MAÑANA</span>
+                    <span>FECHA: <span id="fecha-fixed"></span></span>
+                </div>
+                <table class="tabla-camilleros">
+                    <thead>
+                        <tr><th>HORA DE PEDIDO</th><th>N° DE CAMA</th><th>APELLIDO Y NOMBRE</th><th>DESTINO</th>
+                            <th>HORA ESTADÍA</th><th>MOVILIDAD</th><th>CAMILLERO</th><th>OBSERVACIONES</th></tr>
+                    </thead>
+                    <tbody id="cuerpo-tabla" onkeydown="detectarEnter(event)">
+                        <tr class="fila-contenedor">
+                            <button class="btn-borrar" onclick="borrarFila(this)">×</button>
+                            <td><input class="input-c" type="time" onchange="actualizarContador()"></td>
+                            <td><input class="input-c" type="text"></td><td><input class="input-c" type="text"></td>
+                            <td><input class="input-c" type="text"></td><td><input class="input-c" type="time"></td>
+                            <td><input class="input-c" type="text"></td><td><input class="input-c" type="text"></td>
+                            <td><input class="input-c" type="text"></td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr><td colspan="7" style="text-align:right; font-weight:bold;">TOTAL:</td>
+                            <td id="contador-total" style="font-weight:bold; color:red;">0</td></tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+        <div id="novedades" class="seccion"><h1>Novedades</h1></div>
+        <div id="rrhh" class="seccion"><h1>RR.HH.</h1></div>
+        <div id="resoluciones" class="seccion"><h1>Resoluciones</h1></div>
+    </div>
+
+    <script>
+        const hoy = new Date().toLocaleDateString('es-AR');
+        document.getElementById('fecha-actual').innerText = hoy;
+        document.getElementById('fecha-fixed').innerText = hoy;
+        
+        function mostrar(id, titulo) {
+            document.querySelectorAll('.seccion').forEach(s => s.classList.remove('activo'));
+            document.getElementById(id).classList.add('activo');
+            document.getElementById('titulo-panel').innerText = titulo;
+        }
+
+        function detectarEnter(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const tbody = document.getElementById('cuerpo-tabla');
+                const nuevaFila = document.createElement('tr');
+                nuevaFila.className = "fila-contenedor";
+                nuevaFila.innerHTML = `<button class="btn-borrar" onclick="borrarFila(this)">×</button><td><input class="input-c" type="time" onchange="actualizarContador()"></td><td><input class="input-c" type="text"></td><td><input class="input-c" type="text"></td><td><input class="input-c" type="text"></td><td><input class="input-c" type="time"></td><td><input class="input-c" type="text"></td><td><input class="input-c" type="text"></td><td><input class="input-c" type="text"></td>`;
+                tbody.appendChild(nuevaFila);
+                nuevaFila.querySelector('input').focus();
+            }
+        }
+
+        function borrarFila(btn) { btn.closest('tr').remove(); actualizarContador(); }
+        function actualizarContador() {
+            const inputs = document.querySelectorAll('#cuerpo-tabla input[type="time"]');
+            let count = 0;
+            inputs.forEach(i => { if(i.value !== "") count++; });
+            document.getElementById('contador-total').innerText = count;
+        }
+        function cerrarJornadaGlobal() { alert("Jornada cerrada."); }
+    </script>
+</body>
+</html>

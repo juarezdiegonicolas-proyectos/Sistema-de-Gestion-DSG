@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Escritorio Ascensores - DSG</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Librería de Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { margin: 0; font-family: 'Roboto', sans-serif; display: flex; height: 100vh; background-color: #f4f1ea; overflow: hidden; }
+        .sidebar { width: 260px; background-color: #1a3a5f; color: white; padding: 15px 15px; display: flex; flex-direction: column; flex-shrink: 0; height: 100vh; box-sizing: border-box; overflow: hidden; }
+        
+        .bienvenida-box { background-color: #2d5a8e; padding: 10px; border-radius: 8px; margin-bottom: 12px; text-align: center; border: 1px solid #5d8dbb; flex-shrink: 0; }
+        .bienvenida-box h3 { margin: 0; font-size: 13px; font-weight: 300; color: #cce7ff; }
+        .bienvenida-box p { margin: 3px 0 0 0; font-size: 15px; font-weight: bold; }
+
+        .sidebar-header-title { min-height: 40px; margin-bottom: 8px; display: flex; align-items: center; flex-shrink: 0; }
+        .sidebar-header-title h2 { font-size: 18px; margin: 0; line-height: 1.2; }
+
+        .menu-links { flex: 1; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; margin-bottom: 8px; }
+        .menu-item { display: flex; align-items: center; color: #ddd; padding: 10px 12px; text-decoration: none; border-bottom: 1px solid rgba(93, 141, 187, 0.3); font-weight: 500; cursor: pointer; font-size: 15px; transition: background 0.2s, color 0.2s; border-radius: 4px; }
+        .menu-item:hover { background-color: #5d8dbb; color: white; }
+
+        .sidebar-footer { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; padding-top: 5px; }
+        .btn-accion-global { width: 100%; padding: 10px; background: linear-gradient(135deg, #28a745, #218838); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: opacity 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .btn-accion-global:hover { opacity: 0.9; }
+        .btn-cerrar { width: 100%; padding: 10px; background: linear-gradient(135deg, #d32f2f, #c62828); color: white; text-align: center; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); box-sizing: border-box; display: flex; align-items: center; justify-content: center; gap: 6px; transition: opacity 0.2s; }
+        .btn-cerrar:hover { opacity: 0.9; }
+
+        .contenido { flex: 1; padding: 40px; overflow-y: auto; }
+        .seccion { display: none; background: white; padding: 40px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .seccion.activo { display: block; } 
+        .info-hoja { display: flex; justify-content: space-between; margin-bottom: 15px; font-weight: bold; color: #1a3a5f; align-items: center;}
+        
+        .hoja { background-color: #fff; padding: 0 40px; border: 1px solid #ccc; min-height: 900px; position: relative; }
+        
+        #editor-reporte { 
+            width: 100%; 
+            min-height: 900px; 
+            border: none; 
+            font-size: 18px; 
+            line-height: 30px; 
+            outline: none; 
+            font-family: 'Courier New', Courier, monospace; 
+            white-space: pre-wrap; 
+            word-wrap: break-word; 
+            background-image: linear-gradient(#e0e0e0 1px, transparent 1px);
+            background-size: 100% 30px;
+            padding-top: 30px;
+        }
+        
+        .tabla-camilleros { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; table-layout: fixed; }
+        .tabla-camilleros th, .tabla-camilleros td { border: 1px solid #000; padding: 6px; text-align: center; word-wrap: break-word; }
+        .tabla-camilleros th { background-color: #1a3a5f; color: white; height: 40px; }
+        .col-hora { width: 85px; }
+        .input-c { width: 95%; border: none; text-align: center; }
+        .input-fecha, .input-select { border: 1px solid #ccc; padding: 8px; border-radius: 4px; font-family: inherit; cursor: pointer; }
+        .btn-borrar { background: red; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 12px; }
+        .area-acciones { margin-top: 20px; display: flex; gap: 10px; }
+        .btn-gestion { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; }
+        .btn-imprimir { background: #6c757d; color: white; }
+        #info-supervisor { margin-bottom: 20px; color: #1a3a5f; font-weight: bold; border: 1px solid #ddd; padding: 10px; border-radius: 6px; background: #f9f9f9; }
+        .header-logos { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+        .header-logos img { height: 110px; width: auto; object-fit: contain; }
+        .filtros-historicos { display: flex; gap: 15px; background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #eee; align-items: center; }
+        .celda-asistencia { cursor: pointer; width: 25px; height: 25px; border: 2px solid #333; display: inline-block; transition: background 0.3s; margin: auto; }
+        .estado-P { background-color: #28a745 !important; }
+        .estado-A { background-color: #dc3545 !important; }
+        .estado-L { background-color: #ffc107 !important; }
+        .botonera-porcentaje { background-color: #1a3a5f; color: white; padding: 12px 20px; border-radius: 8px; font-weight: bold; margin-bottom: 10px; display: inline-block; width: 250px; text-align: left; }
+
+        .grid-ascensores { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; margin-top: 20px; }
+        .item-ascensor { border: 1px solid #ddd; padding: 8px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; background: #fff; }
+        .icono-plano { cursor: pointer; margin-right: 8px; font-size: 16px; color: #1a3a5f; }
+        .ref-icono { font-size: 14px; margin-right: 5px; }
+        .circulo-estado { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #333; cursor: pointer; background-color: #eee; flex-shrink: 0; }
+        .referencias { display: flex; gap: 15px; margin-bottom: 20px; padding: 15px; background: #eee; border-radius: 8px; font-size: 13px; flex-wrap: wrap; }
+        .ref-item { display: flex; align-items: center; gap: 6px; }
+        .ref-color { width: 12px; height: 12px; border-radius: 50%; border: 1px solid #000; }
+        .c-verde { background-color: #28a745 !important; }
+        .c-amarillo { background-color: #ffc107 !important; }
+        .c-rojo { background-color: #dc3545 !important; }
+        .c-mixto { background: linear-gradient(135deg, #28a745 50%, #007bff 50%) !important; }
+
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 20px; border-radius: 10px; max-width: 90%; max-height: 90%; overflow: auto; position: relative; }
+        .close-modal { position: absolute; top: 10px; right: 20px; font-size: 30px; cursor: pointer; color: #d32f2f; font-weight: bold; }
+        .img-plano { width: 100%; height: auto; border: 2px solid #333; }
+
+        #rrhh .tabla-camilleros { width: 99.5% !important; border-right: 1px solid #000 !important; }
+
+        @media print {
+            .sidebar, .btn-accion-global, .btn-cerrar, .menu-item, .no-imprimir, .btn-imprimir, .btn-borrar { display: none !important; }
+            body, html, .contenido, .seccion.activo, .hoja { background-color: white !important; margin: 0 !important; padding: 0 !important; width: 100% !important; height: auto !important; overflow: visible !important; box-shadow: none !important; display: block !important; }
+            .seccion { display: none !important; }
+            .seccion.activo { display: block !important; } 
+            .hoja { border: none !important; min-height: auto !important; }
+            #editor-reporte { background-image: linear-gradient(#e0e0e0 1px, transparent 1px); background-size: 100% 30px; line-height: 30px; padding-top: 30px; -webkit-print-color-adjust: exact; print-color-adjust: exact; overflow: visible !important; height: auto !important; min-height: auto !important; }
+        }
+        @page { size: auto; margin: 1cm; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="bienvenida-box">
+            <h3>Bienvenido Agente:</h3>
+            <p id="nombre-supervisor-sidebar">---</p>
+        </div>
+        <div class="sidebar-header-title">
+            <h2 id="titulo-panel">Ascensores</h2>
+        </div>
+        
+        <div class="menu-links">
+            <div class="menu-item" onclick="mostrar('reportes', 'Reportes')">📊 Reportes</div>
+            <div class="menu-item" onclick="mostrar('planillas', 'Planillas (Operativa)')">🛠 Planillas (Operativa)</div>
+            <div class="menu-item" onclick="mostrar('historicos', 'Registros Históricos')">📂 Registros Históricos</div>
+            <div class="menu-item" onclick="mostrar('novedades', 'Novedades')">📢 Novedades</div>
+            <div class="menu-item" onclick="mostrar('rrhh', 'RR.HH.')">👥 RR.HH.</div>
+            <div class="menu-item" onclick="mostrar('resoluciones', 'Resoluciones')">⚖️ Resoluciones</div>
+        </div>
+
+        <div class="sidebar-footer">
+            <button class="btn-accion-global" onclick="cerrarJornadaGlobal()">📥 CERRAR JORNADA</button>
+            <a href="index.html" class="btn-cerrar">🚪 CERRAR SESIÓN</a>
+        </div>
+    </div>
+
+    <div class="contenido">
+        <div id="reportes" class="seccion activo">
+            <div class="header-logos">
+                <img src="logo_hospi.png" alt="Logo Hospital">
+                <h1 style="margin: 0; text-align: center; flex: 1;">Reportes</h1>
+                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+            </div>
+            <div id="info-supervisor">Supervisor: <span id="display-nombre-rep">---</span> | Turno: <span id="display-turno-rep">---</span> | Depto: <span id="display-depto-rep">---</span></div>
+            <div class="info-hoja">
+                <span>Fecha: <input type="date" id="fecha-reporte" class="input-fecha" onchange="guardarDatos()"></span>
+                <span>Hoja N°: <span id="numero-hoja">001</span></span>
+            </div>
+            <div class="hoja">
+                <div id="editor-reporte" contenteditable="true" oninput="guardarDatos()"></div>
+            </div>
+            <div class="area-acciones"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button></div>
+        </div>
+
+        <div id="planillas" class="seccion">
+            <div class="header-logos">
+                <img src="logo_hospi.png" alt="Logo Hospital">
+                <h1 style="margin: 0; text-align: center; flex: 1; font-size: 30px;">Estado de Ascensores</h1>
+                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+            </div>
+            <div id="info-supervisor">Supervisor: <span id="display-nombre">---</span> | Turno: <span id="display-turno">---</span> | Depto: <span id="display-depto">---</span></div>
+            
+            <div class="referencias">
+                <div class="ref-item"><div class="ref-color c-verde"></div> Funcionando</div>
+                <div class="ref-item"><div class="ref-color c-amarillo"></div> Mantenimiento</div>
+                <div class="ref-item"><div class="ref-color c-rojo"></div> Fuera servicio</div>
+                <div class="ref-item"><div class="ref-color c-mixto"></div> Ascensorista</div>
+            </div>
+
+            <div id="lista-ascensores" class="grid-ascensores"></div>
+            <div style="margin-top:20px;">
+                <button onclick="guardarEstados()" class="btn-gestion" style="background:#1a3a5f; color:white; padding: 15px 30px; font-size: 14px;">Actualizar estado</button>
+            </div>
+
+            <div style="margin-top: 30px; text-align: center; color: #1a3a5f; font-weight: bold; font-size: 20px; margin-bottom: 10px;">Estadísticas de Funcionalidad</div>
+            <div style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #ddd; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; justify-content: center; align-items: center; gap: 50px;">
+                <div id="resumen-ascensores" style="font-weight:bold; color: #1a3a5f; font-size: 16px; line-height: 2.0; display: flex; flex-direction: column;"></div>
+                <div style="width: 220px; height: 220px;">
+                    <canvas id="graficoAscensores"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div id="historicos" class="seccion">
+            <div class="header-logos">
+                <img src="logo_hospi.png" alt="Logo Hospital">
+                <h1 style="margin: 0; text-align: center; flex: 1;">Registros Históricos</h1>
+                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+            </div>
+            <div id="info-supervisor">Departamento: <span id="depto-hist-label">---</span></div>
+            <div class="filtros-historicos">
+                <select id="select-depto" class="input-select" disabled>
+                    <option value="Ascensores">Ascensores</option>
+                </select>
+                <select id="select-tipo" class="input-select">
+                    <option value="planilla">Planilla Operativa</option>
+                    <option value="reporte">Reporte Diario</option>
+                    <option value="asistencia">Asistencia de Personal</option>
+                </select>
+                <select id="select-turno" class="input-select">
+                    <option value="Mañana">Turno Mañana</option>
+                    <option value="Tarde">Turno Tarde</option>
+                    <option value="Noche A">Turno Noche A</option>
+                    <option value="Noche B">Turno Noche B</option>
+                    <option value="Sadofe">Sadofe</option>
+                </select>
+                <input type="date" id="filtro-fecha-hist" class="input-fecha">
+                <button class="btn-gestion no-imprimir" style="background: #1a3a5f; color: white;" onclick="cargarHistoricos()">Buscar Registros</button>
+            </div>
+            <div id="contenedor-historicos" style="border: 1px solid #ccc; padding: 20px; border-radius: 8px;">
+                <p>Selecciona filtros y presiona "Buscar" para visualizar registros.</p>
+            </div>
+            <div class="area-acciones"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir Resultados</button></div>
+        </div>
+        
+        <div id="novedades" class="seccion">
+            <div class="header-logos">
+                <img src="logo_hospi.png" alt="Logo Hospital">
+                <h1 style="margin: 0; text-align: center; flex: 1;">Novedades</h1>
+                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+            </div>
+            <div id="contenedor-novedades" style="margin-top: 15px;">
+                <p>Cargando novedades...</p>
+            </div>
+        </div>
+
+        <div id="rrhh" class="seccion">
+            <div class="header-logos">
+                <img src="logo_hospi.png" alt="Logo Hospital">
+                <h1 style="margin: 0; text-align: center; flex: 1;">Personal - Turno: <span id="display-turno-rrhh">---</span></h1>
+                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+            </div>
+            <table class="tabla-camilleros" style="table-layout: auto;">
+                <thead><tr><th>LEGAJO</th><th>APELLIDO Y NOMBRE</th><th>PRESENTE</th><th>AUSENTE</th><th>LICENCIA</th></tr></thead>
+                <tbody id="cuerpo-rrhh"></tbody>
+            </table>
+            <div class="area-acciones">
+                <button class="btn-gestion no-imprimir" style="background: #28a745; color: white;" onclick="guardarAsistencia()">💾 Guardar Asistencia</button>
+                <button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
+            </div>
+            
+            <div style="margin-top: 30px; text-align: center; color: #1a3a5f; font-weight: bold; font-size: 20px; margin-bottom: 10px;">Control de Asistencia</div>
+            <div style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #ddd; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; justify-content: center; align-items: center; gap: 50px;">
+                <div id="resumen-rrhh" style="font-weight:bold; color: #1a3a5f; font-size: 16px; line-height: 2.0; display: flex; flex-direction: column;"></div>
+                <div style="width: 220px; height: 220px;">
+                    <canvas id="graficoRRHH"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div id="resoluciones" class="seccion">
+            <div class="header-logos">
+                <img src="logo_hospi.png" alt="Logo Hospital">
+                <h1 style="margin: 0; text-align: center; flex: 1;">Resoluciones</h1>
+                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+            </div>
+            <div id="contenedor-resoluciones" style="margin-top: 15px;">
+                <p>Cargando resoluciones...</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalPlano" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="cerrarModal()">&times;</span>
+            <h2 id="titulo-modal">Ubicación</h2>
+            <img src="planoPB.jpeg" alt="Plano Hospital" class="img-plano">
+        </div>
+    </div>
+
+    <script>
+        // Configuración de Supabase con tus credenciales reales
+        const SUPABASE_URL = 'https://ydcbdvosxbwcutddxaze.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_EvvZ8n7Ve2cF9FB4SXA0Ug_7q6qWh9f';
+        const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+
+        const editorReporte = document.getElementById('editor-reporte');
+        const spanHoja = document.getElementById('numero-hoja');
+        const inputFecha = document.getElementById('fecha-reporte');
+        const listaAsc = document.getElementById('lista-ascensores');
+        const estadosCSS = ['c-verde', 'c-amarillo', 'c-rojo', 'c-mixto'];
+        const opcionesUso = ["-", "Departamento Alimentacion y Dietetica", "Traslado Residuos Comunes", "Traslado Residuos Patologicos", "Traslado Personal Medico", "Traslado Eventos", "Traslado Usuarios y Publico General", "Traslado Camilleros/Pacientes", "Traslado Guardia", "Monta Carga", "Personal del Hospital", "Fuera de Servicio", "En Reparacion", "En Mantenimiento"];
+        let chartRRHH, chartAsc;
+        
+        // Función robusta para conectar a Supabase y evitar bloqueos por RLS o turnos
+        async function obtenerAgentesAscensores() {
+            if (!supabaseClient) return [];
+            
+            const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim();
+            try {
+                let { data, error } = await supabaseClient
+                    .from('ascensores_personal')
+                    .select('*')
+                    .eq('turno', turnoActual)
+                    .eq('activo', true);
+            
+                if (error) {
+                    console.error("Error de Supabase en RLS o permisos:", error.message);
+                }
+
+                if (!data || data.length === 0) {
+                    let resGeneral = await supabaseClient
+                        .from('ascensores_personal')
+                        .select('*')
+                        .eq('activo', true);
+                
+                    if (resGeneral.data && resGeneral.data.length > 0) {
+                        return resGeneral.data;
+                    }
+                }
+                
+                return data || [];
+            } catch (e) {
+                console.error("Excepción consultando ascensores_personal:", e);
+                return [];
+            }
+        }
+
+        async function generarLista() {
+            const guardado = JSON.parse(localStorage.getItem('dsg_ascensores_estados') || '{}');
+            const listaAgentesTurno = await obtenerAgentesAscensores();
+            
+            listaAsc.innerHTML = ''; 
+            listaAsc.style.display = 'grid';
+            listaAsc.style.gridTemplateColumns = '1fr 1fr';
+            listaAsc.style.gap = '15px';
+
+            for (let i = 1; i <= 28; i++) {
+                let nombre = i <= 24 ? `Asc N° ${i}` : `Esc Mec. N° ${i}`;
+                let datos = guardado[i] || { clase: '', uso: opcionesUso[0], agentesLista: [{ nombre: '', desde: '', hasta: '' }] };
+                
+                if (!datos.agentesLista || datos.agentesLista.length === 0) {
+                    datos.agentesLista = [{ nombre: datos.agenteNombre || '', desde: datos.agenteDesde || '', hasta: datos.agenteHasta || '' }];
+                }
+
+                let opcionesHTML = opcionesUso.map(op => `<option value="${op}" ${datos.uso === op ? 'selected' : ''}>${op}</option>`).join('');
+                let esMixto = datos.clase === 'c-mixto';
+
+                let filasAgentesHTML = '';
+                datos.agentesLista.forEach((agData, idx) => {
+                    let selAgenteOpts = `<option value="">Seleccione agente...</option>` + 
+                        listaAgentesTurno.map(ag => {
+                            let nomAgente = ag.apellido_y_nombre || ag.nombre || `Legajo: ${ag.legajo}`;
+                            return `<option value="${nomAgente}" ${agData.nombre === nomAgente ? 'selected' : ''}>${nomAgente}</option>`;
+                        }).join('');
+
+                    filasAgentesHTML += `
+                        <div class="fila-ascensorista-item" style="display: flex; align-items: center; gap: 8px; width: 100%; margin-bottom: 6px;">
+                            <span style="font-size: 11px; font-weight: 600; color: #555; white-space: nowrap; min-width: 75px;">Ascensorista:</span>
+                            <select class="input-agente-nombre" data-id="${i}" onchange="guardarEstados()" style="font-size: 11px; padding: 4px 20px 4px 4px; flex-grow: 1; border: 1px solid #ccc; border-radius: 4px; background-color: #fff;">
+                                ${selAgenteOpts}
+                            </select>
+                            <input type="time" class="input-agente-desde" data-id="${i}" value="${agData.desde || ''}" oninput="guardarEstados()" style="font-size: 11px; padding: 3px; width: 75px; border: 1px solid #ccc; border-radius: 4px; flex-shrink: 0;" />
+                            <input type="time" class="input-agente-hasta" data-id="${i}" value="${agData.hasta || ''}" onkeydown="manejarKeydownAscensorista(event, ${i})" style="font-size: 11px; padding: 3px; width: 75px; border: 1px solid #ccc; border-radius: 4px; flex-shrink: 0;" />
+                            ${idx > 0 ? `<button type="button" onclick="eliminarFilaAscensorista(this, ${i})" style="background: #dc3545; color: white; border: none; border-radius: 4px; width: 22px; height: 22px; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center;">×</button>` : `<div style="width: 22px;"></div>`}
+                        </div>`;
+                });
+
+                listaAsc.innerHTML += `
+                    <div class="item-ascensor" style="border: 1px solid #dcdcdc; padding: 12px 15px; border-radius: 8px; background: #ffffff; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); width: 100%; box-sizing: border-box;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                            <span style="font-weight: bold; font-size: 14px; color: #333; white-space: nowrap; margin-right: 10px;">${nombre}</span>
+                            <div style="display: flex; align-items: center; gap: 10px; flex-grow: 1; justify-content: center;">
+                                <select class="input-select" style="font-size: 12px; width: 100%; max-width: 280px; padding: 5px 25px 5px 8px; border: 1px solid #ccc; border-radius: 4px; background-color: #fff; text-overflow: ellipsis;" onchange="cambiarUsoAscensor(this, ${i})">${opcionesHTML}</select>
+                            </div>
+                            <div class="circulo-estado ${datos.clase}" data-id="${i}" onclick="rotarColor(this)" style="cursor: pointer; flex-shrink: 0;"></div>
+                        </div>
+                        <div id="contenedor-ascensorista-${i}" style="display: ${esMixto ? 'flex' : 'none'}; flex-direction: column; width: 100%; background: #f8f9fa; padding: 8px 10px; border-radius: 6px; border: 1px solid #eaeaea; box-sizing: border-box;">
+                            <div class="lista-filas-ascensoristas" data-id="${i}" style="display: flex; flex-direction: column; width: 100%;">
+                                ${filasAgentesHTML}
+                            </div>
+                        </div>
+                    </div>`;
+            }
+            actualizarGraficoAscensores();
+        }
+    
+        function abrirPlano(nombre) {
+            document.getElementById('titulo-modal').innerText = "Plano - " + nombre;
+            document.getElementById('modalPlano').style.display = 'flex';
+        }
+
+        function cerrarModal() {
+            document.getElementById('modalPlano').style.display = 'none';
+        }
+
+        function cambiarUsoAscensor(selectEl, id) {
+            let itemAsc = selectEl.closest('.item-ascensor');
+            let circulo = itemAsc.querySelector('.circulo-estado');
+            if (selectEl.value === 'Personal del Hospital') {
+                circulo.classList.remove(...estadosCSS);
+                circulo.classList.add('c-mixto');
+                let contenedorAsc = document.getElementById(`contenedor-ascensorista-${id}`);
+                if (contenedorAsc) contenedorAsc.style.display = 'flex';
+            }
+            guardarEstados();
+        }
+
+        async function manejarKeydownAscensorista(event, id) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                await agregarFilaAscensorista(id);
+            } else {
+                guardarEstados();
+            }
+        }
+
+        async function agregarFilaAscensorista(id) {
+            const listaAgentesTurno = await obtenerAgentesAscensores();
+            let opcionesAgentesHTML = `<option value="">Seleccione agente...</option>` + 
+                listaAgentesTurno.map(ag => {
+                    let nomAgente = ag.apellido_y_nombre || ag.nombre || `Legajo: ${ag.legajo}`;
+                    return `<option value="${nomAgente}">${nomAgente}</option>`;
+                }).join('');
+
+            let contenedorItem = document.querySelector(`.item-ascensor .circulo-estado[data-id="${id}"]`).closest('.item-ascensor');
+            let contenedorFilas = contenedorItem.querySelector('.lista-filas-ascensoristas');
+
+            let nuevaFila = document.createElement('div');
+            nuevaFila.className = 'fila-ascensorista-item';
+            nuevaFila.style.cssText = 'display: flex; align-items: center; gap: 8px; width: 100%; margin-bottom: 6px;';
+            nuevaFila.innerHTML = `
+                <span style="font-size: 11px; font-weight: 600; color: #555; white-space: nowrap; min-width: 75px;">Ascensorista:</span>
+                <select class="input-agente-nombre" data-id="${id}" onchange="guardarEstados()" style="font-size: 11px; padding: 4px 20px 4px 4px; flex-grow: 1; border: 1px solid #ccc; border-radius: 4px; background-color: #fff;">
+                    ${opcionesAgentesHTML}
+                </select>
+                <input type="time" class="input-agente-desde" data-id="${id}" oninput="guardarEstados()" style="font-size: 11px; padding: 3px; width: 75px; border: 1px solid #ccc; border-radius: 4px; flex-shrink: 0;" />
+                <input type="time" class="input-agente-hasta" data-id="${id}" onkeydown="manejarKeydownAscensorista(event, ${id})" style="font-size: 11px; padding: 3px; width: 75px; border: 1px solid #ccc; border-radius: 4px; flex-shrink: 0;" />
+                <button type="button" onclick="eliminarFilaAscensorista(this, ${id})" style="background: #dc3545; color: white; border: none; border-radius: 4px; width: 22px; height: 22px; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center;">×</button>
+            `;
+            contenedorFilas.appendChild(nuevaFila);
+            
+            let nuevoSelect = nuevaFila.querySelector('.input-agente-nombre');
+            if (nuevoSelect) nuevoSelect.focus();
+            
+            guardarEstados();
+        }
+
+        function eliminarFilaAscensorista(btn, id) {
+            let fila = btn.closest('.fila-ascensorista-item');
+            if (fila) {
+                fila.remove();
+                guardarEstados();
+            }
+        }
+
+        function rotarColor(el) {
+            let actual = estadosCSS.findIndex(c => el.classList.contains(c));
+            let siguiente = (actual + 1) % (estadosCSS.length + 1);
+            el.classList.remove(...estadosCSS);
+            if(siguiente < estadosCSS.length) {
+                el.classList.add(estadosCSS[siguiente]);
+            }
+            
+            let id = el.getAttribute('data-id');
+            let contenedorAsc = document.getElementById(`contenedor-ascensorista-${id}`);
+            if (contenedorAsc) {
+                if (el.classList.contains('c-mixto')) {
+                    contenedorAsc.style.display = 'flex';
+                } else {
+                    contenedorAsc.style.display = 'none';
+                }
+            }
+            guardarEstados();
+        }
+
+        async function guardarEstados() {
+            let estadosGuardar = {};
+            let arrayEstadoEnVivo = [];
+
+            document.querySelectorAll('.item-ascensor').forEach(item => {
+                let select = item.querySelector('select');
+                let circulo = item.querySelector('.circulo-estado');
+                let id = circulo.getAttribute('data-id');
+                let clase = Array.from(circulo.classList).find(c => estadosCSS.includes(c)) || '';
+                
+                let agentesLista = [];
+                item.querySelectorAll('.fila-ascensorista-item').forEach(fila => {
+                    let selAgente = fila.querySelector('.input-agente-nombre');
+                    let inpDesde = fila.querySelector('.input-agente-desde');
+                    let inpHasta = fila.querySelector('.input-agente-hasta');
+                    agentesLista.push({
+                        nombre: selAgente ? selAgente.value : '',
+                        desde: inpDesde ? inpDesde.value : '',
+                        hasta: inpHasta ? inpHasta.value : ''
+                    });
+                });
+
+                estadosGuardar[id] = { 
+                    clase: clase, 
+                    uso: select.value,
+                    agentesLista: agentesLista
+                };
+
+                let estadoLabel = "Desconocido";
+                if (clase === 'c-verde') estadoLabel = "Funcionando";
+                else if (clase === 'c-amarillo') estadoLabel = "Mantenimiento";
+                else if (clase === 'c-rojo') estadoLabel = "Fuera servicio";
+                else if (clase === 'c-mixto') estadoLabel = "Ascensorista";
+
+                let nombreAsc = Number(id) <= 24 ? `Asc N° ${id}` : `Esc Mec. N° ${id}`;
+                
+                let infoAscensorista = '';
+                if (clase === 'c-mixto' && agentesLista.length > 0) {
+                    let detallesArr = agentesLista.map(ag => `(Agente: ${ag.nombre || '-'} | Desde: ${ag.desde || '-'} Hasta: ${ag.hasta || '-'})`);
+                    infoAscensorista = ' ' + detallesArr.join(', ');
+                }
+
+                arrayEstadoEnVivo.push({
+                    identificador_dispositivo: nombreAsc,
+                    estado: estadoLabel,
+                    uso: select.value || "",
+                    observaciones: infoAscensorista,
+                    legajo_operador: localStorage.getItem('usuario_legajo') || "Desconocido",
+                    actualizado_at: new Date().toISOString()
+                });
+            });
+
+            localStorage.setItem('dsg_ascensores_estados', JSON.stringify(estadosGuardar));
+            actualizarGraficoAscensores();
+
+            if (supabaseClient && arrayEstadoEnVivo.length > 0) {
+                try {
+                    await supabaseClient
+                        .from('estado_actual_ascensores')
+                        .upsert(arrayEstadoEnVivo, { onConflict: 'identificador_dispositivo' });
+                } catch (err) {
+                    console.error("Excepción al actualizar estado en vivo:", err);
+                }
+            }
+        }
+
+        function actualizarGraficoAscensores() {
+            let conteo = {'c-verde':0, 'c-amarillo':0, 'c-rojo':0, 'c-mixto':0};
+            let total = 28;
+            document.querySelectorAll('.circulo-estado').forEach(el => {
+                let clase = Array.from(el.classList).find(c => estadosCSS.includes(c));
+                if(clase) conteo[clase]++;
+            });
+            document.getElementById('resumen-ascensores').innerHTML = `
+                <div class="botonera-porcentaje">Funcionando: ${((conteo['c-verde']/total)*100).toFixed(1)}% (${conteo['c-verde']})</div>
+                <div class="botonera-porcentaje">En Mantenimiento: ${((conteo['c-amarillo']/total)*100).toFixed(1)}% (${conteo['c-amarillo']})</div>
+                <div class="botonera-porcentaje">Fuera de Servicio: ${((conteo['c-rojo']/total)*100).toFixed(1)}% (${conteo['c-rojo']})</div>
+                <div class="botonera-porcentaje">Funcionando con Ascensorista: ${((conteo['c-mixto']/total)*100).toFixed(1)}% (${conteo['c-mixto']})</div>
+            `;
+            const ctx = document.getElementById('graficoAscensores').getContext('2d');
+            if (chartAsc) chartAsc.destroy();
+            chartAsc = new Chart(ctx, {
+                type: 'pie',
+                data: { labels: ['Funcionando', 'Mantenimiento', 'Fuera de Servicio', 'Ascensoristas'], datasets: [{ data: [conteo['c-verde'], conteo['c-amarillo'], conteo['c-rojo'], conteo['c-mixto']], backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#007bff'] }] },
+                options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+            });
+        }
+
+        function obtenerFechaHoyISO() { return new Date().toISOString().split('T')[0]; }
+        let contadorHoja = parseInt(localStorage.getItem('dsg_ascensores_contador_hoja')) || 1;
+        spanHoja.innerText = String(contadorHoja).padStart(3, '0');
+        inputFecha.value = localStorage.getItem('dsg_ascensores_fecha') || obtenerFechaHoyISO();
+        document.getElementById('filtro-fecha-hist').value = obtenerFechaHoyISO();
+
+        function actualizarGraficoRRHH(p, a, l) {
+            const ctx = document.getElementById('graficoRRHH').getContext('2d');
+            if (chartRRHH) chartRRHH.destroy();
+            chartRRHH = new Chart(ctx, {
+                type: 'pie',
+                data: { labels: ['Presentes', 'Ausentes', 'Licencias'], datasets: [{ data: [p, a, l], backgroundColor: ['#28a745', '#dc3545', '#ffc107'] }] },
+                options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+            });
+        }
+
+        async function cargarRRHH() {
+            const body = document.getElementById('cuerpo-rrhh');
+            const turnoActual = localStorage.getItem('usuario_turno') || "Mañana";
+            document.getElementById('display-turno-rrhh').innerText = turnoActual;
+            
+            let agentesTurno = await obtenerAgentesAscensores();
+            const asistenciasGuardadas = JSON.parse(localStorage.getItem('dsg_ascensores_asistencia_rrhh') || "{}");
+            body.innerHTML = '';
+            let p=0, a=0, l=0;
+            
+            if (agentesTurno.length === 0) {
+                body.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #777;">No se encontraron agentes activos en Supabase. Verificá si la tabla tiene registros o políticas RLS.</td></tr>`;
+                return;
+            }
+
+            agentesTurno.forEach(agent => {
+                const legajo = agent.legajo || '';
+                const nombreAgente = agent.apellido_y_nombre || agent.nombre || '';
+                const estado = asistenciasGuardadas[legajo] || "";
+                if(estado === 'P') p++; else if(estado === 'A') a++; else if(estado === 'L') l++;
+                body.innerHTML += `<tr><td>${legajo}</td><td>${nombreAgente}</td>
+                    <td><div class="celda-asistencia ${estado === 'P' ? 'estado-P' : ''}" id="P-${legajo}" onclick="marcar('${legajo}', 'P')"></div></td>
+                    <td><div class="celda-asistencia ${estado === 'A' ? 'estado-A' : ''}" id="A-${legajo}" onclick="marcar('${legajo}', 'A')"></div></td>
+                    <td><div class="celda-asistencia ${estado === 'L' ? 'estado-L' : ''}" id="L-${legajo}" onclick="marcar('${legajo}', 'L')"></div></td>
+                    <input type="hidden" id="estado-${legajo}" value="${estado}"></tr>`;
+            });
+            if(p+a+l > 0) {
+                document.getElementById('resumen-rrhh').innerHTML = 
+                    `<div class="botonera-porcentaje">Presentismo: ${((p/(p+a+l))*100).toFixed(1)}% (${p})</div>
+                     <div class="botonera-porcentaje">Ausentismo: ${((a/(p+a+l))*100).toFixed(1)}% (${a})</div>
+                     <div class="botonera-porcentaje">Licencias: ${((l/(p+a+l))*100).toFixed(1)}% (${l})</div>`;
+                actualizarGraficoRRHH(p, a, l);
+            }
+        }
+
+        function marcar(legajo, estado) {
+            ['P', 'A', 'L'].forEach(e => document.getElementById(`${e}-${legajo}`).className = 'celda-asistencia');
+            document.getElementById(`${estado}-${legajo}`).className = `celda-asistencia estado-${estado}`;
+            document.getElementById(`estado-${legajo}`).value = estado;
+        }
+
+        async function guardarAsistencia() {
+            let registro = {}, presentes = 0, ausentes = 0, licencias = 0;
+            let agentesTurno = await obtenerAgentesAscensores();
+            const totalAgentes = agentesTurno.length;
+
+            if (totalAgentes === 0) {
+                alert("No hay agentes cargados en Supabase.");
+                return;
+            }
+
+            agentesTurno.forEach(a => {
+                let val = document.getElementById(`estado-${a.legajo}`).value;
+                registro[a.legajo] = val;
+                if (val === 'P') presentes++;
+                else if (val === 'A') ausentes++;
+                else if (val === 'L') licencias++;
+            });
+
+            let noMarcados = totalAgentes - (presentes + ausentes + licencias);
+            if (noMarcados > 0) {
+                alert("¡Atención! Falta cargar la totalidad de los agentes. Hay " + noMarcados + " agentes sin estado asignado.");
+                return;
+            }
+
+            let pP = ((presentes / totalAgentes) * 100).toFixed(1);
+            let pA = ((ausentes / totalAgentes) * 100).toFixed(1);
+            let pL = ((licencias / totalAgentes) * 100).toFixed(1);
+
+            localStorage.setItem('dsg_ascensores_asistencia_rrhh', JSON.stringify(registro));
+            
+            document.getElementById('resumen-rrhh').innerHTML = 
+                `<div class="botonera-porcentaje">Presentismo: ${pP}% (${presentes})</div>
+                 <div class="botonera-porcentaje">Ausentismo: ${pA}% (${ausentes})</div>
+                 <div class="botonera-porcentaje">Licencias: ${pL}% (${licencias})</div>`;
+            actualizarGraficoRRHH(presentes, ausentes, licencias);
+            
+            alert(`¡Asistencia completa!\nPresentismo: ${pP}%\nAusentismo: ${pA}%\nLicencias: ${pL}%`);
+        }
+    
+        function guardarDatos() {
+            localStorage.setItem('dsg_ascensores_reporte', editorReporte.innerHTML);
+            localStorage.setItem('dsg_ascensores_fecha', inputFecha.value);
+        }
+
+        async function cerrarJornadaGlobal() {
+            const fechaActual = inputFecha.value;
+            const turnoActual = localStorage.getItem('usuario_turno') || "Mañana";
+            const deptoActual = "Ascensores";
+            const supervisorActual = localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario_legajo') || "Supervisor Turno";
+
+            if (supabaseClient) {
+                try {
+                    const { data: existente, error: errExistente } = await supabaseClient
+                        .from('cierres_jornada')
+                        .select('id')
+                        .eq('fecha_cierre', fechaActual)
+                        .eq('turno', turnoActual)
+                        .eq('departamento', deptoActual)
+                        .eq('supervisor', supervisorActual)
+                        .maybeSingle();
+
+                    if (!errExistente && existente) {
+                        alert("⚠️ ATENCIÓN: Ya se ha registrado y cerrado la jornada para este turno y supervisor en el día de la fecha. No se puede volver a cerrar.");
+                        return;
+                    }
+                } catch (errCheck) {
+                    console.error("Error verificando duplicidad en Supabase:", errCheck);
+                }
+            }
+
+            if (!confirm("¿Cerrar jornada? Se consolidarán los datos en la base de datos y se reiniciará el sistema.")) return;
+
+            const btnCierre = document.querySelector('button[onclick*="cerrarJornadaGlobal"]');
+            if (btnCierre) btnCierre.disabled = true;
+            
+            guardarEstados();
+            let tablaHTML = `<table class="tabla-camilleros" border="1"><thead><tr><th>N° de Ascensor</th><th>Estado</th><th>Uso Asignado</th><th>Detalle / Horario</th></tr></thead><tbody>`;
+            const guardado = JSON.parse(localStorage.getItem('dsg_ascensores_estados') || '{}');
+            
+            let arrayRegistrosAscensores = [];
+
+            for(let id in guardado) {
+                let estadoLabel = "Desconocido";
+                if (guardado[id].clase === 'c-verde') estadoLabel = "Funcionando";
+                else if (guardado[id].clase === 'c-amarillo') estadoLabel = "Mantenimiento";
+                else if (guardado[id].clase === 'c-rojo') estadoLabel = "Fuera servicio";
+                else if (guardado[id].clase === 'c-mixto') estadoLabel = "Ascensorista";
+                
+                let nombreAsc = Number(id) <= 24 ? `Asc N° ${id}` : `Esc Mec. N° ${id}`;
+                
+                let infoAscensorista = '';
+                if (guardado[id].clase === 'c-mixto' && guardado[id].agentesLista) {
+                    let detallesArr = guardado[id].agentesLista.map(ag => `(Agente: ${ag.nombre || '-'} | Desde: ${ag.desde || '-'} Hasta: ${ag.hasta || '-'})`);
+                    infoAscensorista = ' ' + detallesArr.join(', ');
+                }
+                
+                tablaHTML += `<tr><td>${nombreAsc}</td><td>${estadoLabel}</td><td>${guardado[id].uso}</td><td>${infoAscensorista}</td></tr>`;
+
+                arrayRegistrosAscensores.push({
+                    fecha_cierre: fechaActual,
+                    turno: turnoActual,
+                    identificador_dispositivo: nombreAsc,
+                    estado: estadoLabel,
+                    observaciones: guardado[id].uso + infoAscensorista,
+                    legajo_operador: localStorage.getItem('usuario_legajo') || "Desconocido"
+                });
+            }
+            tablaHTML += `</tbody></table>`;
+            
+            const asistenciaPersonal = JSON.parse(localStorage.getItem('dsg_ascensores_asistencia_rrhh') || "{}");
+            
+            const cierre = { 
+                fecha_cierre: fechaActual, 
+                turno: turnoActual, 
+                departamento: deptoActual, 
+                supervisor: supervisorActual,
+                reporte_diario: editorReporte.innerHTML, 
+                tabla_operativa: tablaHTML, 
+                estados_ascensores: guardado, 
+                asistencia_personal: asistenciaPersonal,
+                timestamp: new Date().toISOString() 
+            };
+            
+            if (supabaseClient) {
+                const { error } = await supabaseClient.from('cierres_jornada').insert([cierre]);
+                if (error) {
+                    console.error("Error al guardar en Supabase:", error);
+                    if (error.code === '23505') {
+                        alert("⚠️ ATENCIÓN: Ya se ha registrado y cerrado la jornada para este turno en el día de la fecha. No se puede volver a cerrar.");
+                    } else {
+                        alert("Hubo un error al guardar en la base de datos cloud: " + (error.message || "Error desconocido"));
+                    }
+                    if (btnCierre) btnCierre.disabled = false;
+                    return;
+                }
+
+                if (arrayRegistrosAscensores.length > 0) {
+                    const { error: errAsc } = await supabaseClient.from('registros_ascensores').insert(arrayRegistrosAscensores);
+                    if (errAsc) {
+                        console.error("Error al guardar detalle en registros_ascensores:", errAsc);
+                    }
+                }
+
+                let agentesCierre = [];
+                const { data: agentesDB } = await supabaseClient.from('ascensores_personal').select('*').eq('turno', turnoActual);
+                if (agentesDB && agentesDB.length > 0) {
+                    agentesCierre = agentesDB;
+                } else if (typeof agentes !== 'undefined') {
+                    agentesCierre = agentes.filter(a => a.turno === turnoActual);
+                }
+
+                if (agentesCierre.length > 0) {
+                    let arrayAsistenciaRRHH = agentesCierre.map(ag => ({
+                        fecha: fechaActual,
+                        departamento: deptoActual,
+                        turno: turnoActual,
+                        legajo_empleado: ag.legajo,
+                        estado_asistencia: asistenciaPersonal[ag.legajo] || "Sin registrar",
+                        registrado_por: localStorage.getItem('usuario_legajo') || "Desconocido"
+                    }));
+
+                    const { error: errRrhh } = await supabaseClient.from('rrhh_asistencia').insert(arrayAsistenciaRRHH);
+                    if (errRrhh) {
+                        console.error("Error al guardar asistencia en rrhh_asistencia:", errRrhh);
+                    }
+                }
+            }
+            
+            let historial = JSON.parse(localStorage.getItem('historial_jornadas') || "[]");
+            historial.push(cierre);
+            localStorage.setItem('historial_jornadas', JSON.stringify(historial));
+            
+            localStorage.removeItem('dsg_ascensores_asistencia_rrhh');
+            localStorage.removeItem('dsg_ascensores_reporte');
+            localStorage.removeItem('dsg_ascensores_estados');
+            
+            editorReporte.innerHTML = "";
+            alert("Jornada cerrada correctamente en la base de datos.");
+            location.reload();
+        }
+
+        async function cargarHistoricos() {
+            const f = document.getElementById('filtro-fecha-hist').value; 
+            const t = document.getElementById('select-turno').value;
+            const tipo = document.getElementById('select-tipo').value;
+            const d = "Ascensores";
+            const visor = document.getElementById('contenedor-historicos');
+            
+            let reg = null;
+            if (supabaseClient) {
+                const { data, error } = await supabaseClient
+                    .from('cierres_jornada')
+                    .select('*')
+                    .eq('fecha_cierre', f)
+                    .eq('turno', t)
+                    .eq('departamento', d)
+                    .maybeSingle();
+                if (!error && data) {
+                    reg = {
+                        fecha: data.fecha_cierre,
+                        turno: data.turno,
+                        depto: data.departamento,
+                        reporte: data.reporte_diario,
+                        tabla: data.tabla_operativa,
+                        estadosAscensores: data.estados_ascensores,
+                        asistencia: data.asistencia_personal
+                    };
+                }
+            }
+
+            if (!reg) {
+                const hist = JSON.parse(localStorage.getItem('historial_jornadas') || "[]");
+                reg = hist.find(r => r.fecha === f && r.turno === t && r.depto === d);
+            }
+
+            if (!reg) {
+                visor.innerHTML = "<p style='color:red; font-size: 20px;'>NO SE ENCONTRÓ NADA.</p>";
+                return;
+            }
+
+            visor.style.display = "block";
+
+            if (tipo === 'reporte') {
+                const estiloRenglones = `background-image: linear-gradient(#e0e0e0 1px, transparent 1px); background-size: 100% 30px; line-height: 30px; padding-left: 10px; font-family: 'Courier New', Courier, monospace; min-height: 400px; white-space: pre-wrap; display: block;`;
+                visor.innerHTML = `
+                    <div style="border: 2px solid #1a3a5f; padding: 20px;">
+                        <h3>REPORTE ENCONTRADO</h3>
+                        <div style="${estiloRenglones}">${reg.reporte || 'Sin reporte.'}</div>
+                    </div>`;
+            } 
+            else if (tipo === 'planilla') {
+                visor.innerHTML = '<h3 style="font-size: 20px; font-weight: bold; margin-bottom: 15px;">Planilla Operativa (Modo Auditoría)</h3>' +
+                    `<div style="width: 100%;">${reg.tabla || 'Sin planilla.'}</div>` +
+                    `<style>` +
+                    `#contenedor-historicos th { background-color: #1a3a5f !important; color: white; padding: 15px; text-align: center; font-size: 16px; }` +
+                    `#contenedor-historicos td { padding: 12px; border: 1px solid #ccc; text-align: center; font-size: 15px; }` +
+                    `#contenedor-historicos tr:nth-child(even) { background-color: #f9f9f9; }` +
+                    `#contenedor-historicos button { display: none !important; }` +
+                    `#contenedor-historicos select, #contenedor-historicos input { pointer-events: none; -webkit-appearance: none; border: none; background: transparent; text-align: center; width: 100%; font-size: 15px; }` +
+                    `</style>`;
+            } 
+            else if (tipo === 'asistencia') {
+                if (reg.asistencia) {
+                    let p = 0, a = 0, l = 0;
+                    let rowsHTML = "";
+                    
+                    let agentesHist = [];
+                    if (supabaseClient) {
+                        const { data } = await supabaseClient.from('ascensores_personal').select('*');
+                        if (data) agentesHist = data;
+                    }
+                    if (agentesHist.length === 0 && typeof agentes !== 'undefined') {
+                        agentesHist = agentes;
+                    }
+
+                    agentesHist.forEach(ag => {
+                        const estado = reg.asistencia[ag.legajo] || "";
+                        if(estado === 'P') p++; else if(estado === 'A') a++; else if(estado === 'L') l++;
+                        
+                        rowsHTML += `
+                            <tr style="height: 40px;">
+                                <td style="border: 1px solid #1a3a5f; text-align: center;">${ag.legajo}</td>
+                                <td style="border: 1px solid #1a3a5f; padding-left: 10px;">${ag.apellido_y_nombre || ag.nombre}</td>
+                                <td style="border: 1px solid #1a3a5f; text-align: center;"><div class="celda-asistencia ${estado === 'P' ? 'estado-P' : ''}"></div></td>
+                                <td style="border: 1px solid #1a3a5f; text-align: center;"><div class="celda-asistencia ${estado === 'A' ? 'estado-A' : ''}"></div></td>
+                                <td style="border: 1px solid #1a3a5f; text-align: center;"><div class="celda-asistencia ${estado === 'L' ? 'estado-L' : ''}"></div></td>
+                            </tr>`;
+                    });
+
+                    const total = p + a + l || 1;
+                    visor.innerHTML = `
+                        <div style="border: 2px solid #1a3a5f; padding: 20px;">
+                            <h3>ASISTENCIA DE PERSONAL</h3>
+                            <table style="width: 100%; border-collapse: collapse; border: 2px solid #1a3a5f;">
+                                <thead style="background-color: #1a3a5f; color: white;">
+                                    <tr>
+                                        <th style="padding: 10px; border: 1px solid white;">LEGAJO</th>
+                                        <th style="padding: 10px; border: 1px solid white;">APELLIDO Y NOMBRE</th>
+                                        <th style="padding: 10px; border: 1px solid white;">PRESENTE</th>
+                                        <th style="padding: 10px; border: 1px solid white;">AUSENTE</th>
+                                        <th style="padding: 10px; border: 1px solid white;">LICENCIA</th>
+                                    </tr>
+                                </thead>
+                                <tbody>${rowsHTML}</tbody>
+                            </table>
+                            <div style="margin-top: 20px; background: #f9f9f9; padding: 15px; border: 1px solid #ddd; display: flex; justify-content: center; align-items: center; gap: 50px;">
+                                <div style="font-weight:bold; color: #1a3a5f; font-size: 16px; line-height: 2.0; display: flex; flex-direction: column;">
+                                    <div class="botonera-porcentaje">Presentismo: ${((p/total)*100).toFixed(1)}% (${p})</div>
+                                    <div class="botonera-porcentaje">Ausentismo: ${((a/total)*100).toFixed(1)}% (${a})</div>
+                                    <div class="botonera-porcentaje">Licencias: ${((l/total)*100).toFixed(1)}% (${l})</div>
+                                </div>
+                                <div style="width: 220px; height: 220px;">
+                                    <canvas id="graficoHistorico"></canvas>
+                                </div>
+                            </div>
+                        </div>`;
+                    if (total > 0) {
+                        const ctx = document.getElementById('graficoHistorico').getContext('2d');
+                        new Chart(ctx, {
+                            type: 'pie',
+                            data: {
+                                labels: ['Presentes', 'Ausentes', 'Licencias'],
+                                datasets: [{ data: [p, a, l], backgroundColor: ['#28a745', '#dc3545', '#ffc107'] }]
+                            },
+                            options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+                        });
+                    }
+                } else {
+                    visor.innerHTML = "No hay datos de asistencia.";
+                }
+            }
+        }
+
+        // --- FUNCIONES PARA CARGAR NOVEDADES Y RESOLUCIONES DESDE SUPABASE ---
+        async function cargarComunicadosMemos(tipoFiltro, contenedorId) {
+    const contenedor = document.getElementById(contenedorId);
+    if (!contenedor) return;
+
+    contenedor.innerHTML = "<p>Buscando comunicados y novedades en Supabase...</p>";
+
+    try {
+        if (!supabaseClient) {
+            contenedor.innerHTML = '<p style="color: #666;">No hay conexión a Supabase.</p>';
+            return;
+        }
+
+        const { data, error } = await supabaseClient
+            .from('comunicados_memos')
+            .select('*');
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+            contenedor.innerHTML = '<p style="color: #666;">No hay registros disponibles.</p>';
+            return;
+        }
+
+        // Filtramos por departamento (Ascensores / Todos)
+        const filtrados = data.filter(item => {
+            const clave = (item.id_clave || '').toLowerCase();
+            return clave.includes('ascensores') || clave.includes('todos');
+        });
+
+        if (filtrados.length === 0) {
+            contenedor.innerHTML = '<p style="color: #666;">No hay comunicaciones dirigidas a este sector.</p>';
+            return;
+        }
+
+        let html = '';
+        filtrados.forEach(item => {
+            const contenidoObj = item.contenido || {};
+            const texto = contenidoObj.texto || 'Sin contenido';
+            const fecha = contenidoObj.fecha || 'Sin fecha';
+            const turnoMsg = contenidoObj.turno || 'General';
+
+            let archivoHtml = "";
+            if (contenidoObj && contenidoObj.archivo && contenidoObj.archivo.data) {
+                let base64Data = contenidoObj.archivo.data;
+                let nombreArchivo = contenidoObj.archivo.name || "adjunto_descargable";
+                
+                let esImagen = base64Data.startsWith('data:image/') || 
+                               /\.(jpg|jpeg|png|gif|webp)$/i.test(nombreArchivo);
+
+                if (esImagen) {
+                    archivoHtml = `
+                        <div style="margin-top: 15px; text-align: center;">
+                            <div style="margin-bottom: 10px;">
+                                <img src="${base64Data}" alt="Archivo adjunto" style="max-width: 100%; max-height: 400px; border-radius: 6px; border: 1px solid #ddd; object-fit: contain;" />
+                            </div>
+                            <a href="${base64Data}" download="${nombreArchivo}" style="display: inline-block; background: #1a3a5f; color: #fff; padding: 8px 15px; border-radius: 4px; text-decoration: none; font-size: 14px; font-weight: 500;">
+                                📥 Descargar Imagen
+                            </a>
+                        </div>
+                    `;
+                } else {
+                    // Estructura corregida con flex-direction: column para que el texto secundario baje correctamente
+                    archivoHtml = `
+                        <div style="margin-top: 15px; background: #f8f9fa; border: 1px solid #ddd; padding: 12px 15px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px;">
+                            <div style="display: flex; align-items: center; gap: 14px; min-width: 0; flex: 1;">
+                                <span style="font-size: 32px; flex-shrink: 0; line-height: 1;">📄</span>
+                                <div style="min-width: 0; display: flex; flex-direction: column; gap: 3px;">
+                                    <strong style="font-size: 14px; color: #333; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${nombreArchivo}">${nombreArchivo}</strong>
+                                    <span style="font-size: 12px; color: #666; display: block;">Documento adjunto disponible para descarga</span>
+                                </div>
+                            </div>
+                            <a href="${base64Data}" download="${nombreArchivo}" style="background: #1a3a5f; color: #fff; padding: 8px 16px; border-radius: 4px; text-decoration: none; font-size: 14px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; flex-shrink: 0;">
+                                📥 Descargar Archivo
+                            </a>
+                        </div>
+                    `;
+                }
+            }
+
+            html += `
+                <div style="background: #fff; border-left: 5px solid #1a3a5f; border-top: 1px solid #ddd; border-right: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 20px; border-radius: 6px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 8px; flex-wrap: wrap; gap: 8px;">
+                        <strong style="color: #1a3a5f; font-size: 16px;">📢 Comunicado Oficial</strong>
+                        <span style="font-size: 12px; color: #666; background: #f1f1f1; padding: 4px 10px; border-radius: 4px;">Turno: ${turnoMsg} | Fecha: ${fecha} | <strong>Enviado por:</strong> Dirección de Servicios Generales</span>
+                    </div>
+                    <div style="font-size: 15px; color: #333; white-space: pre-wrap; line-height: 1.5; font-family: inherit;">${texto}</div>
+                    ${archivoHtml}
+                </div>`;
+        });
+
+        contenedor.innerHTML = html;
+
+    } catch (err) {
+        console.error("Error al cargar comunicados:", err);
+        contenedor.innerHTML = '<p style="color: red;">Error al sincronizar con la base de datos.</p>';
+    }
+}
+
+        window.onload = async () => {
+            const nombre = localStorage.getItem('usuario_nombre') || "Invitado"; 
+            const turno = localStorage.getItem('usuario_turno') || "Mañana";
+            const depto = "Ascensores";
+            
+            document.getElementById('nombre-supervisor-sidebar').innerText = nombre;
+            document.getElementById('display-nombre').innerText = nombre; 
+            document.getElementById('display-turno').innerText = turno; 
+            document.getElementById('display-depto').innerText = depto;
+            document.getElementById('display-nombre-rep').innerText = nombre; 
+            document.getElementById('display-turno-rep').innerText = turno; 
+            document.getElementById('display-depto-rep').innerText = depto;
+            document.getElementById('depto-hist-label').innerText = depto;
+            
+            let numeroHojaReal = 1;
+            if (supabaseClient) {
+                try {
+                    const { data: cierresPrevios, error } = await supabaseClient
+                        .from('cierres_jornada')
+                        .select('id')
+                        .eq('departamento', depto);
+
+                    if (!error && cierresPrevios) {
+                        numeroHojaReal = cierresPrevios.length + 1;
+                    } else {
+                        numeroHojaReal = parseInt(localStorage.getItem('dsg_ascensores_contador_hoja') || "1");
+                    }
+                } catch (err) {
+                    console.error("Error al consultar Supabase:", err);
+                    numeroHojaReal = parseInt(localStorage.getItem('dsg_ascensores_contador_hoja') || "1");
+                }
+            } else {
+                numeroHojaReal = parseInt(localStorage.getItem('dsg_ascensores_contador_hoja') || "1");
+            }
+
+            window.numeroHojaActual = numeroHojaReal;
+            const numeroHojaFormateado = String(numeroHojaReal).padStart(3, '0');
+            
+            ['num-hoja', 'numero-reporte', 'nro-hoja', 'numero-hoja'].forEach(idElemento => {
+                const el = document.getElementById(idElemento);
+                if (el) el.innerText = numeroHojaFormateado;
+            });
+            
+            editorReporte.innerHTML = localStorage.getItem('dsg_ascensores_reporte') || "";
+            await generarLista();
+            await cargarRRHH();
+            
+            // Cargar automáticamente las secciones de novedades y resoluciones
+            await cargarComunicadosMemos('novedades', 'contenedor-novedades');
+            await cargarComunicadosMemos('resoluciones', 'contenedor-resoluciones');
+        };
+
+        function mostrar(id, titulo) { 
+            document.querySelectorAll('.seccion').forEach(s => s.classList.remove('activo')); 
+            document.getElementById(id).classList.add('activo'); 
+            document.getElementById('titulo-panel').innerText = titulo; 
+        }
+    </script>
+</body>
+</html>

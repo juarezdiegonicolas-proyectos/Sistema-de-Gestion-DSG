@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Escritorio Lavadero - DSG</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { margin: 0; font-family: 'Roboto', sans-serif; display: flex; height: 100vh; background-color: #f4f1ea; }
+        .sidebar { width: 260px; background-color: #1a3a5f; color: white; padding: 25px 20px; display: flex; flex-direction: column; }
+        
+        .bienvenida-box { background-color: #2d5a8e; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; border: 1px solid #5d8dbb; }
+        .bienvenida-box h3 { margin: 0; font-size: 14px; font-weight: 300; color: #cce7ff; }
+        .bienvenida-box p { margin: 5px 0 0 0; font-size: 16px; font-weight: bold; }
+        .sidebar-header-title { min-height: 50px; margin-bottom: 15px; display: flex; align-items: center; }
+        .sidebar-header-title h2 { font-size: 20px; margin: 0; }
+        
+        .menu-links { flex: 1; }
+        .menu-item { display: block; color: #ddd; padding: 15px; text-decoration: none; border-bottom: 1px solid #5d8dbb; font-weight: 500; cursor: pointer; }
+        .menu-item:hover { background-color: #5d8dbb; color: white; }
+        .btn-accion-global { width: 100%; padding: 15px; margin-bottom: 10px; background: #28a745; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .btn-cerrar { margin-top: 10px; padding: 15px; background: #d32f2f; color: white; text-align: center; text-decoration: none; border-radius: 6px; font-weight: bold; }
+        .contenido { flex: 1; padding: 40px; overflow-y: auto; }
+        .seccion { display: none; background: white; padding: 40px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .seccion.activo { display: block; } 
+        .info-hoja { display: flex; justify-content: space-between; margin-bottom: 15px; font-weight: bold; color: #1a3a5f; align-items: center;}
+        
+        .hoja { background-color: #fff; padding: 0 40px; border: 1px solid #ccc; min-height: 900px; position: relative; }
+        
+        #editor-reporte { 
+            width: 100%; min-height: 900px; border: none; font-size: 18px; line-height: 30px; outline: none; font-family: 'Courier New', Courier, monospace; white-space: pre-wrap; word-wrap: break-word; 
+            background-image: linear-gradient(#e0e0e0 1px, transparent 1px); background-size: 100% 30px; padding-top: 30px;
+        }
+
+        .contenedor-observaciones { margin-top: 20px; width: 100%; box-sizing: border-box; }
+        .titulo-observaciones { background: #1a3a5f; color: white; padding: 8px 12px; font-weight: 500; font-size: 14px; border-radius: 6px 6px 0 0; }
+        #editor-observaciones { 
+            width: 100%; min-height: 180px; border: 1px solid #000; border-top: none; font-size: 18px; line-height: 30px; outline: none; font-family: 'Courier New', Courier, monospace; white-space: pre-wrap; word-wrap: break-word; 
+            background-image: linear-gradient(#e0e0e0 1px, transparent 1px); background-size: 100% 30px; padding-top: 30px; padding-left: 10px; padding-right: 10px; border-radius: 0 0 6px 6px; box-sizing: border-box; overflow-y: auto;
+        }
+        
+        .tabla-lavadero { width: 100%; border-collapse: collapse; margin-top: 10px; table-layout: fixed; }
+        .tabla-lavadero th, .tabla-lavadero td { border: 1px solid #000; padding: 6px; text-align: center; word-wrap: break-word; overflow: hidden; }
+        
+        .tabla-lavadero th { background-color: #1a3a5f; color: white; height: 22px; font-size: 13px; font-weight: 500; letter-spacing: 0.5px; }
+        
+        .col-btn { width: 45px; }
+        .col-hora { width: 90px; }
+        .col-tipo { width: 22%; }
+        .col-cant { width: 15%; }
+        .col-procedencia { width: 20%; }
+        .col-estado { width: 15%; }
+        .col-operario { width: 18%; }
+
+        .input-c { width: 100%; border: none; text-align: center; font-family: inherit; font-size: 13px; background: transparent; outline: none; box-sizing: border-box; cursor: pointer; }
+        .input-fecha, .input-select { border: 1px solid #ccc; padding: 8px; border-radius: 4px; font-family: inherit; cursor: pointer; }
+        .btn-borrar { background: red; color: white; border: none; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; }
+        .area-acciones { margin-top: 20px; display: flex; gap: 10px; }
+        .btn-gestion { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; }
+        .btn-imprimir { background: #6c757d; color: white; }
+        #info-supervisor { margin-bottom: 20px; color: #1a3a5f; font-weight: bold; border: 1px solid #ddd; padding: 10px; border-radius: 6px; background: #f9f9f9; }
+        .header-logos { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+        .header-logos img { height: 110px; width: auto; object-fit: contain; }
+        .filtros-historicos { display: flex; gap: 15px; background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #eee; align-items: center; }
+        .celda-asistencia { cursor: pointer; width: 25px; height: 25px; border: 2px solid #333; display: inline-block; transition: background 0.3s; margin: auto; }
+        .estado-P { background-color: #28a745 !important; }
+        .estado-A { background-color: #dc3545 !important; }
+        .estado-L { background-color: #ffc107 !important; }
+        .botonera-porcentaje { background-color: #1a3a5f; color: white; padding: 12px 20px; border-radius: 8px; font-weight: bold; margin-bottom: 10px; display: inline-block; width: 250px; text-align: left; }
+
+        @media print {
+            .sidebar, .btn-accion-global, .btn-cerrar, .menu-item, .no-imprimir, .btn-imprimir, .btn-borrar { display: none !important; }
+            #planillas .tabla-lavadero th:first-child, #planillas .tabla-lavadero td:first-child { display: none !important; }
+            body, html, .contenido, .seccion.activo, .hoja { background-color: white !important; margin: 0 !important; padding: 0 !important; width: 100% !important; height: auto !important; overflow: visible !important; box-shadow: none !important; display: block !important; }
+            .seccion { display: none !important; } .seccion.activo { display: block !important; } 
+            .hoja { border: none !important; min-height: auto !important; }
+            #editor-reporte, #editor-observaciones { background-image: linear-gradient(#e0e0e0 1px, transparent 1px); background-size: 100% 30px; line-height: 30px; -webkit-print-color-adjust: exact; print-color-adjust: exact; overflow: visible !important; height: auto !important; min-height: auto !important; }
+        }
+        @page { size: auto; margin: 1cm; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="bienvenida-box">
+            <h3>Bienvenido Agente:</h3>
+            <p id="nombre-supervisor-sidebar">---</p>
+        </div>
+        <div class="sidebar-header-title">
+            <h2>Panel <span id="titulo-panel">Lavadero</span></h2>
+        </div>
+        <div class="menu-links">
+            <div class="menu-item" onclick="mostrar('reportes', 'Reportes')">📊 Reportes</div>
+            <div class="menu-item" onclick="mostrar('planillas', 'Planillas (Operativa)')">🛠 Planillas (Operativa)</div>
+            <div class="menu-item" onclick="mostrar('historicos', 'Registros Históricos')">📂 Registros Históricos</div>
+            <div class="menu-item" onclick="mostrar('novedades', 'Novedades')">📢 Novedades</div>
+            <div class="menu-item" onclick="mostrar('rrhh', 'RR.HH.')">👥 RR.HH.</div>
+            <div class="menu-item" onclick="mostrar('resoluciones', 'Resoluciones')">⚖️ Resoluciones</div>
+        </div>
+        <button class="btn-accion-global" onclick="cerrarJornadaGlobal()">📥 CERRAR JORNADA</button>
+        <a href="index.html" class="btn-cerrar">CERRAR SESIÓN</a>
+    </div>
+
+    <div class="contenido">
+        <div id="reportes" class="seccion activo">
+            <div class="header-logos">
+                <img src="logo_hospi.png" alt="Logo Hospital">
+                <h1 style="margin: 0; text-align: center; flex: 1;">Reportes</h1>
+                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+            </div>
+            <div id="info-supervisor">Supervisor: <span id="display-nombre-rep">---</span> | Turno: <span id="display-turno-rep">---</span> | Depto: <span id="display-depto-rep">---</span></div>
+            <div class="info-hoja">
+                <span>Fecha: <input type="date" id="fecha-reporte" class="input-fecha" onchange="guardarDatos()"></span>
+                <span>Hoja N°: <span id="numero-hoja">001</span></span>
+            </div>
+            <div class="hoja">
+                <div id="editor-reporte" contenteditable="true" oninput="guardarDatos()"></div>
+            </div>
+            <div class="area-acciones"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button></div>
+        </div>
+
+        <div id="planillas" class="seccion">
+            <div class="header-logos">
+                <img src="logo_hospi.png" alt="Logo Hospital">
+                <h1 style="margin: 0; text-align: center; flex: 1; font-size: 26px;">Planilla Operativa - Lavadero</h1>
+                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+            </div>
+            <div id="info-supervisor">Supervisor: <span id="display-nombre">---</span> | Turno: <span id="display-turno">---</span> | Depto: <span id="display-depto">---</span></div>
+            
+            <div class="info-hoja" style="margin-bottom: 15px;">
+                <span>Fecha: <input type="date" id="fecha-planilla" class="input-fecha" onchange="guardarDatos()"></span>
+            </div>
+
+            <table class="tabla-lavadero" id="tabla-exportar">
+                <thead>
+                    <tr>
+                        <th class="col-btn"></th>
+                        <th class="col-hora">HORA</th>
+                        <th class="col-tipo">TIPO DE ROPA</th>
+                        <th class="col-cant">CANTIDAD (KG)</th>
+                        <th class="col-procedencia">PROCEDENCIA</th>
+                        <th class="col-hora">ESTADÍA</th>
+                        <th class="col-estado">ESTADO</th>
+                        <th class="col-operario">OPERARIO</th>
+                    </tr>
+                </thead>
+                <tbody id="cuerpo-tabla" onkeydown="detectarEnter(event)"></tbody>
+            </table>
+            
+            <div class="contenedor-observaciones">
+                <div class="titulo-observaciones">Observaciones:</div>
+                <div id="editor-observaciones" contenteditable="true" oninput="guardarDatos()"></div>
+            </div>
+
+            <div class="area-acciones"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button></div>
+        </div>
+
+        <div id="historicos" class="seccion">
+            <div class="header-logos">
+                <img src="logo_hospi.png" alt="Logo Hospital">
+                <h1 style="margin: 0; text-align: center; flex: 1;">Registros Históricos</h1>
+                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+            </div>
+            <div id="info-supervisor">Departamento: <span id="depto-hist-label">---</span></div>
+            <div class="filtros-historicos">
+                <select id="select-depto" class="input-select" disabled>
+                    <option value="Lavadero">Lavadero</option>
+                </select>
+                <select id="select-tipo" class="input-select">
+                    <option value="planilla">Planilla Operativa</option>
+                    <option value="reporte">Reporte Diario</option>
+                    <option value="asistencia">Asistencia de Personal</option>
+                </select>
+                <select id="select-turno" class="input-select">
+                    <option value="Mañana">Turno Mañana</option>
+                    <option value="Tarde">Turno Tarde</option>
+                    <option value="Noche A">Turno Noche A</option>
+                    <option value="Noche B">Turno Noche B</option>
+                    <option value="Sadofe">Sadofe</option>
+                </select>
+                <input type="date" id="filtro-fecha-hist" class="input-fecha">
+                <button class="btn-gestion no-imprimir" style="background: #1a3a5f; color: white;" onclick="cargarHistoricos()">Buscar Registros</button>
+            </div>
+            <div id="contenedor-historicos" style="border: 1px solid #ccc; padding: 20px; border-radius: 8px;">
+                <p>Selecciona filtros y presiona "Buscar" para visualizar registros.</p>
+            </div>
+            <div class="area-acciones"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir Resultados</button></div>
+        </div>
+        
+        <div id="novedades" class="seccion">
+            <div class="header-logos">
+                <img src="logo_hospi.png" alt="Logo Hospital">
+                <h1 style="margin: 0; text-align: center; flex: 1;">Novedades</h1>
+                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+            </div>
+        </div>
+
+        <div id="rrhh" class="seccion">
+            <div class="header-logos">
+                <img src="logo_hospi.png" alt="Logo Hospital">
+                <h1 style="margin: 0; text-align: center; flex: 1;">Personal - Turno: <span id="display-turno-rrhh">---</span></h1>
+                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+            </div>
+            <table class="tabla-lavadero" style="table-layout: auto;">
+                <thead><tr><th>LEGAJO</th><th>APELLIDO Y NOMBRE</th><th>PRESENTE</th><th>AUSENTE</th><th>LICENCIA</th></tr></thead>
+                <tbody id="cuerpo-rrhh"></tbody>
+            </table>
+            <div class="area-acciones">
+                <button class="btn-gestion no-imprimir" style="background: #28a745; color: white;" onclick="guardarAsistencia()">💾 Guardar Asistencia</button>
+                <button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
+            </div>
+            
+            <div style="margin-top: 30px; text-align: center; color: #1a3a5f; font-weight: bold; font-size: 20px; margin-bottom: 10px;">Control de Asistencia</div>
+            <div style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #ddd; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; justify-content: center; align-items: center; gap: 50px;">
+                <div id="resumen-rrhh" style="font-weight:bold; color: #1a3a5f; font-size: 16px; line-height: 2.0; display: flex; flex-direction: column;"></div>
+                <div style="width: 220px; height: 220px;">
+                    <canvas id="graficoRRHH"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div id="resoluciones" class="seccion">
+            <div class="header-logos">
+                <img src="logo_hospi.png" alt="Logo Hospital">
+                <h1 style="margin: 0; text-align: center; flex: 1;">Resoluciones</h1>
+                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const cuerpoTabla = document.getElementById('cuerpo-tabla');
+        const editorReporte = document.getElementById('editor-reporte');
+        const editorObservaciones = document.getElementById('editor-observaciones');
+        const spanHoja = document.getElementById('numero-hoja');
+        const inputFecha = document.getElementById('fecha-reporte');
+        const inputFechaPlanilla = document.getElementById('fecha-planilla');
+        let chartRRHH;
+
+        const agentesBase = [
+            {legajo:"999999", nombre:"EJEMPLO OPERARIO LAVADERO", turno:"Mañana"}
+        ];
+        let usuariosRegistrados = JSON.parse(localStorage.getItem('usuarios_sistema') || "[]");
+        let agentes = agentesBase.concat(usuariosRegistrados.filter(u => u.depto === "Lavadero" || u.depto === "Lavadero Central" || !u.depto));
+
+        function obtenerFechaHoyISO() { return new Date().toISOString().split('T')[0]; }
+
+        let contadorHoja = parseInt(localStorage.getItem('dsg_lavadero_contador_hoja')) || 1;
+        spanHoja.innerText = String(contadorHoja).padStart(3, '0');
+        inputFecha.value = localStorage.getItem('dsg_lavadero_fecha') || obtenerFechaHoyISO();
+        inputFechaPlanilla.value = localStorage.getItem('dsg_lavadero_fecha_planilla') || obtenerFechaHoyISO();
+        document.getElementById('filtro-fecha-hist').value = obtenerFechaHoyISO();
+
+        function actualizarGraficoRRHH(p, a, l) {
+            const ctx = document.getElementById('graficoRRHH').getContext('2d');
+            if (chartRRHH) chartRRHH.destroy();
+            chartRRHH = new Chart(ctx, {
+                type: 'pie',
+                data: { labels: ['Presentes', 'Ausentes', 'Licencias'], datasets: [{ data: [p, a, l], backgroundColor: ['#28a745', '#dc3545', '#ffc107'] }] },
+                options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+            });
+        }
+
+        function cargarRRHH() {
+            const body = document.getElementById('cuerpo-rrhh');
+            const turnoActual = localStorage.getItem('usuario_turno') || "Mañana";
+            document.getElementById('display-turno-rrhh').innerText = turnoActual;
+            const filtrados = agentes.filter(a => a.turno === turnoActual);
+            const asistenciasGuardadas = JSON.parse(localStorage.getItem('dsg_lavadero_asistencia_rrhh') || "{}");
+            body.innerHTML = '';
+            let p=0, a=0, l=0;
+            filtrados.forEach(agent => {
+                const estado = asistenciasGuardadas[agent.legajo] || "";
+                if(estado === 'P') p++; else if(estado === 'A') a++; else if(estado === 'L') l++;
+                body.innerHTML += `<tr><td>${agent.legajo}</td><td>${agent.nombre}</td>
+                    <td><div class="celda-asistencia ${estado === 'P' ? 'estado-P' : ''}" id="P-${agent.legajo}" onclick="marcar('${agent.legajo}', 'P')"></div></td>
+                    <td><div class="celda-asistencia ${estado === 'A' ? 'estado-A' : ''}" id="A-${agent.legajo}" onclick="marcar('${agent.legajo}', 'A')"></div></td>
+                    <td><div class="celda-asistencia ${estado === 'L' ? 'estado-L' : ''}" id="L-${agent.legajo}" onclick="marcar('${agent.legajo}', 'L')"></div></td>
+                    <input type="hidden" id="estado-${agent.legajo}" value="${estado}"></tr>`;
+            });
+            if(p+a+l > 0) {
+                document.getElementById('resumen-rrhh').innerHTML = 
+                    `<div class="botonera-porcentaje">Presentismo: ${((p/(p+a+l))*100).toFixed(1)}% (${p})</div>
+                     <div class="botonera-porcentaje">Ausentismo: ${((a/(p+a+l))*100).toFixed(1)}% (${a})</div>
+                     <div class="botonera-porcentaje">Licencias: ${((l/(p+a+l))*100).toFixed(1)}% (${l})</div>`;
+                actualizarGraficoRRHH(p, a, l);
+            }
+        }
+
+        function marcar(legajo, estado) {
+            ['P', 'A', 'L'].forEach(e => document.getElementById(`${e}-${legajo}`).className = 'celda-asistencia');
+            document.getElementById(`${estado}-${legajo}`).className = `celda-asistencia estado-${estado}`;
+            document.getElementById(`estado-${legajo}`).value = estado;
+        }
+
+        function guardarAsistencia() {
+            let registro = {}, presentes = 0, ausentes = 0, licencias = 0;
+            const turnoActual = localStorage.getItem('usuario_turno') || "Mañana";
+            const agentesTurno = agentes.filter(a => a.turno === turnoActual);
+            const totalAgentes = agentesTurno.length;
+
+            if (totalAgentes === 0) {
+                alert("No hay agentes cargados para este turno.");
+                return;
+            }
+
+            agentesTurno.forEach(a => {
+                let val = document.getElementById(`estado-${a.legajo}`).value;
+                registro[a.legajo] = val;
+                if (val === 'P') presentes++;
+                else if (val === 'A') ausentes++;
+                else if (val === 'L') licencias++;
+            });
+
+            let noMarcados = totalAgentes - (presentes + ausentes + licencias);
+            if (noMarcados > 0) {
+                alert("¡Atención! Falta cargar la totalidad de los agentes. Hay " + noMarcados + " agentes sin estado asignado.");
+                return;
+            }
+
+            let pP = ((presentes / totalAgentes) * 100).toFixed(1);
+            let pA = ((ausentes / totalAgentes) * 100).toFixed(1);
+            let pL = ((licencias / totalAgentes) * 100).toFixed(1);
+
+            localStorage.setItem('dsg_lavadero_asistencia_rrhh', JSON.stringify(registro));
+            
+            document.getElementById('resumen-rrhh').innerHTML = 
+                `<div class="botonera-porcentaje">Presentismo: ${pP}% (${presentes})</div>
+                 <div class="botonera-porcentaje">Ausentismo: ${pA}% (${ausentes})</div>
+                 <div class="botonera-porcentaje">Licencias: ${pL}% (${licencias})</div>`;
+            actualizarGraficoRRHH(presentes, ausentes, licencias);
+            
+            alert(`¡Asistencia completa!\nPresentismo: ${pP}%\nAusentismo: ${pA}%\nLicencias: ${pL}%`);
+        }
+
+        function guardarDatos() {
+            document.querySelectorAll('#cuerpo-tabla select').forEach(sel => {
+                sel.querySelectorAll('option').forEach(opt => {
+                    if (opt.value === sel.value) opt.setAttribute('selected', 'selected');
+                    else opt.removeAttribute('selected');
+                });
+            });
+            document.querySelectorAll('#cuerpo-tabla input').forEach(inp => {
+                inp.setAttribute('value', inp.value);
+            });
+
+            localStorage.setItem('dsg_lavadero_tabla', cuerpoTabla.innerHTML);
+            localStorage.setItem('dsg_lavadero_reporte', editorReporte.innerHTML);
+            localStorage.setItem('dsg_lavadero_observaciones', editorObservaciones.innerHTML);
+            localStorage.setItem('dsg_lavadero_fecha', inputFecha.value);
+            localStorage.setItem('dsg_lavadero_fecha_planilla', inputFechaPlanilla.value);
+        }
+
+        function cerrarJornadaGlobal() {
+            if (!confirm("¿Cerrar jornada? Se consolidarán los datos.")) return;
+            guardarDatos();
+            
+            const tablaConsolidada = `<table class="tabla-lavadero" border="1"><thead><tr><th>HORA</th><th>TIPO DE ROPA</th><th>CANTIDAD (KG)</th><th>PROCEDENCIA</th><th>ESTADÍA</th><th>ESTADO</th><th>OPERARIO</th></tr></thead><tbody>${cuerpoTabla.innerHTML.replace(/<td><button[^>]*>.*?<\/button><\/td>/g, '')}</tbody></table>`;
+            const obsConsolidada = `<div style="margin-top:20px; border:1px solid #000; padding:15px;"><strong>Observaciones:</strong><p>${editorObservaciones.innerHTML}</p></div>`;
+
+            const cierre = { 
+                fecha: inputFechaPlanilla.value, 
+                turno: localStorage.getItem('usuario_turno') || "Mañana", 
+                depto: "Lavadero", 
+                reporte: editorReporte.innerHTML, 
+                tabla: tablaConsolidada + obsConsolidada, 
+                asistencia: JSON.parse(localStorage.getItem('dsg_lavadero_asistencia_rrhh') || "{}"), 
+                timestamp: new Date().toISOString() 
+            };
+            
+            let historial = JSON.parse(localStorage.getItem('historial_jornadas') || "[]");
+            historial.push(cierre);
+            localStorage.setItem('historial_jornadas', JSON.stringify(historial));
+            localStorage.setItem('dsg_lavadero_contador_hoja', contadorHoja + 1);
+            
+            localStorage.removeItem('dsg_lavadero_asistencia_rrhh');
+            localStorage.removeItem('dsg_lavadero_reporte');
+            localStorage.removeItem('dsg_lavadero_tabla');
+            localStorage.removeItem('dsg_lavadero_observaciones');
+            
+            editorReporte.innerHTML = "";
+            editorObservaciones.innerHTML = "";
+            location.reload();
+        }
+
+        function cargarHistoricos() {
+            const f = document.getElementById('filtro-fecha-hist').value; 
+            const t = document.getElementById('select-turno').value;
+            const tipo = document.getElementById('select-tipo').value;
+            const d = "Lavadero";
+            const visor = document.getElementById('contenedor-historicos');
+            
+            const hist = JSON.parse(localStorage.getItem('historial_jornadas') || "[]");
+            const reg = hist.find(r => r.fecha === f && r.turno === t && r.depto === d);
+
+            if (!reg) {
+                visor.innerHTML = "No se encontraron registros.";
+                return;
+            }
+
+            if (tipo === 'reporte') {
+                const estiloRenglones = `background-image: linear-gradient(#e0e0e0 1px, transparent 1px); background-size: 100% 30px; line-height: 30px; padding-left: 10px; font-family: 'Courier New', Courier, monospace; min-height: 400px; white-space: pre-wrap; display: block;`;
+                visor.innerHTML = `
+                    <div style="border: 2px solid #1a3a5f; padding: 20px;">
+                        <h3>REPORTE ENCONTRADO</h3>
+                        <div style="${estiloRenglones}">${reg.reporte || 'Sin reporte.'}</div>
+                    </div>`;
+            } 
+            else if (tipo === 'planilla') {
+                visor.innerHTML = '<h3 style="font-size: 20px; font-weight: bold; margin-bottom: 15px;">Planilla Operativa (Modo Auditoría)</h3>' +
+                    `<div style="width: 100%;">${reg.tabla || 'Sin planilla.'}</div>` +
+                    `<style>` +
+                    `#contenedor-historicos th { background-color: #1a3a5f !important; color: white; padding: 15px; text-align: center; font-size: 13px; }` +
+                    `#contenedor-historicos td { padding: 10px; border: 1px solid #ccc; text-align: center; font-size: 13px; }` +
+                    `#contenedor-historicos tr:nth-child(even) { background-color: #f9f9f9; }` +
+                    `#contenedor-historicos button { display: none !important; }` +
+                    `#contenedor-historicos select, #contenedor-historicos input { border: none; background: transparent; text-align: center; width: 100%; font-size: 13px; pointer-events: none; }` +
+                    `</style>`;
+            } 
+            else if (tipo === 'asistencia') {
+                if (reg.asistencia) {
+                    let p = 0, a = 0, l = 0;
+                    let rowsHTML = "";
+                    
+                    agentes.forEach(ag => {
+                        const estado = reg.asistencia[ag.legajo] || "";
+                        if(estado === 'P') p++; else if(estado === 'A') a++; else if(estado === 'L') l++;
+                        
+                        rowsHTML += `
+                            <tr style="height: 40px;">
+                                <td style="border: 1px solid #1a3a5f; text-align: center;">${ag.legajo}</td>
+                                <td style="border: 1px solid #1a3a5f; padding-left: 10px;">${ag.nombre}</td>
+                                <td style="border: 1px solid #1a3a5f; text-align: center;"><div class="celda-asistencia ${estado === 'P' ? 'estado-P' : ''}"></div></td>
+                                <td style="border: 1px solid #1a3a5f; text-align: center;"><div class="celda-asistencia ${estado === 'A' ? 'estado-A' : ''}"></div></td>
+                                <td style="border: 1px solid #1a3a5f; text-align: center;"><div class="celda-asistencia ${estado === 'L' ? 'estado-L' : ''}"></div></td>
+                            </tr>`;
+                    });
+
+                    const total = p + a + l || 1;
+                    visor.innerHTML = `
+                        <div style="border: 2px solid #1a3a5f; padding: 20px;">
+                            <h3>ASISTENCIA DE PERSONAL REGISTRADA</h3>
+                            <p><b>Presentismo:</b> ${((p/total)*100).toFixed(1)}% (${p}) | <b>Ausentismo:</b> ${((a/total)*100).toFixed(1)}% (${a}) | <b>Licencias:</b> ${((l/total)*100).toFixed(1)}% (${l})</p>
+                            <table class="tabla-lavadero" style="margin-top: 15px;">
+                                <thead><tr><th>LEGAJO</th><th>APELLIDO Y NOMBRE</th><th>PRESENTE</th><th>AUSENTE</th><th>LICENCIA</th></tr></thead>
+                                <tbody>${rowsHTML}</tbody>
+                            </table>
+                        </div>`;
+                } else {
+                    visor.innerHTML = "No hay registros de asistencia para esta jornada.";
+                }
+            }
+        }
+
+        window.onload = () => {
+            const nombre = localStorage.getItem('usuario_nombre') || "Invitado"; 
+            const turno = localStorage.getItem('usuario_turno') || "Mañana"; 
+            const depto = "Lavadero";
+            
+            document.getElementById('nombre-supervisor-sidebar').innerText = nombre;
+            document.getElementById('display-nombre').innerText = nombre; 
+            document.getElementById('display-turno').innerText = turno; 
+            document.getElementById('display-depto').innerText = depto;
+            document.getElementById('display-nombre-rep').innerText = nombre; 
+            document.getElementById('display-turno-rep').innerText = turno; 
+            document.getElementById('display-depto-rep').innerText = depto;
+            document.getElementById('depto-hist-label').innerText = depto;
+            
+            const tablaGuardada = localStorage.getItem('dsg_lavadero_tabla');
+            if (tablaGuardada && tablaGuardada.includes('col-hora')) {
+                cuerpoTabla.innerHTML = tablaGuardada;
+            } else {
+                cuerpoTabla.innerHTML = '<tr>' + crearFilaHTML() + '</tr>';
+            }
+
+            editorReporte.innerHTML = localStorage.getItem('dsg_lavadero_reporte') || "";
+            editorObservaciones.innerHTML = localStorage.getItem('dsg_lavadero_observaciones') || "";
+            cargarRRHH();
+        };
+
+        function crearFilaHTML() { 
+            return '<td><button class="btn-borrar" onclick="borrarFila(this)">X</button></td>' +
+                   '<td><input class="input-c" type="time" value="" onchange="guardarDatos()"></td>' +
+                   '<td><input class="input-c" type="text" value="" oninput="guardarDatos()"></td>' +
+                   '<td><input class="input-c" type="text" value="" oninput="guardarDatos()"></td>' +
+                   '<td><input class="input-c" type="text" value="" oninput="guardarDatos()"></td>' +
+                   '<td><input class="input-c" type="time" value="" onchange="guardarDatos()"></td>' +
+                   '<td><input class="input-c" type="text" value="" oninput="guardarDatos()"></td>' +
+                   '<td><input class="input-c" type="text" value="" oninput="guardarDatos()"></td>'; 
+        }
+
+        function borrarFila(btn) {
+            const fila = btn.closest('tr');
+            if (cuerpoTabla.rows.length > 1) {
+                fila.remove();
+                guardarDatos();
+            } else {
+                fila.querySelectorAll('input').forEach(i => { i.value = ''; });
+                guardarDatos();
+            }
+        }
+
+        function detectarEnter(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const nuevaFila = cuerpoTabla.insertRow();
+                nuevaFila.innerHTML = crearFilaHTML();
+                guardarDatos();
+                const primerInput = nuevaFila.querySelector('input');
+                if (primerInput) primerInput.focus();
+            }
+        }
+
+        function mostrar(idSeccion, titulo) {
+            document.querySelectorAll('.seccion').forEach(s => s.classList.remove('activo'));
+            document.getElementById(idSeccion).classList.add('activo');
+            document.getElementById('titulo-panel').innerText = titulo;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,965 @@
+<!DOCTYPE html><html lang="es"><head>
+    <meta charset="UTF-8">
+    <title>Escritorio Camilleros - DSG</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Incluir Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { margin: 0; font-family: 'Roboto', sans-serif; display: flex; height: 100vh; background-color: #f4f1ea; overflow: hidden; }
+        .sidebar { width: 260px; background-color: #1a3a5f; color: white; padding: 15px 15px; display: flex; flex-direction: column; flex-shrink: 0; height: 100vh; box-sizing: border-box; overflow: hidden; }
+        
+        .bienvenida-box { background-color: #2d5a8e; padding: 10px; border-radius: 8px; margin-bottom: 12px; text-align: center; border: 1px solid #5d8dbb; flex-shrink: 0; }
+        .bienvenida-box h3 { margin: 0; font-size: 13px; font-weight: 300; color: #cce7ff; }
+        .bienvenida-box p { margin: 3px 0 0 0; font-size: 15px; font-weight: bold; }
+        
+        .sidebar-header-title { min-height: 40px; margin-bottom: 8px; display: flex; align-items: center; flex-shrink: 0; }
+        .sidebar-header-title h2 { font-size: 18px; margin: 0; line-height: 1.2; }
+
+        .menu-links { flex: 1; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; margin-bottom: 8px; }
+        .menu-item { display: flex; align-items: center; color: #ddd; padding: 10px 12px; text-decoration: none; border-bottom: 1px solid rgba(93, 141, 187, 0.3); font-weight: 500; cursor: pointer; font-size: 15px; transition: background 0.2s, color 0.2s; border-radius: 4px; }
+        .menu-item:hover { background-color: #5d8dbb; color: white; }
+        
+        .sidebar-footer { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; padding-top: 5px; }
+        .btn-accion-global { width: 100%; padding: 10px; background: linear-gradient(135deg, #28a745, #218838); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: opacity 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .btn-accion-global:hover { opacity: 0.9; }
+        .btn-cerrar { width: 100%; padding: 10px; background: linear-gradient(135deg, #d32f2f, #c62828); color: white; text-align: center; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); box-sizing: border-box; display: flex; align-items: center; justify-content: center; gap: 6px; transition: opacity 0.2s; }
+        .btn-cerrar:hover { opacity: 0.9; }
+
+        .contenido { flex: 1; padding: 40px; overflow-y: auto; height: 100vh; box-sizing: border-box; }
+        .seccion { display: none; background: white; padding: 40px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .seccion.activo { display: block; } 
+        .info-hoja { display: flex; justify-content: space-between; margin-bottom: 15px; font-weight: bold; color: #1a3a5f; align-items: center;}
+        
+        .hoja { background-color: #fff; padding: 0 40px; border: 1px solid #ccc; min-height: 900px; position: relative; }
+        
+        #editor-reporte { 
+            width: 100%; 
+            min-height: 900px; 
+            border: none; 
+            font-size: 18px; 
+            line-height: 30px; 
+            outline: none; 
+            font-family: 'Courier New', Courier, monospace; 
+            white-space: pre-wrap; 
+            word-wrap: break-word; 
+            background-image: linear-gradient(#e0e0e0 1px, transparent 1px);
+            background-size: 100% 30px;
+            padding-top: 30px;
+        }
+
+        .contenedor-observaciones { margin-top: 20px; width: 100%; box-sizing: border-box; }
+        .titulo-observaciones { background: #1a3a5f; color: white; padding: 8px 12px; font-weight: 500; font-size: 14px; border-radius: 6px 6px 0 0; }
+        #editor-observaciones { 
+            width: 100%; 
+            min-height: 180px; 
+            border: 1px solid #000; 
+            border-top: none; 
+            font-size: 18px; 
+            line-height: 30px; 
+            outline: none; 
+            font-family: 'Courier New', Courier, monospace; 
+            white-space: pre-wrap; 
+            word-wrap: break-word; 
+            background-image: linear-gradient(#e0e0e0 1px, transparent 1px); 
+            background-size: 100% 30px; 
+            padding-top: 30px; 
+            padding-left: 10px; 
+            padding-right: 10px; 
+            border-radius: 0 0 6px 6px; 
+            box-sizing: border-box; 
+            overflow-y: auto; 
+        }
+        
+        .tabla-camilleros { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; table-layout: fixed; }
+        .tabla-camilleros th, .tabla-camilleros td { border: 1px solid #000; padding: 8px 6px; text-align: center; word-wrap: break-word; vertical-align: middle; }
+        .tabla-camilleros th { background-color: #1a3a5f; color: white; height: 40px; font-size: 13px; }
+        .col-hora { width: 95px; }
+        
+        .input-c { width: 95%; border: none; text-align: center; background: transparent; outline: none; font-family: inherit; font-size: 13px; }
+        .input-fecha, .input-select { border: 1px solid #ccc; padding: 8px; border-radius: 4px; font-family: inherit; cursor: pointer; }
+        
+        .tabla-camilleros select.input-movilidad, 
+        .tabla-camilleros select.input-personal {
+            padding: 6px 18px 6px 6px;
+            font-size: 13px;
+            text-overflow: ellipsis;
+            width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background: #fff;
+        }
+        
+        .input-estancia, .input-finalizacion {
+            padding: 6px 4px !important;
+            font-size: 13px !important;
+            letter-spacing: 0.5px;
+            border: none !important;
+            background: transparent !important;
+            outline: none !important;
+            width: 90px;
+            text-align: center;
+        }
+
+        .btn-borrar { background: red; color: white; border: none; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; }
+        .area-acciones { margin-top: 20px; display: flex; gap: 10px; }
+        .btn-gestion { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; }
+        .btn-imprimir { background: #6c757d; color: white; }
+        #info-supervisor { margin-bottom: 20px; color: #1a3a5f; font-weight: bold; border: 1px solid #ddd; padding: 10px; border-radius: 6px; background: #f9f9f9; }
+        .header-logos { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+        .header-logos img { height: 110px; width: auto; object-fit: contain; }
+        .filtros-historicos { display: flex; gap: 15px; background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #eee; align-items: center; }
+        .celda-asistencia { cursor: pointer; width: 25px; height: 25px; border: 2px solid #333; display: inline-block; transition: background 0.3s; margin: auto; }
+        .estado-P { background-color: #28a745 !important; }
+        .estado-A { background-color: #dc3545 !important; }
+        .estado-L { background-color: #ffc107 !important; }
+        .botonera-porcentaje { background-color: #1a3a5f; color: white; padding: 12px 20px; border-radius: 8px; font-weight: bold; margin-bottom: 10px; display: inline-block; width: 250px; text-align: left; }
+
+        #rrhh .tabla-camilleros { width: 99.5% !important; border-right: 1px solid #000 !important; }
+
+        @media print {
+            .sidebar, .btn-accion-global, .btn-cerrar, .menu-item, .no-imprimir, .btn-imprimir, .btn-borrar { display: none !important; }
+            #planillas .tabla-camilleros th:first-child, 
+            #planillas .tabla-camilleros td:first-child { display: none !important; }
+            body, html, .contenido, .seccion.activo, .hoja { background-color: white !important; margin: 0 !important; padding: 0 !important; width: 100% !important; height: auto !important; overflow: visible !important; box-shadow: none !important; display: block !important; }
+            .seccion { display: none !important; }
+            .seccion.activo { display: block !important; } 
+            .hoja { border: none !important; min-height: auto !important; }
+            #editor-reporte, #editor-observaciones { 
+                background-image: linear-gradient(#e0e0e0 1px, transparent 1px);
+                background-size: 100% 30px;
+                line-height: 30px;
+                padding-top: 30px;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                overflow: visible !important;
+                height: auto !important;
+                min-height: auto !important;
+            }
+        }
+        @page { size: auto; margin: 1cm; }
+    </style></head><body>
+    <div class="sidebar">
+        <div class="bienvenida-box">
+            <h3>Bienvenido Agente:</h3>
+            <p id="nombre-supervisor-sidebar">---</p>
+        </div>
+
+        <div class="sidebar-header-title">
+            <h2 id="titulo-panel">Reportes</h2>
+        </div>
+
+        <div class="menu-links">
+            <div class="menu-item" onclick="mostrar('reportes', 'Reportes')">📊 Reportes</div>
+            <div class="menu-item" onclick="mostrar('planillas', 'Planillas (Operativa)')">🛠 Planillas (Operativa)</div>
+            <div class="menu-item" onclick="mostrar('historicos', 'Registros Históricos')">📂 Registros Históricos</div>
+            <div class="menu-item" onclick="mostrar('novedades', 'Novedades')">📢 Novedades</div>
+            <div class="menu-item" onclick="mostrar('ascensores', 'Estado de Ascensores')">🛗 Estado de Ascensores</div>
+            <div class="menu-item" onclick="mostrar('rrhh', 'RR.HH.')">👥 RR.HH.</div>
+            <div class="menu-item" onclick="mostrar('resoluciones', 'Resoluciones')">⚖️ Resoluciones</div>
+        </div>
+
+        <div class="sidebar-footer">
+            <button class="btn-accion-global" onclick="cerrarJornadaGlobal()">📥 CERRAR JORNADA</button>
+            <a href="index.html" class="btn-cerrar">🚪 CERRAR SESIÓN</a>
+        </div>
+    </div>
+
+    <div class="contenido">
+        <div id="reportes" class="seccion activo">
+            <div class="header-logos">
+                <img src="logo_hospi.png" alt="Logo Hospital">
+                <h1 style="margin: 0; text-align: center; flex: 1;">Reportes</h1>
+                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+            </div>
+            <div id="info-supervisor">Supervisor: <span id="display-nombre-rep">---</span> | Turno: <span id="display-turno-rep">---</span> | Depto: <span id="display-depto-rep">---</span></div>
+            <div class="info-hoja">
+                <span>Fecha: <input type="date" id="fecha-reporte" class="input-fecha" onchange="guardarDatos()"></span>
+                <span>Hoja N°: <span id="numero-hoja">001</span></span>
+            </div>
+            <div class="hoja">
+                <div id="editor-reporte" contenteditable="true" oninput="guardarDatos()"></div>
+            </div>
+            <div class="area-acciones"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button></div>
+        </div>
+
+        <div id="planillas" class="seccion">
+            <div class="header-logos">
+                <img src="logo_hospi.png" alt="Logo Hospital">
+                <h1 style="margin: 0; text-align: center; flex: 1; font-size: 30px;">Auxiliares Técnicos</h1>
+                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+            </div>
+            <div id="info-supervisor">Supervisor: <span id="display-nombre">---</span> | Turno: <span id="display-turno">---</span> | Depto: <span id="display-depto">---</span></div>
+            <table class="tabla-camilleros" id="tabla-exportar">
+                <thead>
+                    <tr><th style="width:30px;"></th><th class="col-hora">HORA</th><th>PISO/SALA/CAMA</th><th>APELLIDO Y NOMBRE</th><th>DESTINO</th><th class="col-hora">HORA ESTADÍA</th><th>MOVILIDAD</th><th>CAMILLERO</th><th>HORA DE FINALIZACION</th></tr>
+                </thead>
+                <tbody id="cuerpo-tabla" onkeydown="detectarEnter(event)"></tbody>
+            </table>
+
+            <div class="contenedor-observaciones">
+                <div class="titulo-observaciones">Observaciones:</div>
+                <div id="editor-observaciones" contenteditable="true" oninput="guardarDatos()"></div>
+            </div>
+
+            <div class="area-acciones"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button></div>
+        </div>
+
+        <div id="historicos" class="seccion">
+            <div class="header-logos">
+                <img src="logo_hospi.png" alt="Logo Hospital">
+                <h1 style="margin: 0; text-align: center; flex: 1;">Registros Históricos</h1>
+                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+            </div>
+            <div id="info-supervisor">Departamento: <span id="depto-hist-label">---</span></div>
+            <div class="filtros-historicos">
+                <select id="select-tipo" class="input-select">
+                    <option value="planilla">Planilla Operativa</option>
+                    <option value="reporte">Reporte Diario</option>
+                    <option value="asistencia">Asistencia de Personal</option>
+                </select>
+                <select id="select-turno" class="input-select">
+                    <option value="Mañana">Turno Mañana</option>
+                    <option value="Tarde">Turno Tarde</option>
+                    <option value="Noche A">Turno Noche A</option>
+                    <option value="Noche B">Turno Noche B</option>
+                    <option value="Sadofe">Sadofe</option>
+                </select>
+                <input type="date" id="filtro-fecha-hist" class="input-fecha">
+                <button class="btn-gestion no-imprimir" style="background: #1a3a5f; color: white;" onclick="cargarHistoricos()">Buscar Registros</button>
+            </div>
+            <div id="contenedor-historicos" style="border: 1px solid #ccc; padding: 20px; border-radius: 8px;">
+                <p>Selecciona filtros y presiona "Buscar" para visualizar registros.</p>
+            </div>
+            <div class="area-acciones"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir Resultados</button></div>
+        </div>
+        
+        <div id="novedades" class="seccion">
+            <div class="header-logos">
+                <img src="logo_hospi.png" alt="Logo Hospital">
+                <h1 style="margin: 0; text-align: center; flex: 1;">Novedades y Comunicados</h1>
+                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+            </div>
+            <div id="contenedor-novedades" style="margin-top: 20px;">
+                <p>Cargando novedades desde la base de datos...</p>
+            </div>
+            <div class="area-acciones" style="margin-top: 20px;"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button></div>
+        </div>
+
+        <div id="ascensores" class="seccion">
+            <div class="header-logos">
+                <img src="logo_hospi.png" alt="Logo Hospital">
+                <h1 style="margin: 0; text-align: center; flex: 1;">Estado Actual de Ascensores</h1>
+                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+            </div>
+            <div id="contenedor-ascensores" style="border: 1px solid #ccc; padding: 20px; border-radius: 8px; background: #fafafa;">
+                <p>Cargando estado actual de ascensores...</p>
+            </div>
+            <div class="area-acciones"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button></div>
+        </div>
+
+        <div id="rrhh" class="seccion">
+            <div class="header-logos">
+                <img src="logo_hospi.png" alt="Logo Hospital">
+                <h1 style="margin: 0; text-align: center; flex: 1;">Personal</h1>
+                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+            </div>
+            <div id="info-supervisor">Supervisor: <span id="display-nombre-rrhh">---</span> | Turno: <span id="display-turno-rrhh">---</span> | Depto: <span id="display-depto-rrhh">---</span></div>
+            <table class="tabla-camilleros" style="table-layout: auto;">
+                <thead><tr><th>LEGAJO</th><th>APELLIDO Y NOMBRE</th><th>PRESENTE</th><th>AUSENTE</th><th>LICENCIA</th></tr></thead>
+                <tbody id="cuerpo-rrhh"></tbody>
+            </table>
+            <div class="area-acciones">
+                <button class="btn-gestion no-imprimir" style="background: #28a745; color: white;" onclick="guardarAsistencia()">💾 Guardar Asistencia</button>
+                <button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
+            </div>
+            
+            <div style="margin-top: 30px; text-align: center; color: #1a3a5f; font-weight: bold; font-size: 20px; margin-bottom: 10px;">Control de Asistencia</div>
+            <div style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #ddd; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; justify-content: center; align-items: center; gap: 50px;">
+                <div id="resumen-rrhh" style="font-weight:bold; color: #1a3a5f; font-size: 16px; line-height: 2.0; display: flex; flex-direction: column;"></div>
+                <div style="width: 220px; height: 220px;">
+                    <canvas id="graficoRRHH"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div id="resoluciones" class="seccion">
+            <div class="header-logos">
+                <img src="logo_hospi.png" alt="Logo Hospital">
+                <h1 style="margin: 0; text-align: center; flex: 1;">Resoluciones</h1>
+                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // CONFIGURACIÓN DE SUPABASE CONECTADA
+        const SUPABASE_URL = 'https://ydcbdvosxbwcutddxaze.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_EvvZ8n7Ve2cF9FB4SXA0Ug_7q6qWh9f';
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        const cuerpoTabla = document.getElementById('cuerpo-tabla');
+        const editorReporte = document.getElementById('editor-reporte');
+        const editorObservaciones = document.getElementById('editor-observaciones');
+        const spanHoja = document.getElementById('numero-hoja');
+        const inputFecha = document.getElementById('fecha-reporte');
+        let chartRRHH;
+        
+        let agentes = [];
+
+        function obtenerFechaHoyISO() { return new Date().toISOString().split('T')[0]; }
+
+        inputFecha.value = localStorage.getItem('dsg_camilleros_fecha') || obtenerFechaHoyISO();
+        document.getElementById('filtro-fecha-hist').value = obtenerFechaHoyISO();
+
+        function actualizarGrafico(p, a, l) {
+            const ctx = document.getElementById('graficoRRHH').getContext('2d');
+            if (chartRRHH) chartRRHH.destroy();
+            chartRRHH = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Presentes', 'Ausentes', 'Licencias'],
+                    datasets: [{ data: [p, a, l], backgroundColor: ['#28a745', '#dc3545', '#ffc107'] }]
+                },
+                options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+            });
+        }
+
+        async function cargarNovedades() {
+            const contenedorNov = document.getElementById('contenedor-novedades');
+            if (!contenedorNov) return;
+            
+            contenedorNov.innerHTML = "<p>Buscando comunicados y novedades en Supabase...</p>";
+
+            const turnoActual = localStorage.getItem('usuario_turno') || "Mañana";
+
+            // Buscamos combinaciones posibles: para el Dpto "Camilleros" y el turno actual, o globales para "Todos"
+            const llavesBuscadas = [
+                `comunicado_novedades_Camilleros_${turnoActual}`,
+                `comunicado_novedades_Camilleros_Todos`,
+                `comunicado_novedades_Todos_${turnoActual}`,
+                `comunicado_novedades_Todos_Todos`
+            ];
+
+            try {
+                const { data: comunicadosData, error } = await supabaseClient
+                    .from('comunicados_memos')
+                    .select('*')
+                    .in('id_clave', llavesBuscadas);
+
+                if (error) {
+                    console.error("Error al consultar novedades:", error);
+                    contenedorNov.innerHTML = "<p style='color:red;'>Error al conectar con la base de datos para cargar novedades.</p>";
+                    return;
+                }
+
+                if (!comunicadosData || comunicadosData.length === 0) {
+                    contenedorNov.innerHTML = "<p style='color: #666; font-style: italic;'>No hay comunicados o novedades disponibles para este sector y turno.</p>";
+                    return;
+                }
+
+                let htmlContent = "";
+                comunicadosData.forEach(item => {
+                    let contenidoObj = item.contenido;
+                    let texto = contenidoObj && contenidoObj.texto ? contenidoObj.texto : JSON.stringify(contenidoObj);
+                    let fecha = contenidoObj && contenidoObj.fecha ? contenidoObj.fecha : (item.created_at || "Fecha no registrada");
+                    let turnoMsg = contenidoObj && contenidoObj.turno ? contenidoObj.turno : "General";
+
+                    let archivoHtml = "";
+                    if (contenidoObj && contenidoObj.archivo && contenidoObj.archivo.data) {
+                        let base64Data = contenidoObj.archivo.data;
+                        let nombreArchivo = contenidoObj.archivo.name || "adjunto_descargable";
+                        
+                        // Validamos si es una imagen o un archivo general para renderizarlo con el estilo prolijo de ascensores
+                        if (nombreArchivo.match(/\.(jpeg|jpg|gif|png)$/i) || base64Data.startsWith('data:image/')) {
+                            archivoHtml = `
+                                <div style="margin-top: 15px; text-align: center;">
+                                    <div style="margin-bottom: 10px;">
+                                        <img src="${base64Data}" alt="Archivo adjunto" style="max-width: 100%; max-height: 400px; border-radius: 6px; border: 1px solid #ddd; object-fit: contain;" />
+                                    </div>
+                                    <a href="${base64Data}" download="${nombreArchivo}" style="display: inline-block; background: #1a3a5f; color: #fff; padding: 8px 15px; border-radius: 4px; text-decoration: none; font-size: 14px; font-weight: 500;">
+                                        📥 Descargar Archivo
+                                    </a>
+                                </div>
+                            `;
+                        } else {
+                            archivoHtml = `
+                                <div style="margin-top: 15px; background: #f8f9fa; border: 1px solid #ddd; padding: 12px 15px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px;">
+                                    <div style="display: flex; align-items: center; gap: 14px; min-width: 0; flex: 1;">
+                                        <span style="font-size: 32px; flex-shrink: 0; line-height: 1;">📄</span>
+                                        <div style="min-width: 0; display: flex; flex-direction: column; gap: 3px;">
+                                            <strong style="font-size: 14px; color: #333; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${nombreArchivo}">${nombreArchivo}</strong>
+                                            <span style="font-size: 12px; color: #666; display: block;">Documento adjunto disponible para descarga</span>
+                                        </div>
+                                    </div>
+                                    <a href="${base64Data}" download="${nombreArchivo}" style="background: #1a3a5f; color: #fff; padding: 8px 16px; border-radius: 4px; text-decoration: none; font-size: 14px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; flex-shrink: 0;">
+                                        📥 Descargar Archivo
+                                    </a>
+                                </div>
+                            `;
+                        }
+                    }
+
+                    htmlContent += `
+                        <div style="background: #fff; border-left: 5px solid #1a3a5f; border-top: 1px solid #ddd; border-right: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 20px; border-radius: 6px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 8px; flex-wrap: wrap; gap: 8px;">
+                                <strong style="color: #1a3a5f; font-size: 16px;">📢 Comunicado Oficial</strong>
+                                <span style="font-size: 12px; color: #666; background: #f1f1f1; padding: 4px 10px; border-radius: 4px;">Turno: ${turnoMsg} | Fecha: ${fecha} | <strong>Enviado por:</strong> Dirección de Servicios Generales</span>
+                            </div>
+                            <div style="font-size: 15px; color: #333; white-space: pre-wrap; line-height: 1.5; font-family: inherit;">${texto}</div>
+                            ${archivoHtml}
+                        </div>`;
+                });
+
+                contenedorNov.innerHTML = htmlContent;
+
+            } catch (err) {
+                console.error("Excepción al cargar novedades:", err);
+                contenedorNov.innerHTML = "<p style='color:red;'>Ocurrió un error inesperado al procesar las novedades.</p>";
+            }
+        }
+
+        async function cargarEstadoAscensores() {
+            const contenedorAsc = document.getElementById('contenedor-ascensores');
+            if (!contenedorAsc) return;
+            
+            contenedorAsc.innerHTML = "<p>Consultando estado de ascensores en la base de datos...</p>";
+
+            try {
+                const { data: ascensoresData, error } = await supabaseClient
+                    .from('estado_actual_ascensores')
+                    .select('*');
+
+                if (error) {
+                    console.error("Error al obtener ascensores:", error);
+                    contenedorAsc.innerHTML = "<p style='color:red;'>No se pudo cargar el estado de los ascensores desde Supabase.</p>";
+                    return;
+                }
+
+                if (!ascensoresData || ascensoresData.length === 0) {
+                    contenedorAsc.innerHTML = "<p>No hay registros de ascensores disponibles en este momento.</p>";
+                    return;
+                }
+
+                let fechaUltimaStr = "---";
+                let nombreOperador = "---";
+
+                let fechasValidas = ascensoresData.map(a => a.actualizado_at).filter(Boolean);
+                if (fechasValidas.length > 0) {
+                    fechasValidas.sort((a, b) => new Date(b) - new Date(a));
+                    let masReciente = fechasValidas[0];
+                    
+                    try {
+                        let fObj = new Date(masReciente);
+                        fechaUltimaStr = fObj.toLocaleString('es-AR', {
+                            day: '2-digit', month: '2-digit', year: 'numeric',
+                            hour: '2-digit', minute: '2-digit', second: '2-digit',
+                            hour12: false
+                        });
+                    } catch(e) {
+                        fechaUltimaStr = masReciente;
+                    }
+
+                    let regReciente = ascensoresData.find(a => a.actualizado_at === masReciente);
+                    let legajoEncontrado = regReciente ? regReciente.legajo_operador : null;
+
+                    if (legajoEncontrado) {
+                        const { data: userData, error: userError } = await supabaseClient
+                            .from('usuarios')
+                            .select('nombre_completo')
+                            .eq('legajo', legajoEncontrado)
+                            .maybeSingle();
+
+                        if (!userError && userData && userData.nombre_completo) {
+                            nombreOperador = userData.nombre_completo.toUpperCase();
+                        } else {
+                            nombreOperador = `LEGAJO: ${legajoEncontrado}`;
+                        }
+                    }
+                }
+
+                ascensoresData.sort((a, b) => {
+                    let idA = a.id || 0;
+                    let idB = b.id || 0;
+                    return idA - idB;
+                });
+
+                let htmlCabeceraInfo = `
+                    <div style="background: #f8f9fa; border: 1px solid #ddd; padding: 12px 15px; border-radius: 6px; margin-bottom: 20px; font-size: 15px; color: #333;">
+                        Última actualización: <strong style="color: #000;">${fechaUltimaStr}</strong> | Registrado por: <strong style="color: #000;">${nombreOperador}</strong>
+                    </div>`;
+
+                let htmlTabla = `
+                    <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                        <thead>
+                            <tr style="background: #1a3a5f; color: white;">
+                                <th style="padding: 10px; border: 1px solid #ddd; text-align: center; width: 15%;">Dispositivo</th>
+                                <th style="padding: 10px; border: 1px solid #ddd; text-align: center; width: 25%;">Estado</th>
+                                <th style="padding: 10px; border: 1px solid #ddd; text-align: left; width: 30%;">Uso Asignado</th>
+                                <th style="padding: 10px; border: 1px solid #ddd; text-align: left; width: 30%;">Observaciones / Detalles</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+
+                ascensoresData.forEach(asc => {
+                    let dispositivo = asc.identificador_dispositivo || `Dispositivo ${asc.id || ''}`;
+                    let estado = asc.estado || '-';
+                    let uso = asc.uso || '-';
+                    let observaciones = asc.observaciones && asc.observaciones !== 'EMPTY' ? asc.observaciones : '-';
+
+                    htmlTabla += `
+                        <tr>
+                            <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold; text-align: center;">${dispositivo}</td>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">${estado}</td>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: left;">${uso}</td>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: left;">${observaciones}</td>
+                        </tr>`;
+                });
+
+                htmlTabla += `</tbody></table>`;
+                contenedorAsc.innerHTML = htmlCabeceraInfo + htmlTabla;
+
+            } catch (err) {
+                console.error("Excepción al cargar ascensores:", err);
+                contenedorAsc.innerHTML = "<p style='color:red;'>Ocurrió un error al intentar conectar con la tabla de ascensores.</p>";
+            }
+        }
+
+        function cargarRRHH() {
+            const body = document.getElementById('cuerpo-rrhh');
+            const nombreActual = localStorage.getItem('usuario_nombre') || "Invitado";
+            const turnoActual = localStorage.getItem('usuario_turno') || "Mañana";
+            const deptoActual = "Camilleros";
+
+            document.getElementById('display-nombre-rrhh').innerText = nombreActual;
+            document.getElementById('display-turno-rrhh').innerText = turnoActual;
+            document.getElementById('display-depto-rrhh').innerText = deptoActual;
+            
+            const filtrados = agentes.filter(a => a.turno === turnoActual);
+            filtrados.sort((a, b) => parseInt(a.legajo) - parseInt(b.legajo));
+
+            const asistenciasGuardadas = JSON.parse(localStorage.getItem('dsg_camilleros_asistencia_rrhh') || "{}");
+            body.innerHTML = '';
+            let p=0, a=0, l=0;
+            filtrados.forEach(agent => {
+                const estado = asistenciasGuardadas[agent.legajo] || "";
+                if(estado === 'P') p++; else if(estado === 'A') a++; else if(estado === 'L') l++;
+                body.innerHTML += `<tr><td>${agent.legajo}</td><td>${agent.nombre}</td>
+                    <td><div class="celda-asistencia ${estado === 'P' ? 'estado-P' : ''}" id="P-${agent.legajo}" onclick="marcar('${agent.legajo}', 'P')"></div></td>
+                    <td><div class="celda-asistencia ${estado === 'A' ? 'estado-A' : ''}" id="A-${agent.legajo}" onclick="marcar('${agent.legajo}', 'A')"></div></td>
+                    <td><div class="celda-asistencia ${estado === 'L' ? 'estado-L' : ''}" id="L-${agent.legajo}" onclick="marcar('${agent.legajo}', 'L')"></div></td>
+                    <input type="hidden" id="estado-${agent.legajo}" value="${estado}"></tr>`;
+            });
+            if(p+a+l > 0) {
+                document.getElementById('resumen-rrhh').innerHTML = 
+                    `<div class="botonera-porcentaje">Presentismo: ${((p/(p+a+l))*100).toFixed(1)}% (${p})</div>
+                     <div class="botonera-porcentaje">Ausentismo: ${((a/(p+a+l))*100).toFixed(1)}% (${a})</div>
+                     <div class="botonera-porcentaje">Licencias: ${((l/(p+a+l))*100).toFixed(1)}% (${l})</div>`;
+                actualizarGrafico(p, a, l);
+            }
+        }
+
+        function marcar(legajo, estado) {
+            ['P', 'A', 'L'].forEach(e => document.getElementById(`${e}-${legajo}`).className = 'celda-asistencia');
+            document.getElementById(`${estado}-${legajo}`).className = `celda-asistencia estado-${estado}`;
+            document.getElementById(`estado-${legajo}`).value = estado;
+        }
+
+        async function guardarAsistencia() {
+            let registro = {}, presentes = 0, ausentes = 0, licencias = 0;
+            const turnoActual = localStorage.getItem('usuario_turno') || "Mañana";
+            const agentesTurno = agentes.filter(a => a.turno === turnoActual);
+            const totalAgentes = agentesTurno.length;
+            
+            if (totalAgentes === 0) {
+                alert("No hay agentes cargados para este turno.");
+                return;
+            }
+
+            agentesTurno.forEach(a => {
+                let val = document.getElementById(`estado-${a.legajo}`).value;
+                registro[a.legajo] = val;
+                if (val === 'P') presentes++;
+                else if (val === 'A') ausentes++;
+                else if (val === 'L') licencias++;
+            });
+            
+            let noMarcados = totalAgentes - (presentes + ausentes + licencias);
+            if (noMarcados > 0) {
+                alert("¡Atención! Falta cargar la totalidad de los agentes. Hay " + noMarcados + " agentes sin estado asignado.");
+                return;
+            }
+
+            let pP = ((presentes / totalAgentes) * 100).toFixed(1);
+            let pA = ((ausentes / totalAgentes) * 100).toFixed(1);
+            let pL = ((licencias / totalAgentes) * 100).toFixed(1);
+            
+            localStorage.setItem('dsg_camilleros_asistencia_rrhh', JSON.stringify(registro));
+
+            const fechaActual = inputFecha.value;
+            const supervisorActual = localStorage.getItem('usuario_nombre') || "Sistema";
+            const departamentoActual = "Camilleros";
+
+            for (const a of agentesTurno) {
+                const estadoVal = registro[a.legajo];
+                if (estadoVal) {
+                    await supabaseClient.from('rrhh_asistencia').upsert({
+                        fecha: fechaActual,
+                        departamento: departamentoActual,
+                        turno: turnoActual,
+                        legajo_empleado: String(a.legajo),
+                        estado_asistencia: estadoVal,
+                        registrado_por: supervisorActual
+                    }, { onConflict: 'fecha, departamento, turno, legajo_empleado' });
+                }
+            }
+
+            document.getElementById('resumen-rrhh').innerHTML = 
+                `<div class="botonera-porcentaje">Presentismo: ${pP}% (${presentes})</div>
+                 <div class="botonera-porcentaje">Ausentismo: ${pA}% (${ausentes})</div>
+                 <div class="botonera-porcentaje">Licencias: ${pL}% (${licencias})</div>`;
+            actualizarGrafico(presentes, ausentes, licencias);
+            alert(`¡Asistencia completa y guardada en Supabase!\nSupervisor: ${supervisorActual}\nDepartamento: ${departamentoActual}\nPresentismo: ${pP}%\nAusentismo: ${pA}%\nLicencias: ${pL}%`);
+        }
+
+        function guardarDatos() {
+            document.querySelectorAll('#cuerpo-tabla tr').forEach(tr => {
+                tr.querySelectorAll('select').forEach(select => {
+                    Array.from(select.options).forEach(opt => {
+                        if(opt.value === select.value) opt.setAttribute('selected', 'selected');
+                        else opt.removeAttribute('selected');
+                    });
+                });
+                tr.querySelectorAll('input').forEach(i => {
+                    i.setAttribute('value', i.value);
+                });
+            });
+            localStorage.setItem('dsg_camilleros_tabla', cuerpoTabla.innerHTML);
+            localStorage.setItem('dsg_camilleros_reporte', editorReporte.innerHTML);
+            if (editorObservaciones) {
+                localStorage.setItem('dsg_camilleros_observaciones', editorObservaciones.value || editorObservaciones.innerHTML);
+            }
+            localStorage.setItem('dsg_camilleros_fecha', inputFecha.value);
+        }
+
+        async function cerrarJornadaGlobal() {
+            const fechaVal = inputFecha.value;
+            const turnoVal = localStorage.getItem('usuario_turno') || "Mañana";
+            const deptoVal = "Camilleros";
+            const supervisorVal = localStorage.getItem('usuario_nombre') || "Sistema";
+
+            const { data: existente, error: errExistente } = await supabaseClient
+                .from('cierres_jornada')
+                .select('id')
+                .eq('fecha_cierre', fechaVal)
+                .eq('turno', turnoVal)
+                .eq('departamento', deptoVal)
+                .maybeSingle();
+
+            if (!errExistente && existente) {
+                alert(`⚠️ ATENCIÓN: Ya se ha registrado y cerrado la jornada para el turno "${turnoVal}" en el día de la fecha. No se puede volver a cerrar.`);
+                return;
+            }
+
+            if (!confirm("¿Cerrar jornada? Se consolidarán los datos, se enviarán a Supabase y se reiniciará el sistema.")) return;
+            
+            const reporteVal = editorReporte.innerHTML;
+            const observacionesVal = editorObservaciones ? (editorObservaciones.value || editorObservaciones.innerHTML) : "";
+            const tablaVal = cuerpoTabla.innerHTML;
+            const asistenciaVal = JSON.parse(localStorage.getItem('dsg_camilleros_asistencia_rrhh') || "{}");
+
+            const cierre = { 
+                fecha: fechaVal, 
+                turno: turnoVal, 
+                depto: deptoVal, 
+                reporte: reporteVal, 
+                observaciones: observacionesVal,
+                tabla: tablaVal, 
+                asistencia: asistenciaVal, 
+                timestamp: new Date().toISOString() 
+            };
+
+            let historial = JSON.parse(localStorage.getItem('historial_jornadas') || "[]");
+            historial.push(cierre);
+            localStorage.setItem('historial_jornadas', JSON.stringify(historial));
+
+            const { error: errorCierre } = await supabaseClient.from('cierres_jornada').insert({
+                fecha_cierre: fechaVal,
+                turno: turnoVal,
+                departamento: deptoVal,
+                supervisor: supervisorVal,
+                reporte_diario: reporteVal,
+                tabla_operativa: tablaVal,
+                estados_ascensores: null,
+                detalles_operativos: { texto: observacionesVal },
+                asistencia_personal: asistenciaVal
+            });
+
+            if (errorCierre) {
+                console.error("Error al guardar cierre en Supabase:", errorCierre.message);
+                alert("Error al sincronizar con Supabase: " + errorCierre.message);
+                return;
+            }
+
+            const filasTabla = cuerpoTabla.querySelectorAll('tr');
+            for (let tr of filasTabla) {
+                const inputHora = tr.querySelector('.input-hora');
+                
+                if (inputHora && inputHora.value.trim() !== '') {
+                    await supabaseClient.from('registros_camilleros').insert({
+                        fecha_cierre: fechaVal,
+                        turno: turnoVal,
+                        hora: inputHora.value || null,
+                        numero_cama: tr.querySelector('.input-cama')?.value || '',
+                        nombre_paciente: tr.querySelector('.input-paciente')?.value || '',
+                        destino: tr.querySelector('.input-destino')?.value || '',
+                        duracion_estancia: tr.querySelector('.input-estancia')?.value || '',
+                        tipo_movilidad: tr.querySelector('.input-movilidad')?.value || '',
+                        personal_asignado: tr.querySelector('.input-personal')?.value || '',
+                        hora_finalizacion: tr.querySelector('.input-finalizacion')?.value || '',
+                        observaciones: observacionesVal
+                    });
+                }
+            }
+            
+            localStorage.removeItem('dsg_camilleros_tabla'); 
+            localStorage.removeItem('dsg_camilleros_asistencia_rrhh'); 
+            localStorage.removeItem('dsg_camilleros_reporte');
+            localStorage.removeItem('dsg_camilleros_observaciones');
+            
+            alert("Jornada cerrada y sincronizada correctamente con Supabase.");
+            location.reload();
+        }
+
+        async function cargarHistoricos() {
+            const f = document.getElementById('filtro-fecha-hist').value; 
+            const t = document.getElementById('select-turno').value; 
+            const tipo = document.getElementById('select-tipo').value;
+            const cont = document.getElementById('contenedor-historicos');
+            
+            cont.innerHTML = "<p>Buscando registros en Supabase...</p>";
+
+            const { data: regSupabase, error } = await supabaseClient
+                .from('cierres_jornada')
+                .select('*')
+                .eq('fecha_cierre', f)
+                .eq('turno', t)
+                .eq('departamento', 'Camilleros')
+                .maybeSingle();
+
+            let reg = regSupabase ? {
+                fecha: regSupabase.fecha_cierre,
+                turno: regSupabase.turno,
+                depto: regSupabase.departamento,
+                reporte: regSupabase.reporte_diario,
+                tabla: regSupabase.tabla_operativa,
+                observaciones: regSupabase.detalles_operativos,
+                asistencia: regSupabase.asistencia_personal
+            } : null;
+
+            if (!reg) {
+                const hist = JSON.parse(localStorage.getItem('historial_jornadas') || "[]");
+                reg = hist.find(r => r.fecha === f && r.turno === t && r.depto === "Camilleros");
+            }
+            
+            if (!reg) {
+                cont.innerHTML = "<p style='color:red; font-size: 20px;'>NO SE ENCONTRÓ NADA.</p>";
+                return;
+            }
+            
+            cont.style.display = "block";
+
+            if (tipo === 'planilla') {
+                const obsTexto = reg.observaciones ? reg.observaciones : "";
+                cont.innerHTML = `
+                    <style>
+                        #contenedor-historicos .tabla-camilleros th:first-child, 
+                        #contenedor-historicos .tabla-camilleros td:first-child { display: none !important; }
+                        #contenedor-historicos input, #contenedor-historicos select { border: none !important; background: transparent !important; pointer-events: none !important; font-size: 13px !important; -webkit-appearance: none; -moz-appearance: none; appearance: none; }
+                        #contenedor-historicos .tabla-camilleros { table-layout: auto !important; font-size: 13px !important; }
+                        #contenedor-historicos .tabla-camilleros th, 
+                        #contenedor-historicos .tabla-camilleros td { font-size: 13px !important; }
+                    </style>
+                    <div style="border: 2px solid #1a3a5f; padding: 20px; font-size: 13px;">
+                        <table class="tabla-camilleros" style="width: 100%; font-size: 13px;">
+                            <thead>
+                                <tr><th></th><th>HORA</th><th>PISO/SALA/CAMA</th><th>APELLIDO Y NOMBRE</th><th>DESTINO</th><th>HORA ESTADÍA</th><th>MOVILIDAD</th><th>CAMILLERO</th><th>HORA FINALIZACIÓN</th></tr>
+                            </thead>
+                            <tbody>${reg.tabla}</tbody>
+                        </table>
+                        <div style="margin-top: 20px; border: 1px solid #1a3a5f; border-radius: 4px; overflow: hidden;">
+                            <div style="background-color: #1a3a5f; color: white; padding: 8px 12px; font-weight: bold; font-size: 13px; letter-spacing: 0.5px;">Observaciones:</div>
+                            <div style="background-image: linear-gradient(#e0e0e0 1px, transparent 1px); background-size: 100% 30px; line-height: 30px; padding: 0 10px; min-height: 90px; white-space: pre-wrap; font-family: 'Courier New', Courier, monospace; font-size: 13px; background-color: #fafafa;">${obsTexto}</div>
+                        </div>
+                    </div>`;
+            } else if (tipo === 'asistencia') {
+                let p = 0, a = 0, l = 0;
+                let rowsHTML = "";
+                
+                let agentesTurnoHist = agentes.filter(ag => ag.turno === t);
+                agentesTurnoHist.sort((x, y) => parseInt(x.legajo) - parseInt(y.legajo));
+
+                agentesTurnoHist.forEach(ag => {
+                    const estado = reg.asistencia && reg.asistencia[ag.legajo] ? reg.asistencia[ag.legajo] : "";
+                    if(estado === 'P') p++; else if(estado === 'A') a++; else if(estado === 'L') l++;
+                    
+                    rowsHTML += `
+                        <tr style="height: 40px; font-size: 13px;">
+                            <td style="border: 1px solid #1a3a5f; text-align: center; font-size: 13px;">${ag.legajo}</td>
+                            <td style="border: 1px solid #1a3a5f; padding-left: 10px; font-size: 13px;">${ag.nombre}</td>
+                            <td style="border: 1px solid #1a3a5f; text-align: center;"><div class="celda-asistencia ${estado === 'P' ? 'estado-P' : ''}"></div></td>
+                            <td style="border: 1px solid #1a3a5f; text-align: center;"><div class="celda-asistencia ${estado === 'A' ? 'estado-A' : ''}"></div></td>
+                            <td style="border: 1px solid #1a3a5f; text-align: center;"><div class="celda-asistencia ${estado === 'L' ? 'estado-L' : ''}"></div></td>
+                        </tr>`;
+                });
+
+                const total = p + a + l || 1;
+                cont.innerHTML = `
+                    <div style="border: 2px solid #1a3a5f; padding: 20px; font-size: 13px;">
+                        <table style="width: 100%; border-collapse: collapse; border: 2px solid #1a3a5f; font-size: 13px;">
+                            <thead style="background-color: #1a3a5f; color: white;">
+                                <tr>
+                                    <th style="padding: 10px; border: 1px solid white; font-size: 13px;">LEGAJO</th>
+                                    <th style="padding: 10px; border: 1px solid white; font-size: 13px;">APELLIDO Y NOMBRE</th>
+                                    <th style="padding: 10px; border: 1px solid white; font-size: 13px;">PRESENTE</th>
+                                    <th style="padding: 10px; border: 1px solid white; font-size: 13px;">AUSENTE</th>
+                                    <th style="padding: 10px; border: 1px solid white; font-size: 13px;">LICENCIA</th>
+                                </tr>
+                            </thead>
+                            <tbody>${rowsHTML}</tbody>
+                        </table>
+                        <div style="margin-top: 20px; background: #f9f9f9; padding: 15px; border: 1px solid #ddd; font-size: 13px;">
+                            <div style="font-weight:bold; color: #1a3a5f; font-size: 13px;">
+                                <div style="font-size: 13px;">Resumen Consolidado:</div>
+                                <div style="font-size: 13px;">Presentismo: ${((p / total) * 100).toFixed(1)}% (${p})</div>
+                                <div style="font-size: 13px;">Ausentismo: ${((a / total) * 100).toFixed(1)}% (${a})</div>
+                                <div style="font-size: 13px;">Licencias: ${((l / total) * 100).toFixed(1)}% (${l})</div>
+                            </div>
+                        </div>
+                    </div>`;
+            } else {
+                const estiloRenglones = `background-image: linear-gradient(#e0e0e0 1px, transparent 1px); background-size: 100% 36px; line-height: 36px; padding-left: 10px; font-family: 'Courier New', Courier, monospace; min-height: 400px; white-space: pre-wrap; display: block; font-size: 16px;`;
+                cont.innerHTML = `
+                    <div style="border: 2px solid #1a3a5f; padding: 20px;">
+                        <div style="${estiloRenglones}">${reg.reporte}</div>
+                    </div>`;
+            }
+        }
+
+        window.onload = async () => {
+            const nombre = localStorage.getItem('usuario_nombre') || "Invitado"; 
+            const turno = localStorage.getItem('usuario_turno') || "Mañana"; 
+            const depto = "Camilleros";
+            
+            document.getElementById('nombre-supervisor-sidebar').innerText = nombre;
+            document.getElementById('display-nombre').innerText = nombre; 
+            document.getElementById('display-turno').innerText = turno; 
+            document.getElementById('display-depto').innerText = depto;
+            document.getElementById('display-nombre-rep').innerText = nombre; 
+            document.getElementById('display-turno-rep').innerText = turno; 
+            document.getElementById('display-depto-rep').innerText = depto;
+            document.getElementById('depto-hist-label').innerText = depto;
+            
+            let numeroHojaReal = 1;
+            try {
+                const { count, error } = await supabaseClient
+                    .from('cierres_jornada')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('departamento', depto);
+
+                if (!error && count !== null) {
+                    numeroHojaReal = count + 1;
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener el conteo dinámico de Supabase.");
+            }
+
+            spanHoja.innerText = String(numeroHojaReal).padStart(3, '0');
+
+            try {
+                const { data: personalSupabase, error } = await supabaseClient.from('camilleros_personal').select('*');
+                if (!error && personalSupabase) {
+                    agentes = personalSupabase.map(p => ({
+                        legajo: p.legajo,
+                        nombre: p.apellido_y_nombre,
+                        turno: p.turno
+                    }));
+                }
+            } catch (e) {
+                console.error("Error al cargar personal desde Supabase:", e);
+            }
+
+            const t = localStorage.getItem('dsg_camilleros_tabla');
+            if (t) {
+                cuerpoTabla.innerHTML = t;
+            } else {
+                cuerpoTabla.innerHTML = '<tr>' + crearFilaHTML() + '</tr>';
+            }
+            editorReporte.innerHTML = localStorage.getItem('dsg_camilleros_reporte') || "";
+            if (editorObservaciones) {
+                editorObservaciones.value = localStorage.getItem('dsg_camilleros_observaciones') || "";
+            }
+            cargarRRHH();
+            cargarEstadoAscensores();
+            cargarNovedades();
+        };
+
+        function obtenerOpcionesCamilleros() {
+            const turnoActual = localStorage.getItem('usuario_turno') || "Mañana";
+            const agentesTurno = agentes.filter(a => a.turno === turnoActual);
+            agentesTurno.sort((a, b) => parseInt(a.legajo) - parseInt(b.legajo));
+            
+            let optionsHTML = '<option value="">Seleccionar Camillero...</option>';
+            agentesTurno.forEach(ag => {
+                optionsHTML += `<option value="${ag.nombre}">${ag.nombre}</option>`;
+            });
+            return optionsHTML;
+        }
+
+        function crearFilaHTML() { 
+            return '<td><button class="btn-borrar" onclick="borrarFila(this)">X</button></td>' +
+                     '<td><input class="input-c input-hora" type="text" onclick="registrarHora(this)"></td>' +
+                     '<td><input class="input-c input-cama" type="text" oninput="guardarDatos()"></td>' +
+                     '<td><input class="input-c input-paciente" type="text" oninput="guardarDatos()"></td>' +
+                     '<td><input class="input-c input-destino" type="text" oninput="guardarDatos()"></td>' +
+                     '<td><input class="input-c input-estancia" type="time" onchange="guardarDatos()"></td>' +
+                     '<td>' +
+                         '<select class="input-c input-movilidad" onchange="guardarDatos()" style="width: 100%; height: 100%; border: none; background: transparent; font-size: 13px; font-family: inherit;">' +
+                             '<option value="">Seleccionar Movilidad...</option>' +
+                             '<optgroup label="SILLA DE RUEDAS">' +
+                                 '<option value="Silla 001">Silla 001</option>' +
+                                 '<option value="Silla 002">Silla 002</option>' +
+                                 '<option value="Silla 003">Silla 003</option>' +
+                                 '<option value="Silla 004">Silla 004</option>' +
+                                 '<option value="Silla 005">Silla 005</option>' +
+                             '</optgroup>' +
+                             '<optgroup label="CAMILLA">' +
+                                 '<option value="Camilla 001">Camilla 001</option>' +
+                                 '<option value="Camilla 002">Camilla 002</option>' +
+                                 '<option value="Camilla 003">Camilla 003</option>' +
+                                 '<option value="Camilla 004">Camilla 004</option>' +
+                                 '<option value="Camilla 005">Camilla 005</option>' +
+                             '</optgroup>' +
+                         '</select>' +
+                    '</td>' +
+                    '<td>' +
+                         '<select class="input-c input-personal" onchange="guardarDatos()" style="width: 100%; height: 100%; border: none; background: transparent; font-size: 11px; font-family: inherit;">' +
+                             obtenerOpcionesCamilleros() +
+                         '</select>' +
+                    '</td>' +
+                    '<td><input class="input-c input-finalizacion" type="time" onchange="guardarDatos()"></td>'; 
+        }
+
+        function registrarHora(input) { if (input.value === "") { const ahora = new Date(); input.value = ahora.getHours().toString().padStart(2, '0') + ":" + ahora.getMinutes().toString().padStart(2, '0'); input.setAttribute('readonly', 'readonly'); guardarDatos(); } }
+        function borrarFila(btn) { const tr = btn.closest('tr'); if (cuerpoTabla.getElementsByTagName('tr').length > 1) tr.remove(); else { tr.querySelectorAll('input, select').forEach(i => { i.value = ''; i.removeAttribute('readonly'); }); } guardarDatos(); }
+        function detectarEnter(e) { if (e.key === 'Enter') { e.preventDefault(); const tr = document.createElement('tr'); tr.innerHTML = crearFilaHTML(); cuerpoTabla.appendChild(tr); tr.querySelectorAll('input')[1].focus(); } }
+        function mostrar(id, titulo) { 
+            document.querySelectorAll('.seccion').forEach(s => s.classList.remove('activo')); 
+            document.getElementById(id).classList.add('activo'); 
+            document.getElementById('titulo-panel').innerText = titulo; 
+            if(id === 'novedades') {
+                cargarNovedades();
+            }
+        }
+    </script>
+</body>
+</html>
