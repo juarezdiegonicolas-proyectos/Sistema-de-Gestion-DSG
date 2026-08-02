@@ -427,110 +427,110 @@
         }
 
         async function cargarEstadoAscensores() {
-            const contenedorAsc = document.getElementById('contenedor-ascensores');
-            if (!contenedorAsc) return;
+    const contenedorAsc = document.getElementById('contenedor-ascensores');
+    if (!contenedorAsc) return;
+    
+    contenedorAsc.innerHTML = "<p>Consultando estado de ascensores en la base de datos...</p>";
+
+    try {
+        const { data: ascensoresData, error } = await supabaseClient
+            .from('estado_actual_ascensores')
+            .select('*');
+
+        if (error) {
+            console.error("Error al obtener ascensores:", error);
+            contenedorAsc.innerHTML = "<p style='color:red;'>No se pudo cargar el estado de los ascensores desde Supabase.</p>";
+            return;
+        }
+
+        if (!ascensoresData || ascensoresData.length === 0) {
+            contenedorAsc.innerHTML = "<p>No hay registros de ascensores disponibles en este momento.</p>";
+            return;
+        }
+
+        let fechaUltimaStr = "---";
+        let nombreOperador = "---";
+
+        let fechasValidas = ascensoresData.map(a => a.actualizado_at).filter(Boolean);
+        if (fechasValidas.length > 0) {
+            fechasValidas.sort((a, b) => new Date(b) - new Date(a));
+            let masReciente = fechasValidas[0];
             
-            contenedorAsc.innerHTML = "<p>Consultando estado de ascensores en la base de datos...</p>";
-
             try {
-                const { data: ascensoresData, error } = await supabaseClient
-                    .from('estado_actual_ascensores')
-                    .select('*');
-
-                if (error) {
-                    console.error("Error al obtener ascensores:", error);
-                    contenedorAsc.innerHTML = "<p style='color:red;'>No se pudo cargar el estado de los ascensores desde Supabase.</p>";
-                    return;
-                }
-
-                if (!ascensoresData || ascensoresData.length === 0) {
-                    contenedorAsc.innerHTML = "<p>No hay registros de ascensores disponibles en este momento.</p>";
-                    return;
-                }
-
-                let fechaUltimaStr = "---";
-                let nombreOperador = "---";
-
-                let fechasValidas = ascensoresData.map(a => a.actualizado_at).filter(Boolean);
-                if (fechasValidas.length > 0) {
-                    fechasValidas.sort((a, b) => new Date(b) - new Date(a));
-                    let masReciente = fechasValidas[0];
-                    
-                    try {
-                        let fObj = new Date(masReciente);
-                        fechaUltimaStr = fObj.toLocaleString('es-AR', {
-                            day: '2-digit', month: '2-digit', year: 'numeric',
-                            hour: '2-digit', minute: '2-digit', second: '2-digit',
-                            hour12: false
-                        });
-                    } catch(e) {
-                        fechaUltimaStr = masReciente;
-                    }
-
-                    let regReciente = ascensoresData.find(a => a.actualizado_at === masReciente);
-                    let legajoEncontrado = regReciente ? regReciente.legajo_operador : null;
-
-                    if (legajoEncontrado) {
-                        const { data: userData, error: userError } = await supabaseClient
-                            .from('usuarios')
-                            .select('nombre_completo')
-                            .eq('legajo', legajoEncontrado)
-                            .maybeSingle();
-
-                        if (!userError && userData && userData.nombre_completo) {
-                            nombreOperador = userData.nombre_completo.toUpperCase();
-                        } else {
-                            nombreOperador = `LEGAJO: ${legajoEncontrado}`;
-                        }
-                    }
-                }
-
-                ascensoresData.sort((a, b) => {
-                    let idA = a.id || 0;
-                    let idB = b.id || 0;
-                    return idA - idB;
+                let fObj = new Date(masReciente);
+                fechaUltimaStr = fObj.toLocaleString('es-AR', {
+                    day: '2-digit', month: '2-digit', year: 'numeric',
+                    hour: '2-digit', minute: '2-digit', second: '2-digit',
+                    hour12: false
                 });
+            } catch(e) {
+                fechaUltimaStr = masReciente;
+            }
 
-                let htmlCabeceraInfo = `
-                    <div style="background: #f8f9fa; border: 1px solid #ddd; padding: 12px 15px; border-radius: 6px; margin-bottom: 20px; font-size: 15px; color: #333;">
-                        Última actualización: <strong style="color: #000;">${fechaUltimaStr}</strong> | Registrado por: <strong style="color: #000;">${nombreOperador}</strong>
-                    </div>`;
+            let regReciente = ascensoresData.find(a => a.actualizado_at === masReciente);
+            let legajoEncontrado = regReciente ? regReciente.legajo_operador : null;
 
-                let htmlTabla = `
-                    <table style="width: 100%; border-collapse: collapse; text-align: left;">
-                        <thead>
-                            <tr style="background: #1a3a5f; color: white;">
-                                <th style="padding: 10px; border: 1px solid #ddd; text-align: center; width: 15%;">Dispositivo</th>
-                                <th style="padding: 10px; border: 1px solid #ddd; text-align: center; width: 25%;">Estado</th>
-                                <th style="padding: 10px; border: 1px solid #ddd; text-align: left; width: 30%;">Uso Asignado</th>
-                                <th style="padding: 10px; border: 1px solid #ddd; text-align: left; width: 30%;">Observaciones / Detalles</th>
-                            </tr>
-                        </thead>
-                        <tbody>`;
+            if (legajoEncontrado) {
+                const { data: userData, error: userError } = await supabaseClient
+                    .from('usuarios')
+                    .select('nombre_completo')
+                    .eq('legajo', legajoEncontrado)
+                    .maybeSingle();
 
-                ascensoresData.forEach(asc => {
-                    let dispositivo = asc.identificador_dispositivo || `Dispositivo ${asc.id || ''}`;
-                    let estado = asc.estado || '-';
-                    let uso = asc.uso || '-';
-                    let observaciones = asc.observaciones && asc.observaciones !== 'EMPTY' ? asc.observaciones : '-';
-
-                    htmlTabla += `
-                        <tr>
-                            <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold; text-align: center;">${dispositivo}</td>
-                            <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">${estado}</td>
-                            <td style="padding: 10px; border: 1px solid #ddd; text-align: left;">${uso}</td>
-                            <td style="padding: 10px; border: 1px solid #ddd; text-align: left;">${observaciones}</td>
-                        </tr>`;
-                });
-
-                htmlTabla += `</tbody></table>`;
-                contenedorAsc.innerHTML = htmlCabeceraInfo + htmlTabla;
-
-            } catch (err) {
-                console.error("Excepción al cargar ascensores:", err);
-                contenedorAsc.innerHTML = "<p style='color:red;'>Ocurrió un error al intentar conectar con la tabla de ascensores.</p>";
+                if (!userError && userData && userData.nombre_completo) {
+                    nombreOperador = userData.nombre_completo.toUpperCase();
+                } else {
+                    nombreOperador = `LEGAJO: ${legajoEncontrado}`;
+                }
             }
         }
+
+        ascensoresData.sort((a, b) => {
+            let idA = a.id || 0;
+            let idB = b.id || 0;
+            return idA - idB;
+        });
+
+        let htmlCabeceraInfo = `
+            <div style="background: #f8f9fa; border: 1px solid #ddd; padding: 12px 15px; border-radius: 6px; margin-bottom: 20px; font-size: 15px; color: #333;">
+                Última actualización: <strong style="color: #000;">${fechaUltimaStr}</strong> | Registrado por: <strong style="color: #000;">${nombreOperador}</strong>
+            </div>`;
+
+        let htmlTabla = `
+            <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                <thead>
+                    <tr style="background: #1a3a5f; color: white;">
+                        <th style="padding: 10px; border: 1px solid #ddd; text-align: center; width: 15%;">Dispositivo</th>
+                        <th style="padding: 10px; border: 1px solid #ddd; text-align: center; width: 25%;">Estado</th>
+                        <th style="padding: 10px; border: 1px solid #ddd; text-align: left; width: 30%;">Uso Asignado</th>
+                        <th style="padding: 10px; border: 1px solid #ddd; text-align: left; width: 30%;">Observaciones / Detalles</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+        ascensoresData.forEach(asc => {
+            let dispositivo = asc.identificador_dispositivo || `Dispositivo ${asc.id || ''}`;
+            let estado = asc.estado || '-';
+            let uso = asc.uso || '-';
+            let observaciones = asc.observaciones && asc.observaciones !== 'EMPTY' ? asc.observaciones : '-';
+
+            htmlTabla += `
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold; text-align: center;">${dispositivo}</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">${estado}</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; text-align: left;">${uso}</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; text-align: left;">${observaciones}</td>
+                </tr>`;
+        });
+
+        htmlTabla += `</tbody></table>`;
+        contenedorAsc.innerHTML = htmlCabeceraInfo + htmlTabla;
+
+    } catch (err) {
+        console.error("Excepción al cargar ascensores:", err);
+        contenedorAsc.innerHTML = "<p style='color:red;'>Ocurrió un error al intentar conectar con la tabla de ascensores.</p>";
+    }
+}
 
         function cargarRRHH() {
             const body = document.getElementById('cuerpo-rrhh');
