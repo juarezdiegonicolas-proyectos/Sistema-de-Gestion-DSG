@@ -22,14 +22,25 @@
         .header-banner { 
             width: 100%; 
             background: linear-gradient(to right, #1a3a5f, #5d8dbb); 
-            padding: 50px 20px 65px 20px; 
+            padding: 40px 20px 65px 20px; 
             text-align: center; 
             color: white; 
             box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
             position: relative; 
         }
+        .header-logos {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 900px;
+            margin: 0 auto 15px auto;
+            width: 100%;
+        }
+        .header-logos img {
+            max-height: 100px;
+            object-fit: contain;
+        }
         .wrapper { width: 100%; display: flex; flex-direction: column; align-items: center; padding: 25px 20px 50px 20px; position: relative; }
-        .logo-principal { max-width: 100%; width: 260px; margin-bottom: 20px; object-fit: contain; } 
         h1 { margin: 0; font-size: 38px; text-transform: uppercase; font-weight: 750; word-break: break-word; }
         .subtitulo-top { font-size: 20px; margin-top: 10px; font-weight: 300; opacity: 0.95; margin-bottom: 15px; }
         
@@ -152,12 +163,19 @@
             .header-banner {
                 padding-bottom: 75px;
             }
+            .header-logos {
+                flex-direction: column;
+                gap: 10px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="header-banner">
-        <img src="logo_dsg.png" class="logo-principal" alt="Logo">
+        <div class="header-logos">
+            <img src="{{ url_for('static', filename='logo_hospi.png') }}" alt="Logo Hospital">
+            <img src="{{ url_for('static', filename='logo_dsg.png') }}" alt="Logo DSG" style="height: 135px;">
+        </div>
         <h1>SISTEMA INTEGRAL DE GESTIÓN - DSG</h1>
         <p class="subtitulo-top">Hospital de Clínicas José de San Martín (UBA)</p>
 
@@ -325,7 +343,6 @@
                 let claseBadge = 'badge-operativo';
                 let contenidoEstado = '';
 
-                // Si está vacío, o dice explícitamente desconocido, se muestra como guion dentro del recuadro grisaseo
                 if (!estadoTexto || estadoLower === 'desconocido' || estadoLower === '-') {
                     claseBadge = 'badge-desconocido';
                     contenidoEstado = '-';
@@ -339,7 +356,6 @@
                     contenidoEstado = estadoTexto;
                 }
 
-                // Obtención del uso asignado y manejo si está vacío para mostrarse también con el recuadro grisaseo centrado
                 let usoAsignadoTexto = asc.uso_asignado || asc.uso || asc.tipo || '';
                 let usoLower = usoAsignadoTexto.trim().toLowerCase();
                 let contenidoUso = '';
@@ -348,11 +364,9 @@
                 if (!usoAsignadoTexto || usoLower === '-' || usoLower === 'vacío' || usoLower === 'ninguno') {
                     contenidoUso = '-';
                 } else {
-                    claseBadgeUso = 'badge-desconocido'; // O usa el mismo estilo de recuadro grisaseo requerido para mantener idéntico diseño
                     contenidoUso = usoAsignadoTexto;
                 }
 
-                // Extracción numérica y lógica de nombres diferenciada para escaleras mecánicas (25 al 28)
                 let rawText = String(asc.nombre || asc.ascensor || asc.identificador_dispositivo || '');
                 let numExtracted = rawText.replace(/\D/g, '');
                 let numVal = parseInt(numExtracted, 10);
@@ -394,13 +408,13 @@
             const passInput = document.getElementById('pass-input').value.trim();
 
             const rutasMaestras = {
-                'camilleros': 'escritorio_camilleros.html',
-                'lavadero': 'escritorio_lavadero.html',
-                'conmutador': 'escritorio_conmutador.html',
-                'ascensores': 'escritorio_ascensores.html',
-                'intendencia': 'escritorio_intendencia.html',
-                'dalo': 'escritorio_dalo.html',
-                'admin': 'escritorio_admin.html'
+                'camilleros': '/escritorio_camilleros',
+                'lavadero': '/escritorio_lavadero',
+                'conmutador': '/escritorio_conmutador',
+                'ascensores': '/escritorio_ascensores',
+                'intendencia': '/escritorio_intendencia',
+                'dalo': '/escritorio_dalo',
+                'admin': '/escritorio_admin'
             };
 
             if (rutasMaestras[userInput.toLowerCase()]) {
@@ -434,17 +448,17 @@
                 localStorage.setItem('usuario_pisos', usuarioEncontrado.pisos_asignados || '');
 
                 const mapaDepartamentos = {
-                    'camilleros-central': 'escritorio_camilleros.html',
-                    'lavadero-central': 'escritorio_lavadero.html',
-                    'conmutador': 'escritorio_conmutador.html',
-                    'division-ascensores': 'escritorio_ascensores.html',
-                    'intendencia': 'escritorio_intendencia.html',
-                    'dalo': 'escritorio_dalo.html',
-                    'direccion-servicios-generales': 'escritorio_admin.html'
+                    'camilleros-central': '/escritorio_camilleros',
+                    'lavadero-central': '/escritorio_lavadero',
+                    'conmutador': '/escritorio_conmutador',
+                    'division-ascensores': '/escritorio_ascensores',
+                    'intendencia': '/escritorio_intendencia',
+                    'dalo': '/escritorio_dalo',
+                    'direccion-servicios-generales': '/escritorio_admin'
                 };
 
                 if (usuarioEncontrado.es_admin || usuarioEncontrado.departamento === 'direccion-servicios-generales') {
-                    window.location.href = 'escritorio_admin.html';
+                    window.location.href = '/escritorio_admin';
                     return;
                 }
 
