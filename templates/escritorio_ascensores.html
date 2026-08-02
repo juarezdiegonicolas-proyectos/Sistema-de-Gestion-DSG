@@ -24,7 +24,7 @@
         .sidebar-footer { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; padding-top: 5px; }
         .btn-accion-global { width: 100%; padding: 10px; background: linear-gradient(135deg, #28a745, #218838); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: opacity 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
         .btn-accion-global:hover { opacity: 0.9; }
-        .btn-cerrar { width: 100%; padding: 10px; background: linear-gradient(135deg, #d32f2f, #c62828); color: white; text-align: center; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); box-sizing: border-box; display: flex; align-items: center; justify-content: center; gap: 6px; transition: opacity 0.2s; }
+        .btn-cerrar { width: 100%; padding: 10px; background: linear-gradient(135deg, #d32f2f, #c62828); color: white; text-align: center; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); box-sizing: border-box; display: flex; align-items: center; justify-content: center; gap: 6px; transition: opacity 0.2s; border: none; cursor: pointer; }
         .btn-cerrar:hover { opacity: 0.9; }
 
         .contenido { flex: 1; padding: 40px; overflow-y: auto; }
@@ -61,12 +61,8 @@
         .btn-imprimir { background: #6c757d; color: white; }
         #info-supervisor { margin-bottom: 20px; color: #1a3a5f; font-weight: bold; border: 1px solid #ddd; padding: 10px; border-radius: 6px; background: #f9f9f9; }
         
-        /* -------------------------------------------------------------------------- */
-        /* MODIFICACIÓN APLICADA: Estilos para alinear los logos en cada sección */
-        /* -------------------------------------------------------------------------- */
         .header-logos { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
         .header-logos img { height: 110px; width: auto; object-fit: contain; }
-        /* -------------------------------------------------------------------------- */
 
         .filtros-historicos { display: flex; gap: 15px; background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #eee; align-items: center; }
         .celda-asistencia { cursor: pointer; width: 25px; height: 25px; border: 2px solid #333; display: inline-block; transition: background 0.3s; margin: auto; }
@@ -127,19 +123,17 @@
 
         <div class="sidebar-footer">
             <button class="btn-accion-global" onclick="cerrarJornadaGlobal()">📥 CERRAR JORNADA</button>
-            <a href="index.html" class="btn-cerrar">🚪 CERRAR SESIÓN</a>
+            <button class="btn-cerrar" onclick="cerrarSesion()">🚪 CERRAR SESIÓN</button>
         </div>
     </div>
 
     <div class="contenido">
         <div id="reportes" class="seccion activo">
-            <!-- MODIFICACIÓN APLICADA: Rutas a los logos estáticos en la carpeta "static" -->
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo Hospital">
                 <h1 style="margin: 0; text-align: center; flex: 1;">Reportes</h1>
                 <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
-            <!-- FIN MODIFICACIÓN -->
             <div id="info-supervisor">Supervisor: <span id="display-nombre-rep">---</span> | Turno: <span id="display-turno-rep">---</span> | Depto: <span id="display-depto-rep">---</span></div>
             <div class="info-hoja">
                 <span>Fecha: <input type="date" id="fecha-reporte" class="input-fecha" onchange="guardarDatos()"></span>
@@ -152,13 +146,11 @@
         </div>
 
         <div id="planillas" class="seccion">
-            <!-- MODIFICACIÓN APLICADA: Rutas a los logos estáticos en la carpeta "static" -->
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo Hospital">
                 <h1 style="margin: 0; text-align: center; flex: 1; font-size: 30px;">Estado de Ascensores</h1>
                 <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
-            <!-- FIN MODIFICACIÓN -->
             <div id="info-supervisor">Supervisor: <span id="display-nombre">---</span> | Turno: <span id="display-turno">---</span> | Depto: <span id="display-depto">---</span></div>
             
             <div class="referencias">
@@ -183,13 +175,11 @@
         </div>
 
         <div id="historicos" class="seccion">
-             <!-- MODIFICACIÓN APLICADA: Rutas a los logos estáticos en la carpeta "static" -->
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo Hospital">
                 <h1 style="margin: 0; text-align: center; flex: 1;">Registros Históricos</h1>
                 <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
-             <!-- FIN MODIFICACIÓN -->
             <div id="info-supervisor">Departamento: <span id="depto-hist-label">---</span></div>
             <div class="filtros-historicos">
                 <select id="select-depto" class="input-select" disabled>
@@ -217,26 +207,22 @@
         </div>
         
         <div id="novedades" class="seccion">
-            <!-- MODIFICACIÓN APLICADA: Rutas a los logos estáticos en la carpeta "static" -->
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo Hospital">
                 <h1 style="margin: 0; text-align: center; flex: 1;">Novedades</h1>
                 <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
-            <!-- FIN MODIFICACIÓN -->
             <div id="contenedor-novedades" style="margin-top: 15px;">
                 <p>Cargando novedades...</p>
             </div>
         </div>
 
         <div id="rrhh" class="seccion">
-            <!-- MODIFICACIÓN APLICADA: Rutas a los logos estáticos en la carpeta "static" -->
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo Hospital">
                 <h1 style="margin: 0; text-align: center; flex: 1;">Personal - Turno: <span id="display-turno-rrhh">---</span></h1>
                 <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
-             <!-- FIN MODIFICACIÓN -->
             <table class="tabla-camilleros" style="table-layout: auto;">
                 <thead><tr><th>LEGAJO</th><th>APELLIDO Y NOMBRE</th><th>PRESENTE</th><th>AUSENTE</th><th>LICENCIA</th></tr></thead>
                 <tbody id="cuerpo-rrhh"></tbody>
@@ -256,13 +242,11 @@
         </div>
 
         <div id="resoluciones" class="seccion">
-             <!-- MODIFICACIÓN APLICADA: Rutas a los logos estáticos en la carpeta "static" -->
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo Hospital">
                 <h1 style="margin: 0; text-align: center; flex: 1;">Resoluciones</h1>
                 <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
-            <!-- FIN MODIFICACIÓN -->
             <div id="contenedor-resoluciones" style="margin-top: 15px;">
                 <p>Cargando resoluciones...</p>
             </div>
@@ -290,6 +274,10 @@
         const estadosCSS = ['c-verde', 'c-amarillo', 'c-rojo', 'c-mixto'];
         const opcionesUso = ["-", "Departamento Alimentacion y Dietetica", "Traslado Residuos Comunes", "Traslado Residuos Patologicos", "Traslado Personal Medico", "Traslado Eventos", "Traslado Usuarios y Publico General", "Traslado Camilleros/Pacientes", "Traslado Guardia", "Monta Carga", "Personal del Hospital", "Fuera de Servicio", "En Reparacion", "En Mantenimiento"];
         let chartRRHH, chartAsc;
+
+        function cerrarSesion() {
+            window.location.replace("https://www.com");
+        }
         
         async function obtenerAgentesAscensores() {
             if (!supabaseClient) return [];
@@ -520,7 +508,7 @@
                     uso: select.value || "",
                     observaciones: infoAscensorista,
                     legajo_operador: localStorage.getItem('usuario_legajo') || "Desconocido",
-                    updated_at: new Date().toISOString() // 👈 CORREGIDO AQUÍ PARA COINCIDIR CON SUPABASE
+                    updated_at: new Date().toISOString()
                 });
             });
 
