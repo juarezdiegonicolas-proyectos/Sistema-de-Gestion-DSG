@@ -151,7 +151,7 @@
             </div>
             <div id="info-supervisor">Supervisor: <span id="display-nombre">---</span> | Turno: <span id="display-turno">---</span> | Depto: <span id="display-depto">---</span></div>
             
-            <!-- Barra restaurada de Última Actualización y Registrado por -->
+            <!-- Barra de Última Actualización y Registrado por -->
             <div id="info-ultima-actualizacion" style="margin-bottom: 15px; padding: 10px; background: #f1f1f1; border: 1px solid #ccc; border-radius: 6px; font-size: 13px; color: #333; font-weight: bold;">
                 Última actualización: <span id="txt-ultima-hora">---</span> | Registrado por: <span id="txt-registrado-por">---</span>
             </div>
@@ -265,7 +265,7 @@
     </div>
 
     <script>
-        // Configuración de Supabase con tus credenciales reales
+        // Configuración de Supabase
         const SUPABASE_URL = 'https://ydcbdvosxbwcutddxaze.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_EvvZ8n7Ve2cF9FB4SXA0Ug_7q6qWh9f';
         const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
@@ -278,7 +278,6 @@
         const opcionesUso = ["-", "Departamento Alimentacion y Dietetica", "Traslado Residuos Comunes", "Traslado Residuos Patologicos", "Traslado Personal Medico", "Traslado Eventos", "Traslado Usuarios y Publico General", "Traslado Camilleros/Pacientes", "Traslado Guardia", "Monta Carga", "Personal del Hospital", "Fuera de Servicio", "En Reparacion", "En Mantenimiento"];
         let chartRRHH, chartAsc;
         
-        // Función robusta para conectar a Supabase y evitar bloqueos por RLS o turnos
         async function obtenerAgentesAscensores() {
             if (!supabaseClient) return [];
             
@@ -460,9 +459,15 @@
             guardarEstados();
         }
 
+        // Función corregida y robusta para guardar estados
         async function guardarEstados() {
             let estadosGuardar = {};
             let arrayEstadoEnVivo = [];
+
+            const horaActualStr = new Date().toLocaleTimeString();
+            const fechaActualStr = new Date().toLocaleDateString();
+            const supervisorActual = localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario_legajo') || "Desconocido";
+            const legajoActual = localStorage.getItem('usuario_legajo') || "Desconocido";
 
             document.querySelectorAll('.item-ascensor').forEach(item => {
                 let select = item.querySelector('select');
@@ -507,31 +512,31 @@
                     estado: estadoLabel,
                     uso: select.value || "",
                     observaciones: infoAscensorista,
-                    legajo_operador: localStorage.getItem('usuario_legajo') || "Desconocido",
+                    legajo_operador: legajoActual,
                     actualizado_at: new Date().toISOString()
                 });
             });
 
-            // Actualizar etiquetas de auditoría en pantalla inmediatamente
-            const ahora = new Date();
-            const horaFormateada = ahora.toLocaleTimeString();
-            const fechaFormateada = ahora.toLocaleDateString();
-            const supervisorActual = localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario_legajo') || "Desconocido";
-
-            localStorage.setItem('dsg_ascensores_ultima_act', `${fechaFormateada} ${horaFormateada}`);
+            // Guardar en LocalStorage y refrescar UI visual inmediata
+            localStorage.setItem('dsg_ascensores_ultima_act', `${fechaActualStr} ${horaActualStr}`);
             localStorage.setItem('dsg_ascensores_registrado_por', supervisorActual);
 
-            document.getElementById('txt-ultima-hora').innerText = `${fechaFormateada} ${horaFormateada}`;
+            document.getElementById('txt-ultima-hora').innerText = `${fechaActualStr} ${horaActualStr}`;
             document.getElementById('txt-registrado-por').innerText = supervisorActual;
 
             localStorage.setItem('dsg_ascensores_estados', JSON.stringify(estadosGuardar));
             actualizarGraficoAscensores();
 
+            // Sincronización con Supabase asegurando campos correctos
             if (supabaseClient && arrayEstadoEnVivo.length > 0) {
                 try {
-                    await supabaseClient
+                    let { error } = await supabaseClient
                         .from('estado_actual_ascensores')
                         .upsert(arrayEstadoEnVivo, { onConflict: 'identificador_dispositivo' });
+                    
+                    if (error) {
+                        console.error("Error al actualizar estado en vivo en Supabase:", error.message);
+                    }
                 } catch (err) {
                     console.error("Excepción al actualizar estado en vivo:", err);
                 }
@@ -764,8 +769,6 @@
                 const { data: agentesDB } = await supabaseClient.from('ascensores_personal').select('*').eq('turno', turnoActual);
                 if (agentesDB && agentesDB.length > 0) {
                     agentesCierre = agentesDB;
-                } else if (typeof agentes !== 'undefined') {
-                    agentesCierre = agentes.filter(a => a.turno === turnoActual);
                 }
 
                 if (agentesCierre.length > 0) {
@@ -869,9 +872,6 @@
                     if (supabaseClient) {
                         const { data } = await supabaseClient.from('ascensores_personal').select('*');
                         if (data) agentesHist = data;
-                    }
-                    if (agentesHist.length === 0 && typeof agentes !== 'undefined') {
-                        agentesHist = agentes;
                     }
 
                     agentesHist.forEach(ag => {
