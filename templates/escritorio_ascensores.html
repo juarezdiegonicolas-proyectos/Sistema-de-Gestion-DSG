@@ -60,8 +60,14 @@
         .btn-gestion { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; }
         .btn-imprimir { background: #6c757d; color: white; }
         #info-supervisor { margin-bottom: 20px; color: #1a3a5f; font-weight: bold; border: 1px solid #ddd; padding: 10px; border-radius: 6px; background: #f9f9f9; }
+        
+        /* -------------------------------------------------------------------------- */
+        /* MODIFICACIÓN APLICADA: Estilos para alinear los logos en cada sección */
+        /* -------------------------------------------------------------------------- */
         .header-logos { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
         .header-logos img { height: 110px; width: auto; object-fit: contain; }
+        /* -------------------------------------------------------------------------- */
+
         .filtros-historicos { display: flex; gap: 15px; background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #eee; align-items: center; }
         .celda-asistencia { cursor: pointer; width: 25px; height: 25px; border: 2px solid #333; display: inline-block; transition: background 0.3s; margin: auto; }
         .estado-P { background-color: #28a745 !important; }
@@ -127,11 +133,13 @@
 
     <div class="contenido">
         <div id="reportes" class="seccion activo">
+            <!-- MODIFICACIÓN APLICADA: Rutas a los logos estáticos en la carpeta "static" -->
             <div class="header-logos">
-                <img src="logo_hospi.png" alt="Logo Hospital">
+                <img src="static/logo_hospi.png" alt="Logo Hospital">
                 <h1 style="margin: 0; text-align: center; flex: 1;">Reportes</h1>
-                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
+            <!-- FIN MODIFICACIÓN -->
             <div id="info-supervisor">Supervisor: <span id="display-nombre-rep">---</span> | Turno: <span id="display-turno-rep">---</span> | Depto: <span id="display-depto-rep">---</span></div>
             <div class="info-hoja">
                 <span>Fecha: <input type="date" id="fecha-reporte" class="input-fecha" onchange="guardarDatos()"></span>
@@ -144,11 +152,13 @@
         </div>
 
         <div id="planillas" class="seccion">
+            <!-- MODIFICACIÓN APLICADA: Rutas a los logos estáticos en la carpeta "static" -->
             <div class="header-logos">
-                <img src="logo_hospi.png" alt="Logo Hospital">
+                <img src="static/logo_hospi.png" alt="Logo Hospital">
                 <h1 style="margin: 0; text-align: center; flex: 1; font-size: 30px;">Estado de Ascensores</h1>
-                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
+            <!-- FIN MODIFICACIÓN -->
             <div id="info-supervisor">Supervisor: <span id="display-nombre">---</span> | Turno: <span id="display-turno">---</span> | Depto: <span id="display-depto">---</span></div>
             
             <div class="referencias">
@@ -173,11 +183,13 @@
         </div>
 
         <div id="historicos" class="seccion">
+             <!-- MODIFICACIÓN APLICADA: Rutas a los logos estáticos en la carpeta "static" -->
             <div class="header-logos">
-                <img src="logo_hospi.png" alt="Logo Hospital">
+                <img src="static/logo_hospi.png" alt="Logo Hospital">
                 <h1 style="margin: 0; text-align: center; flex: 1;">Registros Históricos</h1>
-                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
+             <!-- FIN MODIFICACIÓN -->
             <div id="info-supervisor">Departamento: <span id="depto-hist-label">---</span></div>
             <div class="filtros-historicos">
                 <select id="select-depto" class="input-select" disabled>
@@ -205,22 +217,26 @@
         </div>
         
         <div id="novedades" class="seccion">
+            <!-- MODIFICACIÓN APLICADA: Rutas a los logos estáticos en la carpeta "static" -->
             <div class="header-logos">
-                <img src="logo_hospi.png" alt="Logo Hospital">
+                <img src="static/logo_hospi.png" alt="Logo Hospital">
                 <h1 style="margin: 0; text-align: center; flex: 1;">Novedades</h1>
-                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
+            <!-- FIN MODIFICACIÓN -->
             <div id="contenedor-novedades" style="margin-top: 15px;">
                 <p>Cargando novedades...</p>
             </div>
         </div>
 
         <div id="rrhh" class="seccion">
+            <!-- MODIFICACIÓN APLICADA: Rutas a los logos estáticos en la carpeta "static" -->
             <div class="header-logos">
-                <img src="logo_hospi.png" alt="Logo Hospital">
+                <img src="static/logo_hospi.png" alt="Logo Hospital">
                 <h1 style="margin: 0; text-align: center; flex: 1;">Personal - Turno: <span id="display-turno-rrhh">---</span></h1>
-                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
+             <!-- FIN MODIFICACIÓN -->
             <table class="tabla-camilleros" style="table-layout: auto;">
                 <thead><tr><th>LEGAJO</th><th>APELLIDO Y NOMBRE</th><th>PRESENTE</th><th>AUSENTE</th><th>LICENCIA</th></tr></thead>
                 <tbody id="cuerpo-rrhh"></tbody>
@@ -240,11 +256,13 @@
         </div>
 
         <div id="resoluciones" class="seccion">
+             <!-- MODIFICACIÓN APLICADA: Rutas a los logos estáticos en la carpeta "static" -->
             <div class="header-logos">
-                <img src="logo_hospi.png" alt="Logo Hospital">
+                <img src="static/logo_hospi.png" alt="Logo Hospital">
                 <h1 style="margin: 0; text-align: center; flex: 1;">Resoluciones</h1>
-                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
+            <!-- FIN MODIFICACIÓN -->
             <div id="contenedor-resoluciones" style="margin-top: 15px;">
                 <p>Cargando resoluciones...</p>
             </div>
