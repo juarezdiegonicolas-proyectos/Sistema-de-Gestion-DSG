@@ -275,21 +275,11 @@
         const spanHoja = document.getElementById('numero-hoja');
         const inputFecha = document.getElementById('fecha-reporte');
         const inputFechaPlanilla = document.getElementById('fecha-planilla');
-        const filtroFechaHist = document.getElementById('filtro-fecha-hist');
         let chartRRHH;
 
         let listaSectores = ["- Seleccionar Sector -"];
         let listaAgentes = ["- Seleccionar Agente -"];
         let agentes = [];
-
-        // Función segura para obtener la fecha actual en formato local YYYY-MM-DD sin problemas de huso horario
-        function obtenerFechaHoyISO() {
-            const d = new Date();
-            const year = d.getFullYear();
-            const month = String(d.getMonth() + 1).padStart(2, '0');
-            const day = String(d.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
-        }
 
         async function cargarPersonalYSeccionesSupabase() {
             const turnoActual = localStorage.getItem('usuario_turno') || "Mañana";
@@ -402,13 +392,12 @@
             }
         }
 
+        function obtenerFechaHoyISO() { return new Date().toISOString().split('T')[0]; }
+
         let contadorHoja = parseInt(localStorage.getItem('dsg_intendencia_contador_hoja')) || 1;
         if (spanHoja) spanHoja.innerText = String(contadorHoja).padStart(3, '0');
-        
-        const fechaHoyLocal = obtenerFechaHoyISO();
-        if (inputFecha) inputFecha.value = localStorage.getItem('dsg_intendencia_fecha') || fechaHoyLocal;
-        if (inputFechaPlanilla) inputFechaPlanilla.value = localStorage.getItem('dsg_intendencia_fecha_planilla') || fechaHoyLocal;
-        if (filtroFechaHist) filtroFechaHist.value = fechaHoyLocal;
+        if (inputFecha) inputFecha.value = localStorage.getItem('dsg_intendencia_fecha') || obtenerFechaHoyISO();
+        if (inputFechaPlanilla) inputFechaPlanilla.value = localStorage.getItem('dsg_intendencia_fecha_planilla') || obtenerFechaHoyISO();
 
         function actualizarGraficoRRHH(p, a, l) {
             const canvasElem = document.getElementById('graficoRRHH');
@@ -568,7 +557,7 @@
         async function cerrarJornadaGlobal() {
             if (!confirm("¿Cerrar jornada? Se consolidarán los datos y se guardarán en la nube.")) return;
             
-            const fechaCierreVal = (inputFechaPlanilla ? inputFechaPlanilla.value : obtenerFechaHoyISO()).trim();
+            const fechaCierreVal = (inputFechaPlanilla ? inputFechaPlanilla.value : new Date().toISOString().split('T')[0]).trim();
             const turnoVal = (localStorage.getItem('usuario_turno') || "Mañana").trim();
             const deptoVal = "Intendencia";
             const supervisorVal = (localStorage.getItem('usuario_nombre') || "Invitado").trim();
@@ -837,7 +826,7 @@
                 let legajoOperador = null;
 
                 data.forEach(item => {
-                    let fechaItem = item.actualizado_at || item.actualizado_en || item.fecha;
+                    let fechaItem = item.updated_at || item.actualizado_at || item.actualizado_en || item.fecha;
                     if (fechaItem) {
                         if (!ultimaFechaStr || new Date(fechaItem) > new Date(ultimaFechaStr)) {
                             ultimaFechaStr = fechaItem;
