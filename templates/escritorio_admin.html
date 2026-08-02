@@ -127,15 +127,13 @@
             function imprimirConOrientacion() {
                 const seleccion = prompt("¿Cómo deseas imprimir?\n\nEscribe 'V' para Vertical\nEscribe 'H' para Horizontal", "H");
                 
-                if (seleccion === null) return; // Si cancela
+                if (seleccion === null) return; 
 
                 const opcion = seleccion.trim().toUpperCase();
                 
-                // Limpiamos estilos de impresión previos
                 const viejo = document.getElementById('estilo-forzado-impresion');
                 if (viejo) viejo.remove();
 
-                // Creamos un estilo exclusivo con la regla estricta de tamaño y orientación
                 const nuevoEstilo = document.createElement('style');
                 nuevoEstilo.id = 'estilo-forzado-impresion';
 
@@ -147,7 +145,6 @@
 
                 document.head.appendChild(nuevoEstilo);
 
-                // Disparamos la impresión tras un breverespiro del DOM
                 setTimeout(() => {
                     window.print();
                 }, 100);
@@ -345,146 +342,146 @@
         }
 
         async function cargarEstadoAscensoresVivo() {
-    const visor = document.getElementById('visor-estado-ascensores');
-    visor.innerHTML = '<p style="text-align:center;">Cargando estado actual de ascensores...</p>';
-    
-    try {
-        const { data, error } = await db.from('estado_actual_ascensores').select('*');
-        if (error) throw error;
+            const visor = document.getElementById('visor-estado-ascensores');
+            visor.innerHTML = '<p style="text-align:center;">Cargando estado actual de ascensores...</p>';
+            
+            try {
+                const { data, error } = await db.from('estado_actual_ascensores').select('*');
+                if (error) throw error;
 
-        if (!data || data.length === 0) {
-            visor.innerHTML = '<p style="text-align:center;">No hay registros en la tabla estado_actual_ascensores.</p>';
-            return;
-        }
-
-        let ultimaFechaStr = '';
-        let legajoOperador = null;
-
-        data.forEach(item => {
-            let fechaItem = item.actualizado_at || item.actualizado_en || item.fecha;
-            if (fechaItem) {
-                if (!ultimaFechaStr || new Date(fechaItem) > new Date(ultimaFechaStr)) {
-                    ultimaFechaStr = fechaItem;
+                if (!data || data.length === 0) {
+                    visor.innerHTML = '<p style="text-align:center;">No hay registros en la tabla estado_actual_ascensores.</p>';
+                    return;
                 }
-            }
-            let legajoItem = item.legajo_operador || item.legajo;
-            if (legajoItem && !legajoOperador) {
-                legajoOperador = String(legajoItem).trim();
-            }
-        });
 
-        let nombreSupervisor = 'Sistema / Desconocido';
-        if (legajoOperador) {
-            const { data: userData, error: userError } = await db
-                .from('usuarios')
-                .select('nombre_completo')
-                .eq('legajo', legajoOperador)
-                .maybeSingle();
+                let ultimaFechaStr = '';
+                let legajoOperador = null;
 
-            if (!userError && userData && userData.nombre_completo) {
-                nombreSupervisor = userData.nombre_completo;
-            } else {
-                nombreSupervisor = `Legajo: ${legajoOperador}`;
-            }
-        }
-
-        let fechaFormateada = 'Sin fecha registrada';
-        if (ultimaFechaStr) {
-            let f = new Date(ultimaFechaStr);
-            if (!isNaN(f.getTime())) {
-                fechaFormateada = f.toLocaleString('es-AR', {
-                    year: 'numeric', month: '2-digit', day: '2-digit',
-                    hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
-                });
-            } else {
-                fechaFormateada = ultimaFechaStr;
-            }
-        }
-
-        const tituloContenedor = document.querySelector('#visor-estado-ascensores').previousElementSibling;
-        if (tituloContenedor) {
-            tituloContenedor.innerHTML = `Última actualización: <b>${fechaFormateada}</b> | Registrado por: <b>${nombreSupervisor}</b>`;
-        }
-
-        data.sort((a, b) => (a.id || 0) - (b.id || 0));
-
-        let cVerde = 0, cAmarillo = 0, cRojo = 0, cMixto = 0;
-        let totalAscensores = data.length;
-
-        let html = '<table style="width:100%; border-collapse: collapse; text-align: left;">';
-        html += '<thead><tr style="background: #1a3a5f; color: white;"><th style="padding: 10px; border: 1px solid #ddd; text-align: center; width: 15%;">Dispositivo</th><th style="padding: 10px; border: 1px solid #ddd; width: 25%;">Estado</th><th style="padding: 10px; border: 1px solid #ddd; width: 30%;">Uso Asignado</th><th style="padding: 10px; border: 1px solid #ddd; width: 30%;">Observaciones / Detalles</th></tr></thead><tbody>';
-
-        data.forEach(item => {
-            let dispositivo = item.identificador_dispositivo || `Dispositivo ${item.id}`;
-            let estado = item.estado || '-';
-            let uso = item.uso || '-';
-            let observaciones = item.observaciones && item.observaciones !== 'EMPTY' ? item.observaciones : '-';
-
-            let estLower = String(estado).toLowerCase();
-            if (estLower.includes('funcionando') && !estLower.includes('ascensorista')) {
-                cVerde++;
-            } else if (estLower.includes('mantenimiento')) {
-                cAmarillo++;
-            } else if (estLower.includes('fuera') || estLower.includes('servicio')) {
-                cRojo++;
-            } else if (estLower.includes('ascensorista') || estLower.includes('mixto')) {
-                cMixto++;
-            } else {
-                cVerde++;
-            }
-
-            html += `<tr>
-                <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold; text-align: center;">${dispositivo}</td>
-                <td style="padding: 10px; border: 1px solid #ddd;">${estado}</td>
-                <td style="padding: 10px; border: 1px solid #ddd;">${uso}</td>
-                <td style="padding: 10px; border: 1px solid #ddd;">${observaciones}</td>
-            </tr>`;
-        });
-
-        html += '</tbody></table>';
-
-        html += `
-            <div style="margin-top: 30px; text-align: center; color: #1a3a5f; font-weight: bold; font-size: 20px; margin-bottom: 10px;">Estadísticas de Funcionalidad</div>
-            <div style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #ddd; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; justify-content: center; align-items: center; gap: 50px; flex-wrap: wrap;">
-                <div style="font-weight:bold; color: #1a3a5f; font-size: 16px; line-height: 2.0; display: flex; flex-direction: column;">
-                    <div style="background-color: #1a3a5f; color: white; padding: 8px 15px; border-radius: 6px; font-weight: bold; margin-bottom: 8px; width: 270px; text-align: left;">Funcionando: ${totalAscensores > 0 ? ((cVerde/totalAscensores)*100).toFixed(1) : 0}% (${cVerde})</div>
-                    <div style="background-color: #1a3a5f; color: white; padding: 8px 15px; border-radius: 6px; font-weight: bold; margin-bottom: 8px; width: 270px; text-align: left;">En Mantenimiento: ${totalAscensores > 0 ? ((cAmarillo/totalAscensores)*100).toFixed(1) : 0}% (${cAmarillo})</div>
-                    <div style="background-color: #1a3a5f; color: white; padding: 8px 15px; border-radius: 6px; font-weight: bold; margin-bottom: 8px; width: 270px; text-align: left;">Fuera de Servicio: ${totalAscensores > 0 ? ((cRojo/totalAscensores)*100).toFixed(1) : 0}% (${cRojo})</div>
-                    <div style="background-color: #1a3a5f; color: white; padding: 8px 15px; border-radius: 6px; font-weight: bold; margin-bottom: 8px; width: 270px; text-align: left;">Con Ascensorista: ${totalAscensores > 0 ? ((cMixto/totalAscensores)*100).toFixed(1) : 0}% (${cMixto})</div>
-                </div>
-                <div style="width: 220px; height: 220px;">
-                    <canvas id="graficoEstadoAscensoresVivo"></canvas>
-                </div>
-            </div>`;
-
-        visor.innerHTML = html;
-
-        setTimeout(() => {
-            const ctx = document.getElementById('graficoEstadoAscensoresVivo')?.getContext('2d');
-            if (ctx) {
-                if (typeof chartAscVivo !== 'undefined' && chartAscVivo) chartAscVivo.destroy();
-                window.chartAscVivo = new Chart(ctx, {
-                    type: 'pie',
-                    data: { 
-                        labels: ['Funcionando', 'Mantenimiento', 'Fuera de Servicio', 'Ascensoristas'], 
-                        datasets: [{ 
-                            data: [cVerde, cAmarillo, cRojo, cMixto], 
-                            backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#007bff'] 
-                        }] 
-                    },
-                    options: { 
-                        responsive: true, 
-                        plugins: { legend: { position: 'bottom' } } 
+                data.forEach(item => {
+                    let fechaItem = item.actualizado_at || item.actualizado_en || item.fecha;
+                    if (fechaItem) {
+                        if (!ultimaFechaStr || new Date(fechaItem) > new Date(ultimaFechaStr)) {
+                            ultimaFechaStr = fechaItem;
+                        }
+                    }
+                    let legajoItem = item.legajo_operador || item.legajo;
+                    if (legajoItem && !legajoOperador) {
+                        legajoOperador = String(legajoItem).trim();
                     }
                 });
-            }
-        }, 50);
 
-    } catch (err) {
-        console.error("Error al obtener estado actual de ascensores:", err);
-        visor.innerHTML = '<p style="text-align:center; color: red;">Error al cargar los datos de ascensores y escaleras.</p>';
-    }
-}
+                let nombreSupervisor = 'Sistema / Desconocido';
+                if (legajoOperador) {
+                    const { data: userData, error: userError } = await db
+                        .from('usuarios')
+                        .select('nombre_completo')
+                        .eq('legajo', legajoOperador)
+                        .maybeSingle();
+
+                    if (!userError && userData && userData.nombre_completo) {
+                        nombreSupervisor = userData.nombre_completo;
+                    } else {
+                        nombreSupervisor = `Legajo: ${legajoOperador}`;
+                    }
+                }
+
+                let fechaFormateada = 'Sin fecha registrada';
+                if (ultimaFechaStr) {
+                    let f = new Date(ultimaFechaStr);
+                    if (!isNaN(f.getTime())) {
+                        fechaFormateada = f.toLocaleString('es-AR', {
+                            year: 'numeric', month: '2-digit', day: '2-digit',
+                            hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+                        });
+                    } else {
+                        fechaFormateada = ultimaFechaStr;
+                    }
+                }
+
+                const tituloContenedor = document.querySelector('#visor-estado-ascensores').previousElementSibling;
+                if (tituloContenedor) {
+                    tituloContenedor.innerHTML = `Última actualización: <b>${fechaFormateada}</b> | Registrado por: <b>${nombreSupervisor}</b>`;
+                }
+
+                data.sort((a, b) => (a.id || 0) - (b.id || 0));
+
+                let cVerde = 0, cAmarillo = 0, cRojo = 0, cMixto = 0;
+                let totalAscensores = data.length;
+
+                let html = '<table style="width:100%; border-collapse: collapse; text-align: left;">';
+                html += '<thead><tr style="background: #1a3a5f; color: white;"><th style="padding: 10px; border: 1px solid #ddd; text-align: center; width: 15%;">Dispositivo</th><th style="padding: 10px; border: 1px solid #ddd; width: 25%;">Estado</th><th style="padding: 10px; border: 1px solid #ddd; width: 30%;">Uso Asignado</th><th style="padding: 10px; border: 1px solid #ddd; width: 30%;">Observaciones / Detalles</th></tr></thead><tbody>';
+
+                data.forEach(item => {
+                    let dispositivo = item.identificador_dispositivo || `Dispositivo ${item.id}`;
+                    let estado = item.estado || '-';
+                    let uso = item.uso || '-';
+                    let observaciones = item.observaciones && item.observaciones !== 'EMPTY' ? item.observaciones : '-';
+
+                    let estLower = String(estado).toLowerCase();
+                    if (estLower.includes('funcionando') && !estLower.includes('ascensorista')) {
+                        cVerde++;
+                    } else if (estLower.includes('mantenimiento')) {
+                        cAmarillo++;
+                    } else if (estLower.includes('fuera') || estLower.includes('servicio')) {
+                        cRojo++;
+                    } else if (estLower.includes('ascensorista') || estLower.includes('mixto')) {
+                        cMixto++;
+                    } else {
+                        cVerde++;
+                    }
+
+                    html += `<tr>
+                        <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold; text-align: center;">${dispositivo}</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">${estado}</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">${uso}</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">${observaciones}</td>
+                    </tr>`;
+                });
+
+                html += '</tbody></table>';
+
+                html += `
+                    <div style="margin-top: 30px; text-align: center; color: #1a3a5f; font-weight: bold; font-size: 20px; margin-bottom: 10px;">Estadísticas de Funcionalidad</div>
+                    <div style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #ddd; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; justify-content: center; align-items: center; gap: 50px; flex-wrap: wrap;">
+                        <div style="font-weight:bold; color: #1a3a5f; font-size: 16px; line-height: 2.0; display: flex; flex-direction: column;">
+                            <div style="background-color: #1a3a5f; color: white; padding: 8px 15px; border-radius: 6px; font-weight: bold; margin-bottom: 8px; width: 270px; text-align: left;">Funcionando: ${totalAscensores > 0 ? ((cVerde/totalAscensores)*100).toFixed(1) : 0}% (${cVerde})</div>
+                            <div style="background-color: #1a3a5f; color: white; padding: 8px 15px; border-radius: 6px; font-weight: bold; margin-bottom: 8px; width: 270px; text-align: left;">En Mantenimiento: ${totalAscensores > 0 ? ((cAmarillo/totalAscensores)*100).toFixed(1) : 0}% (${cAmarillo})</div>
+                            <div style="background-color: #1a3a5f; color: white; padding: 8px 15px; border-radius: 6px; font-weight: bold; margin-bottom: 8px; width: 270px; text-align: left;">Fuera de Servicio: ${totalAscensores > 0 ? ((cRojo/totalAscensores)*100).toFixed(1) : 0}% (${cRojo})</div>
+                            <div style="background-color: #1a3a5f; color: white; padding: 8px 15px; border-radius: 6px; font-weight: bold; margin-bottom: 8px; width: 270px; text-align: left;">Con Ascensorista: ${totalAscensores > 0 ? ((cMixto/totalAscensores)*100).toFixed(1) : 0}% (${cMixto})</div>
+                        </div>
+                        <div style="width: 220px; height: 220px;">
+                            <canvas id="graficoEstadoAscensoresVivo"></canvas>
+                        </div>
+                    </div>`;
+
+                visor.innerHTML = html;
+
+                setTimeout(() => {
+                    const ctx = document.getElementById('graficoEstadoAscensoresVivo')?.getContext('2d');
+                    if (ctx) {
+                        if (typeof chartAscVivo !== 'undefined' && chartAscVivo) chartAscVivo.destroy();
+                        window.chartAscVivo = new Chart(ctx, {
+                            type: 'pie',
+                            data: { 
+                                labels: ['Funcionando', 'Mantenimiento', 'Fuera de Servicio', 'Ascensoristas'], 
+                                datasets: [{ 
+                                    data: [cVerde, cAmarillo, cRojo, cMixto], 
+                                    backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#007bff'] 
+                                }] 
+                            },
+                            options: { 
+                                responsive: true, 
+                                plugins: { legend: { position: 'bottom' } } 
+                            }
+                        });
+                    }
+                }, 50);
+
+            } catch (err) {
+                console.error("Error al obtener estado actual de ascensores:", err);
+                visor.innerHTML = '<p style="text-align:center; color: red;">Error al cargar los datos de ascensores y escaleras.</p>';
+            }
+        }
 
         function actualizarPrint(id) {
             const depto = document.getElementById('depto-destino-' + id).value;
@@ -516,7 +513,6 @@
                 turno: turno
             };
             
-            // Mapeo limpio para que coincida exactamente con las llaves que consultan los departamentos
             let nombreDeptoClave = destino;
             if (destino === 'division-ascensores') nombreDeptoClave = 'Ascensores';
             if (destino === 'camilleros-central') nombreDeptoClave = 'Camilleros';
@@ -527,10 +523,8 @@
             if (destino === 'direccion-servicios-generales') nombreDeptoClave = 'DSG';
             if (destino === 'Todos') nombreDeptoClave = 'Todos';
 
-            // Clave exacta estandarizada para que los departamentos la detecten sin problemas
             const claveUnica = `comunicado_novedades_${nombreDeptoClave}_${turno}`;
             
-            // Guardado en Supabase asegurando el control de conflictos
             const { error } = await db
                 .from('comunicados_memos')
                 .upsert(
@@ -603,9 +597,9 @@
             }
         }
 
-        let chartAsc; // Variable global para controlar la instancia del gráfico
+        let chartAsc; 
 
-async function consultar(tipo) {
+        async function consultar(tipo) {
             const depto = document.getElementById('depto-' + tipo).value;
             const turno = document.getElementById('turno-' + tipo).value;
             const fechaBusqueda = document.getElementById('fecha-' + tipo).value;
@@ -655,22 +649,25 @@ async function consultar(tipo) {
                     return;
                 }
 
-                const [resIntendencia, resAscensores] = await Promise.all([
-                    db.from('intendencia_personal').select('legajo, apellido_y_nombre').in('legajo', legajos),
-                    db.from('ascensores_personal').select('legajo, apellido_y_nombre').in('legajo', legajos)
-                ]);
+                // CORRECCIÓN ESTRICTA: Consultamos únicamente la tabla correspondiente al depto filtrado
+                let tablaPersonal = 'intendencia_personal';
+                if (deptoFiltro === 'Ascensores') {
+                    tablaPersonal = 'ascensores_personal';
+                } else if (deptoFiltro === 'Camilleros') {
+                    tablaPersonal = 'camilleros_personal';
+                } else if (deptoFiltro === 'Lavadero Central') {
+                    tablaPersonal = 'lavadero_personal';
+                }
+
+                const { data: resPersonal, error: errPers } = await db
+                    .from(tablaPersonal)
+                    .select('legajo, apellido_y_nombre')
+                    .in('legajo', legajos);
 
                 const mapaNombres = {};
-                if (resIntendencia.data) {
-                    resIntendencia.data.forEach(p => {
+                if (resPersonal) {
+                    resPersonal.forEach(p => {
                         if (p.legajo != null) mapaNombres[String(p.legajo).trim()] = p.apellido_y_nombre || 'Desconocido';
-                    });
-                }
-                if (resAscensores.data) {
-                    resAscensores.data.forEach(p => {
-                        if (p.legajo != null && !mapaNombres[String(p.legajo).trim()]) {
-                            mapaNombres[String(p.legajo).trim()] = p.apellido_y_nombre || 'Desconocido';
-                        }
                     });
                 }
 
