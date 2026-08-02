@@ -112,7 +112,7 @@
 
     <div class="contenido">
         <script>
-            // Configuración sincronizada de Supabase usando 'db' con las credenciales reales[cite: 5]
+            // Configuración sincronizada de Supabase usando 'db' con las credenciales reales
             const SUPABASE_URL = 'https://ydcbdvosxbwcutddxaze.supabase.co';
             const SUPABASE_KEY = 'sb_publishable_EvvZ8n7Ve2cF9FB4SXA0Ug_7q6qWh9f';
             const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -120,9 +120,9 @@
 
         <div id="reportes" class="seccion activo">
             <div class="header-logos">
-                <img src="static/logo_hospi.png" alt="Logo Hospital">
+                <img src="logo_hospi.png" alt="Logo Hospital">
                 <h1 style="margin: 0; text-align: center; flex: 1;">Reportes</h1>
-                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
             <div id="info-supervisor">Supervisor: <span id="display-nombre-rep">---</span> | Turno: <span id="display-turno-rep">---</span> | Depto: <span id="display-depto-rep">---</span></div>
             <div class="info-hoja">
@@ -137,9 +137,9 @@
 
         <div id="planillas" class="seccion">
             <div class="header-logos">
-                <img src="static/logo_hospi.png" alt="Logo Hospital">
+                <img src="logo_hospi.png" alt="Logo Hospital">
                 <h1 style="margin: 0; text-align: center; flex: 1; font-size: 26px;">Planilla Funciones del Día</h1>
-                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
             <div id="info-supervisor">Supervisor: <span id="display-nombre">---</span> | Turno: <span id="display-turno">---</span> | Depto: <span id="display-depto">---</span></div>
             
@@ -173,9 +173,9 @@
 
         <div id="estado-ascensores" class="seccion">
             <div class="header-logos">
-                <img src="static/logo_hospi.png" alt="Logo">
+                <img src="logo_hospi.png" alt="Logo">
                 <h1 style="margin: 0; text-align: center; flex: 1;">Estado Actual de Ascensores</h1>
-                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
             <div class="filtros-historicos">
                 <span style="font-weight: bold; color: #1a3a5f;">Estado en tiempo real de la tabla estado_actual_ascensores</span>
@@ -189,9 +189,9 @@
 
         <div id="historicos" class="seccion">
             <div class="header-logos">
-                <img src="static/logo_hospi.png" alt="Logo Hospital">
+                <img src="logo_hospi.png" alt="Logo Hospital">
                 <h1 style="margin: 0; text-align: center; flex: 1;">Registros Históricos</h1>
-                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
             <div id="info-supervisor">Departamento: <span id="depto-hist-label">---</span></div>
             <div class="filtros-historicos">
@@ -221,9 +221,9 @@
         
         <div id="novedades" class="seccion">
             <div class="header-logos">
-                <img src="static/logo_hospi.png" alt="Logo Hospital">
+                <img src="logo_hospi.png" alt="Logo Hospital">
                 <h1 style="margin: 0; text-align: center; flex: 1;">Novedades</h1>
-                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
             <div class="filtros-historicos">
                 <span style="font-weight: bold; color: #1a3a5f;">Estado en tiempo real de la tabla comunicados_memos</span>
@@ -237,9 +237,9 @@
 
         <div id="rrhh" class="seccion">
             <div class="header-logos">
-                <img src="static/logo_hospi.png" alt="Logo Hospital">
+                <img src="logo_hospi.png" alt="Logo Hospital">
                 <h1 style="margin: 0; text-align: center; flex: 1;">Personal - Turno: <span id="display-turno-rrhh">---</span></h1>
-                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
             <table class="tabla-intendencia" style="table-layout: auto;">
                 <thead><tr><th>LEGAJO</th><th>APELLIDO Y NOMBRE</th><th>PRESENTE</th><th>AUSENTE</th><th>LICENCIA</th></tr></thead>
@@ -261,9 +261,9 @@
 
         <div id="resoluciones" class="seccion">
             <div class="header-logos">
-                <img src="static/logo_hospi.png" alt="Logo Hospital">
+                <img src="logo_hospi.png" alt="Logo Hospital">
                 <h1 style="margin: 0; text-align: center; flex: 1;">Resoluciones</h1>
-                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
         </div>
     </div>
@@ -822,16 +822,55 @@
                     return;
                 }
 
-                let ultimaFechaStr = '';
-                let legajoOperador = null;
+                // Ordenamiento numérico ascendente estricto (igual que en index)
+                data.sort((a, b) => {
+                    let textoA = String(a.nombre || a.ascensor || a.identificador_dispositivo || '');
+                    let textoB = String(b.nombre || b.ascensor || b.identificador_dispositivo || '');
+                    
+                    let numA = parseInt(textoA.replace(/\D/g, ''), 10);
+                    let numB = parseInt(textoB.replace(/\D/g, ''), 10);
 
-                data.forEach(item => {
-                    let fechaItem = item.actualizado_at || item.actualizado_en || item.fecha;
-                    if (fechaItem) {
-                        if (!ultimaFechaStr || new Date(fechaItem) > new Date(ultimaFechaStr)) {
-                            ultimaFechaStr = fechaItem;
-                        }
+                    if (isNaN(numA)) return 1;
+                    if (isNaN(numB)) return -1;
+                    return numA - numB;
+                });
+
+                // Mapeo seguro de la fecha general (última sincronización)
+                let ultimaFechaRegistro = null;
+                if (data.length > 0) {
+                    const primerRegistro = data[0];
+                    const rawFecha = primerRegistro.updated_at || primerRegistro.fecha_actualizacion || primerRegistro.created_at || primerRegistro.actualizado_at || primerRegistro.actualizado_en || primerRegistro.fecha || primerRegistro.hora;
+                    if (rawFecha) {
+                        ultimaFechaRegistro = new Date(rawFecha);
                     }
+                }
+
+                let fechaFormateada = 'Sin fecha registrada';
+                if (ultimaFechaRegistro && !isNaN(ultimaFechaRegistro.getTime())) {
+                    fechaFormateada = ultimaFechaRegistro.toLocaleString('es-AR', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                        hour12: false
+                    });
+                } else {
+                    let ahora = new Date();
+                    fechaFormateada = ahora.toLocaleString('es-AR', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                        hour12: false
+                    });
+                }
+
+                let legajoOperador = null;
+                data.forEach(item => {
                     let legajoItem = item.legajo_operador || item.legajo;
                     if (legajoItem && !legajoOperador) {
                         legajoOperador = String(legajoItem).trim();
@@ -851,24 +890,8 @@
                     } else {
                         nombreSupervisor = `Legajo: ${legajoOperador}`;
                     }
-                }
-
-                let fechaFormateada = 'Sin fecha registrada';
-                if (ultimaFechaStr) {
-                    let f = new Date(ultimaFechaStr);
-                    if (!isNaN(f.getTime())) {
-                        fechaFormateada = f.toLocaleString('es-AR', {
-                            year: 'numeric',
-                            month: '2-digit',
-                            day: '2-digit',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            second: '2-digit',
-                            hour12: false
-                        });
-                    } else {
-                        fechaFormateada = ultimaFechaStr;
-                    }
+                } else {
+                    nombreSupervisor = localStorage.getItem('usuario_nombre') || 'Sistema / Desconocido';
                 }
 
                 const tituloContenedor = document.querySelector('#visor-estado-ascensores').previousElementSibling;
@@ -876,27 +899,63 @@
                     tituloContenedor.innerHTML = `Última actualización: <b>${fechaFormateada}</b> | Registrado por: <b>${nombreSupervisor}</b>`;
                 }
 
-                data.sort((a, b) => {
-                    let idA = a.id || 0;
-                    let idB = b.id || 0;
-                    return idA - idB;
-                });
+                let html = '<table class="ascensores-table" style="width:100%; border-collapse: collapse; text-align: left;">';
+                html += '<thead><tr style="background: #1a3a5f; color: white;"><th style="padding: 10px; border: 1px solid #ddd; text-align: center; width: 25%;">Ascensores y Escaleras</th><th style="padding: 10px; border: 1px solid #ddd; text-align: center; width: 20%;">Estado Actual</th><th style="padding: 10px; border: 1px solid #ddd; text-align: center; width: 25%;">Uso Asignado</th><th style="padding: 10px; border: 1px solid #ddd; text-align: center; width: 30%;">Última Actualización</th></tr></thead><tbody>';
 
-                let html = '<table style="width:100%; border-collapse: collapse; text-align: left;">';
-                html += '<thead><tr style="background: #1a3a5f; color: white;"><th style="padding: 10px; border: 1px solid #ddd; text-align: center; width: 15%;">Dispositivo</th><th style="padding: 10px; border: 1px solid #ddd; width: 25%;">Estado</th><th style="padding: 10px; border: 1px solid #ddd; width: 30%;">Uso Asignado</th><th style="padding: 10px; border: 1px solid #ddd; width: 30%;">Observaciones / Detalles</th></tr></thead><tbody>';
+                data.forEach(asc => {
+                    let estadoTexto = asc.estado ? asc.estado.trim() : '';
+                    let estadoLower = estadoTexto.toLowerCase();
+                    
+                    let claseBadge = 'badge-operativo';
+                    let contenidoEstado = '';
 
-                data.forEach(item => {
-                    let dispositivo = item.identificador_dispositivo || `Dispositivo ${item.id}`;
-                    let estado = item.estado || '-';
-                    let uso = item.uso || '-';
-                    let observaciones = item.observaciones && item.observaciones !== 'EMPTY' ? item.observaciones : '-';
+                    if (!estadoTexto || estadoLower === 'desconocido' || estadoLower === '-') {
+                        claseBadge = 'badge-desconocido';
+                        contenidoEstado = '-';
+                    } else if (estadoLower.includes('detenido') || estadoLower.includes('fuera')) {
+                        claseBadge = 'badge-detenido';
+                        contenidoEstado = estadoTexto;
+                    } else if (estadoLower.includes('mantenimiento') || estadoLower.includes('reparación')) {
+                        claseBadge = 'badge-mantenimiento';
+                        contenidoEstado = estadoTexto;
+                    } else {
+                        contenidoEstado = estadoTexto;
+                    }
 
-                    html += `<tr>
-                        <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold; text-align: center;">${dispositivo}</td>
-                        <td style="padding: 10px; border: 1px solid #ddd;">${estado}</td>
-                        <td style="padding: 10px; border: 1px solid #ddd;">${uso}</td>
-                        <td style="padding: 10px; border: 1px solid #ddd;">${observaciones}</td>
-                    </tr>`;
+                    let usoAsignadoTexto = asc.uso_asignado || asc.uso || asc.tipo || '';
+                    let usoLower = usoAsignadoTexto.trim().toLowerCase();
+                    let contenidoUso = (usoAsignadoTexto && usoLower !== '-' && usoLower !== 'vacío' && usoLower !== 'ninguno') ? usoAsignadoTexto : '-';
+
+                    let horaFila = asc.updated_at || asc.fecha_actualizacion || asc.actualizado_at || asc.actualizado_en || asc.hora;
+                    let textoHoraFila = "-";
+                    if (horaFila) {
+                        let fechaFilaObj = new Date(horaFila);
+                        if (!isNaN(fechaFilaObj.getTime())) {
+                            textoHoraFila = fechaFilaObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        }
+                    }
+
+                    let rawText = String(asc.nombre || asc.ascensor || asc.identificador_dispositivo || '');
+                    let numExtracted = rawText.replace(/\D/g, '');
+                    let numVal = parseInt(numExtracted, 10);
+
+                    let nombreAscensor = '';
+                    if (!isNaN(numVal) && numVal >= 25 && numVal <= 28) {
+                        nombreAscensor = `Escalera Mecanica N ${numVal}`;
+                    } else if (numExtracted) {
+                        nombreAscensor = `Ascensor Nº ${numExtracted}`;
+                    } else {
+                        nombreAscensor = rawText || `Equipo ${asc.id || ''}`;
+                    }
+
+                    html += `
+                        <tr>
+                            <td style="padding: 10px; border: 1px solid #ddd;"><strong>${nombreAscensor}</strong></td>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">${contenidoEstado}</td>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">${contenidoUso}</td>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: center; font-size: 12px; color: #666;">${textoHoraFila}</td>
+                        </tr>
+                    `;
                 });
 
                 html += '</tbody></table>';
@@ -908,92 +967,94 @@
         }
 
         async function cargarNovedadesVivo() {
-            const visor = document.getElementById('visor-novedades');
-            if (!visor) return;
+    const visor = document.getElementById('visor-novedades');
+    if (!visor) return;
 
-            visor.innerHTML = '<p style="text-align:center;">Cargando novedades...</p>';
-            
-            try {
-                const { data, error } = await db
-                    .from('comunicados_memos')
-                    .select('*')
-                    .ilike('id_clave', '%Intendencia%');
+    visor.innerHTML = '<p style="text-align:center;">Cargando novedades...</p>';
+    
+    try {
+        const { data, error } = await db
+            .from('comunicados_memos')
+            .select('*')
+            .ilike('id_clave', '%Intendencia%');
 
-                if (error) throw error;
+        if (error) throw error;
 
-                if (!data || data.length === 0) {
-                    visor.innerHTML = '<p style="text-align:center; color: #666;">No hay registros de novedades para Intendencia.</p>';
-                    return;
-                }
-
-                const registrosUnicos = {};
-                data.forEach(item => {
-                    const claveUnica = item.id_clave || item.id;
-                    registrosUnicos[claveUnica] = item;
-                });
-
-                let html = '';
-                Object.values(registrosUnicos).forEach(item => {
-                    const contenidoObj = item.contenido || {};
-                    const texto = contenidoObj.texto || 'Sin contenido';
-                    const fecha = contenidoObj.fecha || 'Sin fecha';
-                    const turnoMsg = contenidoObj.turno || 'General';
-
-                    let archivoHtml = "";
-                    if (contenidoObj && contenidoObj.archivo && contenidoObj.archivo.data) {
-                        let base64Data = contenidoObj.archivo.data;
-                        let nombreArchivo = contenidoObj.archivo.name || "adjunto_descargable";
-                        
-                        let esImagen = base64Data.startsWith('data:image/') || 
-                                       /\.(jpg|jpeg|png|gif|webp)$/i.test(nombreArchivo);
-
-                        if (esImagen) {
-                            archivoHtml = `
-                                <div style="margin-top: 15px; text-align: center;">
-                                    <div style="margin-bottom: 10px;">
-                                        <img src="${base64Data}" alt="Archivo adjunto" style="max-width: 100%; max-height: 400px; border-radius: 6px; border: 1px solid #ddd; object-fit: contain;" />
-                                    </div>
-                                    <a href="${base64Data}" download="${nombreArchivo}" style="display: inline-block; background: #1a3a5f; color: #fff; padding: 8px 15px; border-radius: 4px; text-decoration: none; font-size: 14px; font-weight: 500;">
-                                        📥 Descargar Imagen
-                                    </a>
-                                </div>
-                            `;
-                        } else {
-                            archivoHtml = `
-                                <div style="margin-top: 15px; background: #f8f9fa; border: 1px solid #ddd; padding: 12px 15px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
-                                    <div style="display: flex; align-items: center; gap: 10px;">
-                                        <span style="font-size: 24px;">📄</span>
-                                        <div>
-                                            <strong style="font-size: 14px; color: #333; display: block; word-break: break-all;">${nombreArchivo}</strong>
-                                            <span style="font-size: 12px; color: #666;">Documento adjunto disponible para descarga</span>
-                                        </div>
-                                    </div>
-                                    <a href="${base64Data}" download="${nombreArchivo}" style="background: #1a3a5f; color: #fff; padding: 8px 15px; border-radius: 4px; text-decoration: none; font-size: 14px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px;">
-                                        📥 Descargar Archivo
-                                    </a>
-                                </div>
-                            `;
-                        }
-                    }
-
-                    html += `
-                        <div style="background: #fff; border-left: 5px solid #1a3a5f; border-top: 1px solid #ddd; border-right: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 20px; border-radius: 6px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 8px; flex-wrap: wrap; gap: 8px;">
-                                <strong style="color: #1a3a5f; font-size: 16px;">📢 Comunicado Oficial</strong>
-                                <span style="font-size: 12px; color: #666; background: #f1f1f1; padding: 4px 10px; border-radius: 4px;">Turno: ${turnoMsg} | Fecha: ${fecha} | <strong>Enviado por:</strong> Dirección de Servicios Generales</span>
-                            </div>
-                            <div style="font-size: 15px; color: #333; white-space: pre-wrap; line-height: 1.5; font-family: inherit;">${texto}</div>
-                            ${archivoHtml}
-                        </div>`;
-                });
-
-                visor.innerHTML = html;
-
-            } catch (err) {
-                console.error("Error al cargar novedades:", err);
-                visor.innerHTML = '<p style="text-align:center; color: red;">Error al cargar los datos de novedades.</p>';
-            }
+        if (!data || data.length === 0) {
+            visor.innerHTML = '<p style="text-align:center; color: #666;">No hay registros de novedades para Intendencia.</p>';
+            return;
         }
+
+        const registrosUnicos = {};
+        data.forEach(item => {
+            const claveUnica = item.id_clave || item.id;
+            registrosUnicos[claveUnica] = item;
+        });
+
+        let html = '';
+        Object.values(registrosUnicos).forEach(item => {
+            const contenidoObj = item.contenido || {};
+            const texto = contenidoObj.texto || 'Sin contenido';
+            const fecha = contenidoObj.fecha || 'Sin fecha';
+            const turnoMsg = contenidoObj.turno || 'General';
+
+            let archivoHtml = "";
+            if (contenidoObj && contenidoObj.archivo && contenidoObj.archivo.data) {
+                let base64Data = contenidoObj.archivo.data;
+                let nombreArchivo = contenidoObj.archivo.name || "adjunto_descargable";
+                
+                // Detectar si es una imagen analizando el tipo o la cabecera del base64
+                let esImagen = base64Data.startsWith('data:image/') || 
+                               /\.(jpg|jpeg|png|gif|webp)$/i.test(nombreArchivo);
+
+                if (esImagen) {
+                    archivoHtml = `
+                        <div style="margin-top: 15px; text-align: center;">
+                            <div style="margin-bottom: 10px;">
+                                <img src="${base64Data}" alt="Archivo adjunto" style="max-width: 100%; max-height: 400px; border-radius: 6px; border: 1px solid #ddd; object-fit: contain;" />
+                            </div>
+                            <a href="${base64Data}" download="${nombreArchivo}" style="display: inline-block; background: #1a3a5f; color: #fff; padding: 8px 15px; border-radius: 4px; text-decoration: none; font-size: 14px; font-weight: 500;">
+                                📥 Descargar Imagen
+                            </a>
+                        </div>
+                    `;
+                } else {
+                    // Si es PDF, Word u otro archivo, mostramos una caja limpia con icono de documento
+                    archivoHtml = `
+                        <div style="margin-top: 15px; background: #f8f9fa; border: 1px solid #ddd; padding: 12px 15px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span style="font-size: 24px;">📄</span>
+                                <div>
+                                    <strong style="font-size: 14px; color: #333; display: block; word-break: break-all;">${nombreArchivo}</strong>
+                                    <span style="font-size: 12px; color: #666;">Documento adjunto disponible para descarga</span>
+                                </div>
+                            </div>
+                            <a href="${base64Data}" download="${nombreArchivo}" style="background: #1a3a5f; color: #fff; padding: 8px 15px; border-radius: 4px; text-decoration: none; font-size: 14px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px;">
+                                📥 Descargar Archivo
+                            </a>
+                        </div>
+                    `;
+                }
+            }
+
+            html += `
+                <div style="background: #fff; border-left: 5px solid #1a3a5f; border-top: 1px solid #ddd; border-right: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 20px; border-radius: 6px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 8px; flex-wrap: wrap; gap: 8px;">
+                        <strong style="color: #1a3a5f; font-size: 16px;">📢 Comunicado Oficial</strong>
+                        <span style="font-size: 12px; color: #666; background: #f1f1f1; padding: 4px 10px; border-radius: 4px;">Turno: ${turnoMsg} | Fecha: ${fecha} | <strong>Enviado por:</strong> Dirección de Servicios Generales</span>
+                    </div>
+                    <div style="font-size: 15px; color: #333; white-space: pre-wrap; line-height: 1.5; font-family: inherit;">${texto}</div>
+                    ${archivoHtml}
+                </div>`;
+        });
+
+        visor.innerHTML = html;
+
+    } catch (err) {
+        console.error("Error al cargar novedades:", err);
+        visor.innerHTML = '<p style="text-align:center; color: red;">Error al cargar los datos de novedades.</p>';
+    }
+}
 
         window.onload = async () => {
             const nombre = localStorage.getItem('usuario_nombre') || "Invitado"; 
