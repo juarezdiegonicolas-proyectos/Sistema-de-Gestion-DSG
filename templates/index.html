@@ -391,13 +391,13 @@
             const passInput = document.getElementById('pass-input').value.trim();
 
             const rutasMaestras = {
-                'camilleros': 'escritorio_camilleros.html',
-                'lavadero': 'escritorio_lavadero.html',
-                'conmutador': 'escritorio_conmutador.html',
-                'ascensores': 'escritorio_ascensores.html',
-                'intendencia': 'escritorio_intendencia.html',
-                'dalo': 'escritorio_dalo.html',
-                'admin': 'escritorio_admin.html'
+                'camilleros': '/escritorio_camilleros',
+                'lavadero': '/escritorio_lavadero',
+                'conmutador': '/escritorio_conmutador',
+                'ascensores': '/escritorio_ascensores',
+                'intendencia': '/escritorio_intendencia',
+                'dalo': '/escritorio_dalo',
+                'admin': '/escritorio_admin'
             };
 
             if (rutasMaestras[userInput.toLowerCase()]) {
@@ -431,17 +431,17 @@
                 localStorage.setItem('usuario_pisos', usuarioEncontrado.pisos_asignados || '');
 
                 const mapaDepartamentos = {
-                    'camilleros-central': 'escritorio_camilleros.html',
-                    'lavadero-central': 'escritorio_lavadero.html',
-                    'conmutador': 'escritorio_conmutador.html',
-                    'division-ascensores': 'escritorio_ascensores.html',
-                    'intendencia': 'escritorio_intendencia.html',
-                    'dalo': 'escritorio_dalo.html',
-                    'direccion-servicios-generales': 'escritorio_admin.html'
+                    'camilleros-central': '/escritorio_camilleros',
+                    'lavadero-central': '/escritorio_lavadero',
+                    'conmutador': '/escritorio_conmutador',
+                    'division-ascensores': '/escritorio_ascensores',
+                    'intendencia': '/escritorio_intendencia',
+                    'dalo': '/escritorio_dalo',
+                    'direccion-servicios-generales': '/escritorio_admin'
                 };
 
                 if (usuarioEncontrado.es_admin || usuarioEncontrado.departamento === 'direccion-servicios-generales') {
-                    window.location.href = 'escritorio_admin.html';
+                    window.location.href = '/escritorio_admin';
                     return;
                 }
 
@@ -500,4 +500,5 @@
         };
     </script>
 </body>
+</html>
 </html>
