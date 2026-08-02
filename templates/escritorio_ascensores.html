@@ -640,8 +640,39 @@
                  <div class="botonera-porcentaje">Ausentismo: ${pA}% (${ausentes})</div>
                  <div class="botonera-porcentaje">Licencias: ${pL}% (${licencias})</div>`;
             actualizarGraficoRRHH(presentes, ausentes, licencias);
+
+            // Modificación incluida: Exportación y guardado directo de la asistencia en Supabase al hacer clic en guardar
+            if (supabaseClient) {
+                const fechaActual = inputFecha.value || obtenerFechaHoyISO();
+                const turnoActual = localStorage.getItem('usuario_turno') || "Mañana";
+                const deptoActual = "Ascensores";
+                const operadorActual = localStorage.getItem('usuario_legajo') || "Desconocido";
+
+                let arrayAsistenciaRRHH = agentesTurno.map(ag => ({
+                    fecha: fechaActual,
+                    departamento: deptoActual,
+                    turno: turnoActual,
+                    legajo_empleado: ag.legajo,
+                    estado_asistencia: registro[ag.legajo] || "Sin registrar",
+                    registrado_por: operadorActual
+                }));
+
+                try {
+                    const { error: errRrhh } = await supabaseClient
+                        .from('rrhh_asistencia')
+                        .upsert(arrayAsistenciaRRHH, { onConflict: 'fecha,departamento,turno,legajo_empleado' });
+                    
+                    if (errRrhh) {
+                        console.error("Error al guardar asistencia en rrhh_asistencia:", errRrhh);
+                        alert("Asistencia guardada localmente, pero hubo un error al sincronizar con Supabase: " + errRrhh.message);
+                        return;
+                    }
+                } catch (e) {
+                    console.error("Excepción al sincronizar asistencia RRHH:", e);
+                }
+            }
             
-            alert(`¡Asistencia completa!\nPresentismo: ${pP}%\nAusentismo: ${pA}%\nLicencias: ${pL}%`);
+            alert(`¡Asistencia completa y guardada en el sistema!\nPresentismo: ${pP}%\nAusentismo: ${pA}%\nLicencias: ${pL}%`);
         }
     
         function guardarDatos() {
@@ -766,7 +797,7 @@
                         registrado_por: localStorage.getItem('usuario_legajo') || "Desconocido"
                     }));
 
-                    const { error: errRrhh } = await supabaseClient.from('rrhh_asistencia').insert(arrayAsistenciaRRHH);
+                    const { error: errRrhh } = await supabaseClient.from('rrhh_asistencia').upsert(arrayAsistenciaRRHH, { onConflict: 'fecha,departamento,turno,legajo_empleado' });
                     if (errRrhh) {
                         console.error("Error al guardar asistencia en rrhh_asistencia:", errRrhh);
                     }
