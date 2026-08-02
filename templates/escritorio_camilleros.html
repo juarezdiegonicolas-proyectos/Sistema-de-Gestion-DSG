@@ -332,7 +332,6 @@
 
             const turnoActual = localStorage.getItem('usuario_turno') || "Mañana";
 
-            // Buscamos combinaciones posibles: para el Dpto "Camilleros" y el turno actual, o globales para "Todos"
             const llavesBuscadas = [
                 `comunicado_novedades_Camilleros_${turnoActual}`,
                 `comunicado_novedades_Camilleros_Todos`,
@@ -369,7 +368,6 @@
                         let base64Data = contenidoObj.archivo.data;
                         let nombreArchivo = contenidoObj.archivo.name || "adjunto_descargable";
                         
-                        // Validamos si es una imagen o un archivo general para renderizarlo con el estilo prolijo de ascensores
                         if (nombreArchivo.match(/\.(jpeg|jpg|gif|png)$/i) || base64Data.startsWith('data:image/')) {
                             archivoHtml = `
                                 <div style="margin-top: 15px; text-align: center;">
