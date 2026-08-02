@@ -251,6 +251,9 @@
                 <h1 style="margin: 0; text-align: center; flex: 1;">Estado Actual de Ascensores</h1>
                 <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
+            <div id="info-supervisor" style="margin-bottom: 20px; color: #1a3a5f; font-weight: bold; border: 1px solid #ddd; padding: 10px; border-radius: 6px; background: #f9f9f9;">
+                Supervisor: <span id="display-nombre-asc">---</span> | Turno: <span id="display-turno-asc">---</span> | Depto: <span id="display-depto-asc">---</span>
+            </div>
             <div id="contenedor-ascensores" style="border: 1px solid #ccc; padding: 20px; border-radius: 8px; background: #fafafa;">
                 <p>Cargando estado actual de ascensores...</p>
             </div>
@@ -865,6 +868,9 @@
             document.getElementById('display-nombre-rep').innerText = nombre; 
             document.getElementById('display-turno-rep').innerText = turno; 
             document.getElementById('display-depto-rep').innerText = depto;
+            document.getElementById('display-nombre-asc').innerText = nombre;
+            document.getElementById('display-turno-asc').innerText = turno;
+            document.getElementById('display-depto-asc').innerText = depto;
             document.getElementById('depto-hist-label').innerText = depto;
             
             let numeroHojaReal = 1;
