@@ -275,11 +275,21 @@
         const spanHoja = document.getElementById('numero-hoja');
         const inputFecha = document.getElementById('fecha-reporte');
         const inputFechaPlanilla = document.getElementById('fecha-planilla');
+        const filtroFechaHist = document.getElementById('filtro-fecha-hist');
         let chartRRHH;
 
         let listaSectores = ["- Seleccionar Sector -"];
         let listaAgentes = ["- Seleccionar Agente -"];
         let agentes = [];
+
+        // Función segura para obtener la fecha actual en formato local YYYY-MM-DD sin problemas de huso horario
+        function obtenerFechaHoyISO() {
+            const d = new Date();
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
 
         async function cargarPersonalYSeccionesSupabase() {
             const turnoActual = localStorage.getItem('usuario_turno') || "Mañana";
@@ -392,12 +402,13 @@
             }
         }
 
-        function obtenerFechaHoyISO() { return new Date().toISOString().split('T')[0]; }
-
         let contadorHoja = parseInt(localStorage.getItem('dsg_intendencia_contador_hoja')) || 1;
         if (spanHoja) spanHoja.innerText = String(contadorHoja).padStart(3, '0');
-        if (inputFecha) inputFecha.value = localStorage.getItem('dsg_intendencia_fecha') || obtenerFechaHoyISO();
-        if (inputFechaPlanilla) inputFechaPlanilla.value = localStorage.getItem('dsg_intendencia_fecha_planilla') || obtenerFechaHoyISO();
+        
+        const fechaHoyLocal = obtenerFechaHoyISO();
+        if (inputFecha) inputFecha.value = localStorage.getItem('dsg_intendencia_fecha') || fechaHoyLocal;
+        if (inputFechaPlanilla) inputFechaPlanilla.value = localStorage.getItem('dsg_intendencia_fecha_planilla') || fechaHoyLocal;
+        if (filtroFechaHist) filtroFechaHist.value = fechaHoyLocal;
 
         function actualizarGraficoRRHH(p, a, l) {
             const canvasElem = document.getElementById('graficoRRHH');
@@ -557,7 +568,7 @@
         async function cerrarJornadaGlobal() {
             if (!confirm("¿Cerrar jornada? Se consolidarán los datos y se guardarán en la nube.")) return;
             
-            const fechaCierreVal = (inputFechaPlanilla ? inputFechaPlanilla.value : new Date().toISOString().split('T')[0]).trim();
+            const fechaCierreVal = (inputFechaPlanilla ? inputFechaPlanilla.value : obtenerFechaHoyISO()).trim();
             const turnoVal = (localStorage.getItem('usuario_turno') || "Mañana").trim();
             const deptoVal = "Intendencia";
             const supervisorVal = (localStorage.getItem('usuario_nombre') || "Invitado").trim();
@@ -908,94 +919,92 @@
         }
 
         async function cargarNovedadesVivo() {
-    const visor = document.getElementById('visor-novedades');
-    if (!visor) return;
+            const visor = document.getElementById('visor-novedades');
+            if (!visor) return;
 
-    visor.innerHTML = '<p style="text-align:center;">Cargando novedades...</p>';
-    
-    try {
-        const { data, error } = await db
-            .from('comunicados_memos')
-            .select('*')
-            .ilike('id_clave', '%Intendencia%');
+            visor.innerHTML = '<p style="text-align:center;">Cargando novedades...</p>';
+            
+            try {
+                const { data, error } = await db
+                    .from('comunicados_memos')
+                    .select('*')
+                    .ilike('id_clave', '%Intendencia%');
 
-        if (error) throw error;
+                if (error) throw error;
 
-        if (!data || data.length === 0) {
-            visor.innerHTML = '<p style="text-align:center; color: #666;">No hay registros de novedades para Intendencia.</p>';
-            return;
-        }
-
-        const registrosUnicos = {};
-        data.forEach(item => {
-            const claveUnica = item.id_clave || item.id;
-            registrosUnicos[claveUnica] = item;
-        });
-
-        let html = '';
-        Object.values(registrosUnicos).forEach(item => {
-            const contenidoObj = item.contenido || {};
-            const texto = contenidoObj.texto || 'Sin contenido';
-            const fecha = contenidoObj.fecha || 'Sin fecha';
-            const turnoMsg = contenidoObj.turno || 'General';
-
-            let archivoHtml = "";
-            if (contenidoObj && contenidoObj.archivo && contenidoObj.archivo.data) {
-                let base64Data = contenidoObj.archivo.data;
-                let nombreArchivo = contenidoObj.archivo.name || "adjunto_descargable";
-                
-                // Detectar si es una imagen analizando el tipo o la cabecera del base64
-                let esImagen = base64Data.startsWith('data:image/') || 
-                               /\.(jpg|jpeg|png|gif|webp)$/i.test(nombreArchivo);
-
-                if (esImagen) {
-                    archivoHtml = `
-                        <div style="margin-top: 15px; text-align: center;">
-                            <div style="margin-bottom: 10px;">
-                                <img src="${base64Data}" alt="Archivo adjunto" style="max-width: 100%; max-height: 400px; border-radius: 6px; border: 1px solid #ddd; object-fit: contain;" />
-                            </div>
-                            <a href="${base64Data}" download="${nombreArchivo}" style="display: inline-block; background: #1a3a5f; color: #fff; padding: 8px 15px; border-radius: 4px; text-decoration: none; font-size: 14px; font-weight: 500;">
-                                📥 Descargar Imagen
-                            </a>
-                        </div>
-                    `;
-                } else {
-                    // Si es PDF, Word u otro archivo, mostramos una caja limpia con icono de documento
-                    archivoHtml = `
-                        <div style="margin-top: 15px; background: #f8f9fa; border: 1px solid #ddd; padding: 12px 15px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <span style="font-size: 24px;">📄</span>
-                                <div>
-                                    <strong style="font-size: 14px; color: #333; display: block; word-break: break-all;">${nombreArchivo}</strong>
-                                    <span style="font-size: 12px; color: #666;">Documento adjunto disponible para descarga</span>
-                                </div>
-                            </div>
-                            <a href="${base64Data}" download="${nombreArchivo}" style="background: #1a3a5f; color: #fff; padding: 8px 15px; border-radius: 4px; text-decoration: none; font-size: 14px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px;">
-                                📥 Descargar Archivo
-                            </a>
-                        </div>
-                    `;
+                if (!data || data.length === 0) {
+                    visor.innerHTML = '<p style="text-align:center; color: #666;">No hay registros de novedades para Intendencia.</p>';
+                    return;
                 }
+
+                const registrosUnicos = {};
+                data.forEach(item => {
+                    const claveUnica = item.id_clave || item.id;
+                    registrosUnicos[claveUnica] = item;
+                });
+
+                let html = '';
+                Object.values(registrosUnicos).forEach(item => {
+                    const contenidoObj = item.contenido || {};
+                    const texto = contenidoObj.texto || 'Sin contenido';
+                    const fecha = contenidoObj.fecha || 'Sin fecha';
+                    const turnoMsg = contenidoObj.turno || 'General';
+
+                    let archivoHtml = "";
+                    if (contenidoObj && contenidoObj.archivo && contenidoObj.archivo.data) {
+                        let base64Data = contenidoObj.archivo.data;
+                        let nombreArchivo = contenidoObj.archivo.name || "adjunto_descargable";
+                        
+                        let esImagen = base64Data.startsWith('data:image/') || 
+                                       /\.(jpg|jpeg|png|gif|webp)$/i.test(nombreArchivo);
+
+                        if (esImagen) {
+                            archivoHtml = `
+                                <div style="margin-top: 15px; text-align: center;">
+                                    <div style="margin-bottom: 10px;">
+                                        <img src="${base64Data}" alt="Archivo adjunto" style="max-width: 100%; max-height: 400px; border-radius: 6px; border: 1px solid #ddd; object-fit: contain;" />
+                                    </div>
+                                    <a href="${base64Data}" download="${nombreArchivo}" style="display: inline-block; background: #1a3a5f; color: #fff; padding: 8px 15px; border-radius: 4px; text-decoration: none; font-size: 14px; font-weight: 500;">
+                                        📥 Descargar Imagen
+                                    </a>
+                                </div>
+                            `;
+                        } else {
+                            archivoHtml = `
+                                <div style="margin-top: 15px; background: #f8f9fa; border: 1px solid #ddd; padding: 12px 15px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <span style="font-size: 24px;">📄</span>
+                                        <div>
+                                            <strong style="font-size: 14px; color: #333; display: block; word-break: break-all;">${nombreArchivo}</strong>
+                                            <span style="font-size: 12px; color: #666;">Documento adjunto disponible para descarga</span>
+                                        </div>
+                                    </div>
+                                    <a href="${base64Data}" download="${nombreArchivo}" style="background: #1a3a5f; color: #fff; padding: 8px 15px; border-radius: 4px; text-decoration: none; font-size: 14px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px;">
+                                        📥 Descargar Archivo
+                                    </a>
+                                </div>
+                            `;
+                        }
+                    }
+
+                    html += `
+                        <div style="background: #fff; border-left: 5px solid #1a3a5f; border-top: 1px solid #ddd; border-right: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 20px; border-radius: 6px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 8px; flex-wrap: wrap; gap: 8px;">
+                                <strong style="color: #1a3a5f; font-size: 16px;">📢 Comunicado Oficial</strong>
+                                <span style="font-size: 12px; color: #666; background: #f1f1f1; padding: 4px 10px; border-radius: 4px;">Turno: ${turnoMsg} | Fecha: ${fecha} | <strong>Enviado por:</strong> Dirección de Servicios Generales</span>
+                            </div>
+                            <div style="font-size: 15px; color: #333; white-space: pre-wrap; line-height: 1.5; font-family: inherit;">${texto}</div>
+                            ${archivoHtml}
+                        </div>`;
+                });
+
+                visor.innerHTML = html;
+
+            } catch (err) {
+                console.error("Error al cargar novedades:", err);
+                visor.innerHTML = '<p style="text-align:center; color: red;">Error al cargar los datos de novedades.</p>';
             }
-
-            html += `
-                <div style="background: #fff; border-left: 5px solid #1a3a5f; border-top: 1px solid #ddd; border-right: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 20px; border-radius: 6px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 8px; flex-wrap: wrap; gap: 8px;">
-                        <strong style="color: #1a3a5f; font-size: 16px;">📢 Comunicado Oficial</strong>
-                        <span style="font-size: 12px; color: #666; background: #f1f1f1; padding: 4px 10px; border-radius: 4px;">Turno: ${turnoMsg} | Fecha: ${fecha} | <strong>Enviado por:</strong> Dirección de Servicios Generales</span>
-                    </div>
-                    <div style="font-size: 15px; color: #333; white-space: pre-wrap; line-height: 1.5; font-family: inherit;">${texto}</div>
-                    ${archivoHtml}
-                </div>`;
-        });
-
-        visor.innerHTML = html;
-
-    } catch (err) {
-        console.error("Error al cargar novedades:", err);
-        visor.innerHTML = '<p style="text-align:center; color: red;">Error al cargar los datos de novedades.</p>';
-    }
-}
+        }
 
         window.onload = async () => {
             const nombre = localStorage.getItem('usuario_nombre') || "Invitado"; 
