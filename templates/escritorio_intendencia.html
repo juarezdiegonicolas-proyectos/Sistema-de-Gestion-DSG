@@ -106,12 +106,13 @@
         </div>
         <div class="sidebar-footer">
             <button class="btn-accion-global" onclick="cerrarJornadaGlobal()">📥 CERRAR JORNADA</button>
-            <a href="https://sistema-hospital-dsg.onrender.com" class="btn-cerrar">CERRAR SESIÓN</a>
+            <a href="index.html" class="btn-cerrar">CERRAR SESIÓN</a>
         </div>
     </div>
 
     <div class="contenido">
         <script>
+            // Configuración sincronizada de Supabase usando 'db' con las credenciales reales[cite: 5]
             const SUPABASE_URL = 'https://ydcbdvosxbwcutddxaze.supabase.co';
             const SUPABASE_KEY = 'sb_publishable_EvvZ8n7Ve2cF9FB4SXA0Ug_7q6qWh9f';
             const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -119,9 +120,9 @@
 
         <div id="reportes" class="seccion activo">
             <div class="header-logos">
-                <img src="logo_hospi.png" alt="Logo Hospital">
+                <img src="static/logo_hospi.png" alt="Logo Hospital">
                 <h1 style="margin: 0; text-align: center; flex: 1;">Reportes</h1>
-                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
             <div id="info-supervisor">Supervisor: <span id="display-nombre-rep">---</span> | Turno: <span id="display-turno-rep">---</span> | Depto: <span id="display-depto-rep">---</span></div>
             <div class="info-hoja">
@@ -136,9 +137,9 @@
 
         <div id="planillas" class="seccion">
             <div class="header-logos">
-                <img src="logo_hospi.png" alt="Logo Hospital">
+                <img src="static/logo_hospi.png" alt="Logo Hospital">
                 <h1 style="margin: 0; text-align: center; flex: 1; font-size: 26px;">Planilla Funciones del Día</h1>
-                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
             <div id="info-supervisor">Supervisor: <span id="display-nombre">---</span> | Turno: <span id="display-turno">---</span> | Depto: <span id="display-depto">---</span></div>
             
@@ -172,9 +173,9 @@
 
         <div id="estado-ascensores" class="seccion">
             <div class="header-logos">
-                <img src="logo_hospi.png" alt="Logo Hospital">
+                <img src="static/logo_hospi.png" alt="Logo">
                 <h1 style="margin: 0; text-align: center; flex: 1;">Estado Actual de Ascensores</h1>
-                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
             <div class="filtros-historicos">
                 <span style="font-weight: bold; color: #1a3a5f;">Estado en tiempo real de la tabla estado_actual_ascensores</span>
@@ -188,9 +189,9 @@
 
         <div id="historicos" class="seccion">
             <div class="header-logos">
-                <img src="logo_hospi.png" alt="Logo Hospital">
+                <img src="static/logo_hospi.png" alt="Logo Hospital">
                 <h1 style="margin: 0; text-align: center; flex: 1;">Registros Históricos</h1>
-                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
             <div id="info-supervisor">Departamento: <span id="depto-hist-label">---</span></div>
             <div class="filtros-historicos">
@@ -220,9 +221,9 @@
         
         <div id="novedades" class="seccion">
             <div class="header-logos">
-                <img src="logo_hospi.png" alt="Logo Hospital">
+                <img src="static/logo_hospi.png" alt="Logo Hospital">
                 <h1 style="margin: 0; text-align: center; flex: 1;">Novedades</h1>
-                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
             <div class="filtros-historicos">
                 <span style="font-weight: bold; color: #1a3a5f;">Estado en tiempo real de la tabla comunicados_memos</span>
@@ -236,9 +237,9 @@
 
         <div id="rrhh" class="seccion">
             <div class="header-logos">
-                <img src="logo_hospi.png" alt="Logo Hospital">
+                <img src="static/logo_hospi.png" alt="Logo Hospital">
                 <h1 style="margin: 0; text-align: center; flex: 1;">Personal - Turno: <span id="display-turno-rrhh">---</span></h1>
-                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
             <table class="tabla-intendencia" style="table-layout: auto;">
                 <thead><tr><th>LEGAJO</th><th>APELLIDO Y NOMBRE</th><th>PRESENTE</th><th>AUSENTE</th><th>LICENCIA</th></tr></thead>
@@ -260,9 +261,9 @@
 
         <div id="resoluciones" class="seccion">
             <div class="header-logos">
-                <img src="logo_hospi.png" alt="Logo Hospital">
+                <img src="static/logo_hospi.png" alt="Logo Hospital">
                 <h1 style="margin: 0; text-align: center; flex: 1;">Resoluciones</h1>
-                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
         </div>
     </div>
@@ -282,19 +283,31 @@
 
         async function cargarPersonalYSeccionesSupabase() {
             const turnoActual = localStorage.getItem('usuario_turno') || "Mañana";
+            
             const nombreEnPantalla = localStorage.getItem('usuario_nombre') || 
                                      localStorage.getItem('usuario') || 
                                      localStorage.getItem('usuario_usuario') || "";
+            
             const nombreBusqueda = nombreEnPantalla.trim();
+            
+            console.log("=== DEBUGGING FILTRO SECTORES Y PISOS ===");
+            console.log("Nombre en pantalla evaluado:", nombreBusqueda);
 
             try {
-                if (!nombreBusqueda) return;
+                if (!nombreBusqueda) {
+                    console.error("No se encontró ningún nombre de usuario en el localStorage.");
+                    return;
+                }
 
+                // 1. Consultar la tabla usuarios
                 const { data: todosLosUsuarios, error: errUsuario } = await db
                     .from('usuarios')
                     .select('*');
 
-                if (errUsuario) return;
+                if (errUsuario) {
+                    console.error("Error al consultar la tabla usuarios:", errUsuario);
+                    return;
+                }
 
                 let usuarioData = null;
                 if (todosLosUsuarios && todosLosUsuarios.length > 0) {
@@ -302,6 +315,7 @@
                         const nomComp = u.nombre_completo ? u.nombre_completo.toString().trim().toLowerCase() : '';
                         const usrCorto = u.usuario ? u.usuario.toString().trim().toLowerCase() : '';
                         const target = nombreBusqueda.toLowerCase();
+                        
                         return nomComp === target || nomComp.includes(target) || target.includes(nomComp) || usrCorto === target;
                     });
                 }
@@ -319,9 +333,13 @@
                     });
                     pisosSupervisor = Array.from(variantesPisos);
                 } else {
+                    console.warn("No se encontraron pisos asignados para este usuario.");
                     return;
                 }
 
+                console.log("Pisos estrictos para filtrar:", pisosSupervisor);
+
+                // 2. Consultar personal de intendencia
                 let queryPersonal = db
                     .from('intendencia_personal')
                     .select('*')
@@ -348,6 +366,7 @@
                     listaAgentes = ["- Seleccionar Agente -", ...agentesUnicos];
                 }
 
+                // 3. Consultar sectores de intendencia
                 let querySectores = db
                     .from('intendencia_sectores')
                     .select('*');
@@ -364,8 +383,12 @@
                     const sectoresUnicos = [...new Set(sectoresFiltrados.map(item => item.nombre_sector).filter(Boolean))];
                     listaSectores = ["- Seleccionar Sector -", ...sectoresUnicos];
                 }
+
+                console.log("Lista final de sectores generada:", listaSectores);
+                console.log("Lista final de agentes generada:", listaAgentes);
+
             } catch (err) {
-                console.error("Excepción al conectar con Supabase:", err);
+                console.error("Excepción al conectar con Supabase para filtrar por pisos:", err);
             }
         }
 
@@ -551,20 +574,24 @@
                         .maybeSingle();
 
                     if (!errExistente && existente) {
-                        alert(`⚠️ ATENCIÓN: Ya se ha registrado y cerrado la jornada para el supervisor "${supervisorVal}" en el turno "${turnoVal}" para el día de la fecha.`);
+                        alert(`⚠️ ATENCIÓN: Ya se ha registrado y cerrado la jornada para el supervisor "${supervisorVal}" en el turno "${turnoVal}" para el día de la fecha. No se puede volver a cerrar.`);
                         return;
                     }
                 } catch (errCheck) {
-                    console.error("Error verificando duplicidad:", errCheck);
+                    console.error("Error verificando duplicidad en Supabase:", errCheck);
                 }
             }
             
             const filasTabla = cuerpoTabla ? cuerpoTabla.querySelectorAll('tr') : [];
+            
             filasTabla.forEach(fila => {
                 fila.querySelectorAll('select').forEach(sel => {
                     Array.from(sel.options).forEach(opt => {
-                        if (opt.value === sel.value) opt.setAttribute('selected', 'selected');
-                        else opt.removeAttribute('selected');
+                        if (opt.value === sel.value) {
+                            opt.setAttribute('selected', 'selected');
+                        } else {
+                            opt.removeAttribute('selected');
+                        }
                     });
                 });
                 fila.querySelectorAll('input').forEach(inp => {
@@ -578,8 +605,9 @@
             tablaClonada.querySelectorAll('button').forEach(btn => btn.remove());
             
             tablaClonada.querySelectorAll('select').forEach(sel => {
+                const valorActual = sel.value;
                 const span = document.createElement('span');
-                span.textContent = sel.value;
+                span.textContent = valorActual;
                 span.style.fontWeight = "500";
                 sel.replaceWith(span);
             });
@@ -591,6 +619,7 @@
             });
 
             const tablaConsolidada = `<table class="tabla-intendencia" border="1"><thead><tr><th>SECTOR</th><th>AGENTE</th><th>DESDE</th><th>HASTA</th></tr></thead><tbody>${tablaClonada.innerHTML}</tbody></table>`;
+            
             const obsTexto = editorObservaciones ? editorObservaciones.innerHTML.trim() : "";
             const obsConsolidada = `<div style="margin-top:20px; border:1px solid #000; padding:15px;"><b>Observaciones:</b><p>${obsTexto}</p></div>`;
 
@@ -626,6 +655,21 @@
                 asistencia_personal: asistenciaVal
             }, { onConflict: 'fecha_cierre,turno,departamento,supervisor' });
 
+            const cierre = { 
+                fecha: fechaCierreVal, 
+                turno: turnoVal, 
+                depto: deptoVal, 
+                supervisor: supervisorVal,
+                reporte: reporteVal, 
+                tabla: tablaCompletaVal, 
+                asistencia: asistenciaVal, 
+                timestamp: new Date().toISOString() 
+            };
+            
+            let historial = JSON.parse(localStorage.getItem('historial_jornadas') || "[]");
+            historial.push(cierre);
+            localStorage.setItem('historial_jornadas', JSON.stringify(historial));
+            
             let contadorHojaActual = parseInt(localStorage.getItem('dsg_intendencia_contador_hoja') || "1");
             localStorage.setItem('dsg_intendencia_contador_hoja', contadorHojaActual + 1);
             
@@ -679,6 +723,7 @@
                 let tablaDinamica = `
                     <div style="background: #fff; padding: 15px; border-radius: 6px;">
                         <div style="font-size: 16px; font-weight: bold; color: #1a3a5f; margin-bottom: 10px;">Planilla Operativa - Intendencia</div>
+                        
                         <table style="width: 100%; border-collapse: collapse; margin-bottom: 0;">
                             <thead>
                                 <tr style="background-color: #1a3a5f; color: white;">
@@ -703,7 +748,7 @@
                         </tr>`;
                     });
                 } else {
-                    tablaDinamica += `<tr><td colspan="4" style="border: 1px solid #333; padding: 12px; text-align: center;">No hay registros detallados para esta fecha y turno.</td></tr>`;
+                    tablaDinamica += `<tr><td colspan="4" style="border: 1px solid #333; padding: 12px; text-align: center;">No hay registros detallados de Intendencia para esta fecha, turno y supervisor.</td></tr>`;
                 }
                 tablaDinamica += `</tbody></table>`;
                 
@@ -716,20 +761,25 @@
                 }
 
                 tablaDinamica += `
-                    <div style="background-color: #1a3a5f; color: white; padding: 8px 12px; font-weight: bold; font-size: 14px; margin-top: 15px; border: 1px solid #333;">Observaciones:</div>
+                    <div style="background-color: #1a3a5f; color: white; padding: 8px 12px; font-weight: bold; font-size: 14px; margin-top: 15px; border: 1px solid #333;">
+                        Observaciones:
+                    </div>
                     <div style="padding: 15px; min-height: 120px; background: #fff; border: 1px solid #333; border-top: none;">
-                        <p style="margin: 0; padding: 0; font-family: 'Courier New', monospace; font-size: 16px; line-height: 24px; white-space: pre-wrap;">${obsFinal || 'Sin observaciones registradas.'}</p>
+                        <p style="margin: 0; padding: 0; font-family: 'Courier New', monospace; font-size: 16px; line-height: 24px; white-space: pre-wrap; text-align: left !important;">${obsFinal || 'Sin observaciones registradas.'}</p>
                     </div>
                 </div>`;
+                
                 visor.innerHTML = tablaDinamica;
             } 
             else if (tipo === 'asistencia') {
                 if (reg && reg.asistencia_personal) {
                     let p = 0, a = 0, l = 0;
                     let rowsHTML = "";
+                    
                     agentes.forEach(ag => {
                         const estado = reg.asistencia_personal[ag.legajo] || "";
                         if(estado === 'P') p++; else if(estado === 'A') a++; else if(estado === 'L') l++;
+                        
                         rowsHTML += `
                             <tr style="height: 40px;">
                                 <td style="border: 1px solid #1a3a5f; text-align: center;">${ag.legajo}</td>
@@ -739,6 +789,7 @@
                                 <td style="border: 1px solid #1a3a5f; text-align: center;"><div class="celda-asistencia ${estado === 'L' ? 'estado-L' : ''}"></div></td>
                             </tr>`;
                     });
+
                     const total = p + a + l || 1;
                     visor.innerHTML = `
                         <div style="border: 2px solid #1a3a5f; padding: 20px; background: white;">
@@ -760,7 +811,10 @@
             visor.innerHTML = '<p style="text-align:center;">Cargando estado actual de ascensores...</p>';
             
             try {
-                const { data, error } = await db.from('estado_actual_ascensores').select('*');
+                const { data, error } = await db
+                    .from('estado_actual_ascensores')
+                    .select('*');
+
                 if (error) throw error;
 
                 if (!data || data.length === 0) {
@@ -773,24 +827,47 @@
 
                 data.forEach(item => {
                     let fechaItem = item.actualizado_at || item.actualizado_en || item.fecha;
-                    if (fechaItem && (!ultimaFechaStr || new Date(fechaItem) > new Date(ultimaFechaStr))) {
-                        ultimaFechaStr = fechaItem;
+                    if (fechaItem) {
+                        if (!ultimaFechaStr || new Date(fechaItem) > new Date(ultimaFechaStr)) {
+                            ultimaFechaStr = fechaItem;
+                        }
                     }
                     let legajoItem = item.legajo_operador || item.legajo;
-                    if (legajoItem && !legajoOperador) legajoOperador = String(legajoItem).trim();
+                    if (legajoItem && !legajoOperador) {
+                        legajoOperador = String(legajoItem).trim();
+                    }
                 });
 
                 let nombreSupervisor = 'Sistema / Desconocido';
                 if (legajoOperador) {
-                    const { data: userData } = await db.from('usuarios').select('nombre_completo').eq('legajo', legajoOperador).maybeSingle();
-                    if (userData && userData.nombre_completo) nombreSupervisor = userData.nombre_completo;
+                    const { data: userData, error: userError } = await db
+                        .from('usuarios')
+                        .select('nombre_completo')
+                        .eq('legajo', legajoOperador)
+                        .maybeSingle();
+
+                    if (!userError && userData && userData.nombre_completo) {
+                        nombreSupervisor = userData.nombre_completo;
+                    } else {
+                        nombreSupervisor = `Legajo: ${legajoOperador}`;
+                    }
                 }
 
                 let fechaFormateada = 'Sin fecha registrada';
                 if (ultimaFechaStr) {
                     let f = new Date(ultimaFechaStr);
                     if (!isNaN(f.getTime())) {
-                        fechaFormateada = f.toLocaleString('es-AR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+                        fechaFormateada = f.toLocaleString('es-AR', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit',
+                            hour12: false
+                        });
+                    } else {
+                        fechaFormateada = ultimaFechaStr;
                     }
                 }
 
@@ -799,17 +876,26 @@
                     tituloContenedor.innerHTML = `Última actualización: <b>${fechaFormateada}</b> | Registrado por: <b>${nombreSupervisor}</b>`;
                 }
 
-                data.sort((a, b) => (a.id || 0) - (b.id || 0));
+                data.sort((a, b) => {
+                    let idA = a.id || 0;
+                    let idB = b.id || 0;
+                    return idA - idB;
+                });
 
                 let html = '<table style="width:100%; border-collapse: collapse; text-align: left;">';
                 html += '<thead><tr style="background: #1a3a5f; color: white;"><th style="padding: 10px; border: 1px solid #ddd; text-align: center; width: 15%;">Dispositivo</th><th style="padding: 10px; border: 1px solid #ddd; width: 25%;">Estado</th><th style="padding: 10px; border: 1px solid #ddd; width: 30%;">Uso Asignado</th><th style="padding: 10px; border: 1px solid #ddd; width: 30%;">Observaciones / Detalles</th></tr></thead><tbody>';
 
                 data.forEach(item => {
+                    let dispositivo = item.identificador_dispositivo || `Dispositivo ${item.id}`;
+                    let estado = item.estado || '-';
+                    let uso = item.uso || '-';
+                    let observaciones = item.observaciones && item.observaciones !== 'EMPTY' ? item.observaciones : '-';
+
                     html += `<tr>
-                        <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold; text-align: center;">${item.identificador_dispositivo || `Dispositivo ${item.id}`}</td>
-                        <td style="padding: 10px; border: 1px solid #ddd;">${item.estado || '-'}</td>
-                        <td style="padding: 10px; border: 1px solid #ddd;">${item.uso || '-'}</td>
-                        <td style="padding: 10px; border: 1px solid #ddd;">${item.observaciones && item.observaciones !== 'EMPTY' ? item.observaciones : '-'}</td>
+                        <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold; text-align: center;">${dispositivo}</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">${estado}</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">${uso}</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">${observaciones}</td>
                     </tr>`;
                 });
 
@@ -817,7 +903,7 @@
                 visor.innerHTML = html;
             } catch (err) {
                 console.error("Error al obtener estado actual de ascensores:", err);
-                visor.innerHTML = '<p style="text-align:center; color: red;">Error al cargar los datos de ascensores.</p>';
+                visor.innerHTML = '<p style="text-align:center; color: red;">Error al cargar los datos de ascensores y escaleras.</p>';
             }
         }
 
@@ -828,7 +914,11 @@
             visor.innerHTML = '<p style="text-align:center;">Cargando novedades...</p>';
             
             try {
-                const { data, error } = await db.from('comunicados_memos').select('*').ilike('id_clave', '%Intendencia%');
+                const { data, error } = await db
+                    .from('comunicados_memos')
+                    .select('*')
+                    .ilike('id_clave', '%Intendencia%');
+
                 if (error) throw error;
 
                 if (!data || data.length === 0) {
@@ -837,7 +927,10 @@
                 }
 
                 const registrosUnicos = {};
-                data.forEach(item => { registrosUnicos[item.id_clave || item.id] = item; });
+                data.forEach(item => {
+                    const claveUnica = item.id_clave || item.id;
+                    registrosUnicos[claveUnica] = item;
+                });
 
                 let html = '';
                 Object.values(registrosUnicos).forEach(item => {
@@ -850,21 +943,55 @@
                     if (contenidoObj && contenidoObj.archivo && contenidoObj.archivo.data) {
                         let base64Data = contenidoObj.archivo.data;
                         let nombreArchivo = contenidoObj.archivo.name || "adjunto_descargable";
-                        let esImagen = base64Data.startsWith('data:image/') || /\.(jpg|jpeg|png|gif|webp)$/i.test(nombreArchivo);
+                        
+                        let esImagen = base64Data.startsWith('data:image/') || 
+                                       /\.(jpg|jpeg|png|gif|webp)$/i.test(nombreArchivo);
 
                         if (esImagen) {
-                            archivoHtml = `<div style="margin-top: 15px; text-align: center;"><div style="margin-bottom: 10px;"><img src="${base64Data}" style="max-width: 100%; max-height: 400px; border-radius: 6px; border: 1px solid #ddd; object-fit: contain;" /></div><a href="${base64Data}" download="${nombreArchivo}" style="display: inline-block; background: #1a3a5f; color: #fff; padding: 8px 15px; border-radius: 4px; text-decoration: none; font-size: 14px; font-weight: 500;">📥 Descargar Imagen</a></div>`;
+                            archivoHtml = `
+                                <div style="margin-top: 15px; text-align: center;">
+                                    <div style="margin-bottom: 10px;">
+                                        <img src="${base64Data}" alt="Archivo adjunto" style="max-width: 100%; max-height: 400px; border-radius: 6px; border: 1px solid #ddd; object-fit: contain;" />
+                                    </div>
+                                    <a href="${base64Data}" download="${nombreArchivo}" style="display: inline-block; background: #1a3a5f; color: #fff; padding: 8px 15px; border-radius: 4px; text-decoration: none; font-size: 14px; font-weight: 500;">
+                                        📥 Descargar Imagen
+                                    </a>
+                                </div>
+                            `;
                         } else {
-                            archivoHtml = `<div style="margin-top: 15px; background: #f8f9fa; border: 1px solid #ddd; padding: 12px 15px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;"><div style="display: flex; align-items: center; gap: 10px;"><span style="font-size: 24px;">📄</span><div><strong style="font-size: 14px; color: #333; display: block; word-break: break-all;">${nombreArchivo}</strong><span style="font-size: 12px; color: #666;">Documento adjunto</span></div></div><a href="${base64Data}" download="${nombreArchivo}" style="background: #1a3a5f; color: #fff; padding: 8px 15px; border-radius: 4px; text-decoration: none; font-size: 14px; font-weight: 500;">📥 Descargar Archivo</a></div>`;
+                            archivoHtml = `
+                                <div style="margin-top: 15px; background: #f8f9fa; border: 1px solid #ddd; padding: 12px 15px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <span style="font-size: 24px;">📄</span>
+                                        <div>
+                                            <strong style="font-size: 14px; color: #333; display: block; word-break: break-all;">${nombreArchivo}</strong>
+                                            <span style="font-size: 12px; color: #666;">Documento adjunto disponible para descarga</span>
+                                        </div>
+                                    </div>
+                                    <a href="${base64Data}" download="${nombreArchivo}" style="background: #1a3a5f; color: #fff; padding: 8px 15px; border-radius: 4px; text-decoration: none; font-size: 14px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px;">
+                                        📥 Descargar Archivo
+                                    </a>
+                                </div>
+                            `;
                         }
                     }
 
-                    html += `<div style="background: #fff; border-left: 5px solid #1a3a5f; border-top: 1px solid #ddd; border-right: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 20px; border-radius: 6px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.03);"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 8px; flex-wrap: wrap; gap: 8px;"><strong style="color: #1a3a5f; font-size: 16px;">📢 Comunicado Oficial</strong><span style="font-size: 12px; color: #666; background: #f1f1f1; padding: 4px 10px; border-radius: 4px;">Turno: ${turnoMsg} | Fecha: ${fecha}</span></div><div style="font-size: 15px; color: #333; white-space: pre-wrap; line-height: 1.5;">${texto}</div>${archivoHtml}</div>`;
+                    html += `
+                        <div style="background: #fff; border-left: 5px solid #1a3a5f; border-top: 1px solid #ddd; border-right: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 20px; border-radius: 6px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 8px; flex-wrap: wrap; gap: 8px;">
+                                <strong style="color: #1a3a5f; font-size: 16px;">📢 Comunicado Oficial</strong>
+                                <span style="font-size: 12px; color: #666; background: #f1f1f1; padding: 4px 10px; border-radius: 4px;">Turno: ${turnoMsg} | Fecha: ${fecha} | <strong>Enviado por:</strong> Dirección de Servicios Generales</span>
+                            </div>
+                            <div style="font-size: 15px; color: #333; white-space: pre-wrap; line-height: 1.5; font-family: inherit;">${texto}</div>
+                            ${archivoHtml}
+                        </div>`;
                 });
+
                 visor.innerHTML = html;
+
             } catch (err) {
                 console.error("Error al cargar novedades:", err);
-                visor.innerHTML = '<p style="text-align:center; color: red;">Error al cargar novedades.</p>';
+                visor.innerHTML = '<p style="text-align:center; color: red;">Error al cargar los datos de novedades.</p>';
             }
         }
 
@@ -873,22 +1000,49 @@
             const turno = localStorage.getItem('usuario_turno') || "Mañana"; 
             const depto = "Intendencia";
             
-            document.getElementById('nombre-supervisor-sidebar').innerText = nombre;
-            document.getElementById('display-nombre').innerText = nombre;
-            document.getElementById('display-turno').innerText = turno;
-            document.getElementById('display-depto').innerText = depto;
-            document.getElementById('display-nombre-rep').innerText = nombre;
-            document.getElementById('display-turno-rep').innerText = turno;
-            document.getElementById('display-depto-rep').innerText = depto;
-            document.getElementById('depto-hist-label').innerText = depto;
+            const elemSidebar = document.getElementById('nombre-supervisor-sidebar');
+            if (elemSidebar) elemSidebar.innerText = nombre;
+            
+            const elemDisplayNombre = document.getElementById('display-nombre');
+            if (elemDisplayNombre) elemDisplayNombre.innerText = nombre;
+            
+            const elemDisplayTurno = document.getElementById('display-turno');
+            if (elemDisplayTurno) elemDisplayTurno.innerText = turno;
+            
+            const elemDisplayDepto = document.getElementById('display-depto');
+            if (elemDisplayDepto) elemDisplayDepto.innerText = depto;
+            
+            const elemNombreRep = document.getElementById('display-nombre-rep');
+            if (elemNombreRep) elemNombreRep.innerText = nombre;
+            
+            const elemTurnoRep = document.getElementById('display-turno-rep');
+            if (elemTurnoRep) elemTurnoRep.innerText = turno;
+            
+            const elemDeptoRep = document.getElementById('display-depto-rep');
+            if (elemDeptoRep) elemDeptoRep.innerText = depto;
+            
+            const elemDeptoHist = document.getElementById('depto-hist-label');
+            if (elemDeptoHist) elemDeptoHist.innerText = depto;
             
             await cargarPersonalYSeccionesSupabase();
             
             try {
-                const { data: cierresPrevios, error } = await db.from('cierres_jornada').select('id').eq('departamento', depto).eq('turno', turno).eq('supervisor', nombre);
+                const { data: cierresPrevios, error } = await db
+                    .from('cierres_jornada')
+                    .select('id')
+                    .eq('departamento', depto)
+                    .eq('turno', turno)
+                    .eq('supervisor', nombre);
+
                 const cantidadRegistros = (error || !cierresPrevios) ? 0 : cierresPrevios.length;
                 const numeroHojaReal = cantidadRegistros + 1;
-                document.getElementById('numero-hoja').innerText = String(numeroHojaReal).padStart(3, '0');
+                const numeroHojaFormateado = String(numeroHojaReal).padStart(3, '0');
+                
+                const elementoHoja = document.getElementById('num-hoja') || document.getElementById('numero-reporte') || document.getElementById('nro-hoja') || document.getElementById('numero-hoja');
+                if (elementoHoja) {
+                    elementoHoja.innerText = numeroHojaFormateado;
+                }
+                window.numeroHojaActual = numeroHojaFormateado;
             } catch (err) {
                 console.error("Error al obtener el contador:", err);
             }
@@ -946,8 +1100,11 @@
             if (sec) sec.classList.add('activo');
             const tituloPanel = document.getElementById('titulo-panel');
             if (tituloPanel) tituloPanel.innerText = titulo;
-            if (idSeccion === 'estado-ascensores') cargarEstadoAscensoresVivo();
-            else if (idSeccion === 'novedades') cargarNovedadesVivo();
+            if (idSeccion === 'estado-ascensores') {
+                cargarEstadoAscensoresVivo();
+            } else if (idSeccion === 'novedades') {
+                cargarNovedadesVivo();
+            }
         }
     </script>
 </body>
