@@ -115,7 +115,7 @@
             <div class="menu-item" onclick="mostrar('memos', 'Memos y Resoluciones')">📜 Memos y Resoluciones</div>
             <div class="menu-item" onclick="mostrar('estadisticas', 'Estadísticas Mensuales')">📈 Estadísticas Mensuales</div>
         </div>
-        <a href="https://sistema-hospital-dsg.onrender.com" class="btn-cerrar">CERRAR SESIÓN</a>
+        <a href="index.html" class="btn-cerrar">CERRAR SESIÓN</a>
     </div>
 
     <div class="contenido">
@@ -635,9 +635,21 @@
 
             const { data: reg, error } = await queryReg.maybeSingle();
             
+            // Función auxiliar para anteponer los logos en las vistas de auditoría/resultados de solapas
+            const wrapConLogos = (tituloSeccion, contenidoHtml) => {
+                return `
+                    <div class="header-logos" style="margin-bottom: 15px;">
+                        <img src="logo_hospi.png" alt="Logo">
+                        <h2 style="margin: 0; text-align: center; flex: 1; font-size: 18px;">${tituloSeccion}</h2>
+                        <img src="logo_dsg.png" alt="Logo DSG" style="height: 110px;">
+                    </div>
+                    ${contenidoHtml}
+                `;
+            };
+
             if (tipo === 'rrhh') {
                 if (error || !reg || !reg.asistencia_personal) {
-                    visor.innerHTML = `<p style='color: red; font-weight: bold;'>No se encontraron registros de asistencia en la nube para esta selección.</p>`;
+                    visor.innerHTML = wrapConLogos("Auditoría RRHH", `<p style='color: red; font-weight: bold;'>No se encontraron registros de asistencia en la nube para esta selección.</p>`);
                     return;
                 }
 
@@ -645,11 +657,10 @@
                 const legajos = Object.keys(jsonAsistencia);
 
                 if (legajos.length === 0) {
-                    visor.innerHTML = "<p style='color: red; font-weight: bold;'>El registro de asistencia está vacío.</p>";
+                    visor.innerHTML = wrapConLogos("Auditoría RRHH", "<p style='color: red; font-weight: bold;'>El registro de asistencia está vacío.</p>");
                     return;
                 }
 
-                // CORRECCIÓN ESTRICTA: Consultamos únicamente la tabla correspondiente al depto filtrado
                 let tablaPersonal = 'intendencia_personal';
                 if (deptoFiltro === 'Ascensores') {
                     tablaPersonal = 'ascensores_personal';
@@ -726,7 +737,7 @@
                         </div>
                     </div>`;
 
-                visor.innerHTML = html;
+                visor.innerHTML = wrapConLogos("Auditoría RRHH - " + deptoFiltro, html);
 
                 setTimeout(() => {
                     const ctx = document.getElementById('graficoRrhh')?.getContext('2d');
@@ -805,7 +816,7 @@
                             </div>
                         </div>`;
 
-                    visor.innerHTML = tablaDinamica;
+                    visor.innerHTML = wrapConLogos("Planillas Históricas - Ascensores", tablaDinamica);
 
                     setTimeout(() => {
                         const ctx = document.getElementById('graficoAscensores')?.getContext('2d');
@@ -877,7 +888,7 @@
                             <p style="margin: 0; padding: 0; white-space: pre-wrap;">${obsFinal || 'Sin observaciones registradas.'}</p>
                         </div>
                     </div>`;
-                    visor.innerHTML = tablaDinamica;
+                    visor.innerHTML = wrapConLogos("Planillas Históricas - Intendencia", tablaDinamica);
 
                 } else if (deptoFiltro === 'Camilleros') {
                     const { data: camData } = await db.from('registros_camilleros').select('*').eq('fecha_cierre', fechaBusqueda).eq('turno', turno);
@@ -932,11 +943,11 @@
                         </div>
                     </div>`;
 
-                    visor.innerHTML = tablaDinamica;
+                    visor.innerHTML = wrapConLogos("Planillas Históricas - Camilleros", tablaDinamica);
 
                 } else {
                     if (error || !reg) {
-                        visor.innerHTML = `<p style='color: red; font-weight: bold;'>No se encontraron registros para ${deptoFiltro} en el turno ${turno} (${fechaBusqueda}).</p>`;
+                        visor.innerHTML = wrapConLogos("Planillas Históricas", `<p style='color: red; font-weight: bold;'>No se encontraron registros para ${deptoFiltro} en el turno ${turno} (${fechaBusqueda}).</p>`);
                         return;
                     }
 
@@ -949,15 +960,16 @@
                             </div>
                         </div>
                     `;
-                    visor.innerHTML = tablaDinamica;
+                    visor.innerHTML = wrapConLogos("Planillas Históricas - " + reg.departamento, tablaDinamica);
                 }
 
             } else if (tipo === 'reportes' || tipo === 'insumos') {
                 if (error || !reg) {
-                    visor.innerHTML = `<p style='color: red; font-weight: bold;'>No se encontraron registros para ${deptoFiltro} en el turno ${turno} (${fechaBusqueda}).</p>`;
+                    visor.innerHTML = wrapConLogos("Auditoría", `<p style='color: red; font-weight: bold;'>No se encontraron registros para ${deptoFiltro} en el turno ${turno} (${fechaBusqueda}).</p>`);
                     return;
                 }
-                visor.innerHTML = `<h3>Reporte Diario - Vista de Auditoría</h3><style>.hoja-modelo-limpio { width: 100% !important; background-color: #fff !important; border: 1px solid #ccc !important; padding: 30px !important; position: relative !important; min-height: 800px !important; font-family: 'Courier New', Courier, monospace !important; font-size: 16px !important; line-height: 30px !important; box-sizing: border-box !important; background-image: linear-gradient(to right, transparent 0px, transparent 0px), linear-gradient(#e0e0e0 1px, transparent 1px) !important; background-size: 100% 30px !important; white-space: pre-wrap !important; }</style><div class="hoja-modelo-limpio">${reg.reporte_diario || 'No hay contenido de reporte.'}</div>`;
+                const contenidoReporte = `<style>.hoja-modelo-limpio { width: 100% !important; background-color: #fff !important; border: 1px solid #ccc !important; padding: 30px !important; position: relative !important; min-height: 800px !important; font-family: 'Courier New', Courier, monospace !important; font-size: 16px !important; line-height: 30px !important; box-sizing: border-box !important; background-image: linear-gradient(to right, transparent 0px, transparent 0px), linear-gradient(#e0e0e0 1px, transparent 1px) !important; background-size: 100% 30px !important; white-space: pre-wrap !important; }</style><div class="hoja-modelo-limpio">${reg.reporte_diario || 'No hay contenido de reporte.'}</div>`;
+                visor.innerHTML = wrapConLogos("Reporte Diario - Vista de Auditoría", contenidoReporte);
             }
         }
         document.getElementById('reportes').classList.add('activo');
