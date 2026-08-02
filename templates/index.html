@@ -18,6 +18,7 @@
             background-color: #f4f1ea; 
             overflow-x: hidden;
         }
+        /* Banner principal con espacio inferior ajustado para la posición exacta de las pestañas */
         .header-banner { 
             width: 100%; 
             background: linear-gradient(to right, #1a3a5f, #5d8dbb); 
@@ -32,6 +33,7 @@
         h1 { margin: 0; font-size: 38px; text-transform: uppercase; font-weight: 750; word-break: break-word; }
         .subtitulo-top { font-size: 20px; margin-top: 10px; font-weight: 300; opacity: 0.95; margin-bottom: 15px; }
         
+        /* Pestañas modernas ubicadas un poquito más abajo, justo al borde del banner */
         .chrome-tabs-container {
             display: flex;
             justify-content: center;
@@ -40,7 +42,7 @@
             border-radius: 30px;
             width: fit-content;
             position: absolute;
-            bottom: 4px;
+            bottom: 4px; /* Ubicación exacta solicitada */
             left: 50%;
             transform: translateX(-50%);
             z-index: 10;
@@ -72,6 +74,7 @@
         .caja { width: 100%; max-width: 750px; background: rgba(255, 255, 255, 0.95); border-radius: 20px; padding: 40px; margin-top: 0; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08); border: 1px solid rgba(0, 0, 0, 0.05); }
         .titulo-caja { color: #1a3a5f; border-bottom: 2px solid #1a3a5f; padding-bottom: 10px; margin-bottom: 20px; text-align: center; font-size: 24px; }
         
+        /* Estilos mejorados y centrados para la tabla de ascensores */
         .tabla-contenedor-moderno {
             background: #ffffff;
             border-radius: 12px;
@@ -154,8 +157,8 @@
 </head>
 <body>
     <div class="header-banner">
-        <!-- RUTA CORREGIDA: Apunta directo al archivo de imagen en la raíz sin Flask -->
-        <img src="logo_dsg.png" class="logo-principal" alt="Logo Hospital DSG" style="display: block; margin: 0 auto 20px auto;">
+        <!-- RUTA CORREGIDA PARA FLASK -->
+        <img src="{{ url_for('static', filename='logo_dsg.png') }}" class="logo-principal" alt="Logo Hospital DSG" style="display: block; margin: 0 auto 20px auto;">
         <h1>SISTEMA INTEGRAL DE GESTIÓN - DSG</h1>
         <p class="subtitulo-top">Hospital de Clínicas José de San Martín (UBA)</p>
 
@@ -167,7 +170,7 @@
     </div>
 
     <div class="wrapper">
-        <!-- VISTA 1: ACCESO AL SISTEMA -->
+        <!-- VISTA 1: ACCESO AL SISTEMA (LOGIN / REGISTRO) -->
         <div idvista="sistema" class="caja vista-contenido">
             <h2 class="titulo-caja">Acceso al Sistema</h2>
             <div class="tabs">
@@ -213,7 +216,7 @@
             </form>
         </div>
 
-        <!-- VISTA 2: ESTADO DE ASCENSORES -->
+        <!-- VISTA 2: ESTADO DE ASCENSORES (PÚBLICO / INVITADOS) -->
         <div idvista="ascensores" class="caja vista-contenido" style="display:none;">
             <h2 class="titulo-caja">Estado Actual</h2>
             <p style="text-align: center; color: #666; font-size: 13px; margin-bottom: 5px;">Información en tiempo real para visitantes y personal del hospital.</p>
@@ -239,6 +242,7 @@
     </div>
 
     <script>
+        // Configuración de Supabase
         const SUPABASE_URL = 'https://ydcbdvosxbwcutddxaze.supabase.co'; 
         const SUPABASE_KEY = 'sb_publishable_EvvZ8n7Ve2cF9FB4SXA0Ug_7q6qWh9f';
         const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -286,6 +290,7 @@
                 return;
             }
 
+            // ORDENAMIENTO NUMÉRICO ASCENDENTE ROBUSTO
             data.sort((a, b) => {
                 let textoA = String(a.nombre || a.ascensor || a.identificador_dispositivo || '');
                 let textoB = String(b.nombre || b.ascensor || b.identificador_dispositivo || '');
@@ -386,13 +391,13 @@
             const passInput = document.getElementById('pass-input').value.trim();
 
             const rutasMaestras = {
-                'camilleros': 'escritorio_camilleros.html',
-                'lavadero': 'escritorio_lavadero.html',
-                'conmutador': 'escritorio_conmutador.html',
-                'ascensores': 'escritorio_ascensores.html',
-                'intendencia': 'escritorio_intendencia.html',
-                'dalo': 'escritorio_dalo.html',
-                'admin': 'escritorio_admin.html'
+                'camilleros': '/escritorio_camilleros',
+                'lavadero': '/escritorio_lavadero',
+                'conmutador': '/escritorio_conmutador',
+                'ascensores': '/escritorio_ascensores',
+                'intendencia': '/escritorio_intendencia',
+                'dalo': '/escritorio_dalo',
+                'admin': '/escritorio_admin'
             };
 
             if (rutasMaestras[userInput.toLowerCase()]) {
@@ -426,17 +431,17 @@
                 localStorage.setItem('usuario_pisos', usuarioEncontrado.pisos_asignados || '');
 
                 const mapaDepartamentos = {
-                    'camilleros-central': 'escritorio_camilleros.html',
-                    'lavadero-central': 'escritorio_lavadero.html',
-                    'conmutador': 'escritorio_conmutador.html',
-                    'division-ascensores': 'escritorio_ascensores.html',
-                    'intendencia': 'escritorio_intendencia.html',
-                    'dalo': 'escritorio_dalo.html',
-                    'direccion-servicios-generales': 'escritorio_admin.html'
+                    'camilleros-central': '/escritorio_camilleros',
+                    'lavadero-central': '/escritorio_lavadero',
+                    'conmutador': '/escritorio_conmutador',
+                    'division-ascensores': '/escritorio_ascensores',
+                    'intendencia': '/escritorio_intendencia',
+                    'dalo': '/escritorio_dalo',
+                    'direccion-servicios-generales': '/escritorio_admin'
                 };
 
                 if (usuarioEncontrado.es_admin || usuarioEncontrado.departamento === 'direccion-servicios-generales') {
-                    window.location.href = 'escritorio_admin.html';
+                    window.location.href = '/escritorio_admin';
                     return;
                 }
 
@@ -468,7 +473,7 @@
                 es_admin: esAdminRol
             };
 
-            const { data: existente } = await db
+            const { data: existente, error: errBusqueda } = await db
                 .from('usuarios')
                 .select('usuario')
                 .eq('usuario', nuevoUsuario.usuario)
@@ -495,4 +500,5 @@
         };
     </script>
 </body>
+</html>
 </html>
