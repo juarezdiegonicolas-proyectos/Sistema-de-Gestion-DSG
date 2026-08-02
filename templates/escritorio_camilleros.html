@@ -167,7 +167,7 @@
     <div class="contenido">
         <div id="reportes" class="seccion activo">
             <div class="header-logos">
-                <img src="static/logo_hospi" alt="Logo Hospital">
+                <img src="static/logo_hospi.png" alt="Logo Hospital">
                 <h1 style="margin: 0; text-align: center; flex: 1;">Reportes</h1>
                 <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
@@ -184,7 +184,7 @@
 
         <div id="planillas" class="seccion">
             <div class="header-logos">
-                <img src="static/logo_hospi" alt="Logo Hospital">
+                <img src="static/logo_hospi.png" alt="Logo Hospital">
                 <h1 style="margin: 0; text-align: center; flex: 1; font-size: 30px;">Auxiliares Técnicos</h1>
                 <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
@@ -206,7 +206,7 @@
 
         <div id="historicos" class="seccion">
             <div class="header-logos">
-                <img src="static/logo_hospi" alt="Logo Hospital">
+                <img src="static/logo_hospi.png" alt="Logo Hospital">
                 <h1 style="margin: 0; text-align: center; flex: 1;">Registros Históricos</h1>
                 <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
@@ -235,7 +235,7 @@
         
         <div id="novedades" class="seccion">
             <div class="header-logos">
-                <img src="static/logo_hospi" alt="Logo Hospital">
+                <img src="static/logo_hospi.png" alt="Logo Hospital">
                 <h1 style="margin: 0; text-align: center; flex: 1;">Novedades y Comunicados</h1>
                 <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
@@ -247,7 +247,7 @@
 
         <div id="ascensores" class="seccion">
             <div class="header-logos">
-                <img src="static/logo_hospi" alt="Logo Hospital">
+                <img src="static/logo_hospi.png" alt="Logo Hospital">
                 <h1 style="margin: 0; text-align: center; flex: 1;">Estado Actual de Ascensores</h1>
                 <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
@@ -259,7 +259,7 @@
 
         <div id="rrhh" class="seccion">
             <div class="header-logos">
-                <img src="static/logo_hospi" alt="Logo Hospital">
+                <img src="static/logo_hospi.png" alt="Logo Hospital">
                 <h1 style="margin: 0; text-align: center; flex: 1;">Personal</h1>
                 <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
@@ -284,7 +284,7 @@
 
         <div id="resoluciones" class="seccion">
             <div class="header-logos">
-                <img src="static/logo_hospi" alt="Logo Hospital">
+                <img src="static/logo_hospi.png" alt="Logo Hospital">
                 <h1 style="margin: 0; text-align: center; flex: 1;">Resoluciones</h1>
                 <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
@@ -332,6 +332,7 @@
 
             const turnoActual = localStorage.getItem('usuario_turno') || "Mañana";
 
+            // Buscamos combinaciones posibles: para el Dpto "Camilleros" y el turno actual, o globales para "Todos"
             const llavesBuscadas = [
                 `comunicado_novedades_Camilleros_${turnoActual}`,
                 `comunicado_novedades_Camilleros_Todos`,
@@ -368,6 +369,7 @@
                         let base64Data = contenidoObj.archivo.data;
                         let nombreArchivo = contenidoObj.archivo.name || "adjunto_descargable";
                         
+                        // Validamos si es una imagen o un archivo general para renderizarlo con el estilo prolijo de ascensores
                         if (nombreArchivo.match(/\.(jpeg|jpg|gif|png)$/i) || base64Data.startsWith('data:image/')) {
                             archivoHtml = `
                                 <div style="margin-top: 15px; text-align: center;">
