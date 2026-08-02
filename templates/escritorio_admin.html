@@ -18,12 +18,8 @@
         .seccion.activo { display: block; } 
         .filtros-historicos { display: flex; gap: 10px; background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #eee; align-items: center; flex-wrap: wrap; }
         .input-select, .input-fecha { border: 1px solid #ccc; padding: 10px; border-radius: 4px; font-family: inherit; cursor: pointer; }
-        
-        /* Modificación unificada de logos */
         .header-logos { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
         .header-logos img { height: 110px; width: auto; object-fit: contain; }
-        .header-logos h1 { margin: 0; text-align: center; flex: 1; font-size: 24px; }
-
         .area-acciones { margin-top: 20px; display: flex; gap: 10px; }
         .btn-gestion { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; }
         .btn-adjuntar { background: #1a3a5f; color: white; }
@@ -203,8 +199,8 @@
                     <div id="${id}" class="seccion">
                         <div class="header-logos">
                             <img src="logo_hospi.png" alt="Logo">
-                            <h1>${titulo}</h1>
-                            <img src="logo_dsg.png" alt="Logo DSG">
+                            <h1 style="margin: 0; text-align: center; flex: 1;">${titulo}</h1>
+                            <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
                         </div>
                         <div class="filtros-historicos">
                             ${tipoContenido === 'auditoria' ? `
@@ -283,8 +279,8 @@
         <div id="estadisticas" class="seccion">
             <div class="header-logos">
                 <img src="logo_hospi.png" alt="Logo">
-                <h1 class="titulo-caja">Estadísticas Mensuales</h1>
-                <img src="logo_dsg.png" alt="Logo DSG">
+                <h1 style="margin: 0; text-align: center; flex: 1;" class="titulo-caja">Estadísticas Mensuales</h1>
+                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
             <div class="filtros-historicos">
                 <select id="est-tipo" class="input-select">
@@ -653,6 +649,7 @@
                     return;
                 }
 
+                // CORRECCIÓN ESTRICTA: Consultamos únicamente la tabla correspondiente al depto filtrado
                 let tablaPersonal = 'intendencia_personal';
                 if (deptoFiltro === 'Ascensores') {
                     tablaPersonal = 'ascensores_personal';
