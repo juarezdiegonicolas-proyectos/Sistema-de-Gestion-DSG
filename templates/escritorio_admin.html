@@ -198,9 +198,9 @@
                 document.write(`
                     <div id="${id}" class="seccion">
                         <div class="header-logos">
-                            <img src="logo_hospi.png" alt="Logo" style="height: 135px; width: auto; object-fit: contain;">
+                            <img src="logo_hospi.png" alt="Logo">
                             <h1 style="margin: 0; text-align: center; flex: 1;">${titulo}</h1>
-                            <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px; width: auto; object-fit: contain;">
+                            <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
                         </div>
                         <div class="filtros-historicos">
                             ${tipoContenido === 'auditoria' ? `
@@ -278,9 +278,9 @@
         <!-- SECCIÓN ESTADÍSTICAS -->
         <div id="estadisticas" class="seccion">
             <div class="header-logos">
-                <img src="logo_hospi.png" alt="Logo" style="height: 135px; width: auto; object-fit: contain;">
+                <img src="logo_hospi.png" alt="Logo">
                 <h1 style="margin: 0; text-align: center; flex: 1;" class="titulo-caja">Estadísticas Mensuales</h1>
-                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px; width: auto; object-fit: contain;">
+                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
             <div class="filtros-historicos">
                 <select id="est-tipo" class="input-select">
@@ -649,6 +649,7 @@
                     return;
                 }
 
+                // CORRECCIÓN ESTRICTA: Consultamos únicamente la tabla correspondiente al depto filtrado
                 let tablaPersonal = 'intendencia_personal';
                 if (deptoFiltro === 'Ascensores') {
                     tablaPersonal = 'ascensores_personal';
