@@ -604,12 +604,14 @@
             let pA = ((ausentes / totalAgentes) * 100).toFixed(1);
             let pL = ((licencias / totalAgentes) * 100).toFixed(1);
             
+            // Guardar localmente el objeto completo de asistencia
             localStorage.setItem('dsg_camilleros_asistencia_rrhh', JSON.stringify(registro));
 
             const fechaActual = inputFecha.value;
             const supervisorActual = localStorage.getItem('usuario_nombre') || "Sistema";
             const departamentoActual = "Camilleros";
 
+            // Guardar fila por fila en la tabla relacional de Supabase rrhh_asistencia
             for (const a of agentesTurno) {
                 const estadoVal = registro[a.legajo];
                 if (estadoVal) {
@@ -676,7 +678,18 @@
             const reporteVal = editorReporte.innerHTML;
             const observacionesVal = editorObservaciones ? (editorObservaciones.value || editorObservaciones.innerHTML) : "";
             const tablaVal = cuerpoTabla.innerHTML;
-            const asistenciaVal = JSON.parse(localStorage.getItem('dsg_camilleros_asistencia_rrhh') || "{}");
+            
+            // CORRECCIÓN: Obtener dinámicamente y con seguridad la asistencia actual desde los elementos del DOM o localStorage
+            let asistenciaVal = JSON.parse(localStorage.getItem('dsg_camilleros_asistencia_rrhh') || "{}");
+            if (Object.keys(asistenciaVal).length === 0) {
+                const agentesTurno = agentes.filter(a => a.turno === turnoVal);
+                agentesTurno.forEach(a => {
+                    const inputEstado = document.getElementById(`estado-${a.legajo}`);
+                    if (inputEstado && inputEstado.value) {
+                        asistenciaVal[a.legajo] = inputEstado.value;
+                    }
+                });
+            }
 
             const cierre = { 
                 fecha: fechaVal, 
@@ -693,6 +706,7 @@
             historial.push(cierre);
             localStorage.setItem('historial_jornadas', JSON.stringify(historial));
 
+            // Envío correcto con los datos de asistencia consolidada a la tabla cierres_jornada
             const { error: errorCierre } = await supabaseClient.from('cierres_jornada').insert({
                 fecha_cierre: fechaVal,
                 turno: turnoVal,
