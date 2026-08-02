@@ -502,7 +502,7 @@
                     uso: select.value || "",
                     observaciones: infoAscensorista,
                     legajo_operador: localStorage.getItem('usuario_legajo') || "Desconocido",
-                    updated_at: new Date().toISOString() // 👈 CORREGIDO AQUÍ PARA COINCIDIR CON SUPABASE
+                    updated_at: new Date().toISOString()
                 });
             });
 
@@ -1067,3 +1067,4 @@
     </script>
 </body>
 </html>
+
