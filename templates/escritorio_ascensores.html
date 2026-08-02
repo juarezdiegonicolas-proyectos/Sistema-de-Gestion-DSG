@@ -151,6 +151,11 @@
             </div>
             <div id="info-supervisor">Supervisor: <span id="display-nombre">---</span> | Turno: <span id="display-turno">---</span> | Depto: <span id="display-depto">---</span></div>
             
+            <!-- Barra restaurada de Última Actualización y Registrado por -->
+            <div id="info-ultima-actualizacion" style="margin-bottom: 15px; padding: 10px; background: #f1f1f1; border: 1px solid #ccc; border-radius: 6px; font-size: 13px; color: #333; font-weight: bold;">
+                Última actualización: <span id="txt-ultima-hora">---</span> | Registrado por: <span id="txt-registrado-por">---</span>
+            </div>
+
             <div class="referencias">
                 <div class="ref-item"><div class="ref-color c-verde"></div> Funcionando</div>
                 <div class="ref-item"><div class="ref-color c-amarillo"></div> Mantenimiento</div>
@@ -273,6 +278,7 @@
         const opcionesUso = ["-", "Departamento Alimentacion y Dietetica", "Traslado Residuos Comunes", "Traslado Residuos Patologicos", "Traslado Personal Medico", "Traslado Eventos", "Traslado Usuarios y Publico General", "Traslado Camilleros/Pacientes", "Traslado Guardia", "Monta Carga", "Personal del Hospital", "Fuera de Servicio", "En Reparacion", "En Mantenimiento"];
         let chartRRHH, chartAsc;
         
+        // Función robusta para conectar a Supabase y evitar bloqueos por RLS o turnos
         async function obtenerAgentesAscensores() {
             if (!supabaseClient) return [];
             
@@ -502,9 +508,21 @@
                     uso: select.value || "",
                     observaciones: infoAscensorista,
                     legajo_operador: localStorage.getItem('usuario_legajo') || "Desconocido",
-                    updated_at: new Date().toISOString() // 👈 CORREGIDO AQUÍ PARA COINCIDIR CON SUPABASE
+                    actualizado_at: new Date().toISOString()
                 });
             });
+
+            // Actualizar etiquetas de auditoría en pantalla inmediatamente
+            const ahora = new Date();
+            const horaFormateada = ahora.toLocaleTimeString();
+            const fechaFormateada = ahora.toLocaleDateString();
+            const supervisorActual = localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario_legajo') || "Desconocido";
+
+            localStorage.setItem('dsg_ascensores_ultima_act', `${fechaFormateada} ${horaFormateada}`);
+            localStorage.setItem('dsg_ascensores_registrado_por', supervisorActual);
+
+            document.getElementById('txt-ultima-hora').innerText = `${fechaFormateada} ${horaFormateada}`;
+            document.getElementById('txt-registrado-por').innerText = supervisorActual;
 
             localStorage.setItem('dsg_ascensores_estados', JSON.stringify(estadosGuardar));
             actualizarGraficoAscensores();
@@ -774,6 +792,8 @@
             localStorage.removeItem('dsg_ascensores_asistencia_rrhh');
             localStorage.removeItem('dsg_ascensores_reporte');
             localStorage.removeItem('dsg_ascensores_estados');
+            localStorage.removeItem('dsg_ascensores_ultima_act');
+            localStorage.removeItem('dsg_ascensores_registrado_por');
             
             editorReporte.innerHTML = "";
             alert("Jornada cerrada correctamente en la base de datos.");
@@ -1022,6 +1042,12 @@
             document.getElementById('display-depto-rep').innerText = depto;
             document.getElementById('depto-hist-label').innerText = depto;
             
+            // Cargar datos de auditoría almacenados localmente si existen
+            const ultimaActGuardada = localStorage.getItem('dsg_ascensores_ultima_act');
+            const registradoPorGuardado = localStorage.getItem('dsg_ascensores_registrado_por');
+            if (ultimaActGuardada) document.getElementById('txt-ultima-hora').innerText = ultimaActGuardada;
+            if (registradoPorGuardado) document.getElementById('txt-registrado-por').innerText = registradoPorGuardado;
+
             let numeroHojaReal = 1;
             if (supabaseClient) {
                 try {
