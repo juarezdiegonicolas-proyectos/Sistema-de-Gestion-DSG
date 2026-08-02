@@ -105,8 +105,11 @@
         .btn-gestion { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; }
         .btn-imprimir { background: #6c757d; color: white; }
         #info-supervisor { margin-bottom: 20px; color: #1a3a5f; font-weight: bold; border: 1px solid #ddd; padding: 10px; border-radius: 6px; background: #f9f9f9; }
+        
+        /* CORRECCIÓN: Altura uniforme y estricta para ambos logos */
         .header-logos { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
-        .header-logos img { height: 110px; width: auto; object-fit: contain; }
+        .header-logos img { height: 95px; width: 95px; object-fit: contain; }
+
         .filtros-historicos { display: flex; gap: 15px; background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #eee; align-items: center; }
         .celda-asistencia { cursor: pointer; width: 25px; height: 25px; border: 2px solid #333; display: inline-block; transition: background 0.3s; margin: auto; }
         .estado-P { background-color: #28a745 !important; }
@@ -169,7 +172,7 @@
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo Hospital">
                 <h1 style="margin: 0; text-align: center; flex: 1;">Reportes</h1>
-                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+                <img src="static/logo_dsg.png" alt="Logo DSG">
             </div>
             <div id="info-supervisor">Supervisor: <span id="display-nombre-rep">---</span> | Turno: <span id="display-turno-rep">---</span> | Depto: <span id="display-depto-rep">---</span></div>
             <div class="info-hoja">
@@ -186,7 +189,7 @@
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo Hospital">
                 <h1 style="margin: 0; text-align: center; flex: 1; font-size: 30px;">Auxiliares Técnicos</h1>
-                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+                <img src="static/logo_dsg.png" alt="Logo DSG">
             </div>
             <div id="info-supervisor">Supervisor: <span id="display-nombre">---</span> | Turno: <span id="display-turno">---</span> | Depto: <span id="display-depto">---</span></div>
             <table class="tabla-camilleros" id="tabla-exportar">
@@ -208,7 +211,7 @@
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo Hospital">
                 <h1 style="margin: 0; text-align: center; flex: 1;">Registros Históricos</h1>
-                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+                <img src="static/logo_dsg.png" alt="Logo DSG">
             </div>
             <div id="info-supervisor">Departamento: <span id="depto-hist-label">---</span></div>
             <div class="filtros-historicos">
@@ -237,7 +240,7 @@
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo Hospital">
                 <h1 style="margin: 0; text-align: center; flex: 1;">Novedades y Comunicados</h1>
-                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+                <img src="static/logo_dsg.png" alt="Logo DSG">
             </div>
             <div id="contenedor-novedades" style="margin-top: 20px;">
                 <p>Cargando novedades desde la base de datos...</p>
@@ -249,7 +252,7 @@
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo Hospital">
                 <h1 style="margin: 0; text-align: center; flex: 1;">Estado Actual de Ascensores</h1>
-                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+                <img src="static/logo_dsg.png" alt="Logo DSG">
             </div>
             <div id="contenedor-ascensores" style="border: 1px solid #ccc; padding: 20px; border-radius: 8px; background: #fafafa;">
                 <p>Cargando estado actual de ascensores...</p>
@@ -261,7 +264,7 @@
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo Hospital">
                 <h1 style="margin: 0; text-align: center; flex: 1;">Personal</h1>
-                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+                <img src="static/logo_dsg.png" alt="Logo DSG">
             </div>
             <div id="info-supervisor">Supervisor: <span id="display-nombre-rrhh">---</span> | Turno: <span id="display-turno-rrhh">---</span> | Depto: <span id="display-depto-rrhh">---</span></div>
             <table class="tabla-camilleros" style="table-layout: auto;">
@@ -286,7 +289,7 @@
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo Hospital">
                 <h1 style="margin: 0; text-align: center; flex: 1;">Resoluciones</h1>
-                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+                <img src="static/logo_dsg.png" alt="Logo DSG">
             </div>
         </div>
     </div>
