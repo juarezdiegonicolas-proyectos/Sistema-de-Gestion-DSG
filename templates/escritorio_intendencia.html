@@ -112,7 +112,7 @@
 
     <div class="contenido">
         <script>
-            // Configuración sincronizada de Supabase usando 'db' con las credenciales reales
+            // Configuración sincronizada de Supabase usando 'db' con las credenciales reales[cite: 5]
             const SUPABASE_URL = 'https://ydcbdvosxbwcutddxaze.supabase.co';
             const SUPABASE_KEY = 'sb_publishable_EvvZ8n7Ve2cF9FB4SXA0Ug_7q6qWh9f';
             const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -120,9 +120,9 @@
 
         <div id="reportes" class="seccion activo">
             <div class="header-logos">
-                <img src="logo_hospi.png" alt="Logo Hospital">
+                <img src="static/logo_hospi.png" alt="Logo Hospital">
                 <h1 style="margin: 0; text-align: center; flex: 1;">Reportes</h1>
-                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
             <div id="info-supervisor">Supervisor: <span id="display-nombre-rep">---</span> | Turno: <span id="display-turno-rep">---</span> | Depto: <span id="display-depto-rep">---</span></div>
             <div class="info-hoja">
@@ -137,9 +137,9 @@
 
         <div id="planillas" class="seccion">
             <div class="header-logos">
-                <img src="logo_hospi.png" alt="Logo Hospital">
+                <img src="static/logo_hospi.png" alt="Logo Hospital">
                 <h1 style="margin: 0; text-align: center; flex: 1; font-size: 26px;">Planilla Funciones del Día</h1>
-                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
             <div id="info-supervisor">Supervisor: <span id="display-nombre">---</span> | Turno: <span id="display-turno">---</span> | Depto: <span id="display-depto">---</span></div>
             
@@ -173,9 +173,9 @@
 
         <div id="estado-ascensores" class="seccion">
             <div class="header-logos">
-                <img src="logo_hospi.png" alt="Logo">
+                <img src="static/logo_hospi.png" alt="Logo">
                 <h1 style="margin: 0; text-align: center; flex: 1;">Estado Actual de Ascensores</h1>
-                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
             <div class="filtros-historicos">
                 <span style="font-weight: bold; color: #1a3a5f;">Estado en tiempo real de la tabla estado_actual_ascensores</span>
@@ -189,9 +189,9 @@
 
         <div id="historicos" class="seccion">
             <div class="header-logos">
-                <img src="logo_hospi.png" alt="Logo Hospital">
+                <img src="static/logo_hospi.png" alt="Logo Hospital">
                 <h1 style="margin: 0; text-align: center; flex: 1;">Registros Históricos</h1>
-                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
             <div id="info-supervisor">Departamento: <span id="depto-hist-label">---</span></div>
             <div class="filtros-historicos">
@@ -221,9 +221,9 @@
         
         <div id="novedades" class="seccion">
             <div class="header-logos">
-                <img src="logo_hospi.png" alt="Logo Hospital">
+                <img src="static/logo_hospi.png" alt="Logo Hospital">
                 <h1 style="margin: 0; text-align: center; flex: 1;">Novedades</h1>
-                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
             <div class="filtros-historicos">
                 <span style="font-weight: bold; color: #1a3a5f;">Estado en tiempo real de la tabla comunicados_memos</span>
@@ -237,9 +237,9 @@
 
         <div id="rrhh" class="seccion">
             <div class="header-logos">
-                <img src="logo_hospi.png" alt="Logo Hospital">
+                <img src="static/logo_hospi.png" alt="Logo Hospital">
                 <h1 style="margin: 0; text-align: center; flex: 1;">Personal - Turno: <span id="display-turno-rrhh">---</span></h1>
-                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
             <table class="tabla-intendencia" style="table-layout: auto;">
                 <thead><tr><th>LEGAJO</th><th>APELLIDO Y NOMBRE</th><th>PRESENTE</th><th>AUSENTE</th><th>LICENCIA</th></tr></thead>
@@ -261,9 +261,9 @@
 
         <div id="resoluciones" class="seccion">
             <div class="header-logos">
-                <img src="logo_hospi.png" alt="Logo Hospital">
+                <img src="static/logo_hospi.png" alt="Logo Hospital">
                 <h1 style="margin: 0; text-align: center; flex: 1;">Resoluciones</h1>
-                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
         </div>
     </div>
@@ -826,7 +826,7 @@
                 let legajoOperador = null;
 
                 data.forEach(item => {
-                    let fechaItem = item.updated_at || item.actualizado_at || item.actualizado_en || item.fecha;
+                    let fechaItem = item.actualizado_at || item.actualizado_en || item.fecha;
                     if (fechaItem) {
                         if (!ultimaFechaStr || new Date(fechaItem) > new Date(ultimaFechaStr)) {
                             ultimaFechaStr = fechaItem;
