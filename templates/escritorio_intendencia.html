@@ -106,7 +106,7 @@
         </div>
         <div class="sidebar-footer">
             <button class="btn-accion-global" onclick="cerrarJornadaGlobal()">📥 CERRAR JORNADA</button>
-            <a href="https://sistema-hospital-dsg.onrender.com" class="btn-cerrar">CERRAR SESIÓN</a>
+            <a href="index.html" class="btn-cerrar">CERRAR SESIÓN</a>
         </div>
     </div>
 
@@ -944,6 +944,7 @@
                 let base64Data = contenidoObj.archivo.data;
                 let nombreArchivo = contenidoObj.archivo.name || "adjunto_descargable";
                 
+                // Detectar si es una imagen analizando el tipo o la cabecera del base64
                 let esImagen = base64Data.startsWith('data:image/') || 
                                /\.(jpg|jpeg|png|gif|webp)$/i.test(nombreArchivo);
 
@@ -959,6 +960,7 @@
                         </div>
                     `;
                 } else {
+                    // Si es PDF, Word u otro archivo, mostramos una caja limpia con icono de documento
                     archivoHtml = `
                         <div style="margin-top: 15px; background: #f8f9fa; border: 1px solid #ddd; padding: 12px 15px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
                             <div style="display: flex; align-items: center; gap: 10px;">
