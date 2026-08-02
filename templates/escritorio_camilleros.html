@@ -22,7 +22,7 @@
         .sidebar-footer { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; padding-top: 5px; }
         .btn-accion-global { width: 100%; padding: 10px; background: linear-gradient(135deg, #28a745, #218838); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: opacity 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
         .btn-accion-global:hover { opacity: 0.9; }
-        .btn-cerrar { width: 100%; padding: 10px; background: linear-gradient(135deg, #d32f2f, #c62828); color: white; text-align: center; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); box-sizing: border-box; display: flex; align-items: center; justify-content: center; gap: 6px; transition: opacity 0.2s; }
+        .btn-cerrar { width: 100%; padding: 10px; background: linear-gradient(135deg, #d32f2f, #c62828); color: white; text-align: center; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); box-sizing: border-box; display: flex; align-items: center; justify-content: center; gap: 6px; transition: opacity 0.2s; border: none; cursor: pointer; }
         .btn-cerrar:hover { opacity: 0.9; }
 
         .contenido { flex: 1; padding: 40px; overflow-y: auto; height: 100vh; box-sizing: border-box; }
@@ -160,7 +160,7 @@
 
         <div class="sidebar-footer">
             <button class="btn-accion-global" onclick="cerrarJornadaGlobal()">📥 CERRAR JORNADA</button>
-            <a href="index.html" class="btn-cerrar">🚪 CERRAR SESIÓN</a>
+            <button class="btn-cerrar" onclick="cerrarSesion()">🚪 CERRAR SESIÓN</button>
         </div>
     </div>
 
@@ -324,6 +324,16 @@
             });
         }
 
+        function cerrarSesion() {
+            localStorage.removeItem('usuario_nombre');
+            localStorage.removeItem('usuario_turno');
+            localStorage.removeItem('dsg_camilleros_tabla');
+            localStorage.removeItem('dsg_camilleros_reporte');
+            localStorage.removeItem('dsg_camilleros_observaciones');
+            localStorage.removeItem('dsg_camilleros_asistencia_rrhh');
+            window.location.href = './';
+        }
+
         async function cargarNovedades() {
             const contenedorNov = document.getElementById('contenedor-novedades');
             if (!contenedorNov) return;
@@ -332,7 +342,6 @@
 
             const turnoActual = localStorage.getItem('usuario_turno') || "Mañana";
 
-            // Buscamos combinaciones posibles: para el Dpto "Camilleros" y el turno actual, o globales para "Todos"
             const llavesBuscadas = [
                 `comunicado_novedades_Camilleros_${turnoActual}`,
                 `comunicado_novedades_Camilleros_Todos`,
@@ -369,7 +378,6 @@
                         let base64Data = contenidoObj.archivo.data;
                         let nombreArchivo = contenidoObj.archivo.name || "adjunto_descargable";
                         
-                        // Validamos si es una imagen o un archivo general para renderizarlo con el estilo prolijo de ascensores
                         if (nombreArchivo.match(/\.(jpeg|jpg|gif|png)$/i) || base64Data.startsWith('data:image/')) {
                             archivoHtml = `
                                 <div style="margin-top: 15px; text-align: center;">
