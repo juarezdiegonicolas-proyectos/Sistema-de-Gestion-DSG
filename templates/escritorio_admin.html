@@ -828,27 +828,54 @@
                     }, 50);
 
                 } else if (deptoFiltro === 'Intendencia') {
+                    let queryInt = db.from('registros_intendencia').select('*').eq('fecha_cierre', fechaBusqueda).eq('turno', turno);
+                    if (supervisorSeleccionado) queryInt = queryInt.eq('supervisor', supervisorSeleccionado);
+                    const { data: intData } = await queryInt;
+
                     let tablaDinamica = `
                         <div style="background: #fff; width: 100%; box-sizing: border-box;">
-                            <div style="font-size: 16px; font-weight: bold; color: #1a3a5f; margin-bottom: 10px;">
-                                Planilla Operativa - Intendencia ${supervisorSeleccionado ? '(' + supervisorSeleccionado + ')' : ''}
-                            </div>`;
-
-                    if (reg && reg.tabla_operativa) {
-                        tablaDinamica += reg.tabla_operativa;
+                            <div style="font-size: 16px; font-weight: bold; color: #1a3a5f; margin-bottom: 10px;">Planilla Operativa - Intendencia ${supervisorSeleccionado ? '(' + supervisorSeleccionado + ')' : ''}</div>
+                            <table style="width: 100%; border-collapse: collapse; margin-bottom: 0;">
+                                <thead>
+                                    <tr style="background-color: #1a3a5f; color: white;">
+                                        <th style="border: 1px solid #333; padding: 10px; text-align: center;" rowspan="2">SECTOR</th>
+                                        <th style="border: 1px solid #333; padding: 10px; text-align: center;" rowspan="2">AGENTES ASIGNADOS</th>
+                                        <th style="border: 1px solid #333; padding: 8px; text-align: center;" colspan="2">HORARIO</th>
+                                    </tr>
+                                    <tr style="background-color: #1a3a5f; color: white;">
+                                        <th style="border: 1px solid #333; padding: 8px; text-align: center; width: 100px;">DESDE</th>
+                                        <th style="border: 1px solid #333; padding: 8px; text-align: center; width: 100px;">HASTA</th>
+                                    </tr>
+                                </thead>
+                               <tbody>`;
+                    
+                    if (intData && intData.length > 0) {
+                        intData.forEach(row => {
+                            tablaDinamica += `<tr>
+                                <td style="border: 1px solid #333; padding: 10px; text-align: center;">${row.sector || ''}</td>
+                                <td style="border: 1px solid #333; padding: 10px; text-align: center;">${row.agentes_asignados || ''}</td>
+                                <td style="border: 1px solid #333; padding: 10px; text-align: center;">${row.hora_desde || ''}</td>
+                                <td style="border: 1px solid #333; padding: 10px; text-align: center;">${row.hora_hasta || ''}</td>
+                            </tr>`;
+                        });
                     } else {
-                        tablaDinamica += `<div style="padding: 12px; text-align: center; border: 1px solid #333;">No hay registros de planilla para esta fecha, turno y supervisor.</div>`;
+                        tablaDinamica += `<tr><td colspan="4" style="border: 1px solid #333; padding: 12px; text-align: center;">No hay registros detallados de Intendencia para esta fecha y turno con este supervisor.</td></tr>`;
                     }
-
-                    let obsFinal = reg ? (reg.reporte_diario || 'Sin observaciones registradas.') : 'Sin observaciones registradas.';
+                    tablaDinamica += `</tbody></table>`;
+                    
+                    let obsFinal = '';
+                    if (reg && reg.observaciones) obsFinal = reg.observaciones;
+                    else if (intData && intData.length > 0) {
+                        const encontrada = intData.find(r => r.observaciones && r.observaciones.trim() !== '');
+                        obsFinal = encontrada ? encontrada.observaciones : '';
+                    }
 
                     tablaDinamica += `
                         <div style="background-color: #1a3a5f; color: white; padding: 8px 12px; font-weight: bold; font-size: 14px; margin-top: 15px; border: 1px solid #333;">Observaciones:</div>
                         <div style="padding: 10px 15px; min-height: 120px; background: #fff; border: 1px solid #333; border-top: none; font-family: 'Courier New', Courier, monospace; font-size: 16px; line-height: 30px; background-image: linear-gradient(#e0e0e0 1px, transparent 1px); background-size: 100% 30px;">
-                            <p style="margin: 0; padding: 0; white-space: pre-wrap;">${obsFinal}</p>
+                            <p style="margin: 0; padding: 0; white-space: pre-wrap;">${obsFinal || 'Sin observaciones registradas.'}</p>
                         </div>
                     </div>`;
-
                     visor.innerHTML = tablaDinamica;
 
                 } else if (deptoFiltro === 'Camilleros') {
