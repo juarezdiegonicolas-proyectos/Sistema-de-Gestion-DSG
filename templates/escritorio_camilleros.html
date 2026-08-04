@@ -1,4 +1,5 @@
 <!DOCTYPE html><html lang="es"><head>
+    <meta charset="UTF-8"><!DOCTYPE html><html lang="es"><head>
     <meta charset="UTF-8">
     <title>Escritorio Camilleros - DSG</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -648,13 +649,12 @@
                         else opt.removeAttribute('selected');
                     });
                 });
-                tr.querySelectorAll('input').forEach(i => {
-                    if (i.type === 'checkbox') {
-                        if (i.checked) i.setAttribute('checked', 'checked');
-                        else i.removeAttribute('checked');
-                    } else {
-                        i.setAttribute('value', i.value);
-                    }
+                tr.querySelectorAll('input:not([type="checkbox"])').forEach(i => {
+                    i.setAttribute('value', i.value);
+                });
+                tr.querySelectorAll('input[type="checkbox"]').forEach(chk => {
+                    if (chk.checked) chk.setAttribute('checked', 'checked');
+                    else chk.removeAttribute('checked');
                 });
             });
             localStorage.setItem('dsg_camilleros_tabla', cuerpoTabla.innerHTML);
@@ -940,6 +940,18 @@
             cargarNovedades();
         };
 
+        function obtenerOpcionesCamilleros() {
+            const turnoActual = localStorage.getItem('usuario_turno') || "Mañana";
+            const agentesTurno = agentes.filter(a => a.turno === turnoActual);
+            agentesTurno.sort((a, b) => parseInt(a.legajo) - parseInt(b.legajo));
+            
+            let optionsHTML = '<option value="">Seleccionar Camillero...</option>';
+            agentesTurno.forEach(ag => {
+                optionsHTML += `<option value="${ag.nombre}">${ag.nombre}</option>`;
+            });
+            return optionsHTML;
+        }
+
         function crearFilaHTML() { 
             return '<td><button class="btn-borrar" onclick="borrarFila(this)">X</button></td>' +
                      '<td><input class="input-c input-hora" type="text" onclick="registrarHora(this)"></td>' +
@@ -967,9 +979,9 @@
                          '</select>' +
                     '</td>' +
                     '<td>' +
-                         '<div style="display: flex; align-items: center; gap: 6px; width: 100%; box-sizing: border-box;">' +
-                             '<input type="checkbox" class="input-c input-seleccion-camillero" onchange="guardarDatos()" style="width: 16px; height: 16px; cursor: pointer; margin: 0; flex-shrink: 0;" title="Seleccionar camillero">' +
-                             '<select class="input-c input-personal" onchange="guardarDatos()" style="flex: 1; min-width: 0; height: 100%; border: none; background: transparent; font-size: 11px; font-family: inherit;">' +
+                         '<div style="display: flex; align-items: center; gap: 4px; width: 100%;">' +
+                             '<input type="checkbox" class="input-chk-camillero" onchange="guardarDatos()" style="cursor: pointer; flex-shrink: 0;">' +
+                             '<select class="input-c input-personal" onchange="guardarDatos()" style="width: 100%; height: 100%; border: none; background: transparent; font-size: 11px; font-family: inherit;">' +
                                  obtenerOpcionesCamilleros() +
                              '</select>' +
                          '</div>' +
@@ -977,20 +989,8 @@
                     '<td><input class="input-c input-finalizacion" type="time" onchange="guardarDatos()"></td>'; 
         }
 
-        function obtenerOpcionesCamilleros() {
-            const turnoActual = localStorage.getItem('usuario_turno') || "Mañana";
-            const agentesTurno = agentes.filter(a => a.turno === turnoActual);
-            agentesTurno.sort((a, b) => parseInt(a.legajo) - parseInt(b.legajo));
-            
-            let optionsHTML = '<option value="">Seleccionar Camillero...</option>';
-            agentesTurno.forEach(ag => {
-                optionsHTML += `<option value="${ag.nombre}">${ag.nombre}</option>`;
-            });
-            return optionsHTML;
-        }
-
         function registrarHora(input) { if (input.value === "") { const ahora = new Date(); input.value = ahora.getHours().toString().padStart(2, '0') + ":" + ahora.getMinutes().toString().padStart(2, '0'); input.setAttribute('readonly', 'readonly'); guardarDatos(); } }
-        function borrarFila(btn) { const tr = btn.closest('tr'); if (cuerpoTabla.getElementsByTagName('tr').length > 1) tr.remove(); else { tr.querySelectorAll('input, select').forEach(i => { if(i.type === 'checkbox') i.checked = false; else { i.value = ''; i.removeAttribute('readonly'); } }); } guardarDatos(); }
+        function borrarFila(btn) { const tr = btn.closest('tr'); if (cuerpoTabla.getElementsByTagName('tr').length > 1) tr.remove(); else { tr.querySelectorAll('input, select').forEach(i => { if(i.type === 'checkbox') i.checked = false; else i.value = ''; i.removeAttribute('readonly'); }); } guardarDatos(); }
         function detectarEnter(e) { if (e.key === 'Enter') { e.preventDefault(); const tr = document.createElement('tr'); tr.innerHTML = crearFilaHTML(); cuerpoTabla.appendChild(tr); tr.querySelectorAll('input')[1].focus(); } }
         function mostrar(id, titulo) { 
             document.querySelectorAll('.seccion').forEach(s => s.classList.remove('activo')); 
