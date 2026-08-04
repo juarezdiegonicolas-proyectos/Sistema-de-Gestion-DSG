@@ -16,8 +16,11 @@
         .sidebar-header-title h2 { font-size: 18px; margin: 0; line-height: 1.2; }
 
         .menu-links { flex: 1; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; margin-bottom: 8px; }
-        .menu-item { display: flex; align-items: center; color: #ddd; padding: 10px 12px; text-decoration: none; border-bottom: 1px solid rgba(93, 141, 187, 0.3); font-weight: 500; cursor: pointer; font-size: 15px; transition: background 0.2s, color 0.2s; border-radius: 4px; }
+        .menu-item { display: flex; align-items: center; color: #ddd; padding: 10px 12px; text-decoration: none; border-bottom: 1px solid rgba(93, 141, 187, 0.3); font-weight: 500; cursor: pointer; font-size: 15px; transition: background 0.2s, color 0.2s; border-radius: 4px; position: relative; }
         .menu-item:hover { background-color: #5d8dbb; color: white; }
+        
+        /* Notificación de Novedades */
+        .badge-novedad { position: absolute; right: 15px; background-color: #dc3545; color: white; border-radius: 50%; width: 10px; height: 10px; display: none; }
         
         .sidebar-footer { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; padding-top: 5px; }
         .btn-accion-global { width: 100%; padding: 10px; background: linear-gradient(135deg, #28a745, #218838); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: opacity 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
@@ -152,10 +155,7 @@
             <div class="menu-item" onclick="mostrar('reportes', 'Reportes')">📊 Reportes</div>
             <div class="menu-item" onclick="mostrar('planillas', 'Planillas (Operativa)')">🛠 Planillas (Operativa)</div>
             <div class="menu-item" onclick="mostrar('historicos', 'Registros Históricos')">📂 Registros Históricos</div>
-            <div class="menu-item" onclick="mostrar('novedades', 'Novedades')">
-                📢 Novedades 
-                <span id="badge-novedades" style="background-color: #dc3545; color: white; border-radius: 50%; padding: 2px 7px; font-size: 11px; font-weight: bold; margin-left: 8px; display: none;">0</span>
-            </div>
+            <div class="menu-item" onclick="mostrar('novedades', 'Novedades')">📢 Novedades <span id="badge-novedad" class="badge-novedad"></span></div>
             <div class="menu-item" onclick="mostrar('ascensores', 'Estado de Ascensores')">🛗 Estado de Ascensores</div>
             <div class="menu-item" onclick="mostrar('rrhh', 'RR.HH.')">👥 RR.HH.</div>
             <div class="menu-item" onclick="mostrar('resoluciones', 'Resoluciones')">⚖️ Resoluciones</div>
@@ -342,6 +342,7 @@
 
         async function cargarNovedades() {
             const contenedorNov = document.getElementById('contenedor-novedades');
+            const badgeNov = document.getElementById('badge-novedad');
             if (!contenedorNov) return;
             
             contenedorNov.innerHTML = "<p>Buscando comunicados y novedades en Supabase...</p>";
@@ -360,8 +361,7 @@
 
                 if (!data || data.length === 0) {
                     contenedorNov.innerHTML = '<p style="color: #666;">No hay registros disponibles.</p>';
-                    const badge = document.getElementById('badge-novedades');
-                    if (badge) badge.style.display = 'none';
+                    if (badgeNov) badgeNov.style.display = 'none';
                     return;
                 }
 
@@ -370,16 +370,35 @@
                     return clave.includes('camilleros') || clave.includes('todos');
                 });
 
-                // ACTUALIZACIÓN DE NOTIFICACIÓN
-                const badge = document.getElementById('badge-novedades');
-                if (badge) {
-                    badge.innerText = filtrados.length;
-                    badge.style.display = filtrados.length > 0 ? 'inline-block' : 'none';
-                }
-
                 if (filtrados.length === 0) {
                     contenedorNov.innerHTML = '<p style="color: #666;">No hay comunicaciones dirigidas a este sector.</p>';
+                    if (badgeNov) badgeNov.style.display = 'none';
                     return;
+                }
+
+                // ORDENAR HISTÓRICOS DE NOVEDADES: Los más nuevos arriba, los más viejos abajo
+                filtrados.sort((a, b) => {
+                    let idA = a.id || 0;
+                    let idB = b.id || 0;
+                    let fechaA = a.created_at || (a.contenido && a.contenido.fecha) || '';
+                    let fechaB = b.created_at || (b.contenido && b.contenido.fecha) || '';
+                    
+                    if (fechaA && fechaB && fechaA !== fechaB) {
+                        return new Date(fechaB) - new Date(fechaA);
+                    }
+                    return idB - idA;
+                });
+
+                // Notificaciones: Comprobar si hay novedades nuevas no leídas
+                let ultimaLeidaId = localStorage.getItem('dsg_camilleros_ultima_novedad_leida') || '0';
+                let idMasReciente = filtrados[0].id ? String(filtrados[0].id) : '0';
+                
+                if (badgeNov) {
+                    if (idMasReciente !== ultimaLeidaId) {
+                        badgeNov.style.display = 'inline-block';
+                    } else {
+                        badgeNov.style.display = 'none';
+                    }
                 }
 
                 let html = '';
@@ -448,6 +467,12 @@
                 });
 
                 contenedorNov.innerHTML = html;
+
+                // Al abrir la sección y cargar, marcamos automáticamente como leído y ocultamos la notificación
+                if (idMasReciente !== '0') {
+                    localStorage.setItem('dsg_camilleros_ultima_novedad_leida', idMasReciente);
+                    if (badgeNov) badgeNov.style.display = 'none';
+                }
 
             } catch (err) {
                 console.error("Error al cargar comunicados:", err);
@@ -760,7 +785,6 @@
                 const inputHora = tr.querySelector('.input-hora');
                 
                 if (inputHora && inputHora.value.trim() !== '') {
-                    // Extraer los agentes seleccionados mediante el multiselect personalizado
                     let personalSeleccionadoStr = '';
                     const labelSpan = tr.querySelector('.multiselect-label');
                     if (labelSpan) {
