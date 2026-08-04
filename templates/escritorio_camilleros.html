@@ -79,7 +79,9 @@
         .input-fecha, .input-select { border: 1px solid #ccc; padding: 8px; border-radius: 4px; font-family: inherit; cursor: pointer; }
         
         .tabla-camilleros select.input-movilidad, 
-        .tabla-camilleros select.input-personal {
+        .tabla-camilleros select.input-personal,
+        .tabla-camilleros select.input-personal-2,
+        .tabla-camilleros select.input-cant-camilleros {
             padding: 6px 18px 6px 6px;
             font-size: 13px;
             text-overflow: ellipsis;
@@ -734,6 +736,10 @@
                 const inputHora = tr.querySelector('.input-hora');
                 
                 if (inputHora && inputHora.value.trim() !== '') {
+                    const sel1 = tr.querySelector('.input-personal')?.value || '';
+                    const sel2 = tr.querySelector('.input-personal-2')?.value || '';
+                    const personalAsignadoStr = sel2 ? `${sel1} / ${sel2}` : sel1;
+
                     await supabaseClient.from('registros_camilleros').insert({
                         fecha_cierre: fechaVal,
                         turno: turnoVal,
@@ -743,7 +749,7 @@
                         destino: tr.querySelector('.input-destino')?.value || '',
                         duracion_estancia: tr.querySelector('.input-estancia')?.value || '',
                         tipo_movilidad: tr.querySelector('.input-movilidad')?.value || '',
-                        personal_asignado: tr.querySelector('.input-personal')?.value || '',
+                        personal_asignado: personalAsignadoStr,
                         hora_finalizacion: tr.querySelector('.input-finalizacion')?.value || '',
                         observaciones: observacionesVal
                     });
@@ -947,6 +953,18 @@
             return optionsHTML;
         }
 
+        function cambiarCantidadCamilleros(selectCant) {
+            const td = selectCant.closest('td');
+            const select2 = td.querySelector('.input-personal-2');
+            if (selectCant.value === "2") {
+                select2.style.display = "block";
+            } else {
+                select2.style.display = "none";
+                select2.value = "";
+            }
+            guardarDatos();
+        }
+
         function crearFilaHTML() { 
             return '<td><button class="btn-borrar" onclick="borrarFila(this)">X</button></td>' +
                      '<td><input class="input-c input-hora" type="text" onclick="registrarHora(this)"></td>' +
@@ -974,9 +992,20 @@
                          '</select>' +
                     '</td>' +
                     '<td>' +
-                         '<select class="input-c input-personal" onchange="guardarDatos()" style="width: 100%; height: 100%; border: none; background: transparent; font-size: 11px; font-family: inherit;">' +
-                             obtenerOpcionesCamilleros() +
-                         '</select>' +
+                         '<div style="display: flex; gap: 4px; align-items: center;">' +
+                             '<select class="input-cant-camilleros" onchange="cambiarCantidadCamilleros(this)" style="width: 45px; font-size: 11px; padding: 4px;" title="Cantidad de camilleros">' +
+                                 '<option value="1">1</option>' +
+                                 '<option value="2">2</option>' +
+                             '</select>' +
+                             '<div style="display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0;">' +
+                                 '<select class="input-c input-personal" onchange="guardarDatos()" style="width: 100%; font-size: 11px; font-family: inherit;">' +
+                                     obtenerOpcionesCamilleros() +
+                                 '</select>' +
+                                 '<select class="input-c input-personal-2" onchange="guardarDatos()" style="width: 100%; font-size: 11px; font-family: inherit; display: none;">' +
+                                     obtenerOpcionesCamilleros() +
+                                 '</select>' +
+                             '</div>' +
+                         '</div>' +
                     '</td>' +
                     '<td><input class="input-c input-finalizacion" type="time" onchange="guardarDatos()"></td>'; 
         }
