@@ -28,18 +28,6 @@
         textarea { width: 100%; height: 350px; padding: 10px 15px; border: 1px solid #ccc; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 16px; box-sizing: border-box; line-height: 2.0em; background-image: linear-gradient(#ccc 1px, transparent 1px); background-size: 100% 2.0em; resize: none; }
         .preview-adjunto { margin-top: 10px; padding: 10px; border: 1px dashed #aaa; display: none; }
         
-        /* Estilos específicos para la sección Novedades mejorada */
-        .chips-container { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
-        .chip-archivo { display: inline-flex; align-items: center; background: #e2e8f0; padding: 4px 10px; border-radius: 16px; font-size: 12px; color: #1a3a5f; border: 1px solid #cbd5e1; }
-        .chip-archivo span { margin-right: 6px; max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .chip-archivo button { background: none; border: none; color: #ef4444; font-weight: bold; cursor: pointer; font-size: 14px; padding: 0; line-height: 1; }
-        .muro-historico-container { margin-top: 30px; border-top: 2px solid #e2e8f0; padding-top: 20px; }
-        .muro-tarjeta { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); position: relative; }
-        .muro-tarjeta-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 13px; color: #64748b; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; }
-        .muro-tarjeta-body { font-family: 'Courier New', monospace; white-space: pre-wrap; font-size: 14px; color: #334155; line-height: 1.5; }
-        .muro-tarjeta-footer { margin-top: 10px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-        .btn-borrar-muro { background: #ef4444; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; }
-
         .print-only { display: none; }
         .print-header { display: none; font-weight: bold; margin-bottom: 20px; border-bottom: 2px solid #333; padding-bottom: 10px; }
 
@@ -49,7 +37,7 @@
         .box-L { background-color: #ffc107; }
 
         @media print {
-        .sidebar, .filtros-historicos, .btn-cerrar, .area-acciones, .btn-adjuntar, textarea, .btn-limpiar, .chips-container, .muro-historico-container { display: none !important; }
+        .sidebar, .filtros-historicos, .btn-cerrar, .area-acciones, .btn-adjuntar, textarea, .btn-limpiar { display: none !important; }
         
         .seccion { display: none !important; }
         .seccion.activo { 
@@ -242,28 +230,6 @@
                             ` : tipoContenido === 'estado-ascensores-vivo' ? `
                                 <span style="font-weight: bold; color: #1a3a5f;">Estado en tiempo real de la tabla estado_actual_ascensores</span>
                                 <button class="btn-gestion" style="background: #1a3a5f; color: white; margin-left: auto;" onclick="cargarEstadoAscensoresVivo()">Actualizar Datos</button>
-                            ` : id === 'novedades' ? `
-                                <select id="depto-destino-${id}" class="input-select" onchange="actualizarPrint('${id}')">
-                                    <option value="Todos">Todos los departamentos</option>
-                                    <option value="direccion-servicios-generales">Dirección Servicios Generales</option>
-                                    <option value="intendencia">Intendencia</option>
-                                    <option value="division-ascensores">Ascensores</option>
-                                    <option value="lavadero-central">Lavadero Central</option>
-                                    <option value="camilleros-central">Camilleros</option>
-                                    <option value="conmutador">Conmutador</option>
-                                    <option value="dalo">DALO</option>
-                                </select>
-                                <select id="turno-destino-${id}" class="input-select" onchange="actualizarPrint('${id}')">
-                                    <option value="Todos">Todos los turnos</option>
-                                    <option value="Mañana">Mañana</option>
-                                    <option value="Tarde">Tarde</option>
-                                    <option value="Noche A">Noche A</option>
-                                    <option value="Noche B">Noche B</option>
-                                    <option value="Sadofe">Sadofe</option>
-                                </select>
-                                <button class="btn-gestion btn-adjuntar" onclick="document.getElementById('file-${id}').click()">📎 Adjuntar Archivos</button>
-                                <input type="file" id="file-${id}" style="display:none" multiple onchange="previsualizarMultiples(this, '${id}')">
-                                <button class="btn-gestion" style="background: #28a745; color: white;" onclick="guardarRedaccion('${id}')">Guardar y Enviar</button>
                             ` : `
                                 <select id="depto-destino-${id}" class="input-select" onchange="actualizarPrint('${id}')">
                                     <option value="Todos">Todos los departamentos</option>
@@ -291,22 +257,7 @@
                         
                         ${tipoContenido === 'auditoria' ? `<div id="visor-${id}" style="border: 1px solid #ccc; padding: 20px; min-height: 200px;">Seleccione filtros para auditar.</div>` : 
                           tipoContenido === 'estado-ascensores-vivo' ? `<div id="visor-${id}" style="border: 1px solid #ccc; padding: 20px; min-height: 200px; background: #fff;">Cargando datos actuales...</div>` :
-                          id === 'novedades' ? `
-                            <div id="print-header-${id}" class="print-header">Dirigido a: Todos los departamentos | Turno: Todos los turnos</div>
-                            <textarea id="txt-${id}" oninput="document.getElementById('print-${id}').innerText = this.value" placeholder="Escriba aquí el contenido..."></textarea>
-                            <div id="chips-${id}" class="chips-container"></div>
-                            <div id="print-${id}" class="print-only"></div>
-                            <div id="preview-${id}" class="preview-adjunto"></div>
-                            <div class="muro-historico-container">
-                                <h3 style="color: #1a3a5f; margin-top: 0; font-size: 16px;">Muro Histórico de Novedades Activas</h3>
-                                <div id="historial-muro-${id}">Cargando historial...</div>
-                            </div>
-                          ` : `
-                            <div id="print-header-${id}" class="print-header">Dirigido a: Todos los departamentos | Turno: Todos los turnos</div>
-                            <textarea id="txt-${id}" oninput="document.getElementById('print-${id}').innerText = this.value" placeholder="Escriba aquí el contenido..."></textarea>
-                            <div id="print-${id}" class="print-only"></div>
-                            <div id="preview-${id}" class="preview-adjunto"></div>
-                          `}
+                          `<div id="print-header-${id}" class="print-header">Dirigido a: Todos los departamentos | Turno: Todos los turnos</div><textarea id="txt-${id}" oninput="document.getElementById('print-${id}').innerText = this.value" placeholder="Escriba aquí el contenido..."></textarea><div id="print-${id}" class="print-only"></div><div id="preview-${id}" class="preview-adjunto"></div>`}
                         
                         <div class="area-acciones">
                             <button id="btn-print-${id}" class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
@@ -371,8 +322,6 @@
 
     <script>
         let archivoData = {};
-        let archivosCacheMap = {}; // Caché local para múltiples archivos en novedades
-
         function mostrar(id, titulo) { 
             document.querySelectorAll('.seccion').forEach(s => s.classList.remove('activo')); 
             document.getElementById(id).classList.add('activo'); 
@@ -380,26 +329,16 @@
             if (id === 'estado-ascensores') {
                 cargarEstadoAscensoresVivo();
             }
-            if (id === 'novedades') {
-                cargarHistorialMuro('novedades');
-            }
         }
-
         function limpiarPantalla(id) {
             document.getElementById('txt-' + id).value = '';
             document.getElementById('print-' + id).innerText = '';
-            const preview = document.getElementById('preview-' + id);
-            if (preview) {
-                preview.style.display = 'none';
-                preview.innerHTML = '';
-            }
-            const chips = document.getElementById('chips-' + id);
-            if (chips) chips.innerHTML = '';
+            document.getElementById('preview-' + id).style.display = 'none';
+            document.getElementById('preview-' + id).innerHTML = '';
             document.getElementById('depto-destino-' + id).value = 'Todos';
             document.getElementById('turno-destino-' + id).value = 'Todos';
             actualizarPrint(id);
             delete archivoData[id];
-            if (archivosCacheMap[id]) archivosCacheMap[id] = [];
         }
 
         async function cargarEstadoAscensoresVivo() {
@@ -547,90 +486,31 @@
         function actualizarPrint(id) {
             const depto = document.getElementById('depto-destino-' + id).value;
             const turno = document.getElementById('turno-destino-' + id).value;
-            const header = document.getElementById('print-header-' + id);
-            if (header) header.innerText = `Dirigido a: ${depto} | Turno: ${turno}`;
+            document.getElementById('print-header-' + id).innerText = `Dirigido a: ${depto} | Turno: ${turno}`;
         }
 
         function previsualizar(input, id) {
             const file = input.files[0];
-            if (!file) return;
             const reader = new FileReader();
             reader.onload = function(e) {
                 archivoData[id] = { name: file.name, type: file.type, data: e.target.result };
                 const prev = document.getElementById('preview-' + id);
-                if (prev) {
-                    prev.style.display = 'block';
-                    prev.innerHTML = file.type.startsWith('image') ? `<img src="${e.target.result}" style="max-width:200px; display:block; margin-top:10px;">` : `Archivo adjunto: ${file.name}`;
-                }
+                prev.style.display = 'block';
+                prev.innerHTML = file.type.startsWith('image') ? `<img src="${e.target.result}" style="max-width:200px; display:block; margin-top:10px;">` : `Archivo adjunto: ${file.name}`;
             };
             reader.readAsDataURL(file);
-        }
-
-        function previsualizarMultiples(input, id) {
-            if (!input.files || input.files.length === 0) return;
-            if (!archivosCacheMap[id]) archivosCacheMap[id] = [];
-
-            Array.from(input.files).forEach(file => {
-                if (archivosCacheMap[id].length >= 5) {
-                    alert("Solo se permite adjuntar un máximo de 5 archivos.");
-                    return;
-                }
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    archivosCacheMap[id].push({
-                        name: file.name,
-                        type: file.type,
-                        data: e.target.result
-                    });
-                    renderizarChipsArchivos(id);
-                };
-                reader.readAsDataURL(file);
-            });
-            input.value = '';
-        }
-
-        function renderizarChipsArchivos(id) {
-            const contenedorChips = document.getElementById('chips-' + id);
-            if (!contenedorChips) return;
-            const lista = archivosCacheMap[id] || [];
-            if (lista.length === 0) {
-                contenedorChips.innerHTML = '';
-                return;
-            }
-            let html = '';
-            lista.forEach((fileObj, index) => {
-                html += `<div class="chip-archivo"><span>📎 ${fileObj.name}</span><button type="button" onclick="removerArchivoIndividual('${id}', ${index})">&times;</button></div>`;
-            });
-            contenedorChips.innerHTML = html;
-        }
-
-        function removerArchivoIndividual(id, index) {
-            if (archivosCacheMap[id]) {
-                archivosCacheMap[id].splice(index, 1);
-                renderizarChipsArchivos(id);
-            }
         }
 
         async function guardarRedaccion(id) {
             const destino = document.getElementById('depto-destino-' + id).value;
             const turno = document.getElementById('turno-destino-' + id).value;
-            const textoVal = document.getElementById('txt-' + id).value;
-            const listaArchivos = (id === 'novedades') ? (archivosCacheMap[id] || []) : (archivoData[id] ? [archivoData[id]] : []);
-
-            if (!textoVal.trim() && listaArchivos.length === 0) {
-                alert("Debe escribir contenido o adjuntar al menos un archivo antes de guardar.");
-                return;
-            }
-
-            const timestampUnico = Date.now();
+            
             const data = {
-                texto: textoVal,
-                archivos: listaArchivos,
-                archivo: listaArchivos.length > 0 ? listaArchivos[0] : null,
+                texto: document.getElementById('txt-' + id).value,
+                archivo: archivoData[id] || null,
                 fecha: new Date().toLocaleString(),
                 departamento: destino,
-                turno: turno,
-                estado_activo: true
+                turno: turno
             };
             
             let nombreDeptoClave = destino;
@@ -643,7 +523,7 @@
             if (destino === 'direccion-servicios-generales') nombreDeptoClave = 'DSG';
             if (destino === 'Todos') nombreDeptoClave = 'Todos';
 
-            const claveUnica = `comunicado_${id}_${nombreDeptoClave}_${turno}_${timestampUnico}`;
+            const claveUnica = `comunicado_novedades_${nombreDeptoClave}_${turno}`;
             
             const { error } = await db
                 .from('comunicados_memos')
@@ -656,97 +536,7 @@
                 console.error("Error al guardar en Supabase:", error);
                 alert("Error al enviar a la base de datos: " + error.message);
             } else {
-                alert("Novedad guardada y enviada correctamente.");
-                limpiarPantalla(id);
-                if (id === 'novedades') {
-                    cargarHistorialMuro(id);
-                }
-            }
-        }
-
-        async function cargarHistorialMuro(id) {
-            const muroContenedor = document.getElementById('historial-muro-' + id);
-            if (!muroContenedor) return;
-            muroContenedor.innerHTML = '<p style="color: #64748b; font-size: 13px;">Cargando historial activo...</p>';
-
-            try {
-                const { data, error } = await db
-                    .from('comunicados_memos')
-                    .select('*')
-                    .ilike('id_clave', `comunicado_${id}_%`)
-                    .order('id_clave', { ascending: false });
-
-                if (error) throw error;
-
-                if (!data || data.length === 0) {
-                    muroContenedor.innerHTML = '<p style="color: #64748b; font-size: 13px;">No hay novedades previas registradas.</p>';
-                    return;
-                }
-
-                let html = '';
-                data.forEach(row => {
-                    const contenido = row.contenido || {};
-                    if (contenido.estado_activo === false) return; // Omitir borrados lógicos
-
-                    const fechaStr = contenido.fecha || 'Fecha desconocida';
-                    const deptoStr = contenido.departamento || 'Todos';
-                    const turnoStr = contenido.turno || 'Todos';
-                    const textoStr = contenido.texto || '';
-                    const archivosArr = contenido.archivos || (contenido.archivo ? [contenido.archivo] : []);
-
-                    html += `<div class="muro-tarjeta">
-                        <div class="muro-tarjeta-header">
-                            <span><b>Destino:</b> ${deptoStr} | <b>Turno:</b> ${turnoStr} | <b>Enviado:</b> ${fechaStr}</span>
-                            <button class="btn-borrar-muro" onclick="borradoLogicoItem('${row.id_clave}', '${id}')">Eliminar</button>
-                        </div>
-                        <div class="muro-tarjeta-body">${textoStr || '(Sin texto descriptivo)'}</div>`;
-
-                    if (archivosArr.length > 0) {
-                        html += `<div class="muro-tarjeta-footer"><b>Adjuntos:</b>`;
-                        archivosArr.forEach((fileItem, fIdx) => {
-                            html += `<a href="${fileItem.data}" download="${fileItem.name}" style="background: #e2e8f0; color: #1a3a5f; padding: 3px 8px; border-radius: 4px; text-decoration: none; font-size: 12px; margin-left: 5px;">📥 ${fileItem.name}</a>`;
-                        });
-                        html += `</div>`;
-                    }
-                    html += `</div>`;
-                });
-
-                muroContenedor.innerHTML = html || '<p style="color: #64748b; font-size: 13px;">No hay novedades activas para mostrar.</p>';
-
-            } catch (err) {
-                console.error("Error al cargar historial del muro:", err);
-                muroContenedor.innerHTML = '<p style="color: #ef4444; font-size: 13px;">Error al cargar las novedades históricas.</p>';
-            }
-        }
-
-        async function borradoLogicoItem(idClave, seccionId) {
-            if (!confirm("¿Estás seguro de que deseas dar de baja esta novedad del muro?")) return;
-
-            try {
-                // Primero obtenemos el registro actual para modificar su propiedad estado_activo
-                const { data: currentData, error: fetchError } = await db
-                    .from('comunicados_memos')
-                    .select('contenido')
-                    .eq('id_clave', idClave)
-                    .single();
-
-                if (fetchError) throw fetchError;
-
-                let contenidoActual = currentData.contenido || {};
-                contenidoActual.estado_activo = false;
-
-                const { error: updateError } = await db
-                    .from('comunicados_memos')
-                    .update({ contenido: contenidoActual })
-                    .eq('id_clave', idClave);
-
-                if (updateError) throw updateError;
-
-                alert("Novedad eliminada correctamente.");
-                cargarHistorialMuro(seccionId);
-            } catch (err) {
-                console.error("Error al eliminar novedad:", err);
-                alert("No se pudo eliminar la novedad: " + err.message);
+                alert("Novedad enviada correctamente al destino seleccionado.");
             }
         }
 
