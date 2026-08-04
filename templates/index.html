@@ -303,8 +303,21 @@
                 return numA - numB;
             });
 
-            const ahora = new Date();
-            labelFechaHora.textContent = "Última sincronización: " + ahora.toLocaleDateString() + " " + ahora.toLocaleTimeString();
+            // Mapeo de la fecha de última actualización obtenida de los registros de la base de datos
+            let fechasActualizacion = data.map(asc => asc.updated_at || asc.ultima_actualizacion || asc.fecha_actualizacion).filter(Boolean);
+            if (fechasActualizacion.length > 0) {
+                fechasActualizacion.sort((x, y) => new Date(y) - new Date(x));
+                let fechaUltima = new Date(fechasActualizacion[0]);
+                if (!isNaN(fechaUltima.getTime())) {
+                    labelFechaHora.textContent = "Última actualización de estado de ascensores: " + fechaUltima.toLocaleDateString() + " " + fechaUltima.toLocaleTimeString();
+                } else {
+                    const ahora = new Date();
+                    labelFechaHora.textContent = "Última actualización de estado de ascensores: " + ahora.toLocaleDateString() + " " + ahora.toLocaleTimeString();
+                }
+            } else {
+                const ahora = new Date();
+                labelFechaHora.textContent = "Última actualización de estado de ascensores: " + ahora.toLocaleDateString() + " " + ahora.toLocaleTimeString();
+            }
 
             let html = `
                 <div class="tabla-contenedor-moderno">
@@ -500,5 +513,4 @@
         };
     </script>
 </body>
-</html>
 </html>
