@@ -454,7 +454,7 @@
                 let fechaUltimaStr = "---";
                 let nombreOperador = "---";
 
-                let fechasValidas = ascensoresData.map(a => a.actualizado_at).filter(Boolean);
+                let fechasValidas = ascensoresData.map(a => a.actualizado_at || a.updated_at || a.created_at).filter(Boolean);
                 if (fechasValidas.length > 0) {
                     fechasValidas.sort((a, b) => new Date(b) - new Date(a));
                     let masReciente = fechasValidas[0];
@@ -470,8 +470,8 @@
                         fechaUltimaStr = masReciente;
                     }
 
-                    let regReciente = ascensoresData.find(a => a.actualizado_at === masReciente);
-                    let legajoEncontrado = regReciente ? regReciente.legajo_operador : null;
+                    let regReciente = ascensoresData.find(a => (a.actualizado_at || a.updated_at || a.created_at) === masReciente);
+                    let legajoEncontrado = regReciente ? (regReciente.legajo_operador || regReciente.legajo) : null;
 
                     if (legajoEncontrado) {
                         const { data: userData, error: userError } = await supabaseClient
@@ -512,15 +512,21 @@
                         <tbody>`;
 
                 ascensoresData.forEach(asc => {
-                    let dispositivo = asc.identificador_dispositivo || `Dispositivo ${asc.id || ''}`;
+                    let dispositivo = asc.identificador_dispositivo || asc.dispositivo || asc.nombre || `Dispositivo ${asc.id || ''}`;
                     let estado = asc.estado || '-';
-                    let uso = asc.uso || '-';
+                    let uso = asc.uso || asc.uso_asignado || '-';
                     let observaciones = asc.observaciones && asc.observaciones !== 'EMPTY' ? asc.observaciones : '-';
+
+                    let colorEstado = '#333';
+                    let estadoLower = String(estado).toLowerCase();
+                    if (estadoLower.includes('funcionando')) colorEstado = '#28a745';
+                    else if (estadoLower.includes('fuera') || estadoLower.includes('roto')) colorEstado = '#dc3545';
+                    else if (estadoLower.includes('mantenimiento')) colorEstado = '#ffc107';
 
                     htmlTabla += `
                         <tr>
                             <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold; text-align: center;">${dispositivo}</td>
-                            <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">${estado}</td>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: center; font-weight: bold; color: ${colorEstado};">${estado}</td>
                             <td style="padding: 10px; border: 1px solid #ddd; text-align: left;">${uso}</td>
                             <td style="padding: 10px; border: 1px solid #ddd; text-align: left;">${observaciones}</td>
                         </tr>`;
@@ -982,6 +988,8 @@
             document.getElementById('titulo-panel').innerText = titulo; 
             if(id === 'novedades') {
                 cargarNovedades();
+            } else if(id === 'ascensores') {
+                cargarEstadoAscensores();
             }
         }
     </script>
