@@ -358,7 +358,7 @@
                 let legajoOperador = null;
 
                 data.forEach(item => {
-                    let fechaItem = item.actualizado_at || item.actualizado_en || item.fecha;
+                    let fechaItem = item.updated_at || item.actualizado_at || item.actualizado_en || item.fecha;
                     if (fechaItem) {
                         if (!ultimaFechaStr || new Date(fechaItem) > new Date(ultimaFechaStr)) {
                             ultimaFechaStr = fechaItem;
