@@ -88,19 +88,6 @@
             border-radius: 4px;
             background: #fff;
         }
-
-        /* Columna de Camillero ampliada con selector desplegable múltiple estético */
-        .tabla-camilleros th:nth-child(8),
-        .tabla-camilleros td:nth-child(8) {
-            width: 250px;
-        }
-
-        .tabla-camilleros select.input-personal {
-            width: 100%;
-            height: auto;
-            min-height: 38px;
-            max-height: 120px;
-        }
         
         .input-estancia, .input-finalizacion {
             padding: 6px 4px !important;
@@ -657,13 +644,8 @@
             document.querySelectorAll('#cuerpo-tabla tr').forEach(tr => {
                 tr.querySelectorAll('select').forEach(select => {
                     Array.from(select.options).forEach(opt => {
-                        if (select.multiple) {
-                            if (opt.selected) opt.setAttribute('selected', 'selected');
-                            else opt.removeAttribute('selected');
-                        } else {
-                            if(opt.value === select.value) opt.setAttribute('selected', 'selected');
-                            else opt.removeAttribute('selected');
-                        }
+                        if(opt.value === select.value) opt.setAttribute('selected', 'selected');
+                        else opt.removeAttribute('selected');
                     });
                 });
                 tr.querySelectorAll('input').forEach(i => {
@@ -752,16 +734,6 @@
                 const inputHora = tr.querySelector('.input-hora');
                 
                 if (inputHora && inputHora.value.trim() !== '') {
-                    // Recoger nombres seleccionados del select múltiple
-                    const selectPers = tr.querySelector('.input-personal');
-                    let camillerosSeleccionados = [];
-                    if (selectPers) {
-                        Array.from(selectPers.selectedOptions).forEach(opt => {
-                            if (opt.value) camillerosSeleccionados.push(opt.value);
-                        });
-                    }
-                    let textoPersonal = camillerosSeleccionados.join(', ');
-
                     await supabaseClient.from('registros_camilleros').insert({
                         fecha_cierre: fechaVal,
                         turno: turnoVal,
@@ -771,7 +743,7 @@
                         destino: tr.querySelector('.input-destino')?.value || '',
                         duracion_estancia: tr.querySelector('.input-estancia')?.value || '',
                         tipo_movilidad: tr.querySelector('.input-movilidad')?.value || '',
-                        personal_asignado: textoPersonal,
+                        personal_asignado: tr.querySelector('.input-personal')?.value || '',
                         hora_finalizacion: tr.querySelector('.input-finalizacion')?.value || '',
                         observaciones: observacionesVal
                     });
@@ -968,7 +940,7 @@
             const agentesTurno = agentes.filter(a => a.turno === turnoActual);
             agentesTurno.sort((a, b) => parseInt(a.legajo) - parseInt(b.legajo));
             
-            let optionsHTML = '<option value="" disabled>Seleccione uno o más camilleros...</option>';
+            let optionsHTML = '<option value="">Seleccionar Camillero...</option>';
             agentesTurno.forEach(ag => {
                 optionsHTML += `<option value="${ag.nombre}">${ag.nombre}</option>`;
             });
@@ -1002,7 +974,7 @@
                          '</select>' +
                     '</td>' +
                     '<td>' +
-                         '<select multiple class="input-c input-personal" onchange="guardarDatos()" title="Mantenga presionado Ctrl para seleccionar varios camilleros" style="width: 100%; border: 1px solid #ccc; background: #fff; font-size: 13px; font-family: inherit; border-radius: 4px; padding: 4px;">' +
+                         '<select class="input-c input-personal" onchange="guardarDatos()" style="width: 100%; height: 100%; border: none; background: transparent; font-size: 11px; font-family: inherit;">' +
                              obtenerOpcionesCamilleros() +
                          '</select>' +
                     '</td>' +
@@ -1010,7 +982,7 @@
         }
 
         function registrarHora(input) { if (input.value === "") { const ahora = new Date(); input.value = ahora.getHours().toString().padStart(2, '0') + ":" + ahora.getMinutes().toString().padStart(2, '0'); input.setAttribute('readonly', 'readonly'); guardarDatos(); } }
-        function borrarFila(btn) { const tr = btn.closest('tr'); if (cuerpoTabla.getElementsByTagName('tr').length > 1) tr.remove(); else { tr.querySelectorAll('input, select').forEach(i => { if(i.tagName === 'SELECT') { Array.from(i.options).forEach(opt => opt.selected = false); } else { i.value = ''; i.removeAttribute('readonly'); } }); } guardarDatos(); }
+        function borrarFila(btn) { const tr = btn.closest('tr'); if (cuerpoTabla.getElementsByTagName('tr').length > 1) tr.remove(); else { tr.querySelectorAll('input, select').forEach(i => { i.value = ''; i.removeAttribute('readonly'); }); } guardarDatos(); }
         function detectarEnter(e) { if (e.key === 'Enter') { e.preventDefault(); const tr = document.createElement('tr'); tr.innerHTML = crearFilaHTML(); cuerpoTabla.appendChild(tr); tr.querySelectorAll('input')[1].focus(); } }
         function mostrar(id, titulo) { 
             document.querySelectorAll('.seccion').forEach(s => s.classList.remove('activo')); 
