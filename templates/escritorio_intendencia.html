@@ -112,7 +112,7 @@
 
     <div class="contenido">
         <script>
-            // Configuración sincronizada de Supabase usando 'db' con las credenciales reales[cite: 5]
+            // Configuración sincronizada de Supabase usando 'db' con las credenciales reales
             const SUPABASE_URL = 'https://ydcbdvosxbwcutddxaze.supabase.co';
             const SUPABASE_KEY = 'sb_publishable_EvvZ8n7Ve2cF9FB4SXA0Ug_7q6qWh9f';
             const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -918,63 +918,98 @@
                 const { data, error } = await db
                     .from('comunicados_memos')
                     .select('*')
-                    .ilike('id_clave', '%Intendencia%');
+                    .order('created_at', { ascending: false });
 
                 if (error) throw error;
 
                 if (!data || data.length === 0) {
-                    visor.innerHTML = '<p style="text-align:center; color: #666;">No hay registros de novedades para Intendencia.</p>';
+                    visor.innerHTML = '<p style="text-align:center; color: #666;">No hay registros de novedades.</p>';
                     return;
                 }
 
-                const registrosUnicos = {};
-                data.forEach(item => {
-                    const claveUnica = item.id_clave || item.id;
-                    registrosUnicos[claveUnica] = item;
+                const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim();
+
+                const novedadesFiltradas = data.filter(item => {
+                    const idClave = (item.id_clave || "").toLowerCase();
+                    const contenidoObj = item.contenido || {};
+                    const turnoMsg = (contenidoObj.turno || "").toLowerCase();
+
+                    const esParaTodos = idClave.includes("todos") || idClave.includes("general") || turnoMsg === "todos" || turnoMsg === "general";
+                    const esParaIntendencia = idClave.includes("intendencia");
+
+                    if (!esParaIntendencia && !esParaTodos) {
+                        return false;
+                    }
+
+                    if (esParaTodos) {
+                        return true;
+                    }
+
+                    if (turnoMsg && turnoMsg !== "todos" && turnoMsg !== "general") {
+                        if (turnoMsg !== turnoActual.toLowerCase()) {
+                            return false;
+                        }
+                    }
+
+                    return true;
                 });
 
+                if (novedadesFiltradas.length === 0) {
+                    visor.innerHTML = '<p style="text-align:center; color: #666;">No hay novedades disponibles para Intendencia en este turno.</p>';
+                    return;
+                }
+
                 let html = '';
-                Object.values(registrosUnicos).forEach(item => {
+                novedadesFiltradas.forEach(item => {
                     const contenidoObj = item.contenido || {};
                     const texto = contenidoObj.texto || 'Sin contenido';
                     const fecha = contenidoObj.fecha || 'Sin fecha';
                     const turnoMsg = contenidoObj.turno || 'General';
 
-                    let archivoHtml = "";
-                    if (contenidoObj && contenidoObj.archivo && contenidoObj.archivo.data) {
-                        let base64Data = contenidoObj.archivo.data;
-                        let nombreArchivo = contenidoObj.archivo.name || "adjunto_descargable";
-                        
-                        let esImagen = base64Data.startsWith('data:image/') || 
-                                       /\.(jpg|jpeg|png|gif|webp)$/i.test(nombreArchivo);
+                    let archivosArray = [];
+                    if (Array.isArray(contenidoObj.archivos)) {
+                        archivosArray = contenidoObj.archivos;
+                    } else if (contenidoObj.archivo && contenidoObj.archivo.data) {
+                        archivosArray = [contenidoObj.archivo];
+                    }
 
-                        if (esImagen) {
-                            archivoHtml = `
-                                <div style="margin-top: 15px; text-align: center;">
-                                    <div style="margin-bottom: 10px;">
-                                        <img src="${base64Data}" alt="Archivo adjunto" style="max-width: 100%; max-height: 400px; border-radius: 6px; border: 1px solid #ddd; object-fit: contain;" />
-                                    </div>
-                                    <a href="${base64Data}" download="${nombreArchivo}" style="display: inline-block; background: #1a3a5f; color: #fff; padding: 8px 15px; border-radius: 4px; text-decoration: none; font-size: 14px; font-weight: 500;">
-                                        📥 Descargar Imagen
-                                    </a>
-                                </div>
-                            `;
-                        } else {
-                            archivoHtml = `
-                                <div style="margin-top: 15px; background: #f8f9fa; border: 1px solid #ddd; padding: 12px 15px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
-                                    <div style="display: flex; align-items: center; gap: 10px;">
-                                        <span style="font-size: 24px;">📄</span>
-                                        <div>
-                                            <strong style="font-size: 14px; color: #333; display: block; word-break: break-all;">${nombreArchivo}</strong>
-                                            <span style="font-size: 12px; color: #666;">Documento adjunto disponible para descarga</span>
+                    let archivosHtml = "";
+                    if (archivosArray.length > 0) {
+                        archivosArray.forEach(arch => {
+                            let base64Data = arch.data || "";
+                            let nombreArchivo = arch.name || "adjunto_descargable";
+                            
+                            let esImagen = base64Data.startsWith('data:image/') || 
+                                           /\.(jpg|jpeg|png|gif|webp)$/i.test(nombreArchivo);
+
+                            if (esImagen) {
+                                archivosHtml += `
+                                    <div style="margin-top: 15px; text-align: center;">
+                                        <div style="margin-bottom: 10px;">
+                                            <img src="${base64Data}" alt="Archivo adjunto" style="max-width: 100%; max-height: 400px; border-radius: 6px; border: 1px solid #ddd; object-fit: contain;" />
                                         </div>
+                                        <a href="${base64Data}" download="${nombreArchivo}" style="display: inline-block; background: #1a3a5f; color: #fff; padding: 8px 15px; border-radius: 4px; text-decoration: none; font-size: 14px; font-weight: 500;">
+                                            📥 Descargar Imagen
+                                        </a>
                                     </div>
-                                    <a href="${base64Data}" download="${nombreArchivo}" style="background: #1a3a5f; color: #fff; padding: 8px 15px; border-radius: 4px; text-decoration: none; font-size: 14px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px;">
-                                        📥 Descargar Archivo
-                                    </a>
-                                </div>
-                            `;
-                        }
+                                `;
+                            } else {
+                                archivosHtml += `
+                                    <div style="margin-top: 15px; background: #f8f9fa; border: 1px solid #ddd; padding: 12px 15px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                            <span style="font-size: 24px;">📄</span>
+                                            <div>
+                                                <strong style="font-size: 14px; color: #333; display: block; word-break: break-all;">${nombreArchivo}</strong>
+                                                <span style="font-size: 12px; color: #666;">Documento adjunto disponible para descarga</span>
+                                            </div>
+                                        </div>
+                                        <a href="${base64Data}" download="${nombreArchivo}" style="background: #1a3a5f; color: #fff; padding: 8px 15px; border-radius: 4px; text-decoration: none; font-size: 14px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px;">
+                                            📥 Descargar Archivo
+                                        </a>
+                                    </div>
+                                `;
+                            }
+                        });
                     }
 
                     html += `
@@ -984,7 +1019,7 @@
                                 <span style="font-size: 12px; color: #666; background: #f1f1f1; padding: 4px 10px; border-radius: 4px;">Turno: ${turnoMsg} | Fecha: ${fecha} | <strong>Enviado por:</strong> Dirección de Servicios Generales</span>
                             </div>
                             <div style="font-size: 15px; color: #333; white-space: pre-wrap; line-height: 1.5; font-family: inherit;">${texto}</div>
-                            ${archivoHtml}
+                            ${archivosHtml}
                         </div>`;
                 });
 
