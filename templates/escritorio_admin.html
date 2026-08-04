@@ -419,17 +419,20 @@
             for (let i = 0; i < input.files.length; i++) {
                 const file = input.files[i];
                 const reader = new FileReader();
-                reader.onload = function(e) {
-                    archivosMultiplesNovedades.push({
-                        name: file.name,
-                        type: file.type,
-                        data: e.target.result
-                    });
-                    const li = document.createElement('li');
-                    li.textContent = file.name;
-                    listaUl.appendChild(li);
-                };
-                reader.readAsDataURL(file);
+                
+                (function(f) {
+                    reader.onload = function(e) {
+                        archivosMultiplesNovedades.push({
+                            name: f.name,
+                            type: f.type,
+                            data: e.target.result
+                        });
+                        const li = document.createElement('li');
+                        li.textContent = f.name;
+                        listaUl.appendChild(li);
+                    };
+                    reader.readAsDataURL(f);
+                })(file);
             }
         }
 
@@ -652,11 +655,23 @@
         async function guardarRedaccion(id) {
             const destino = document.getElementById('depto-destino-' + id).value;
             const turno = document.getElementById('turno-destino-' + id).value;
-            
+            const textoEscrito = document.getElementById('txt-' + id).value;
+
+            let listaArchivos = [];
+            let primerArchivo = null;
+
+            if (id === 'novedades') {
+                listaArchivos = archivosMultiplesNovedades;
+                primerArchivo = archivosMultiplesNovedades.length > 0 ? archivosMultiplesNovedades[0] : null;
+            } else {
+                primerArchivo = archivoData[id] || null;
+                listaArchivos = primerArchivo ? [primerArchivo] : [];
+            }
+
             const data = {
-                texto: document.getElementById('txt-' + id).value,
-                archivos: (id === 'novedades') ? archivosMultiplesNovedades : (archivoData[id] ? [archivoData[id]] : []),
-                archivo: archivoData[id] || null,
+                texto: textoEscrito,
+                archivos: listaArchivos,
+                archivo: primerArchivo,
                 fecha: new Date().toLocaleString(),
                 departamento: destino,
                 turno: turno
@@ -672,7 +687,6 @@
             if (destino === 'direccion-servicios-generales') nombreDeptoClave = 'DSG';
             if (destino === 'Todos') nombreDeptoClave = 'Todos';
 
-            // Generamos una clave única basada en timestamp para que no se sobrescriban y queden todos en el muro
             const claveUnica = `comunicado_novedades_${nombreDeptoClave}_${turno}_${Date.now()}`;
             
             const { error } = await db
@@ -689,6 +703,7 @@
                 alert("Novedad enviada correctamente al destino seleccionado.");
                 if (id === 'novedades') {
                     cargarHistorialMuroNovedades();
+                    archivosMultiplesNovedades = [];
                 }
             }
         }
@@ -1113,7 +1128,6 @@
             }
         }
         document.getElementById('reportes').classList.add('activo');
-        // Inicializar muro de novedades si arranca visible por defecto o al hacer clic
         cargarHistorialMuroNovedades();
     </script>
 </body>
