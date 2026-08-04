@@ -88,13 +88,6 @@
             border-radius: 4px;
             background: #fff;
         }
-
-        .contenedor-camilleros-multi {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            width: 100%;
-        }
         
         .input-estancia, .input-finalizacion {
             padding: 6px 4px !important;
@@ -195,13 +188,7 @@
                 <h1 style="margin: 0; text-align: center; flex: 1; font-size: 30px;">Auxiliares Técnicos</h1>
                 <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
-            <div id="info-supervisor">
-                Supervisor: <span id="display-nombre">---</span> | Turno: <span id="display-turno">---</span> | Depto: <span id="display-depto">---</span>
-                <span style="float: right; display: flex; align-items: center; gap: 6px;">
-                    Cantidad de camilleros: 
-                    <input type="number" id="num-camilleros-fila" min="1" max="3" value="1" style="width: 45px; text-align: center; border: 1px solid #ccc; border-radius: 4px; padding: 2px;" onchange="actualizarCantidadCamillerosFila()">
-                </span>
-            </div>
+            <div id="info-supervisor">Supervisor: <span id="display-nombre">---</span> | Turno: <span id="display-turno">---</span> | Depto: <span id="display-depto">---</span></div>
             <table class="tabla-camilleros" id="tabla-exportar">
                 <thead>
                     <tr><th style="width:30px;"></th><th class="col-hora">HORA</th><th>PISO/SALA/CAMA</th><th>APELLIDO Y NOMBRE</th><th>DESTINO</th><th class="col-hora">HORA ESTADÍA</th><th>MOVILIDAD</th><th>CAMILLERO</th><th>HORA DE FINALIZACION</th></tr>
@@ -347,7 +334,6 @@
             localStorage.removeItem('dsg_camilleros_reporte');
             localStorage.removeItem('dsg_camilleros_observaciones');
             localStorage.removeItem('dsg_camilleros_asistencia_rrhh');
-            localStorage.removeItem('dsg_camilleros_num_camilleros');
             window.location.href = './';
         }
 
@@ -672,10 +658,6 @@
                 localStorage.setItem('dsg_camilleros_observaciones', editorObservaciones.value || editorObservaciones.innerHTML);
             }
             localStorage.setItem('dsg_camilleros_fecha', inputFecha.value);
-            const numCamInput = document.getElementById('num-camilleros-fila');
-            if (numCamInput) {
-                localStorage.setItem('dsg_camilleros_num_camilleros', numCamInput.value);
-            }
         }
 
         async function cerrarJornadaGlobal() {
@@ -752,18 +734,6 @@
                 const inputHora = tr.querySelector('.input-hora');
                 
                 if (inputHora && inputHora.value.trim() !== '') {
-                    let personalAsignadoStr = '';
-                    const selectsPersonal = tr.querySelectorAll('.input-personal');
-                    if (selectsPersonal.length > 0) {
-                        let nombresSeleccionados = [];
-                        selectsPersonal.forEach(sel => {
-                            if (sel.value) nombresSeleccionados.push(sel.value);
-                        });
-                        personalAsignadoStr = nombresSeleccionados.join(', ');
-                    } else {
-                        personalAsignadoStr = tr.querySelector('.input-personal']?.value || '';
-                    }
-
                     await supabaseClient.from('registros_camilleros').insert({
                         fecha_cierre: fechaVal,
                         turno: turnoVal,
@@ -773,7 +743,7 @@
                         destino: tr.querySelector('.input-destino')?.value || '',
                         duracion_estancia: tr.querySelector('.input-estancia')?.value || '',
                         tipo_movilidad: tr.querySelector('.input-movilidad')?.value || '',
-                        personal_asignado: personalAsignadoStr,
+                        personal_asignado: tr.querySelector('.input-personal')?.value || '',
                         hora_finalizacion: tr.querySelector('.input-finalizacion')?.value || '',
                         observaciones: observacionesVal
                     });
@@ -784,7 +754,6 @@
             localStorage.removeItem('dsg_camilleros_asistencia_rrhh'); 
             localStorage.removeItem('dsg_camilleros_reporte');
             localStorage.removeItem('dsg_camilleros_observaciones');
-            localStorage.removeItem('dsg_camilleros_num_camilleros');
             
             alert("Jornada cerrada y sincronizada correctamente con Supabase.");
             location.reload();
@@ -921,12 +890,6 @@
             document.getElementById('display-turno-asc').innerText = turno;
             document.getElementById('display-depto-asc').innerText = depto;
             document.getElementById('depto-hist-label').innerText = depto;
-
-            const savedNumCam = localStorage.getItem('dsg_camilleros_num_camilleros');
-            if (savedNumCam) {
-                const numCamInput = document.getElementById('num-camilleros-fila');
-                if (numCamInput) numCamInput.value = savedNumCam;
-            }
             
             let numeroHojaReal = 1;
             try {
@@ -965,7 +928,7 @@
             }
             editorReporte.innerHTML = localStorage.getItem('dsg_camilleros_reporte') || "";
             if (editorObservaciones) {
-                editorObservaciones.value = localStorage.getItem('dsg_camilleros_observaciones'] || "";
+                editorObservaciones.value = localStorage.getItem('dsg_camilleros_observaciones') || "";
             }
             cargarRRHH();
             cargarEstadoAscensores();
@@ -984,57 +947,7 @@
             return optionsHTML;
         }
 
-        function actualizarCantidadCamillerosFila() {
-            const numInput = document.getElementById('num-camilleros-fila');
-            let cantidad = parseInt(numInput.value) || 1;
-            if (cantidad < 1) cantidad = 1;
-            if (cantidad > 3) cantidad = 3;
-            numInput.value = cantidad;
-
-            document.querySelectorAll('#cuerpo-tabla tr').forEach(tr => {
-                const celdaPersonal = tr.cells[7];
-                if (celdaPersonal) {
-                    let valoresActuales = [];
-                    celdaPersonal.querySelectorAll('select').forEach(sel => {
-                        if (sel.value) valoresActuales.push(sel.value);
-                    });
-
-                    let selectsHtml = '<div class="contenedor-camilleros-multi">';
-                    for (let i = 0; i < cantidad; i++) {
-                        selectsHtml += `
-                            <select class="input-c input-personal" onchange="guardarDatos()" style="width: 100%; border: 1px solid #ccc; border-radius: 4px; padding: 4px; font-size: 11px; font-family: inherit;">
-                                ${obtenerOpcionesCamilleros()}
-                            </select>`;
-                    }
-                    selectsHtml += '</div>';
-                    celdaPersonal.innerHTML = selectsHtml;
-
-                    const nuevosSelects = celdaPersonal.querySelectorAll('select');
-                    nuevosSelects.forEach((sel, idx) => {
-                        if (valoresActuales[idx]) {
-                            sel.value = valoresActuales[idx];
-                        }
-                    });
-                }
-            });
-            guardarDatos();
-        }
-
         function crearFilaHTML() { 
-            const numInput = document.getElementById('num-camilleros-fila');
-            let cantidad = numInput ? (parseInt(numInput.value) || 1) : 1;
-            if (cantidad < 1) cantidad = 1;
-            if (cantidad > 3) cantidad = 3;
-
-            let selectsHtml = '<div class="contenedor-camilleros-multi">';
-            for (let i = 0; i < cantidad; i++) {
-                selectsHtml += `
-                    <select class="input-c input-personal" onchange="guardarDatos()" style="width: 100%; border: 1px solid #ccc; border-radius: 4px; padding: 4px; font-size: 11px; font-family: inherit;">
-                        ${obtenerOpcionesCamilleros()}
-                    </select>`;
-            }
-            selectsHtml += '</div>';
-
             return '<td><button class="btn-borrar" onclick="borrarFila(this)">X</button></td>' +
                      '<td><input class="input-c input-hora" type="text" onclick="registrarHora(this)"></td>' +
                      '<td><input class="input-c input-cama" type="text" oninput="guardarDatos()"></td>' +
@@ -1060,7 +973,11 @@
                              '</optgroup>' +
                          '</select>' +
                     '</td>' +
-                    '<td>' + selectsHtml + '</td>' +
+                    '<td>' +
+                         '<select class="input-c input-personal" onchange="guardarDatos()" style="width: 100%; height: 100%; border: none; background: transparent; font-size: 11px; font-family: inherit;">' +
+                             obtenerOpcionesCamilleros() +
+                         '</select>' +
+                    '</td>' +
                     '<td><input class="input-c input-finalizacion" type="time" onchange="guardarDatos()"></td>'; 
         }
 
