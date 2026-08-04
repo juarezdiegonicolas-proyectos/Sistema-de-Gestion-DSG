@@ -28,6 +28,12 @@
         textarea { width: 100%; height: 350px; padding: 10px 15px; border: 1px solid #ccc; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 16px; box-sizing: border-box; line-height: 2.0em; background-image: linear-gradient(#ccc 1px, transparent 1px); background-size: 100% 2.0em; resize: none; }
         .preview-adjunto { margin-top: 10px; padding: 10px; border: 1px dashed #aaa; display: none; }
         
+        /* Estilos Historial Muro Admin con Hover y Cruz */
+        .item-historial-admin { position: relative; background: #fff; border: 1px solid #ddd; padding: 20px; border-radius: 8px; margin-top: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .item-historial-admin:hover .btn-eliminar-item { display: flex; }
+        .btn-eliminar-item { display: none; position: absolute; top: 15px; right: 15px; background: #dc3545; color: white; border: none; width: 30px; height: 30px; border-radius: 50%; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .btn-eliminar-item:hover { background: #a71d2a; }
+
         .print-only { display: none; }
         .print-header { display: none; font-weight: bold; margin-bottom: 20px; border-bottom: 2px solid #333; padding-bottom: 10px; }
 
@@ -37,7 +43,7 @@
         .box-L { background-color: #ffc107; }
 
         @media print {
-        .sidebar, .filtros-historicos, .btn-cerrar, .area-acciones, .btn-adjuntar, textarea, .btn-limpiar { display: none !important; }
+        .sidebar, .filtros-historicos, .btn-cerrar, .area-acciones, .btn-adjuntar, textarea, .btn-limpiar, .btn-eliminar-item { display: none !important; }
         
         .seccion { display: none !important; }
         .seccion.activo { 
@@ -126,11 +132,9 @@
 
             function imprimirConOrientacion() {
                 const seleccion = prompt("¿Cómo deseas imprimir?\n\nEscribe 'V' para Vertical\nEscribe 'H' para Horizontal", "H");
-                
                 if (seleccion === null) return; 
 
                 const opcion = seleccion.trim().toUpperCase();
-                
                 const viejo = document.getElementById('estilo-forzado-impresion');
                 if (viejo) viejo.remove();
 
@@ -144,18 +148,10 @@
                 }
 
                 document.head.appendChild(nuevoEstilo);
-
-                setTimeout(() => {
-                    window.print();
-                }, 100);
+                setTimeout(() => { window.print(); }, 100);
             }
 
             const agentesGlobal = [{"legajo":"120369", "nombre":"VEGA JUAN CARLOS"},{"legajo":"122011", "nombre":"GONZALEZ CARLOS HECTOR"},{"legajo":"128217", "nombre":"CARLOTTO GABRIEL HORACIO"},{"legajo":"130087", "nombre":"GARAY LEONARDO EMILIO"},{"legajo":"130187", "nombre":"CISNEROS NESTOR EDUARDO"},{"legajo":"131954", "nombre":"GORENA JORGE RICARDO"},{"legajo":"132059", "nombre":"BUSTO JUAN MANUEL"},{"legajo":"132831", "nombre":"GORT PEDRO ALBERTO"},{"legajo":"144694", "nombre":"LEDESMA HECTOR CARLOS"},{"legajo":"145765", "nombre":"BARRAZA CRISTIAN JAVIER"},{"legajo":"147812", "nombre":"RODRIGUEZ GONZALO LEANDRO"},{"legajo":"147944", "nombre":"MORENO FERNANDO DANIEL"},{"legajo":"147946", "nombre":"ALVAREZ ANTONIO OSCAR"},{"legajo":"151978", "nombre":"LUZI CHRISTIAN DARIO"},{"legajo":"151979", "nombre":"ALMEIDA CARLOS ALBERTO"},{"legajo":"151980", "nombre":"GONZALEZ PATRICIO ALBERTO"},{"legajo":"151982", "nombre":"VARELA EDUARDO JOSE"},{"legajo":"151983", "nombre":"MARCIANO MARCELO DANIEL"},{"legajo":"151996", "nombre":"FIDEL RUBEN DARIO"},{"legajo":"152016", "nombre":"PAPINI JUAN JOSE"},{"legajo":"152301", "nombre":"CISNEROS LEONARDO SEBASTIAN"},{"legajo":"152302", "nombre":"BAZAN DIEGO ANTONIO"},{"legajo":"153090", "nombre":"OLIVA CRISTIAN RUBEN"},{"legajo":"153572", "nombre":"CANABIDEZ CRISTIAN ALBERTO"},{"legajo":"154334", "nombre":"VAZQUEZ JORGE OSVALDO"},{"legajo":"154335", "nombre":"SANTORO CHRISTIAN RODRIGO"},{"legajo":"154973", "nombre":"HIDALGO SEBASTIAN ARIEL"},{"legajo":"164370", "nombre":"VASCONCELLO SERGIO EDUARDO"},{"legajo":"164669", "nombre":"DIAZ BELFOR ALBERTO"},{"legajo":"166919", "nombre":"BARRAGAN MARIANO JAVIER"},{"legajo":"167190", "nombre":"MORALES EREZUMA LEONARDO AND"},{"legajo":"168007", "nombre":"ICAÑO MARTIN FABIAN"},{"legajo":"169981", "nombre":"KAMINOVICH LEONARDO MARTIN"},{"legajo":"176828", "nombre":"REYNA SANCHEZ EDUARDO GASTON"},{"legajo":"195446", "nombre":"VASQUEZ JORGE ALFREDO"},{"legajo":"195452", "nombre":"FLORES RODRIGO NICOLAS"},{"legajo":"216727", "nombre":"MIRANDA NORBERTO MATIAS"},{"legajo":"235008", "nombre":"BARROCA GERARDO EZEQUIEL"},{"legajo":"243734", "nombre":"VARGAS AXEL BRIAN"},{"legajo":"249665", "nombre":"SANSOGNE MATIAS MAURICIO"},{"legajo":"250625", "nombre":"SOTO NAHUEL MARCELO"},{"legajo":"251466", "nombre":"DOMINGUEZ HECTOR OMAR CIRO"},{"legajo":"261471", "nombre":"VERON NORBERTO MARIO MANUEL"},{"legajo":"259586", "nombre":"LOPEZ VICTOR HUGO"},{"legajo":"244105", "nombre":"REA JUAN GABRIEL"},{"legajo":"242264", "nombre":"ELIAS GUSTAVO DANIEL"},{"legajo":"195453", "nombre":"BARROCA FRANCO DANIEL"}];
-
-            async function apiGuardar(key, data) {
-                const { error } = await db.from('comunicados_memos').upsert({ id_clave: key, contenido: data });
-                if (error) console.error("Error al guardar en Supabase:", error);
-            }
 
             async function manejarCambioDepto(idSeccion) {
                 const selectDepto = document.getElementById('depto-' + idSeccion);
@@ -163,17 +159,12 @@
                 const selectSup = document.getElementById('supervisor-' + idSeccion);
 
                 if (!selectDepto || !contenedorSup || !selectSup) return;
-
                 const deptoVal = selectDepto.value;
 
                 if (deptoVal === 'intendencia') {
                     contenedorSup.style.display = 'inline-block';
                     try {
-                        const { data, error } = await db
-                            .from('cierres_jornada')
-                            .select('supervisor')
-                            .eq('departamento', 'Intendencia');
-
+                        const { data, error } = await db.from('cierres_jornada').select('supervisor').eq('departamento', 'Intendencia');
                         if (error) throw error;
 
                         selectSup.innerHTML = '<option value="">-- Todos los supervisores --</option>';
@@ -249,15 +240,23 @@
                                     <option value="Noche B">Noche B</option>
                                     <option value="Sadofe">Sadofe</option>
                                 </select>
-                                <button class="btn-gestion btn-adjuntar" onclick="document.getElementById('file-${id}').click()">📎 Adjuntar</button>
-                                <input type="file" id="file-${id}" style="display:none" onchange="previsualizar(this, '${id}')">
+                                <button class="btn-gestion btn-adjuntar" onclick="document.getElementById('file-${id}').click()">📎 Adjuntar (Máx 5)</button>
+                                <input type="file" id="file-${id}" multiple style="display:none" onchange="previsualizarMultiples(this, '${id}')">
                                 <button class="btn-gestion" style="background: #28a745; color: white;" onclick="guardarRedaccion('${id}')">Guardar y Enviar</button>
                             `}
                         </div>
                         
                         ${tipoContenido === 'auditoria' ? `<div id="visor-${id}" style="border: 1px solid #ccc; padding: 20px; min-height: 200px;">Seleccione filtros para auditar.</div>` : 
                           tipoContenido === 'estado-ascensores-vivo' ? `<div id="visor-${id}" style="border: 1px solid #ccc; padding: 20px; min-height: 200px; background: #fff;">Cargando datos actuales...</div>` :
-                          `<div id="print-header-${id}" class="print-header">Dirigido a: Todos los departamentos | Turno: Todos los turnos</div><textarea id="txt-${id}" oninput="document.getElementById('print-${id}').innerText = this.value" placeholder="Escriba aquí el contenido..."></textarea><div id="print-${id}" class="print-only"></div><div id="preview-${id}" class="preview-adjunto"></div>`}
+                          `
+                          <div id="print-header-${id}" class="print-header">Dirigido a: Todos los departamentos | Turno: Todos los turnos</div>
+                          <textarea id="txt-${id}" oninput="document.getElementById('print-${id}').innerText = this.value" placeholder="Escriba aquí el contenido..."></textarea>
+                          <div id="print-${id}" class="print-only"></div>
+                          <div id="preview-${id}" class="preview-adjunto"></div>
+                          <hr style="margin: 30px 0; border: 0; border-top: 2px solid #1a3a5f;">
+                          <h3 style="color: #1a3a5f; margin-bottom: 15px;">Historial de ${titulo} Enviados</h3>
+                          <div id="historial-muro-${id}"><p style="color: #777;">Cargando historial...</p></div>
+                          `}
                         
                         <div class="area-acciones">
                             <button id="btn-print-${id}" class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
@@ -321,15 +320,19 @@
     </div>
 
     <script>
-        let archivoData = {};
+        let archivosSeleccionadosMap = {};
+
         function mostrar(id, titulo) { 
             document.querySelectorAll('.seccion').forEach(s => s.classList.remove('activo')); 
             document.getElementById(id).classList.add('activo'); 
             document.getElementById('titulo-panel').innerText = titulo; 
             if (id === 'estado-ascensores') {
                 cargarEstadoAscensoresVivo();
+            } else if (id === 'novedades' || id === 'memos') {
+                cargarHistorialAdmin(id);
             }
         }
+
         function limpiarPantalla(id) {
             document.getElementById('txt-' + id).value = '';
             document.getElementById('print-' + id).innerText = '';
@@ -338,7 +341,176 @@
             document.getElementById('depto-destino-' + id).value = 'Todos';
             document.getElementById('turno-destino-' + id).value = 'Todos';
             actualizarPrint(id);
-            delete archivoData[id];
+            delete archivosSeleccionadosMap[id];
+        }
+
+        function actualizarPrint(id) {
+            const depto = document.getElementById('depto-destino-' + id).value;
+            const turno = document.getElementById('turno-destino-' + id).value;
+            document.getElementById('print-header-' + id).innerText = `Dirigido a: ${depto} | Turno: ${turno}`;
+        }
+
+        function previsualizarMultiples(input, id) {
+            const files = Array.from(input.files).slice(0, 5); // Límite máximo 5 archivos
+            archivosSeleccionadosMap[id] = [];
+            const prev = document.getElementById('preview-' + id);
+            prev.style.display = 'block';
+            prev.innerHTML = '<b>Archivos adjuntos seleccionados (${files.length}):</b><ul style="margin:5px 0 0 20px; padding:0;">';
+
+            files.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    archivosSeleccionadosMap[id].push({ name: file.name, type: file.type, data: e.target.result });
+                    prev.querySelector('ul').innerHTML += `<li>${file.name}</li>`;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function guardarRedaccion(id) {
+            const destino = document.getElementById('depto-destino-' + id).value;
+            const turno = document.getElementById('turno-destino-' + id).value;
+            const textoVal = document.getElementById('txt-' + id).value;
+
+            if (!textoVal.trim() && (!archivosSeleccionadosMap[id] || archivosSeleccionadosMap[id].length === 0)) {
+                alert("Escriba un texto o adjunte al menos un archivo.");
+                return;
+            }
+
+            const nuevoItem = {
+                id_unico: 'com_' + Date.now() + '_' + Math.random().toString(36.substring(2, 7)),
+                texto: textoVal,
+                archivos: archivosSeleccionadosMap[id] || [],
+                fecha: new Date().toLocaleString(),
+                departamento: destino,
+                turno: turno,
+                estado_activo: true // true para visible, false para borrado lógico
+            };
+
+            // Prefijo de tabla según sección
+            const prefijoTabla = (id === 'memos') ? 'comunicado_memos_' : 'comunicado_novedades_';
+            let nombreDeptoClave = destino;
+            if (destino === 'division-ascensores') nombreDeptoClave = 'Ascensores';
+            if (destino === 'camilleros-central') nombreDeptoClave = 'Camilleros';
+            if (destino === 'intendencia') nombreDeptoClave = 'Intendencia';
+            if (destino === 'lavadero-central') nombreDeptoClave = 'Lavadero';
+            if (destino === 'conmutador') nombreDeptoClave = 'Conmutador';
+            if (destino === 'dalo') nombreDeptoClave = 'DALO';
+            if (destino === 'direccion-servicios-generales') nombreDeptoClave = 'DSG';
+            if (destino === 'Todos') nombreDeptoClave = 'Todos';
+
+            const claveUnica = `${prefijoTabla}${nombreDeptoClave}_${turno}_${nuevoItem.id_unico}`;
+
+            const { error } = await db
+                .from('comunicados_memos')
+                .upsert(
+                    { id_clave: claveUnica, contenido: nuevoItem },
+                    { onConflict: 'id_clave' }
+                );
+
+            if (error) {
+                console.error("Error al guardar en Supabase:", error);
+                alert("Error al enviar a la base de datos: " + error.message);
+            } else {
+                alert("Enviado correctamente.");
+                limpiarPantalla(id);
+                cargarHistorialAdmin(id);
+            }
+        }
+
+        async function cargarHistorialAdmin(id) {
+            const contenedorHistorial = document.getElementById('historial-muro-' + id);
+            if (!contenedorHistorial) return;
+
+            contenedorHistorial.innerHTML = '<p style="color:#777;">Actualizando historial...</p>';
+
+            const prefijoTabla = (id === 'memos') ? 'comunicado_memos_' : 'comunicado_novedades_';
+
+            try {
+                const { data, error } = await db
+                    .from('comunicados_memos')
+                    .select('*')
+                    .ilike('id_clave', `${prefijoTabla}%`);
+
+                if (error) throw error;
+
+                if (!data || data.length === 0) {
+                    contenedorHistorial.innerHTML = '<p style="color: #777; font-style: italic;">No hay registros históricos enviados.</p>';
+                    return;
+                }
+
+                let html = '';
+                // Ordenar del más nuevo al más viejo
+                data.sort((a, b) => new Date(b.contenido?.fecha || 0) - new Date(a.contenido?.fecha || 0));
+
+                let hayVisibles = false;
+                data.forEach(row => {
+                    const item = row.contenido;
+                    if (!item || item.estado_activo === false) return; // Omitir borrados lógicos
+
+                    hayVisibles = true;
+                    html += `
+                        <div class="item-historial-admin">
+                            <button class="btn-eliminar-item" title="Eliminar del panel" onclick="borradoLogicoItem('${row.id_clave}', '${id}')">✕</button>
+                            <div style="font-size: 12px; color: #1a3a5f; font-weight: bold; margin-bottom: 8px;">
+                                Destino: ${item.departamento} | Turno: ${item.turno} | Fecha: ${item.fecha}
+                            </div>
+                            <div style="font-family: 'Courier New', monospace; white-space: pre-wrap; font-size: 15px; line-height: 1.6em; margin-bottom: 10px;">${item.texto || ''}</div>
+                    `;
+
+                    if (item.archivos && item.archivos.length > 0) {
+                        html += `<div style="margin-top: 10px; font-size: 13px; border-top: 1px dashed #eee; padding-top: 8px;"><b>Archivos adjuntos:</b><ul style="margin: 5px 0 0 20px; padding:0;">`;
+                        item.archivos.forEach(arch => {
+                            html += `<li><a href="${arch.data}" download="${arch.name}" target="_blank" style="color: #1a3a5f; text-decoration: underline;">${arch.name}</a></li>`;
+                        });
+                        html += `</ul></div>`;
+                    }
+
+                    html += `</div>`;
+                });
+
+                if (!hayVisibles) {
+                    contenedorHistorial.innerHTML = '<p style="color: #777; font-style: italic;">No hay registros históricos activos.</p>';
+                } else {
+                    contenedorHistorial.innerHTML = html;
+                }
+
+            } catch (err) {
+                console.error("Error al cargar historial:", err);
+                contenedorHistorial.innerHTML = '<p style="color: red;">Error al sincronizar el historial con la nube.</p>';
+            }
+        }
+
+        async function borradoLogicoItem(idClave, seccionId) {
+            if (!confirm("¿Deseas eliminar este comunicado de la visualización? Dejará de verse en los escritorios operativos.")) return;
+
+            try {
+                // Traemos el registro actual para cambiarle el estado_activo a false
+                const { data: regActual, error: errGet } = await db
+                    .from('comunicados_memos')
+                    .select('contenido')
+                    .eq('id_clave', idClave)
+                    .single();
+
+                if (errGet || !regActual) throw errGet;
+
+                let contenidoModificado = regActual.contenido;
+                contenidoModificado.estado_activo = false; // Borrado lógico
+
+                const { error: errUpdate } = await db
+                    .from('comunicados_memos')
+                    .update({ contenido: contenidoModificado })
+                    .eq('id_clave', idClave);
+
+                if (errUpdate) throw errUpdate;
+
+                // Recargar historial de la sección
+                cargarHistorialAdmin(seccionId);
+
+            } catch (err) {
+                console.error("Error al realizar el borrado lógico:", err);
+                alert("No se pudo eliminar el elemento.");
+            }
         }
 
         async function cargarEstadoAscensoresVivo() {
@@ -372,12 +544,7 @@
 
                 let nombreSupervisor = 'Sistema / Desconocido';
                 if (legajoOperador) {
-                    const { data: userData, error: userError } = await db
-                        .from('usuarios')
-                        .select('nombre_completo')
-                        .eq('legajo', legajoOperador)
-                        .maybeSingle();
-
+                    const { data: userData, error: userError } = await db.from('usuarios').select('nombre_completo').eq('legajo', legajoOperador).maybeSingle();
                     if (!userError && userData && userData.nombre_completo) {
                         nombreSupervisor = userData.nombre_completo;
                     } else {
@@ -389,10 +556,7 @@
                 if (ultimaFechaStr) {
                     let f = new Date(ultimaFechaStr);
                     if (!isNaN(f.getTime())) {
-                        fechaFormateada = f.toLocaleString('es-AR', {
-                            year: 'numeric', month: '2-digit', day: '2-digit',
-                            hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
-                        });
+                        fechaFormateada = f.toLocaleString('es-AR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
                     } else {
                         fechaFormateada = ultimaFechaStr;
                     }
@@ -462,17 +626,8 @@
                         if (typeof chartAscVivo !== 'undefined' && chartAscVivo) chartAscVivo.destroy();
                         window.chartAscVivo = new Chart(ctx, {
                             type: 'pie',
-                            data: { 
-                                labels: ['Funcionando', 'Mantenimiento', 'Fuera de Servicio', 'Ascensoristas'], 
-                                datasets: [{ 
-                                    data: [cVerde, cAmarillo, cRojo, cMixto], 
-                                    backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#007bff'] 
-                                }] 
-                            },
-                            options: { 
-                                responsive: true, 
-                                plugins: { legend: { position: 'bottom' } } 
-                            }
+                            data: { labels: ['Funcionando', 'Mantenimiento', 'Fuera de Servicio', 'Ascensoristas'], datasets: [{ data: [cVerde, cAmarillo, cRojo, cMixto], backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#007bff'] }] },
+                            options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
                         });
                     }
                 }, 50);
@@ -480,63 +635,6 @@
             } catch (err) {
                 console.error("Error al obtener estado actual de ascensores:", err);
                 visor.innerHTML = '<p style="text-align:center; color: red;">Error al cargar los datos de ascensores y escaleras.</p>';
-            }
-        }
-
-        function actualizarPrint(id) {
-            const depto = document.getElementById('depto-destino-' + id).value;
-            const turno = document.getElementById('turno-destino-' + id).value;
-            document.getElementById('print-header-' + id).innerText = `Dirigido a: ${depto} | Turno: ${turno}`;
-        }
-
-        function previsualizar(input, id) {
-            const file = input.files[0];
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                archivoData[id] = { name: file.name, type: file.type, data: e.target.result };
-                const prev = document.getElementById('preview-' + id);
-                prev.style.display = 'block';
-                prev.innerHTML = file.type.startsWith('image') ? `<img src="${e.target.result}" style="max-width:200px; display:block; margin-top:10px;">` : `Archivo adjunto: ${file.name}`;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        async function guardarRedaccion(id) {
-            const destino = document.getElementById('depto-destino-' + id).value;
-            const turno = document.getElementById('turno-destino-' + id).value;
-            
-            const data = {
-                texto: document.getElementById('txt-' + id).value,
-                archivo: archivoData[id] || null,
-                fecha: new Date().toLocaleString(),
-                departamento: destino,
-                turno: turno
-            };
-            
-            let nombreDeptoClave = destino;
-            if (destino === 'division-ascensores') nombreDeptoClave = 'Ascensores';
-            if (destino === 'camilleros-central') nombreDeptoClave = 'Camilleros';
-            if (destino === 'intendencia') nombreDeptoClave = 'Intendencia';
-            if (destino === 'lavadero-central') nombreDeptoClave = 'Lavadero';
-            if (destino === 'conmutador') nombreDeptoClave = 'Conmutador';
-            if (destino === 'dalo') nombreDeptoClave = 'DALO';
-            if (destino === 'direccion-servicios-generales') nombreDeptoClave = 'DSG';
-            if (destino === 'Todos') nombreDeptoClave = 'Todos';
-
-            const claveUnica = `comunicado_novedades_${nombreDeptoClave}_${turno}`;
-            
-            const { error } = await db
-                .from('comunicados_memos')
-                .upsert(
-                    { id_clave: claveUnica, contenido: data },
-                    { onConflict: 'id_clave' }
-                );
-
-            if (error) {
-                console.error("Error al guardar en Supabase:", error);
-                alert("Error al enviar a la base de datos: " + error.message);
-            } else {
-                alert("Novedad enviada correctamente al destino seleccionado.");
             }
         }
 
@@ -597,8 +695,6 @@
             }
         }
 
-        let chartAsc; 
-
         async function consultar(tipo) {
             const depto = document.getElementById('depto-' + tipo).value;
             const turno = document.getElementById('turno-' + tipo).value;
@@ -622,12 +718,7 @@
             if (depto === 'conmutador') deptoFiltro = 'Conmutador';
             if (depto === 'dalo') deptoFiltro = 'DALO';
             
-            let queryReg = db
-                .from('cierres_jornada')
-                .select('*')
-                .eq('fecha_cierre', fechaBusqueda)
-                .eq('turno', turno)
-                .eq('departamento', deptoFiltro);
+            let queryReg = db.from('cierres_jornada').select('*').eq('fecha_cierre', fechaBusqueda).eq('turno', turno).eq('departamento', deptoFiltro);
 
             if (deptoFiltro === 'Intendencia' && supervisorSeleccionado) {
                 queryReg = queryReg.eq('supervisor', supervisorSeleccionado);
@@ -650,19 +741,11 @@
                 }
 
                 let tablaPersonal = 'intendencia_personal';
-                if (deptoFiltro === 'Ascensores') {
-                    tablaPersonal = 'ascensores_personal';
-                } else if (deptoFiltro === 'Camilleros') {
-                    tablaPersonal = 'camilleros_personal';
-                } else if (deptoFiltro === 'Lavadero Central') {
-                    tablaPersonal = 'lavadero_personal';
-                }
+                if (deptoFiltro === 'Ascensores') tablaPersonal = 'ascensores_personal';
+                else if (deptoFiltro === 'Camilleros') tablaPersonal = 'camilleros_personal';
+                else if (deptoFiltro === 'Lavadero Central') tablaPersonal = 'lavadero_personal';
 
-                const { data: resPersonal, error: errPers } = await db
-                    .from(tablaPersonal)
-                    .select('legajo, apellido_y_nombre')
-                    .in('legajo', legajos);
-
+                const { data: resPersonal } = await db.from(tablaPersonal).select('legajo, apellido_y_nombre').in('legajo', legajos);
                 const mapaNombres = {};
                 if (resPersonal) {
                     resPersonal.forEach(p => {
@@ -674,16 +757,7 @@
                 let total = legajos.length;
 
                 let html = `<table style="width: 100%; border-collapse: collapse; font-size: 13px;">
-                    <thead>
-                        <tr>
-                            <th style="border: 1px solid #000; padding: 8px; background-color: #1a3a5f; color: white;">LEGAJO</th>
-                            <th style="border: 1px solid #000; padding: 8px; background-color: #1a3a5f; color: white;">APELLIDO Y NOMBRE</th>
-                            <th style="border: 1px solid #000; padding: 8px; background-color: #1a3a5f; color: white; width: 80px;">PRESENTE</th>
-                            <th style="border: 1px solid #000; padding: 8px; background-color: #1a3a5f; color: white; width: 80px;">AUSENTE</th>
-                            <th style="border: 1px solid #000; padding: 8px; background-color: #1a3a5f; color: white; width: 80px;">LICENCIA</th>
-                        </tr>
-                    </thead>
-                    <tbody>`;
+                    <thead><tr><th style="border: 1px solid #000; padding: 8px; background-color: #1a3a5f; color: white;">LEGAJO</th><th style="border: 1px solid #000; padding: 8px; background-color: #1a3a5f; color: white;">APELLIDO Y NOMBRE</th><th style="border: 1px solid #000; padding: 8px; background-color: #1a3a5f; color: white; width: 80px;">PRESENTE</th><th style="border: 1px solid #000; padding: 8px; background-color: #1a3a5f; color: white; width: 80px;">AUSENTE</th><th style="border: 1px solid #000; padding: 8px; background-color: #1a3a5f; color: white; width: 80px;">LICENCIA</th></tr></thead><tbody>`;
                 
                 legajos.forEach(legajo => {
                     const legTrim = String(legajo).trim();
@@ -701,17 +775,10 @@
                     else if (estadoChar === 'A') ausentes++; 
                     else if (estadoChar === 'L') licencias++;
 
-                    html += `<tr>
-                        <td style="border: 1px solid #000; padding: 8px; text-align: center;">${legTrim}</td>
-                        <td style="border: 1px solid #000; padding: 8px; text-align: center;">${nombre}</td>
-                        <td style="border: 1px solid #000; padding: 8px; text-align: center;"><div class="box-estado ${estadoChar === 'P' ? 'box-P' : ''}"></div></td>
-                        <td style="border: 1px solid #000; padding: 8px; text-align: center;"><div class="box-estado ${estadoChar === 'A' ? 'box-A' : ''}"></div></td>
-                        <td style="border: 1px solid #000; padding: 8px; text-align: center;"><div class="box-estado ${estadoChar === 'L' ? 'box-L' : ''}"></div></td>
-                    </tr>`;
+                    html += `<tr><td style="border: 1px solid #000; padding: 8px; text-align: center;">${legTrim}</td><td style="border: 1px solid #000; padding: 8px; text-align: center;">${nombre}</td><td style="border: 1px solid #000; padding: 8px; text-align: center;"><div class="box-estado ${estadoChar === 'P' ? 'box-P' : ''}"></div></td><td style="border: 1px solid #000; padding: 8px; text-align: center;"><div class="box-estado ${estadoChar === 'A' ? 'box-A' : ''}"></div></td><td style="border: 1px solid #000; padding: 8px; text-align: center;"><div class="box-estado ${estadoChar === 'L' ? 'box-L' : ''}"></div></td></tr>`;
                 });
                 
                 html += `</tbody></table>`;
-                
                 html += `
                     <div style="margin-top: 30px; text-align: center; color: #1a3a5f; font-weight: bold; font-size: 20px; margin-bottom: 10px;">Estadísticas de Presentismo</div>
                     <div style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #ddd; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; justify-content: center; align-items: center; gap: 50px; flex-wrap: wrap;">
@@ -720,9 +787,7 @@
                             <div style="background-color: #1a3a5f; color: white; padding: 8px 15px; border-radius: 6px; font-weight: bold; margin-bottom: 8px; width: 270px; text-align: left;">Ausentismo: ${total > 0 ? ((ausentes/total)*100).toFixed(1) : 0}% (${ausentes})</div>
                             <div style="background-color: #1a3a5f; color: white; padding: 8px 15px; border-radius: 6px; font-weight: bold; margin-bottom: 8px; width: 270px; text-align: left;">Licencias: ${total > 0 ? ((licencias/total)*100).toFixed(1) : 0}% (${licencias})</div>
                         </div>
-                        <div style="width: 220px; height: 220px;">
-                            <canvas id="graficoRrhh"></canvas>
-                        </div>
+                        <div style="width: 220px; height: 220px;"><canvas id="graficoRrhh"></canvas></div>
                     </div>`;
 
                 visor.innerHTML = html;
@@ -733,17 +798,8 @@
                         if (typeof chartRrhh !== 'undefined' && chartRrhh) chartRrhh.destroy();
                         window.chartRrhh = new Chart(ctx, {
                             type: 'pie',
-                            data: { 
-                                labels: ['Presentes', 'Ausentes', 'Licencias'], 
-                                datasets: [{ 
-                                    data: [presentes, ausentes, licencias], 
-                                    backgroundColor: ['#28a745', '#dc3545', '#ffc107'] 
-                                }] 
-                            },
-                            options: { 
-                                responsive: true, 
-                                plugins: { legend: { position: 'bottom' } } 
-                            }
+                            data: { labels: ['Presentes', 'Ausentes', 'Licencias'], datasets: [{ data: [presentes, ausentes, licencias], backgroundColor: ['#28a745', '#dc3545', '#ffc107'] }] },
+                            options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
                         });
                     }
                 }, 50);
@@ -751,7 +807,6 @@
             } else if (tipo === 'planillas') {
                 if (deptoFiltro === 'Ascensores') {
                     const { data: dispData } = await db.from('registros_ascensores').select('*').eq('fecha_cierre', fechaBusqueda).eq('turno', turno);
-
                     let tablaDinamica = `<table style="width: 100%; border-collapse: collapse; margin-top: 15px;"><thead><tr><th style="border: 1px solid #333; padding: 10px; background-color: #1a3a5f; color: white;">N° de Ascensor</th><th style="border: 1px solid #333; padding: 10px; background-color: #1a3a5f; color: white;">Estado</th><th style="border: 1px solid #333; padding: 10px; background-color: #1a3a5f; color: white;">Uso Asignado</th><th style="border: 1px solid #333; padding: 10px; background-color: #1a3a5f; color: white;">Observaciones / Detalle</th></tr></thead><tbody>`;
                     
                     let cVerde = 0, cAmarillo = 0, cRojo = 0, cMixto = 0;
@@ -771,17 +826,11 @@
                             }
 
                             let estLower = estadoNormalizado.toLowerCase();
-                            if (estLower.includes('funcionando') && !estLower.includes('ascensorista')) {
-                                cVerde++;
-                            } else if (estLower.includes('mantenimiento')) {
-                                cAmarillo++;
-                            } else if (estLower.includes('fuera') || estLower.includes('servicio')) {
-                                cRojo++;
-                            } else if (estLower.includes('ascensorista') || estLower.includes('mixto')) {
-                                cMixto++;
-                            } else {
-                                cVerde++;
-                            }
+                            if (estLower.includes('funcionando') && !estLower.includes('ascensorista')) cVerde++;
+                            else if (estLower.includes('mantenimiento')) cAmarillo++;
+                            else if (estLower.includes('fuera') || estLower.includes('servicio')) cRojo++;
+                            else if (estLower.includes('ascensorista') || estLower.includes('mixto')) cMixto++;
+                            else cVerde++;
 
                             tablaDinamica += `<tr><td style="border: 1px solid #333; padding: 8px; text-align: center;">${item.identificador_dispositivo}</td><td style="border: 1px solid #333; padding: 8px; text-align: center;">${estadoNormalizado}</td><td style="border: 1px solid #333; padding: 8px; text-align: center;">${usoAsignado}</td><td style="border: 1px solid #333; padding: 8px; text-align: center;">${detalleObs}</td></tr>`;
                         });
@@ -789,168 +838,25 @@
                         tablaDinamica += `<tr><td colspan="4" style="border: 1px solid #333; padding: 12px; text-align: center;">No hay registros detallados de ascensores para esta fecha.</td></tr>`;
                     }
                     tablaDinamica += `</tbody></table>`;
-
-                    tablaDinamica += `
-                        <div style="margin-top: 30px; text-align: center; color: #1a3a5f; font-weight: bold; font-size: 20px; margin-bottom: 10px;">Estadísticas de Funcionalidad</div>
-                        <div style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #ddd; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; justify-content: center; align-items: center; gap: 50px; flex-wrap: wrap;">
-                            <div style="font-weight:bold; color: #1a3a5f; font-size: 16px; line-height: 2.0; display: flex; flex-direction: column;">
-                                <div style="background-color: #1a3a5f; color: white; padding: 8px 15px; border-radius: 6px; font-weight: bold; margin-bottom: 8px; width: 270px; text-align: left;">Funcionando: ${totalAscensores > 0 ? ((cVerde/totalAscensores)*100).toFixed(1) : 0}% (${cVerde})</div>
-                                <div style="background-color: #1a3a5f; color: white; padding: 8px 15px; border-radius: 6px; font-weight: bold; margin-bottom: 8px; width: 270px; text-align: left;">En Mantenimiento: ${totalAscensores > 0 ? ((cAmarillo/totalAscensores)*100).toFixed(1) : 0}% (${cAmarillo})</div>
-                                <div style="background-color: #1a3a5f; color: white; padding: 8px 15px; border-radius: 6px; font-weight: bold; margin-bottom: 8px; width: 270px; text-align: left;">Fuera de Servicio: ${totalAscensores > 0 ? ((cRojo/totalAscensores)*100).toFixed(1) : 0}% (${cRojo})</div>
-                                <div style="background-color: #1a3a5f; color: white; padding: 8px 15px; border-radius: 6px; font-weight: bold; margin-bottom: 8px; width: 270px; text-align: left;">Con Ascensorista: ${totalAscensores > 0 ? ((cMixto/totalAscensores)*100).toFixed(1) : 0}% (${cMixto})</div>
-                            </div>
-                            <div style="width: 220px; height: 220px;">
-                                <canvas id="graficoAscensores"></canvas>
-                            </div>
-                        </div>`;
-
                     visor.innerHTML = tablaDinamica;
-
-                    setTimeout(() => {
-                        const ctx = document.getElementById('graficoAscensores')?.getContext('2d');
-                        if (ctx) {
-                            if (typeof chartAsc !== 'undefined' && chartAsc) chartAsc.destroy();
-                            window.chartAsc = new Chart(ctx, {
-                                type: 'pie',
-                                data: { 
-                                    labels: ['Funcionando', 'Mantenimiento', 'Fuera de Servicio', 'Ascensoristas'], 
-                                    datasets: [{ 
-                                        data: [cVerde, cAmarillo, cRojo, cMixto], 
-                                        backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#007bff'] 
-                                    }] 
-                                },
-                                options: { 
-                                    responsive: true, 
-                                    plugins: { legend: { position: 'bottom' } } 
-                                }
-                            });
-                        }
-                    }, 50);
 
                 } else if (deptoFiltro === 'Intendencia') {
                     let queryInt = db.from('registros_intendencia').select('*').eq('fecha_cierre', fechaBusqueda).eq('turno', turno);
                     if (supervisorSeleccionado) queryInt = queryInt.eq('supervisor', supervisorSeleccionado);
                     const { data: intData } = await queryInt;
 
-                    let tablaDinamica = `
-                        <div style="background: #fff; width: 100%; box-sizing: border-box;">
-                            <div style="font-size: 16px; font-weight: bold; color: #1a3a5f; margin-bottom: 10px;">Planilla Operativa - Intendencia ${supervisorSeleccionado ? '(' + supervisorSeleccionado + ')' : ''}</div>
-                            <table style="width: 100%; border-collapse: collapse; margin-bottom: 0;">
-                                <thead>
-                                    <tr style="background-color: #1a3a5f; color: white;">
-                                        <th style="border: 1px solid #333; padding: 10px; text-align: center;" rowspan="2">SECTOR</th>
-                                        <th style="border: 1px solid #333; padding: 10px; text-align: center;" rowspan="2">AGENTES ASIGNADOS</th>
-                                        <th style="border: 1px solid #333; padding: 8px; text-align: center;" colspan="2">HORARIO</th>
-                                    </tr>
-                                    <tr style="background-color: #1a3a5f; color: white;">
-                                        <th style="border: 1px solid #333; padding: 8px; text-align: center; width: 100px;">DESDE</th>
-                                        <th style="border: 1px solid #333; padding: 8px; text-align: center; width: 100px;">HASTA</th>
-                                    </tr>
-                                </thead>
-                               <tbody>`;
+                    let tablaDinamica = `<div style="background: #fff; width: 100%; box-sizing: border-box;"><div style="font-size: 16px; font-weight: bold; color: #1a3a5f; margin-bottom: 10px;">Planilla Operativa - Intendencia</div><table style="width: 100%; border-collapse: collapse; margin-bottom: 0;"><thead><tr style="background-color: #1a3a5f; color: white;"><th style="border: 1px solid #333; padding: 10px; text-align: center;" rowspan="2">SECTOR</th><th style="border: 1px solid #333; padding: 10px; text-align: center;" rowspan="2">AGENTES ASIGNADOS</th><th style="border: 1px solid #333; padding: 8px; text-align: center;" colspan="2">HORARIO</th></tr><tr style="background-color: #1a3a5f; color: white;"><th style="border: 1px solid #333; padding: 8px; text-align: center; width: 100px;">DESDE</th><th style="border: 1px solid #333; padding: 8px; text-align: center; width: 100px;">HASTA</th></tr></thead><tbody>`;
                     
                     if (intData && intData.length > 0) {
                         intData.forEach(row => {
-                            tablaDinamica += `<tr>
-                                <td style="border: 1px solid #333; padding: 10px; text-align: center;">${row.sector || ''}</td>
-                                <td style="border: 1px solid #333; padding: 10px; text-align: center;">${row.agentes_asignados || ''}</td>
-                                <td style="border: 1px solid #333; padding: 10px; text-align: center;">${row.hora_desde || ''}</td>
-                                <td style="border: 1px solid #333; padding: 10px; text-align: center;">${row.hora_hasta || ''}</td>
-                            </tr>`;
+                            tablaDinamica += `<tr><td style="border: 1px solid #333; padding: 10px; text-align: center;">${row.sector || ''}</td><td style="border: 1px solid #333; padding: 10px; text-align: center;">${row.agentes_asignados || ''}</td><td style="border: 1px solid #333; padding: 10px; text-align: center;">${row.hora_desde || ''}</td><td style="border: 1px solid #333; padding: 10px; text-align: center;">${row.hora_hasta || ''}</td></tr>`;
                         });
                     } else {
-                        tablaDinamica += `<tr><td colspan="4" style="border: 1px solid #333; padding: 12px; text-align: center;">No hay registros detallados de Intendencia para esta fecha y turno con este supervisor.</td></tr>`;
+                        tablaDinamica += `<tr><td colspan="4" style="border: 1px solid #333; padding: 12px; text-align: center;">No hay registros detallados de Intendencia.</td></tr>`;
                     }
-                    tablaDinamica += `</tbody></table>`;
-                    
-                    let obsFinal = '';
-                    if (reg && reg.observaciones) obsFinal = reg.observaciones;
-                    else if (intData && intData.length > 0) {
-                        const encontrada = intData.find(r => r.observaciones && r.observaciones.trim() !== '');
-                        obsFinal = encontrada ? encontrada.observaciones : '';
-                    }
-
-                    tablaDinamica += `
-                        <div style="background-color: #1a3a5f; color: white; padding: 8px 12px; font-weight: bold; font-size: 14px; margin-top: 15px; border: 1px solid #333;">Observaciones:</div>
-                        <div style="padding: 10px 15px; min-height: 120px; background: #fff; border: 1px solid #333; border-top: none; font-family: 'Courier New', Courier, monospace; font-size: 16px; line-height: 30px; background-image: linear-gradient(#e0e0e0 1px, transparent 1px); background-size: 100% 30px;">
-                            <p style="margin: 0; padding: 0; white-space: pre-wrap;">${obsFinal || 'Sin observaciones registradas.'}</p>
-                        </div>
-                    </div>`;
-                    visor.innerHTML = tablaDinamica;
-
-                } else if (deptoFiltro === 'Camilleros') {
-                    const { data: camData } = await db.from('registros_camilleros').select('*').eq('fecha_cierre', fechaBusqueda).eq('turno', turno);
-
-                    let tablaDinamica = `
-                        <div style="background: #fff; width: 100%; box-sizing: border-box;">
-                            <div style="font-size: 16px; font-weight: bold; color: #1a3a5f; margin-bottom: 10px;">Planilla Operativa - Camilleros</div>
-                            <table style="width: 100%; border-collapse: collapse; margin-bottom: 0; font-size: 12px;">
-                                <thead>
-                                    <tr style="background-color: #1a3a5f; color: white;">
-                                        <th style="border: 1px solid #333; padding: 8px 4px; text-align: center; width: 10%;">HORA</th>
-                                        <th style="border: 1px solid #333; padding: 8px 4px; text-align: center; width: 15%;">PISO/SALA/CAMA</th>
-                                        <th style="border: 1px solid #333; padding: 8px 4px; text-align: center; width: 20%;">APELLIDO Y NOMBRE</th>
-                                        <th style="border: 1px solid #333; padding: 8px 4px; text-align: center; width: 15%;">DESTINO</th>
-                                        <th style="border: 1px solid #333; padding: 8px 4px; text-align: center; width: 10%;">HORA ESTADÍA</th>
-                                        <th style="border: 1px solid #333; padding: 8px 4px; text-align: center; width: 10%;">MOVILIDAD</th>
-                                        <th style="border: 1px solid #333; padding: 8px 4px; text-align: center; width: 11%;">CAMILLERO</th>
-                                        <th style="border: 1px solid #333; padding: 8px 4px; text-align: center; width: 9%;">HORA DE FINALIZACION</th>
-                                    </tr>
-                                </thead>
-                                <tbody>`;
-                    
-                    if (camData && camData.length > 0) {
-                        camData.forEach((row) => {
-                            tablaDinamica += `<tr>
-                                <td style="border: 1px solid #333; padding: 6px 4px; text-align: center;">${row.hora || ''}</td>
-                                <td style="border: 1px solid #333; padding: 6px 4px; text-align: center;">${row.numero_cama || ''}</td>
-                                <td style="border: 1px solid #333; padding: 6px 4px; text-align: center;">${row.nombre_paciente || ''}</td>
-                                <td style="border: 1px solid #333; padding: 6px 4px; text-align: center;">${row.destino || ''}</td>
-                                <td style="border: 1px solid #333; padding: 6px 4px; text-align: center;">${row.duracion_estancia || ''}</td>
-                                <td style="border: 1px solid #333; padding: 6px 4px; text-align: center;">${row.tipo_movilidad || ''}</td>
-                                <td style="border: 1px solid #333; padding: 6px 4px; text-align: center;">${row.personal_asignado || ''}</td>
-                                <td style="border: 1px solid #333; padding: 6px 4px; text-align: center;">${row.hora_finalizacion || ''}</td>
-                            </tr>`;
-                        });
-                    } else {
-                        tablaDinamica += `<tr><td colspan="8" style="border: 1px solid #333; padding: 12px; text-align: center;">No hay registros de movimientos de camilleros para esta fecha.</td></tr>`;
-                    }
-                    tablaDinamica += `</tbody></table>`;
-
-                    let obsCamilleros = '';
-                    if (reg && reg.observaciones) obsCamilleros = reg.observaciones;
-                    else if (camData && camData.length > 0) {
-                        const obsEncontrada = camData.find(r => r.observaciones && r.observaciones.trim() !== '');
-                        obsCamilleros = obsEncontrada ? obsEncontrada.observaciones : '';
-                    }
-
-                    tablaDinamica += `
-                        <div style="background-color: #1a3a5f; color: white; padding: 8px 12px; font-weight: bold; font-size: 14px; margin-top: 15px; border: 1px solid #333;">Observaciones de la Jornada:</div>
-                        <div style="padding: 0px 15px; min-height: 120px; background: #fff; border: 1px solid #333; border-top: none; font-family: 'Courier New', Courier, monospace; font-size: 16px; line-height: 30px; background-image: linear-gradient(#e0e0e0 1px, transparent 1px); background-size: 100% 30px;">
-                            <p style="margin: 0; padding: 0; white-space: pre-wrap;">${obsCamilleros || 'Sin observaciones registradas.'}</p>
-                        </div>
-                    </div>`;
-
-                    visor.innerHTML = tablaDinamica;
-
-                } else {
-                    if (error || !reg) {
-                        visor.innerHTML = `<p style='color: red; font-weight: bold;'>No se encontraron registros para ${deptoFiltro} en el turno ${turno} (${fechaBusqueda}).</p>`;
-                        return;
-                    }
-
-                    let tablaDinamica = `
-                        <div style="background: #fff; width: 100%; box-sizing: border-box;">
-                            <div style="font-size: 16px; font-weight: bold; color: #1a3a5f; margin-bottom: 10px;">Planilla Operativa (${reg.departamento})</div>
-                            <div style="background-color: #1a3a5f; color: white; padding: 8px 12px; font-weight: bold; font-size: 14px; margin-top: 15px; border: 1px solid #333;">Observaciones y Contenido:</div>
-                            <div style="padding: 0px 15px; min-height: 100px; background: #fff; border: 1px solid #333; border-top: none; font-family: 'Courier New', Courier, monospace; font-size: 16px; line-height: 30px; background-image: linear-gradient(#e0e0e0 1px, transparent 1px); background-size: 100% 30px;">
-                                <p style="margin: 0; padding: 0; white-space: pre-wrap;">${reg.observaciones || 'Sin datos adicionales.'}</p>
-                            </div>
-                        </div>
-                    `;
+                    tablaDinamica += `</tbody></table></div>`;
                     visor.innerHTML = tablaDinamica;
                 }
-
             } else if (tipo === 'reportes' || tipo === 'insumos') {
                 if (error || !reg) {
                     visor.innerHTML = `<p style='color: red; font-weight: bold;'>No se encontraron registros para ${deptoFiltro} en el turno ${turno} (${fechaBusqueda}).</p>`;
