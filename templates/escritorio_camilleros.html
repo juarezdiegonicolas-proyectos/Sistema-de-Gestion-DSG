@@ -376,38 +376,49 @@
                     let fecha = contenidoObj && contenidoObj.fecha ? contenidoObj.fecha : (item.created_at || "Fecha no registrada");
                     let turnoMsg = contenidoObj && contenidoObj.turno ? contenidoObj.turno : "General";
 
-                    let archivoHtml = "";
-                    if (contenidoObj && contenidoObj.archivo && contenidoObj.archivo.data) {
-                        let base64Data = contenidoObj.archivo.data;
-                        let nombreArchivo = contenidoObj.archivo.name || "adjunto_descargable";
-                        
-                        if (nombreArchivo.match(/\.(jpeg|jpg|gif|png)$/i) || base64Data.startsWith('data:image/')) {
-                            archivoHtml = `
-                                <div style="margin-top: 15px; text-align: center;">
-                                    <div style="margin-bottom: 10px;">
-                                        <img src="${base64Data}" alt="Archivo adjunto" style="max-width: 100%; max-height: 400px; border-radius: 6px; border: 1px solid #ddd; object-fit: contain;" />
-                                    </div>
-                                    <a href="${base64Data}" download="${nombreArchivo}" style="display: inline-block; background: #1a3a5f; color: #fff; padding: 8px 15px; border-radius: 4px; text-decoration: none; font-size: 14px; font-weight: 500;">
-                                        📥 Descargar Archivo
-                                    </a>
-                                </div>
-                            `;
-                        } else {
-                            archivoHtml = `
-                                <div style="margin-top: 15px; background: #f8f9fa; border: 1px solid #ddd; padding: 12px 15px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px;">
-                                    <div style="display: flex; align-items: center; gap: 14px; min-width: 0; flex: 1;">
-                                        <span style="font-size: 32px; flex-shrink: 0; line-height: 1;">📄</span>
-                                        <div style="min-width: 0; display: flex; flex-direction: column; gap: 3px;">
-                                            <strong style="font-size: 14px; color: #333; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${nombreArchivo}">${nombreArchivo}</strong>
-                                            <span style="font-size: 12px; color: #666; display: block;">Documento adjunto disponible para descarga</span>
-                                        </div>
-                                    </div>
-                                    <a href="${base64Data}" download="${nombreArchivo}" style="background: #1a3a5f; color: #fff; padding: 8px 16px; border-radius: 4px; text-decoration: none; font-size: 14px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; flex-shrink: 0;">
-                                        📥 Descargar Archivo
-                                    </a>
-                                </div>
-                            `;
+                    let archivosArray = [];
+                    if (contenidoObj) {
+                        if (Array.isArray(contenidoObj.archivos)) {
+                            archivosArray = contenidoObj.archivos;
+                        } else if (contenidoObj.archivo && typeof contenidoObj.archivo === 'object') {
+                            archivosArray = [contenidoObj.archivo];
                         }
+                    }
+
+                    let archivoHtml = "";
+                    if (archivosArray.length > 0) {
+                        archivosArray.forEach(arch => {
+                            let base64Data = arch.data || '';
+                            let nombreArchivo = arch.name || "adjunto_descargable";
+                            
+                            if (nombreArchivo.match(/\.(jpeg|jpg|gif|png)$/i) || base64Data.startsWith('data:image/')) {
+                                archivoHtml += `
+                                    <div style="margin-top: 15px; text-align: center;">
+                                        <div style="margin-bottom: 10px;">
+                                            <img src="${base64Data}" alt="Archivo adjunto" style="max-width: 100%; max-height: 400px; border-radius: 6px; border: 1px solid #ddd; object-fit: contain;" />
+                                        </div>
+                                        <a href="${base64Data}" download="${nombreArchivo}" style="display: inline-block; background: #1a3a5f; color: #fff; padding: 8px 15px; border-radius: 4px; text-decoration: none; font-size: 14px; font-weight: 500;">
+                                            📥 Descargar Archivo
+                                        </a>
+                                    </div>
+                                `;
+                            } else {
+                                archivoHtml += `
+                                    <div style="margin-top: 15px; background: #f8f9fa; border: 1px solid #ddd; padding: 12px 15px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px;">
+                                        <div style="display: flex; align-items: center; gap: 14px; min-width: 0; flex: 1;">
+                                            <span style="font-size: 32px; flex-shrink: 0; line-height: 1;">📄</span>
+                                            <div style="min-width: 0; display: flex; flex-direction: column; gap: 3px;">
+                                                <strong style="font-size: 14px; color: #333; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${nombreArchivo}">${nombreArchivo}</strong>
+                                                <span style="font-size: 12px; color: #666; display: block;">Documento adjunto disponible para descarga</span>
+                                            </div>
+                                        </div>
+                                        <a href="${base64Data}" download="${nombreArchivo}" style="background: #1a3a5f; color: #fff; padding: 8px 16px; border-radius: 4px; text-decoration: none; font-size: 14px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; flex-shrink: 0;">
+                                            📥 Descargar Archivo
+                                        </a>
+                                    </div>
+                                `;
+                            }
+                        });
                     }
 
                     htmlContent += `
@@ -734,13 +745,6 @@
                 const inputHora = tr.querySelector('.input-hora');
                 
                 if (inputHora && inputHora.value.trim() !== '') {
-                    // Extraer los agentes seleccionados mediante el multiselect personalizado
-                    let personalSeleccionadoStr = '';
-                    const labelSpan = tr.querySelector('.multiselect-label');
-                    if (labelSpan) {
-                        personalSeleccionadoStr = labelSpan.innerText;
-                    }
-
                     await supabaseClient.from('registros_camilleros').insert({
                         fecha_cierre: fechaVal,
                         turno: turnoVal,
@@ -750,7 +754,7 @@
                         destino: tr.querySelector('.input-destino')?.value || '',
                         duracion_estancia: tr.querySelector('.input-estancia')?.value || '',
                         tipo_movilidad: tr.querySelector('.input-movilidad')?.value || '',
-                        personal_asignado: personalSeleccionadoStr,
+                        personal_asignado: tr.querySelector('.input-personal')?.value || '',
                         hora_finalizacion: tr.querySelector('.input-finalizacion')?.value || '',
                         observaciones: observacionesVal
                     });
@@ -942,52 +946,16 @@
             cargarNovedades();
         };
 
-        function obtenerOpcionesCamillerosCheck() {
+        function obtenerOpcionesCamilleros() {
             const turnoActual = localStorage.getItem('usuario_turno') || "Mañana";
             const agentesTurno = agentes.filter(a => a.turno === turnoActual);
             agentesTurno.sort((a, b) => parseInt(a.legajo) - parseInt(b.legajo));
             
-            let html = '';
+            let optionsHTML = '<option value="">Seleccionar Camillero...</option>';
             agentesTurno.forEach(ag => {
-                html += `<label style="display: flex; align-items: center; gap: 6px; padding: 4px; font-size: 11px; cursor: pointer; border-bottom: 1px solid #f1f1f1;">
-                            <input type="checkbox" value="${ag.nombre}" onchange="actualizarSeleccionCamilleros(this)" style="cursor: pointer;">
-                            <span>${ag.nombre}</span>
-                         </label>`;
+                optionsHTML += `<option value="${ag.nombre}">${ag.nombre}</option>`;
             });
-            return html;
-        }
-
-        function toggleDropdown(elementoBtn) {
-            document.querySelectorAll('.multiselect-content').forEach(c => {
-                if (c !== elementoBtn.nextElementSibling) c.style.display = 'none';
-            });
-            const content = elementoBtn.nextElementSibling;
-            content.style.display = content.style.display === 'block' ? 'none' : 'block';
-        }
-
-        window.addEventListener('click', function(e) {
-            if (!e.target.closest('.custom-multiselect')) {
-                document.querySelectorAll('.multiselect-content').forEach(c => c.style.display = 'none');
-            }
-        });
-
-        function actualizarSeleccionCamilleros(checkbox) {
-            const contenedor = checkbox.closest('.custom-multiselect');
-            const labelSpan = contenedor.querySelector('.multiselect-label');
-            const checkboxes = contenedor.querySelectorAll('input[type="checkbox"]:checked');
-            
-            let seleccionados = [];
-            checkboxes.forEach(chk => seleccionados.push(chk.value));
-            
-            if (seleccionados.length === 0) {
-                labelSpan.innerText = "Seleccionar...";
-            } else if (seleccionados.length === 1) {
-                labelSpan.innerText = seleccionados[0];
-            } else {
-                labelSpan.innerText = `${seleccionados.length} agentes seleccionados`;
-            }
-            
-            guardarDatos();
+            return optionsHTML;
         }
 
         function crearFilaHTML() { 
@@ -1016,16 +984,10 @@
                              '</optgroup>' +
                          '</select>' +
                     '</td>' +
-                    '<td style="position: relative; overflow: visible;">' +
-                         '<div class="custom-multiselect" style="position: relative; width: 100%; text-align: left;">' +
-                             '<div class="multiselect-btn" onclick="toggleDropdown(this)" style="background: #fff; border: 1px solid #ccc; border-radius: 4px; padding: 4px 6px; font-size: 11px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; justify-content: space-between; align-items: center;">' +
-                                 '<span class="multiselect-label">Seleccionar...</span>' +
-                                 '<span style="font-size: 9px; margin-left: 2px;">▼</span>' +
-                             '</div>' +
-                             '<div class="multiselect-content" style="display: none; position: absolute; left: 0; top: 100%; z-index: 9999; background: #fff; border: 1px solid #1a3a5f; box-shadow: 0 4px 8px rgba(0,0,0,0.15); border-radius: 4px; max-height: 180px; overflow-y: auto; width: 220px; padding: 5px;">' +
-                                 obtenerOpcionesCamillerosCheck() +
-                             '</div>' +
-                         '</div>' +
+                    '<td>' +
+                         '<select class="input-c input-personal" onchange="guardarDatos()" style="width: 100%; height: 100%; border: none; background: transparent; font-size: 11px; font-family: inherit;">' +
+                             obtenerOpcionesCamilleros() +
+                         '</select>' +
                     '</td>' +
                     '<td><input class="input-c input-finalizacion" type="time" onchange="guardarDatos()"></td>'; 
         }
