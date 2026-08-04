@@ -290,32 +290,6 @@
                 return;
             }
 
-            // MAPEOMAPA DE LA ÚLTIMA HORA DE ACTUALIZACIÓN DEL ESTADO ACTUAL DE ASCENSORES
-            let ultimaFechaStr = '';
-            data.forEach(item => {
-                let fechaItem = item.actualizado_at || item.actualizado_en || item.fecha;
-                if (fechaItem) {
-                    if (!ultimaFechaStr || new Date(fechaItem) > new Date(ultimaFechaStr)) {
-                        ultimaFechaStr = fechaItem;
-                    }
-                }
-            });
-
-            let fechaFormateada = 'Sin fecha registrada';
-            if (ultimaFechaStr) {
-                let f = new Date(ultimaFechaStr);
-                if (!isNaN(f.getTime())) {
-                    fechaFormateada = f.toLocaleString('es-AR', {
-                        year: 'numeric', month: '2-digit', day: '2-digit',
-                        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
-                    });
-                } else {
-                    fechaFormateada = ultimaFechaStr;
-                }
-            }
-
-            labelFechaHora.textContent = "Última actualización: " + fechaFormateada;
-
             // ORDENAMIENTO NUMÉRICO ASCENDENTE ROBUSTO
             data.sort((a, b) => {
                 let textoA = String(a.nombre || a.ascensor || a.identificador_dispositivo || '');
@@ -328,6 +302,9 @@
                 if (isNaN(numB)) return -1;
                 return numA - numB;
             });
+
+            const ahora = new Date();
+            labelFechaHora.textContent = "Última sincronización: " + ahora.toLocaleDateString() + " " + ahora.toLocaleTimeString();
 
             let html = `
                 <div class="tabla-contenedor-moderno">
@@ -523,4 +500,5 @@
         };
     </script>
 </body>
+</html>
 </html>
