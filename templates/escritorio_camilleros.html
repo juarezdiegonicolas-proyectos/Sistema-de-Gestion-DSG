@@ -89,6 +89,12 @@
             background: #fff;
         }
         
+        /* Ajuste específico para el select múltiple de personal sin romper diseño */
+        .tabla-camilleros select.input-personal[multiple] {
+            height: 65px;
+            padding: 2px;
+        }
+        
         .input-estancia, .input-finalizacion {
             padding: 6px 4px !important;
             font-size: 13px !important;
@@ -644,8 +650,17 @@
             document.querySelectorAll('#cuerpo-tabla tr').forEach(tr => {
                 tr.querySelectorAll('select').forEach(select => {
                     Array.from(select.options).forEach(opt => {
-                        if(opt.value === select.value) opt.setAttribute('selected', 'selected');
-                        else opt.removeAttribute('selected');
+                        // Soporte para selección múltiple al guardar atributos selected
+                        if (select.multiple) {
+                            if (Array.from(select.selectedOptions).some(o => o.value === opt.value)) {
+                                opt.setAttribute('selected', 'selected');
+                            } else {
+                                opt.removeAttribute('selected');
+                            }
+                        } else {
+                            if(opt.value === select.value) opt.setAttribute('selected', 'selected');
+                            else opt.removeAttribute('selected');
+                        }
                     });
                 });
                 tr.querySelectorAll('input').forEach(i => {
@@ -734,6 +749,14 @@
                 const inputHora = tr.querySelector('.input-hora');
                 
                 if (inputHora && inputHora.value.trim() !== '') {
+                    // Obtener múltiples camilleros seleccionados unidos por comas si aplica
+                    const selectPersonal = tr.querySelector('.input-personal');
+                    let personalSeleccionado = '';
+                    if (selectPersonal) {
+                        const seleccionados = Array.from(selectPersonal.selectedOptions).map(opt => opt.value).filter(val => val !== '');
+                        personalSeleccionado = seleccionados.join(', ');
+                    }
+
                     await supabaseClient.from('registros_camilleros').insert({
                         fecha_cierre: fechaVal,
                         turno: turnoVal,
@@ -743,7 +766,7 @@
                         destino: tr.querySelector('.input-destino')?.value || '',
                         duracion_estancia: tr.querySelector('.input-estancia')?.value || '',
                         tipo_movilidad: tr.querySelector('.input-movilidad')?.value || '',
-                        personal_asignado: tr.querySelector('.input-personal')?.value || '',
+                        personal_asignado: personalSeleccionado,
                         hora_finalizacion: tr.querySelector('.input-finalizacion')?.value || '',
                         observaciones: observacionesVal
                     });
@@ -940,7 +963,7 @@
             const agentesTurno = agentes.filter(a => a.turno === turnoActual);
             agentesTurno.sort((a, b) => parseInt(a.legajo) - parseInt(b.legajo));
             
-            let optionsHTML = '<option value="">Seleccionar Camillero...</option>';
+            let optionsHTML = '';
             agentesTurno.forEach(ag => {
                 optionsHTML += `<option value="${ag.nombre}">${ag.nombre}</option>`;
             });
@@ -974,7 +997,7 @@
                          '</select>' +
                     '</td>' +
                     '<td>' +
-                         '<select class="input-c input-personal" onchange="guardarDatos()" style="width: 100%; height: 100%; border: none; background: transparent; font-size: 11px; font-family: inherit;">' +
+                         '<select multiple class="input-c input-personal" onchange="guardarDatos()" title="Mantén presionado Ctrl o Cmd para seleccionar varios camilleros" style="width: 100%; border: 1px solid #ccc; background: #fff; font-size: 11px; font-family: inherit;">' +
                              obtenerOpcionesCamilleros() +
                          '</select>' +
                     '</td>' +
