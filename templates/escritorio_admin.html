@@ -36,8 +36,17 @@
         .box-A { background-color: #dc3545; }
         .box-L { background-color: #ffc107; }
 
+        /* Estilos específicos para el muro de historial en novedades */
+        .historial-muro-container { margin-top: 30px; border-top: 2px solid #1a3a5f; padding-top: 20px; }
+        .historial-muro-titulo { font-size: 16px; font-weight: bold; color: #1a3a5f; margin-bottom: 15px; }
+        .muro-item { background: #fdfdfd; border: 1px solid #ddd; border-left: 4px solid #1a3a5f; padding: 15px; border-radius: 6px; margin-bottom: 15px; }
+        .muro-header { display: flex; justify-content: space-between; font-size: 12px; color: #666; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .muro-body { font-family: 'Courier New', monospace; font-size: 14px; white-space: pre-wrap; line-height: 1.5; color: #333; }
+        .muro-adjuntos { margin-top: 10px; font-size: 12px; }
+        .muro-adjuntos a { color: #1a3a5f; text-decoration: underline; margin-right: 15px; }
+
         @media print {
-        .sidebar, .filtros-historicos, .btn-cerrar, .area-acciones, .btn-adjuntar, textarea, .btn-limpiar { display: none !important; }
+        .sidebar, .filtros-historicos, .btn-cerrar, .area-acciones, .btn-adjuntar, textarea, .btn-limpiar, .historial-muro-container { display: none !important; }
         
         .seccion { display: none !important; }
         .seccion.activo { 
@@ -195,43 +204,16 @@
             }
 
             function crearSeccion(id, titulo, tipoContenido) {
-                document.write(`
-                    <div id="${id}" class="seccion">
-                        <div class="header-logos">
-                            <img src="{{ url_for('static', filename='logo_hospi.png') }}" alt="Logo">
-                            <h1 style="margin: 0; text-align: center; flex: 1;">${titulo}</h1>
-                            <img src="{{ url_for('static', filename='logo_dsg.png') }}" alt="Logo DSG" style="height: 135px;">
-                        </div>
-                        <div class="filtros-historicos">
-                            ${tipoContenido === 'auditoria' ? `
-                                <select id="depto-${id}" class="input-select" onchange="manejarCambioDepto('${id}')">
-                                    <option value="direccion-servicios-generales">Dirección Servicios Generales</option>
-                                    <option value="intendencia">Intendencia</option>
-                                    <option value="division-ascensores">Ascensores</option>
-                                    <option value="lavadero-central">Lavadero Central</option>
-                                    <option value="camilleros-central">Camilleros</option>
-                                    <option value="conmutador">Conmutador</option>
-                                    <option value="dalo">DALO</option>
-                                </select>
-                                <select id="turno-${id}" class="input-select">
-                                    <option value="Mañana">Mañana</option>
-                                    <option value="Tarde">Tarde</option>
-                                    <option value="Noche A">Noche A</option>
-                                    <option value="Noche B">Noche B</option>
-                                    <option value="Sadofe">Sadofe</option>
-                                </select>
-                                <div id="contenedor-supervisor-${id}" style="display: none;">
-                                    <select id="supervisor-${id}" class="input-select">
-                                        <option value="">-- Todos los supervisores --</option>
-                                    </select>
-                                </div>
-                                <input type="date" id="fecha-${id}" class="input-fecha">
-                                <button class="btn-gestion" style="background: #1a3a5f; color: white;" onclick="consultar('${id}')">Auditar</button>
-                            ` : tipoContenido === 'estado-ascensores-vivo' ? `
-                                <span style="font-weight: bold; color: #1a3a5f;">Estado en tiempo real de la tabla estado_actual_ascensores</span>
-                                <button class="btn-gestion" style="background: #1a3a5f; color: white; margin-left: auto;" onclick="cargarEstadoAscensoresVivo()">Actualizar Datos</button>
-                            ` : `
-                                <select id="depto-destino-${id}" class="input-select" onchange="actualizarPrint('${id}')">
+                if (id === 'novedades') {
+                    document.write(`
+                        <div id="novedades" class="seccion">
+                            <div class="header-logos">
+                                <img src="{{ url_for('static', filename='logo_hospi.png') }}" alt="Logo">
+                                <h1 style="margin: 0; text-align: center; flex: 1;">Novedades</h1>
+                                <img src="{{ url_for('static', filename='logo_dsg.png') }}" alt="Logo DSG" style="height: 135px;">
+                            </div>
+                            <div class="filtros-historicos">
+                                <select id="depto-destino-novedades" class="input-select" onchange="actualizarPrint('novedades')">
                                     <option value="Todos">Todos los departamentos</option>
                                     <option value="direccion-servicios-generales">Dirección Servicios Generales</option>
                                     <option value="intendencia">Intendencia</option>
@@ -241,7 +223,7 @@
                                     <option value="conmutador">Conmutador</option>
                                     <option value="dalo">DALO</option>
                                 </select>
-                                <select id="turno-destino-${id}" class="input-select" onchange="actualizarPrint('${id}')">
+                                <select id="turno-destino-novedades" class="input-select" onchange="actualizarPrint('novedades')">
                                     <option value="Todos">Todos los turnos</option>
                                     <option value="Mañana">Mañana</option>
                                     <option value="Tarde">Tarde</option>
@@ -249,22 +231,99 @@
                                     <option value="Noche B">Noche B</option>
                                     <option value="Sadofe">Sadofe</option>
                                 </select>
-                                <button class="btn-gestion btn-adjuntar" onclick="document.getElementById('file-${id}').click()">📎 Adjuntar</button>
-                                <input type="file" id="file-${id}" style="display:none" onchange="previsualizar(this, '${id}')">
-                                <button class="btn-gestion" style="background: #28a745; color: white;" onclick="guardarRedaccion('${id}')">Guardar y Enviar</button>
-                            `}
+                                <button class="btn-gestion btn-adjuntar" onclick="document.getElementById('file-novedades').click()">📎 Adjuntar Archivos</button>
+                                <input type="file" id="file-novedades" style="display:none" multiple onchange="previsualizarMultiples(this, 'novedades')">
+                                <button class="btn-gestion" style="background: #28a745; color: white;" onclick="guardarRedaccion('novedades')">Guardar y Enviar</button>
+                            </div>
+                            
+                            <div id="print-header-novedades" class="print-header">Dirigido a: Todos los departamentos | Turno: Todos los turnos</div>
+                            <textarea id="txt-novedades" oninput="document.getElementById('print-novedades').innerText = this.value" placeholder="Escriba aquí el contenido..."></textarea>
+                            <div id="print-novedades" class="print-only"></div>
+                            <div id="preview-novedades" class="preview-adjunto"></div>
+                            
+                            <div class="area-acciones">
+                                <button id="btn-print-novedades" class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
+                                <button class="btn-gestion btn-limpiar" onclick="limpiarPantalla('novedades')">🧹 Limpiar Pantalla</button>
+                            </div>
+
+                            <div class="historial-muro-container">
+                                <div class="historial-muro-titulo">📌 Historial de Envíos en Muro (Novedades)</div>
+                                <div id="historial-muro-novedades">Cargando registros históricos...</div>
+                            </div>
                         </div>
-                        
-                        ${tipoContenido === 'auditoria' ? `<div id="visor-${id}" style="border: 1px solid #ccc; padding: 20px; min-height: 200px;">Seleccione filtros para auditar.</div>` : 
-                          tipoContenido === 'estado-ascensores-vivo' ? `<div id="visor-${id}" style="border: 1px solid #ccc; padding: 20px; min-height: 200px; background: #fff;">Cargando datos actuales...</div>` :
-                          `<div id="print-header-${id}" class="print-header">Dirigido a: Todos los departamentos | Turno: Todos los turnos</div><textarea id="txt-${id}" oninput="document.getElementById('print-${id}').innerText = this.value" placeholder="Escriba aquí el contenido..."></textarea><div id="print-${id}" class="print-only"></div><div id="preview-${id}" class="preview-adjunto"></div>`}
-                        
-                        <div class="area-acciones">
-                            <button id="btn-print-${id}" class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
-                            ${tipoContenido === 'redaccion' ? `<button class="btn-gestion btn-limpiar" onclick="limpiarPantalla('${id}')">🧹 Limpiar Pantalla</button>` : ''}
+                    `);
+                } else {
+                    document.write(`
+                        <div id="${id}" class="seccion">
+                            <div class="header-logos">
+                                <img src="{{ url_for('static', filename='logo_hospi.png') }}" alt="Logo">
+                                <h1 style="margin: 0; text-align: center; flex: 1;">${titulo}</h1>
+                                <img src="{{ url_for('static', filename='logo_dsg.png') }}" alt="Logo DSG" style="height: 135px;">
+                            </div>
+                            <div class="filtros-historicos">
+                                ${tipoContenido === 'auditoria' ? `
+                                    <select id="depto-${id}" class="input-select" onchange="manejarCambioDepto('${id}')">
+                                        <option value="direccion-servicios-generales">Dirección Servicios Generales</option>
+                                        <option value="intendencia">Intendencia</option>
+                                        <option value="division-ascensores">Ascensores</option>
+                                        <option value="lavadero-central">Lavadero Central</option>
+                                        <option value="camilleros-central">Camilleros</option>
+                                        <option value="conmutador">Conmutador</option>
+                                        <option value="dalo">DALO</option>
+                                    </select>
+                                    <select id="turno-${id}" class="input-select">
+                                        <option value="Mañana">Mañana</option>
+                                        <option value="Tarde">Tarde</option>
+                                        <option value="Noche A">Noche A</option>
+                                        <option value="Noche B">Noche B</option>
+                                        <option value="Sadofe">Sadofe</option>
+                                    </select>
+                                    <div id="contenedor-supervisor-${id}" style="display: none;">
+                                        <select id="supervisor-${id}" class="input-select">
+                                            <option value="">-- Todos los supervisores --</option>
+                                        </select>
+                                    </div>
+                                    <input type="date" id="fecha-${id}" class="input-fecha">
+                                    <button class="btn-gestion" style="background: #1a3a5f; color: white;" onclick="consultar('${id}')">Auditar</button>
+                                ` : tipoContenido === 'estado-ascensores-vivo' ? `
+                                    <span style="font-weight: bold; color: #1a3a5f;">Estado en tiempo real de la tabla estado_actual_ascensores</span>
+                                    <button class="btn-gestion" style="background: #1a3a5f; color: white; margin-left: auto;" onclick="cargarEstadoAscensoresVivo()">Actualizar Datos</button>
+                                ` : `
+                                    <select id="depto-destino-${id}" class="input-select" onchange="actualizarPrint('${id}')">
+                                        <option value="Todos">Todos los departamentos</option>
+                                        <option value="direccion-servicios-generales">Dirección Servicios Generales</option>
+                                        <option value="intendencia">Intendencia</option>
+                                        <option value="division-ascensores">Ascensores</option>
+                                        <option value="lavadero-central">Lavadero Central</option>
+                                        <option value="camilleros-central">Camilleros</option>
+                                        <option value="conmutador">Conmutador</option>
+                                        <option value="dalo">DALO</option>
+                                    </select>
+                                    <select id="turno-destino-${id}" class="input-select" onchange="actualizarPrint('${id}')">
+                                        <option value="Todos">Todos los turnos</option>
+                                        <option value="Mañana">Mañana</option>
+                                        <option value="Tarde">Tarde</option>
+                                        <option value="Noche A">Noche A</option>
+                                        <option value="Noche B">Noche B</option>
+                                        <option value="Sadofe">Sadofe</option>
+                                    </select>
+                                    <button class="btn-gestion btn-adjuntar" onclick="document.getElementById('file-${id}').click()">📎 Adjuntar</button>
+                                    <input type="file" id="file-${id}" style="display:none" onchange="previsualizar(this, '${id}')">
+                                    <button class="btn-gestion" style="background: #28a745; color: white;" onclick="guardarRedaccion('${id}')">Guardar y Enviar</button>
+                                `}
+                            </div>
+                            
+                            ${tipoContenido === 'auditoria' ? `<div id="visor-${id}" style="border: 1px solid #ccc; padding: 20px; min-height: 200px;">Seleccione filtros para auditar.</div>` : 
+                              tipoContenido === 'estado-ascensores-vivo' ? `<div id="visor-${id}" style="border: 1px solid #ccc; padding: 20px; min-height: 200px; background: #fff;">Cargando datos actuales...</div>` :
+                              `<div id="print-header-${id}" class="print-header">Dirigido a: Todos los departamentos | Turno: Todos los turnos</div><textarea id="txt-${id}" oninput="document.getElementById('print-${id}').innerText = this.value" placeholder="Escriba aquí el contenido..."></textarea><div id="print-${id}" class="print-only"></div><div id="preview-${id}" class="preview-adjunto"></div>`}
+                            
+                            <div class="area-acciones">
+                                <button id="btn-print-${id}" class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
+                                ${tipoContenido === 'redaccion' ? `<button class="btn-gestion btn-limpiar" onclick="limpiarPantalla('${id}')">🧹 Limpiar Pantalla</button>` : ''}
+                            </div>
                         </div>
-                    </div>
-                `);
+                    `);
+                }
             }
             crearSeccion('reportes', 'Reportes Históricos', 'auditoria');
             crearSeccion('planillas', 'Planillas Históricas', 'auditoria');
@@ -322,12 +381,17 @@
 
     <script>
         let archivoData = {};
+        let archivosMultiplesNovedades = [];
+
         function mostrar(id, titulo) { 
             document.querySelectorAll('.seccion').forEach(s => s.classList.remove('activo')); 
             document.getElementById(id).classList.add('activo'); 
             document.getElementById('titulo-panel').innerText = titulo; 
             if (id === 'estado-ascensores') {
                 cargarEstadoAscensoresVivo();
+            }
+            if (id === 'novedades') {
+                cargarHistorialMuroNovedades();
             }
         }
         function limpiarPantalla(id) {
@@ -339,6 +403,90 @@
             document.getElementById('turno-destino-' + id).value = 'Todos';
             actualizarPrint(id);
             delete archivoData[id];
+            if (id === 'novedades') {
+                archivosMultiplesNovedades = [];
+            }
+        }
+
+        async function previsualizarMultiples(input, id) {
+            if (!input.files || input.files.length === 0) return;
+            archivosMultiplesNovedades = [];
+            const prev = document.getElementById('preview-' + id);
+            prev.style.display = 'block';
+            prev.innerHTML = '<b>Archivos seleccionados:</b><ul style="margin: 5px 0 0 20px; padding:0;"></ul>';
+            const listaUl = prev.querySelector('ul');
+
+            for (let i = 0; i < input.files.length; i++) {
+                const file = input.files[i];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    archivosMultiplesNovedades.push({
+                        name: file.name,
+                        type: file.type,
+                        data: e.target.result
+                    });
+                    const li = document.createElement('li');
+                    li.textContent = file.name;
+                    listaUl.appendChild(li);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        async function cargarHistorialMuroNovedades() {
+            const contenedorMuro = document.getElementById('historial-muro-novedades');
+            contenedorMuro.innerHTML = 'Cargando registros históricos...';
+
+            try {
+                const { data, error } = await db
+                    .from('comunicados_memos')
+                    .select('*')
+                    .ilike('id_clave', 'comunicado_novedades_%')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                if (!data || data.length === 0) {
+                    contenedorMuro.innerHTML = '<p style="color: #666; font-style: italic;">No hay envíos registrados en el muro de novedades.</p>';
+                    return;
+                }
+
+                let html = '';
+                data.forEach(row => {
+                    const contenido = row.contenido || {};
+                    const texto = contenido.texto || 'Sin texto';
+                    const fecha = contenido.fecha || row.created_at || 'Fecha desconocida';
+                    const depto = contenido.departamento || 'Todos';
+                    const turno = contenido.turno || 'Todos';
+
+                    let adjuntosHtml = '';
+                    if (contenido.archivos && Array.isArray(contenido.archivos) && contenido.archivos.length > 0) {
+                        adjuntosHtml = '<div class="muro-adjuntos"><b>Archivos:</b> ';
+                        contenido.archivos.forEach(adj => {
+                            adjuntosHtml += `<a href="${adj.data}" download="${adj.name}" target="_blank">📥 ${adj.name}</a>`;
+                        });
+                        adjuntosHtml += '</div>';
+                    } else if (contenido.archivo && contenido.archivo.name) {
+                        adjuntosHtml = `<div class="muro-adjuntos"><b>Archivo:</b> <a href="${contenido.archivo.data}" download="${contenido.archivo.name}" target="_blank">📥 ${contenido.archivo.name}</a></div>`;
+                    }
+
+                    html += `
+                        <div class="muro-item">
+                            <div class="muro-header">
+                                <span><b>Destino:</b> ${depto} | <b>Turno:</b> ${turno}</span>
+                                <span>${fecha}</span>
+                            </div>
+                            <div class="muro-body">${texto}</div>
+                            ${adjuntosHtml}
+                        </div>
+                    `;
+                });
+
+                contenedorMuro.innerHTML = html;
+            } catch (err) {
+                console.error("Error al cargar historial del muro de novedades:", err);
+                contenedorMuro.innerHTML = '<p style="color: red;">Error al cargar el historial del muro.</p>';
+            }
         }
 
         async function cargarEstadoAscensoresVivo() {
@@ -507,6 +655,7 @@
             
             const data = {
                 texto: document.getElementById('txt-' + id).value,
+                archivos: (id === 'novedades') ? archivosMultiplesNovedades : (archivoData[id] ? [archivoData[id]] : []),
                 archivo: archivoData[id] || null,
                 fecha: new Date().toLocaleString(),
                 departamento: destino,
@@ -523,7 +672,8 @@
             if (destino === 'direccion-servicios-generales') nombreDeptoClave = 'DSG';
             if (destino === 'Todos') nombreDeptoClave = 'Todos';
 
-            const claveUnica = `comunicado_novedades_${nombreDeptoClave}_${turno}`;
+            // Generamos una clave única basada en timestamp para que no se sobrescriban y queden todos en el muro
+            const claveUnica = `comunicado_novedades_${nombreDeptoClave}_${turno}_${Date.now()}`;
             
             const { error } = await db
                 .from('comunicados_memos')
@@ -537,6 +687,9 @@
                 alert("Error al enviar a la base de datos: " + error.message);
             } else {
                 alert("Novedad enviada correctamente al destino seleccionado.");
+                if (id === 'novedades') {
+                    cargarHistorialMuroNovedades();
+                }
             }
         }
 
@@ -960,6 +1113,8 @@
             }
         }
         document.getElementById('reportes').classList.add('activo');
+        // Inicializar muro de novedades si arranca visible por defecto o al hacer clic
+        cargarHistorialMuroNovedades();
     </script>
 </body>
 </html>
