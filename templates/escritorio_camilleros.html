@@ -649,7 +649,12 @@
                     });
                 });
                 tr.querySelectorAll('input').forEach(i => {
-                    i.setAttribute('value', i.value);
+                    if (i.type === 'checkbox') {
+                        if (i.checked) i.setAttribute('checked', 'checked');
+                        else i.removeAttribute('checked');
+                    } else {
+                        i.setAttribute('value', i.value);
+                    }
                 });
             });
             localStorage.setItem('dsg_camilleros_tabla', cuerpoTabla.innerHTML);
@@ -940,12 +945,41 @@
             const agentesTurno = agentes.filter(a => a.turno === turnoActual);
             agentesTurno.sort((a, b) => parseInt(a.legajo) - parseInt(b.legajo));
             
-            let optionsHTML = '<option value="">Seleccionar Camillero...</option>';
+            let html = '<div class="dropdown-camilleros-content" style="display:none; position:absolute; top:100%; left:0; background:white; border:1px solid #ccc; z-index:1000; max-height:150px; overflow-y:auto; padding:6px; width:100%; box-sizing:border-box; box-shadow: 0 4px 8px rgba(0,0,0,0.1); text-align:left;">';
             agentesTurno.forEach(ag => {
-                optionsHTML += `<option value="${ag.nombre}">${ag.nombre}</option>`;
+                html += `<label style="display:block; font-size:11px; padding:3px; cursor:pointer; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><input type="checkbox" value="${ag.nombre}" onchange="actualizarSeleccionCamilleros(this)"> ${ag.nombre}</label>`;
             });
-            return optionsHTML;
+            html += '</div>';
+            return html;
         }
+
+        function alternarDropdownCamilleros(element) {
+            document.querySelectorAll('.dropdown-camilleros-content').forEach(el => {
+                if(el !== element.nextElementSibling) el.style.display = 'none';
+            });
+            const content = element.nextElementSibling;
+            content.style.display = content.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function actualizarSeleccionCamilleros(checkbox) {
+            const contenedor = checkbox.closest('td');
+            const displayInput = contenedor.querySelector('.input-personal');
+            const checkboxes = contenedor.querySelectorAll('input[type="checkbox"]');
+            
+            let seleccionados = [];
+            checkboxes.forEach(cb => {
+                if(cb.checked) seleccionados.push(cb.value);
+            });
+            
+            displayInput.value = seleccionados.join(', ');
+            guardarDatos();
+        }
+
+        window.addEventListener('click', function(e) {
+            if (!e.target.closest('td')) {
+                document.querySelectorAll('.dropdown-camilleros-content').forEach(el => el.style.display = 'none');
+            }
+        });
 
         function crearFilaHTML() { 
             return '<td><button class="btn-borrar" onclick="borrarFila(this)">X</button></td>' +
@@ -973,10 +1007,9 @@
                              '</optgroup>' +
                          '</select>' +
                     '</td>' +
-                    '<td>' +
-                         '<select class="input-c input-personal" onchange="guardarDatos()" style="width: 100%; height: 100%; border: none; background: transparent; font-size: 11px; font-family: inherit;">' +
-                             obtenerOpcionesCamilleros() +
-                         '</select>' +
+                    '<td style="position: relative;">' +
+                         '<input type="text" class="input-c input-personal" readonly onclick="alternarDropdownCamilleros(this)" placeholder="Seleccionar Camillero..." title="Haga clic para seleccionar uno o varios" style="font-size: 11px; font-family: inherit; cursor: pointer;">' +
+                         obtenerOpcionesCamilleros() +
                     '</td>' +
                     '<td><input class="input-c input-finalizacion" type="time" onchange="guardarDatos()"></td>'; 
         }
