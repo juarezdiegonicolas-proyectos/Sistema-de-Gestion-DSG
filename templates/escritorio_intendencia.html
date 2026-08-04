@@ -19,8 +19,11 @@
         .sidebar-header-title h2 { font-size: 18px; margin: 0; line-height: 1.2; }
 
         .menu-links { flex: 1; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; margin-bottom: 8px; }
-        .menu-item { display: flex; align-items: center; color: #ddd; padding: 10px 12px; text-decoration: none; border-bottom: 1px solid rgba(93, 141, 187, 0.3); font-weight: 500; cursor: pointer; font-size: 15px; transition: background 0.2s, color 0.2s; border-radius: 4px; }
+        .menu-item { display: flex; align-items: center; justify-content: space-between; color: #ddd; padding: 10px 12px; text-decoration: none; border-bottom: 1px solid rgba(93, 141, 187, 0.3); font-weight: 500; cursor: pointer; font-size: 15px; transition: background 0.2s, color 0.2s; border-radius: 4px; }
         .menu-item:hover { background-color: #5d8dbb; color: white; }
+
+        /* Estilo para la notificación / badge de novedades */
+        .badge-novedades { background-color: #dc3545; color: white; font-size: 12px; font-weight: bold; padding: 2px 7px; border-radius: 10px; display: none; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 
         .sidebar-footer { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; padding-top: 5px; }
         .btn-accion-global { width: 100%; padding: 10px; background: linear-gradient(135deg, #28a745, #218838); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: opacity 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
@@ -96,13 +99,13 @@
             <h2>Panel <span id="titulo-panel">Intendencia</span></h2>
         </div>
         <div class="menu-links">
-            <div class="menu-item" onclick="mostrar('reportes', 'Reportes')">📊 Reportes</div>
-            <div class="menu-item" onclick="mostrar('planillas', 'Planillas (Operativa)')">🛠 Planillas (Operativa)</div>
-            <div class="menu-item" onclick="mostrar('estado-ascensores', 'Estado Actual de Ascensores')">🛗 Estado Ascensores</div>
-            <div class="menu-item" onclick="mostrar('historicos', 'Registros Históricos')">📂 Registros Históricos</div>
-            <div class="menu-item" onclick="mostrar('novedades', 'Novedades')">📢 Novedades</div>
-            <div class="menu-item" onclick="mostrar('rrhh', 'RR.HH.')">👥 RR.HH.</div>
-            <div class="menu-item" onclick="mostrar('resoluciones', 'Resoluciones')">⚖️ Resoluciones</div>
+            <div class="menu-item" onclick="mostrar('reportes', 'Reportes')"><span>📊 Reportes</span></div>
+            <div class="menu-item" onclick="mostrar('planillas', 'Planillas (Operativa)')"><span>🛠 Planillas (Operativa)</span></div>
+            <div class="menu-item" onclick="mostrar('estado-ascensores', 'Estado Actual de Ascensores')"><span>🛗 Estado Ascensores</span></div>
+            <div class="menu-item" onclick="mostrar('historicos', 'Registros Históricos')"><span>📂 Registros Históricos</span></div>
+            <div class="menu-item" onclick="mostrar('novedades', 'Novedades')"><span>📢 Novedades</span><span id="badge-novedades" class="badge-novedades">0</span></div>
+            <div class="menu-item" onclick="mostrar('rrhh', 'RR.HH.')"><span>👥 RR.HH.</span></div>
+            <div class="menu-item" onclick="mostrar('resoluciones', 'Resoluciones')"><span>⚖️ Resoluciones</span></div>
         </div>
         <div class="sidebar-footer">
             <button class="btn-accion-global" onclick="cerrarJornadaGlobal()">📥 CERRAR JORNADA</button>
@@ -807,106 +810,161 @@
         }
 
         async function cargarEstadoAscensoresVivo() {
-    const visor = document.getElementById('visor-estado-ascensores');
-    visor.innerHTML = '<p style="text-align:center;">Cargando estado actual de ascensores...</p>';
-    
-    try {
-        const { data, error } = await db
-            .from('estado_actual_ascensores')
-            .select('*');
+            const visor = document.getElementById('visor-estado-ascensores');
+            visor.innerHTML = '<p style="text-align:center;">Cargando estado actual de ascensores...</p>';
+            
+            try {
+                const { data, error } = await db
+                    .from('estado_actual_ascensores')
+                    .select('*');
 
-        if (error) throw error;
+                if (error) throw error;
 
-        if (!data || data.length === 0) {
-            visor.innerHTML = '<p style="text-align:center;">No hay registros en la tabla estado_actual_ascensores.</p>';
-            return;
-        }
-
-        let ultimaFechaStr = '';
-        let legajoOperador = null;
-
-        // Lee correctamente la columna updated_at y legajo_operador de Supabase
-        data.forEach(item => {
-            let fechaItem = item.updated_at; 
-            if (fechaItem) {
-                if (!ultimaFechaStr || new Date(fechaItem) > new Date(ultimaFechaStr)) {
-                    ultimaFechaStr = fechaItem;
+                if (!data || data.length === 0) {
+                    visor.innerHTML = '<p style="text-align:center;">No hay registros en la tabla estado_actual_ascensores.</p>';
+                    return;
                 }
-            }
-            let legajoItem = item.legajo_operador;
-            if (legajoItem && !legajoOperador) {
-                legajoOperador = String(legajoItem).trim();
-            }
-        });
 
-        let nombreSupervisor = 'Sistema / Desconocido';
-        if (legajoOperador) {
-            const { data: userData, error: userError } = await db
-                .from('usuarios')
-                .select('nombre_completo')
-                .eq('legajo', legajoOperador)
-                .maybeSingle();
+                let ultimaFechaStr = '';
+                let legajoOperador = null;
 
-            if (!userError && userData && userData.nombre_completo) {
-                nombreSupervisor = userData.nombre_completo;
-            } else {
-                nombreSupervisor = `Legajo: ${legajoOperador}`;
-            }
-        }
-
-        let fechaFormateada = 'Sin fecha registrada';
-        if (ultimaFechaStr) {
-            let f = new Date(ultimaFechaStr);
-            if (!isNaN(f.getTime())) {
-                fechaFormateada = f.toLocaleString('es-AR', {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit',
-                    hour12: false
+                data.forEach(item => {
+                    let fechaItem = item.updated_at; 
+                    if (fechaItem) {
+                        if (!ultimaFechaStr || new Date(fechaItem) > new Date(ultimaFechaStr)) {
+                            ultimaFechaStr = fechaItem;
+                        }
+                    }
+                    let legajoItem = item.legajo_operador;
+                    if (legajoItem && !legajoOperador) {
+                        legajoOperador = String(legajoItem).trim();
+                    }
                 });
-            } else {
-                fechaFormateada = ultimaFechaStr;
+
+                let nombreSupervisor = 'Sistema / Desconocido';
+                if (legajoOperador) {
+                    const { data: userData, error: userError } = await db
+                        .from('usuarios')
+                        .select('nombre_completo')
+                        .eq('legajo', legajoOperador)
+                        .maybeSingle();
+
+                    if (!userError && userData && userData.nombre_completo) {
+                        nombreSupervisor = userData.nombre_completo;
+                    } else {
+                        nombreSupervisor = `Legajo: ${legajoOperador}`;
+                    }
+                }
+
+                let fechaFormateada = 'Sin fecha registrada';
+                if (ultimaFechaStr) {
+                    let f = new Date(ultimaFechaStr);
+                    if (!isNaN(f.getTime())) {
+                        fechaFormateada = f.toLocaleString('es-AR', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit',
+                            hour12: false
+                        });
+                    } else {
+                        fechaFormateada = ultimaFechaStr;
+                    }
+                }
+
+                const tituloContenedor = document.querySelector('#visor-estado-ascensores').previousElementSibling;
+                if (tituloContenedor) {
+                    tituloContenedor.innerHTML = `Última actualización: <b>${fechaFormateada}</b> | Registrado por: <b>${nombreSupervisor}</b>`;
+                }
+
+                data.sort((a, b) => {
+                    let idA = a.id || 0;
+                    let idB = b.id || 0;
+                    return idA - idB;
+                });
+
+                let html = '<table style="width:100%; border-collapse: collapse; text-align: left;">';
+                html += '<thead><tr style="background: #1a3a5f; color: white;"><th style="padding: 10px; border: 1px solid #ddd; text-align: center; width: 15%;">Dispositivo</th><th style="padding: 10px; border: 1px solid #ddd; width: 25%;">Estado</th><th style="padding: 10px; border: 1px solid #ddd; width: 30%;">Uso Asignado</th><th style="padding: 10px; border: 1px solid #ddd; width: 30%;">Observaciones / Detalles</th></tr></thead><tbody>';
+
+                data.forEach(item => {
+                    let dispositivo = item.identificador_dispositivo || `Dispositivo ${item.id}`;
+                    let estado = item.estado || '-';
+                    let uso = item.uso || '-';
+                    let observaciones = item.observaciones && item.observaciones !== 'EMPTY' ? item.observaciones : '-';
+
+                    html += `<tr>
+                        <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold; text-align: center;">${dispositivo}</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">${estado}</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">${uso}</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">${observaciones}</td>
+                    </tr>`;
+                });
+
+                html += '</tbody></table>';
+                visor.innerHTML = html;
+            } catch (err) {
+                console.error("Error al obtener estado actual de ascensores:", err);
+                visor.innerHTML = '<p style="text-align:center; color: red;">Error al cargar los datos de ascensores y escaleras.</p>';
             }
         }
 
-        const tituloContenedor = document.querySelector('#visor-estado-ascensores').previousElementSibling;
-        if (tituloContenedor) {
-            tituloContenedor.innerHTML = `Última actualización: <b>${fechaFormateada}</b> | Registrado por: <b>${nombreSupervisor}</b>`;
+        // Lógica de verificación y conteo de Novedades No Leídas
+        async function verificarNovedadesNoLeidas() {
+            try {
+                const { data, error } = await db
+                    .from('comunicados_memos')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error || !data) return;
+
+                const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim();
+                const novedadesFiltradas = data.filter(item => {
+                    const idClave = (item.id_clave || "").toLowerCase();
+                    const contenidoObj = item.contenido || {};
+                    const turnoMsg = (contenidoObj.turno || "").toLowerCase();
+
+                    const esParaTodos = idClave.includes("todos") || idClave.includes("general") || turnoMsg === "todos" || turnoMsg === "general";
+                    const esParaIntendencia = idClave.includes("intendencia");
+
+                    if (!esParaIntendencia && !esParaTodos) return false;
+                    if (esParaTodos) return true;
+                    if (turnoMsg && turnoMsg !== "todos" && turnoMsg !== "general") {
+                        if (turnoMsg !== turnoActual.toLowerCase()) return false;
+                    }
+                    return true;
+                });
+
+                if (novedadesFiltradas.length === 0) return;
+
+                // Comparamos con el último ID leído almacenado localmente
+                const ultimoIdLeido = localStorage.getItem('dsg_intendencia_ultimo_novedad_leida');
+                let noLeidasCount = 0;
+
+                if (!ultimoIdLeido) {
+                    noLeidasCount = novedadesFiltradas.length;
+                } else {
+                    for (let item of novedadesFiltradas) {
+                        if (String(item.id) === String(ultimoIdLeido)) break;
+                        noLeidasCount++;
+                    }
+                }
+
+                const badge = document.getElementById('badge-novedades');
+                if (badge) {
+                    if (noLeidasCount > 0) {
+                        badge.innerText = noLeidasCount;
+                        badge.style.display = 'inline-block';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+            } catch (err) {
+                console.error("Error al verificar novedades no leídas:", err);
+            }
         }
-
-        data.sort((a, b) => {
-            let idA = a.id || 0;
-            let idB = b.id || 0;
-            return idA - idB;
-        });
-
-        let html = '<table style="width:100%; border-collapse: collapse; text-align: left;">';
-        html += '<thead><tr style="background: #1a3a5f; color: white;"><th style="padding: 10px; border: 1px solid #ddd; text-align: center; width: 15%;">Dispositivo</th><th style="padding: 10px; border: 1px solid #ddd; width: 25%;">Estado</th><th style="padding: 10px; border: 1px solid #ddd; width: 30%;">Uso Asignado</th><th style="padding: 10px; border: 1px solid #ddd; width: 30%;">Observaciones / Detalles</th></tr></thead><tbody>';
-
-        data.forEach(item => {
-            let dispositivo = item.identificador_dispositivo || `Dispositivo ${item.id}`;
-            let estado = item.estado || '-';
-            let uso = item.uso || '-';
-            let observaciones = item.observaciones && item.observaciones !== 'EMPTY' ? item.observaciones : '-';
-
-            html += `<tr>
-                <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold; text-align: center;">${dispositivo}</td>
-                <td style="padding: 10px; border: 1px solid #ddd;">${estado}</td>
-                <td style="padding: 10px; border: 1px solid #ddd;">${uso}</td>
-                <td style="padding: 10px; border: 1px solid #ddd;">${observaciones}</td>
-            </tr>`;
-        });
-
-        html += '</tbody></table>';
-        visor.innerHTML = html;
-    } catch (err) {
-        console.error("Error al obtener estado actual de ascensores:", err);
-        visor.innerHTML = '<p style="text-align:center; color: red;">Error al cargar los datos de ascensores y escaleras.</p>';
-    }
-}
 
         async function cargarNovedadesVivo() {
             const visor = document.getElementById('visor-novedades');
@@ -953,6 +1011,13 @@
 
                     return true;
                 });
+
+                // Al abrir la solapa Novedades, guardamos el ID más reciente como leído y ocultamos el badge
+                if (novedadesFiltradas.length > 0) {
+                    localStorage.setItem('dsg_intendencia_ultimo_novedad_leida', novedadesFiltradas[0].id);
+                    const badge = document.getElementById('badge-novedades');
+                    if (badge) badge.style.display = 'none';
+                }
 
                 if (novedadesFiltradas.length === 0) {
                     visor.innerHTML = '<p style="text-align:center; color: #666;">No hay novedades disponibles para Intendencia en este turno.</p>';
@@ -1061,6 +1126,9 @@
             if (elemDeptoHist) elemDeptoHist.innerText = depto;
             
             await cargarPersonalYSeccionesSupabase();
+            
+            // Verificamos notificaciones pendientes de novedades al iniciar
+            await verificarNovedadesNoLeidas();
             
             try {
                 const { data: cierresPrevios, error } = await db
