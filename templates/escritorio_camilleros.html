@@ -940,47 +940,6 @@
             cargarNovedades();
         };
 
-        function obtenerOpcionesCamilleros() {
-            const turnoActual = localStorage.getItem('usuario_turno') || "Mañana";
-            const agentesTurno = agentes.filter(a => a.turno === turnoActual);
-            agentesTurno.sort((a, b) => parseInt(a.legajo) - parseInt(b.legajo));
-            
-            let html = '<div class="dropdown-camilleros-content" style="display:none; position:absolute; top:100%; left:0; background:white; border:1px solid #ccc; z-index:1000; max-height:150px; overflow-y:auto; padding:6px; width:100%; box-sizing:border-box; box-shadow: 0 4px 8px rgba(0,0,0,0.1); text-align:left;">';
-            agentesTurno.forEach(ag => {
-                html += `<label style="display:block; font-size:11px; padding:3px; cursor:pointer; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><input type="checkbox" value="${ag.nombre}" onchange="actualizarSeleccionCamilleros(this)"> ${ag.nombre}</label>`;
-            });
-            html += '</div>';
-            return html;
-        }
-
-        function alternarDropdownCamilleros(element) {
-            document.querySelectorAll('.dropdown-camilleros-content').forEach(el => {
-                if(el !== element.nextElementSibling) el.style.display = 'none';
-            });
-            const content = element.nextElementSibling;
-            content.style.display = content.style.display === 'block' ? 'none' : 'block';
-        }
-
-        function actualizarSeleccionCamilleros(checkbox) {
-            const contenedor = checkbox.closest('td');
-            const displayInput = contenedor.querySelector('.input-personal');
-            const checkboxes = contenedor.querySelectorAll('input[type="checkbox"]');
-            
-            let seleccionados = [];
-            checkboxes.forEach(cb => {
-                if(cb.checked) seleccionados.push(cb.value);
-            });
-            
-            displayInput.value = seleccionados.join(', ');
-            guardarDatos();
-        }
-
-        window.addEventListener('click', function(e) {
-            if (!e.target.closest('td')) {
-                document.querySelectorAll('.dropdown-camilleros-content').forEach(el => el.style.display = 'none');
-            }
-        });
-
         function crearFilaHTML() { 
             return '<td><button class="btn-borrar" onclick="borrarFila(this)">X</button></td>' +
                      '<td><input class="input-c input-hora" type="text" onclick="registrarHora(this)"></td>' +
@@ -1007,15 +966,31 @@
                              '</optgroup>' +
                          '</select>' +
                     '</td>' +
-                    '<td style="position: relative;">' +
-                         '<input type="text" class="input-c input-personal" readonly onclick="alternarDropdownCamilleros(this)" placeholder="Seleccionar Camillero..." title="Haga clic para seleccionar uno o varios" style="font-size: 11px; font-family: inherit; cursor: pointer;">' +
-                         obtenerOpcionesCamilleros() +
+                    '<td>' +
+                         '<div style="display: flex; align-items: center; gap: 6px; width: 100%; box-sizing: border-box;">' +
+                             '<input type="checkbox" class="input-c input-seleccion-camillero" onchange="guardarDatos()" style="width: 16px; height: 16px; cursor: pointer; margin: 0; flex-shrink: 0;" title="Seleccionar camillero">' +
+                             '<select class="input-c input-personal" onchange="guardarDatos()" style="flex: 1; min-width: 0; height: 100%; border: none; background: transparent; font-size: 11px; font-family: inherit;">' +
+                                 obtenerOpcionesCamilleros() +
+                             '</select>' +
+                         '</div>' +
                     '</td>' +
                     '<td><input class="input-c input-finalizacion" type="time" onchange="guardarDatos()"></td>'; 
         }
 
+        function obtenerOpcionesCamilleros() {
+            const turnoActual = localStorage.getItem('usuario_turno') || "Mañana";
+            const agentesTurno = agentes.filter(a => a.turno === turnoActual);
+            agentesTurno.sort((a, b) => parseInt(a.legajo) - parseInt(b.legajo));
+            
+            let optionsHTML = '<option value="">Seleccionar Camillero...</option>';
+            agentesTurno.forEach(ag => {
+                optionsHTML += `<option value="${ag.nombre}">${ag.nombre}</option>`;
+            });
+            return optionsHTML;
+        }
+
         function registrarHora(input) { if (input.value === "") { const ahora = new Date(); input.value = ahora.getHours().toString().padStart(2, '0') + ":" + ahora.getMinutes().toString().padStart(2, '0'); input.setAttribute('readonly', 'readonly'); guardarDatos(); } }
-        function borrarFila(btn) { const tr = btn.closest('tr'); if (cuerpoTabla.getElementsByTagName('tr').length > 1) tr.remove(); else { tr.querySelectorAll('input, select').forEach(i => { i.value = ''; i.removeAttribute('readonly'); }); } guardarDatos(); }
+        function borrarFila(btn) { const tr = btn.closest('tr'); if (cuerpoTabla.getElementsByTagName('tr').length > 1) tr.remove(); else { tr.querySelectorAll('input, select').forEach(i => { if(i.type === 'checkbox') i.checked = false; else { i.value = ''; i.removeAttribute('readonly'); } }); } guardarDatos(); }
         function detectarEnter(e) { if (e.key === 'Enter') { e.preventDefault(); const tr = document.createElement('tr'); tr.innerHTML = crearFilaHTML(); cuerpoTabla.appendChild(tr); tr.querySelectorAll('input')[1].focus(); } }
         function mostrar(id, titulo) { 
             document.querySelectorAll('.seccion').forEach(s => s.classList.remove('activo')); 
