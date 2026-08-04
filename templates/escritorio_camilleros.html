@@ -78,7 +78,8 @@
         .input-c { width: 95%; border: none; text-align: center; background: transparent; outline: none; font-family: inherit; font-size: 13px; }
         .input-fecha, .input-select { border: 1px solid #ccc; padding: 8px; border-radius: 4px; font-family: inherit; cursor: pointer; }
         
-        .tabla-camilleros select.input-movilidad {
+        .tabla-camilleros select.input-movilidad, 
+        .tabla-camilleros select.input-personal {
             padding: 6px 18px 6px 6px;
             font-size: 13px;
             text-overflow: ellipsis;
@@ -86,69 +87,6 @@
             border: 1px solid #ccc;
             border-radius: 4px;
             background: #fff;
-        }
-
-        /* Estilos para el Dropdown con Checkbox de Camilleros */
-        .custom-dropdown-container {
-            position: relative;
-            width: 100%;
-            text-align: left;
-            font-size: 11px;
-            font-family: inherit;
-        }
-        .custom-dropdown-display {
-            padding: 6px 18px 6px 6px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            background: #fff;
-            cursor: pointer;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            position: relative;
-        }
-        .custom-dropdown-display::after {
-            content: "▼";
-            position: absolute;
-            right: 6px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 9px;
-            color: #666;
-        }
-        .custom-dropdown-menu {
-            display: none;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: #fff;
-            border: 1px solid #aaa;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-            z-index: 9999;
-            max-height: 220px;
-            overflow-y: auto;
-            border-radius: 4px;
-            margin-top: 2px;
-        }
-        .custom-dropdown-menu.show {
-            display: block;
-        }
-        .custom-dropdown-item {
-            padding: 6px 8px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            cursor: pointer;
-            border-bottom: 1px solid #f0f0f0;
-            color: #333;
-        }
-        .custom-dropdown-item:hover {
-            background-color: #f1f5f9;
-        }
-        .custom-dropdown-item input[type="checkbox"] {
-            cursor: pointer;
-            margin: 0;
         }
         
         .input-estancia, .input-finalizacion {
@@ -713,10 +651,6 @@
                 tr.querySelectorAll('input').forEach(i => {
                     i.setAttribute('value', i.value);
                 });
-                tr.querySelectorAll('.custom-dropdown-container').forEach(container => {
-                    const hiddenInput = container.querySelector('.input-personal');
-                    if(hiddenInput) hiddenInput.setAttribute('value', hiddenInput.value);
-                });
             });
             localStorage.setItem('dsg_camilleros_tabla', cuerpoTabla.innerHTML);
             localStorage.setItem('dsg_camilleros_reporte', editorReporte.innerHTML);
@@ -989,8 +923,6 @@
             const t = localStorage.getItem('dsg_camilleros_tabla');
             if (t) {
                 cuerpoTabla.innerHTML = t;
-                // Reasignar eventos o re-vincular dropdowns restaurados si fuera necesario
-                vincularDropdownsRestaurados();
             } else {
                 cuerpoTabla.innerHTML = '<tr>' + crearFilaHTML() + '</tr>';
             }
@@ -1003,95 +935,16 @@
             cargarNovedades();
         };
 
-        // Lógica del componente Custom Dropdown con Checkbox (Hasta 2 agentes máximo)
-        function crearDropdownCamillerosHTML() {
+        function obtenerOpcionesCamilleros() {
             const turnoActual = localStorage.getItem('usuario_turno') || "Mañana";
             const agentesTurno = agentes.filter(a => a.turno === turnoActual);
             agentesTurno.sort((a, b) => parseInt(a.legajo) - parseInt(b.legajo));
-
-            let itemsHTML = '';
-            agentesTurno.forEach(ag => {
-                itemsHTML += `
-                    <div class="custom-dropdown-item" onclick="toggleCheckboxItem(event, this)">
-                        <input type="checkbox" value="${ag.nombre}" onchange="actualizarSeleccionCamilleros(this)">
-                        <span>${ag.nombre}</span>
-                    </div>`;
-            });
-
-            return `
-                <div class="custom-dropdown-container">
-                    <div class="custom-dropdown-display" onclick="toggleDropdownMenu(this)">Seleccionar Camillero...</div>
-                    <div class="custom-dropdown-menu">
-                        ${itemsHTML}
-                    </div>
-                    <input type="hidden" class="input-c input-personal" value="" onchange="guardarDatos()">
-                </div>`;
-        }
-
-        function toggleDropdownMenu(displayEl) {
-            // Cerrar otros abiertos
-            document.querySelectorAll('.custom-dropdown-menu').forEach(m => {
-                if(m !== displayEl.nextElementSibling) m.classList.remove('show');
-            });
-            const menu = displayEl.nextElementSibling;
-            menu.classList.toggle('show');
-        }
-
-        // Cerrar dropdown al hacer click fuera
-        window.addEventListener('click', function(e) {
-            if (!e.target.closest('.custom-dropdown-container')) {
-                document.querySelectorAll('.custom-dropdown-menu').forEach(m => m.classList.remove('show'));
-            }
-        });
-
-        function toggleCheckboxItem(e, itemEl) {
-            if (e.target.tagName !== 'INPUT') {
-                const cb = itemEl.querySelector('input[type="checkbox"]');
-                cb.checked = !cb.checked;
-                cb.dispatchEvent(new Event('change'));
-            }
-        }
-
-        function actualizarSeleccionCamilleros(checkboxEl) {
-            const container = checkboxEl.closest('.custom-dropdown-container');
-            const checkboxes = container.querySelectorAll('input[type="checkbox"]');
             
-            // Validar límite máximo de 2 selecciones simultáneas
-            const marcados = Array.from(checkboxes).filter(cb => cb.checked);
-            if (marcados.length > 2) {
-                checkboxEl.checked = false;
-                alert("Solo puedes seleccionar un máximo de dos agentes simultáneamente.");
-                return;
-            }
-
-            const display = container.querySelector('.custom-dropdown-display');
-            const hiddenInput = container.querySelector('.input-personal');
-
-            if (marcados.length === 0) {
-                display.innerText = "Seleccionar Camillero...";
-                hiddenInput.value = "";
-            } else {
-                const nombres = marcados.map(cb => cb.value);
-                display.innerText = nombres.join(", ");
-                hiddenInput.value = nombres.join(", ");
-            }
-            guardarDatos();
-        }
-
-        function vincularDropdownsRestaurados() {
-            // Permite mantener funcionalidad operativa si se recarga la tabla desde localStorage
-            document.querySelectorAll('.custom-dropdown-container').forEach(container => {
-                const display = container.querySelector('.custom-dropdown-display');
-                display.onclick = function() { toggleDropdownMenu(this); };
-                
-                container.querySelectorAll('.custom-dropdown-item').forEach(item => {
-                    item.onclick = function(e) { toggleCheckboxItem(e, this); };
-                });
-                
-                container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-                    cb.onchange = function() { actualizarSeleccionCamilleros(this); };
-                });
+            let optionsHTML = '<option value="">Seleccionar Camillero...</option>';
+            agentesTurno.forEach(ag => {
+                optionsHTML += `<option value="${ag.nombre}">${ag.nombre}</option>`;
             });
+            return optionsHTML;
         }
 
         function crearFilaHTML() { 
@@ -1121,7 +974,9 @@
                          '</select>' +
                     '</td>' +
                     '<td>' +
-                         crearDropdownCamillerosHTML() +
+                         '<select class="input-c input-personal" onchange="guardarDatos()" style="width: 100%; height: 100%; border: none; background: transparent; font-size: 11px; font-family: inherit;">' +
+                             obtenerOpcionesCamilleros() +
+                         '</select>' +
                     '</td>' +
                     '<td><input class="input-c input-finalizacion" type="time" onchange="guardarDatos()"></td>'; 
         }
