@@ -436,7 +436,7 @@
             contenedorAsc.innerHTML = "<p>Consultando estado de ascensores en la base de datos...</p>";
 
             try {
-                const { data: ascensoresData, error } = await supabaseClient
+                const { data, error } = await supabaseClient
                     .from('estado_actual_ascensores')
                     .select('*');
 
@@ -446,49 +446,57 @@
                     return;
                 }
 
-                if (!ascensoresData || ascensoresData.length === 0) {
+                if (!data || data.length === 0) {
                     contenedorAsc.innerHTML = "<p>No hay registros de ascensores disponibles en este momento.</p>";
                     return;
                 }
 
-                let fechaUltimaStr = "---";
-                let nombreOperador = "---";
+                let ultimaFechaStr = '';
+                let legajoOperador = '';
+                let nombreSupervisor = '---';
 
-                let fechasValidas = ascensoresData.map(a => a.actualizado_at).filter(Boolean);
-                if (fechasValidas.length > 0) {
-                    fechasValidas.sort((a, b) => new Date(b) - new Date(a));
-                    let masReciente = fechasValidas[0];
-                    
+                data.forEach(item => {
+                    let fechaItem = item.updated_at; 
+                    if (fechaItem) {
+                        if (!ultimaFechaStr || new Date(fechaItem) > new Date(ultimaFechaStr)) {
+                            ultimaFechaStr = fechaItem;
+                        }
+                    }
+                    let legajoItem = item.legajo_operador;
+                    if (legajoItem && !legajoOperador) {
+                        legajoOperador = String(legajoItem).trim();
+                    }
+                });
+
+                let fechaFormateada = '---';
+                if (ultimaFechaStr) {
                     try {
-                        let fObj = new Date(masReciente);
-                        fechaUltimaStr = fObj.toLocaleString('es-AR', {
+                        let fObj = new Date(ultimaFechaStr);
+                        fechaFormateada = fObj.toLocaleString('es-AR', {
                             day: '2-digit', month: '2-digit', year: 'numeric',
                             hour: '2-digit', minute: '2-digit', second: '2-digit',
                             hour12: false
                         });
                     } catch(e) {
-                        fechaUltimaStr = masReciente;
-                    }
-
-                    let regReciente = ascensoresData.find(a => a.actualizado_at === masReciente);
-                    let legajoEncontrado = regReciente ? regReciente.legajo_operador : null;
-
-                    if (legajoEncontrado) {
-                        const { data: userData, error: userError } = await supabaseClient
-                            .from('usuarios')
-                            .select('nombre_completo')
-                            .eq('legajo', legajoEncontrado)
-                            .maybeSingle();
-
-                        if (!userError && userData && userData.nombre_completo) {
-                            nombreOperador = userData.nombre_completo.toUpperCase();
-                        } else {
-                            nombreOperador = `LEGAJO: ${legajoEncontrado}`;
-                        }
+                        fechaFormateada = ultimaFechaStr;
                     }
                 }
 
-                ascensoresData.sort((a, b) => {
+                if (legajoOperador) {
+                    const { data: userData, error: userError } = await supabaseClient
+                        .from('usuarios')
+                        .select('nombre_completo')
+                        .eq('legajo', legajoOperador)
+                        .maybeSingle();
+
+                    if (!userError && userData && userData.nombre_completo) {
+                        nombreSupervisor = userData.nombre_completo.toUpperCase();
+                    } else {
+                        nombreSupervisor = `LEGAJO: ${legajoOperador}`;
+                    }
+                }
+
+                data.sort((a, b) => {
                     let idA = a.id || 0;
                     let idB = b.id || 0;
                     return idA - idB;
@@ -496,7 +504,7 @@
 
                 let htmlCabeceraInfo = `
                     <div style="background: #f8f9fa; border: 1px solid #ddd; padding: 12px 15px; border-radius: 6px; margin-bottom: 20px; font-size: 15px; color: #333;">
-                        Última actualización: <strong style="color: #000;">${fechaUltimaStr}</strong> | Registrado por: <strong style="color: #000;">${nombreOperador}</strong>
+                        Última actualización: <strong style="color: #000;">${fechaFormateada}</strong> | Registrado por: <strong style="color: #000;">${nombreSupervisor}</strong>
                     </div>`;
 
                 let htmlTabla = `
@@ -511,8 +519,8 @@
                         </thead>
                         <tbody>`;
 
-                ascensoresData.forEach(asc => {
-                    let dispositivo = asc.identificador_dispositivo || asc.dispositivo || asc.nombre || `Dispositivo ${asc.id || ''}`;
+                data.forEach(asc => {
+                    let dispositivo = asc.identificador_dispositivo || `Dispositivo ${asc.id || ''}`;
                     let estado = asc.estado || '-';
                     let uso = asc.uso || '-';
                     let observaciones = asc.observaciones && asc.observaciones !== 'EMPTY' ? asc.observaciones : '-';
