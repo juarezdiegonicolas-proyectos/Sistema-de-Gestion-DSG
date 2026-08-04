@@ -78,7 +78,8 @@
         .input-c { width: 95%; border: none; text-align: center; background: transparent; outline: none; font-family: inherit; font-size: 13px; }
         .input-fecha, .input-select { border: 1px solid #ccc; padding: 8px; border-radius: 4px; font-family: inherit; cursor: pointer; }
         
-        .tabla-camilleros select.input-movilidad {
+        .tabla-camilleros select.input-movilidad, 
+        .tabla-camilleros select.input-personal {
             padding: 6px 18px 6px 6px;
             font-size: 13px;
             text-overflow: ellipsis;
@@ -86,73 +87,6 @@
             border: 1px solid #ccc;
             border-radius: 4px;
             background: #fff;
-        }
-
-        /* Estilos optimizados para el selector múltiple de camilleros */
-        .custom-multiselect-container {
-            position: relative;
-            width: 100%;
-            text-align: left;
-            font-size: 12px;
-            font-family: inherit;
-        }
-        .multiselect-header {
-            border: 1px solid #ccc;
-            background: #fff;
-            padding: 6px 8px;
-            border-radius: 4px;
-            cursor: pointer;
-            min-height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        .multiselect-dropdown {
-            display: none;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: #fff;
-            border: 1px solid #1a3a5f;
-            border-radius: 0 0 4px 4px;
-            z-index: 999;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-            max-height: 180px;
-            overflow-y: auto;
-            text-align: left;
-        }
-        .multiselect-search {
-            width: 100%;
-            padding: 6px;
-            box-sizing: border-box;
-            border: none;
-            border-bottom: 1px solid #ddd;
-            outline: none;
-            font-size: 12px;
-        }
-        .multiselect-options-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        .multiselect-options-list li {
-            padding: 6px 10px;
-            cursor: pointer;
-            border-bottom: 1px solid #f1f1f1;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .multiselect-options-list li:hover {
-            background-color: #f0f4f8;
-        }
-        .multiselect-options-list li.selected {
-            background-color: #e2ecf5;
-            font-weight: bold;
         }
         
         .input-estancia, .input-finalizacion {
@@ -183,7 +117,7 @@
         #rrhh .tabla-camilleros { width: 99.5% !important; border-right: 1px solid #000 !important; }
 
         @media print {
-            .sidebar, .btn-accion-global, .btn-cerrar, .menu-item, .no-imprimir, .btn-imprimir, .btn-borrar, .multiselect-dropdown { display: none !important; }
+            .sidebar, .btn-accion-global, .btn-cerrar, .menu-item, .no-imprimir, .btn-imprimir, .btn-borrar { display: none !important; }
             #planillas .tabla-camilleros th:first-child, 
             #planillas .tabla-camilleros td:first-child { display: none !important; }
             body, html, .contenido, .seccion.activo, .hoja { background-color: white !important; margin: 0 !important; padding: 0 !important; width: 100% !important; height: auto !important; overflow: visible !important; box-shadow: none !important; display: block !important; }
@@ -706,87 +640,6 @@
             alert(`¡Asistencia completa y guardada en Supabase!\nSupervisor: ${supervisorActual}\nDepartamento: ${departamentoActual}\nPresentismo: ${pP}%\nAusentismo: ${pA}%\nLicencias: ${pL}%`);
         }
 
-        // Lógica para el multiselector de camilleros en tiempo real
-        function toggleMultiSelect(headerElem, event) {
-            event.stopPropagation();
-            // Cerrar otros abiertos
-            document.querySelectorAll('.multiselect-dropdown').forEach(d => {
-                if(d !== headerElem.nextElementSibling) d.style.display = 'none';
-            });
-            const dropdown = headerElem.nextElementSibling;
-            dropdown.style.display = (dropdown.style.display === 'block') ? 'none' : 'block';
-            if(dropdown.style.display === 'block') {
-                const search = dropdown.querySelector('.multiselect-search');
-                if(search) search.focus();
-            }
-        }
-
-        window.addEventListener('click', function(e) {
-            if (!e.target.closest('.custom-multiselect-container')) {
-                document.querySelectorAll('.multiselect-dropdown').forEach(d => d.style.display = 'none');
-            }
-        });
-
-        function filtrarMultiSelect(input) {
-            const filter = input.value.toLowerCase();
-            const ul = input.nextElementSibling;
-            const li = ul.getElementsByTagName('li');
-            for (let i = 0; i < li.length; i++) {
-                let txt = li[i].textContent || li[i].innerText;
-                li[i].style.display = txt.toLowerCase().indexOf(filter) > -1 ? "" : "none";
-            }
-        }
-
-        function seleccionarCamilleroMulti(liElem, event) {
-            event.stopPropagation();
-            liElem.classList.toggle('selected');
-            const container = liElem.closest('.custom-multiselect-container');
-            actualizarTextoMultiselect(container);
-            guardarDatos();
-        }
-
-        function actualizarTextoMultiselect(container) {
-            const selectedLis = container.querySelectorAll('.multiselect-options-list li.selected');
-            const header = container.querySelector('.multiselect-header span');
-            if (selectedLis.length === 0) {
-                header.textContent = "Seleccionar Camillero(s)...";
-                header.style.color = "#888";
-            } else {
-                let nombres = [];
-                selectedLis.forEach(li => nombres.push(li.getAttribute('data-value')));
-                header.textContent = nombres.join(', ');
-                header.style.color = "#000";
-            }
-        }
-
-        function crearMultiSelectHTML() {
-            const turnoActual = localStorage.getItem('usuario_turno') || "Mañana";
-            const agentesTurno = agentes.filter(a => a.turno === turnoActual);
-            agentesTurno.sort((a, b) => parseInt(a.legajo) - parseInt(b.legajo));
-
-            let listHTML = '';
-            agentesTurno.forEach(ag => {
-                listHTML += `<li data-value="${ag.nombre}" onclick="seleccionarCamilleroMulti(this, event)">
-                    <input type="checkbox" style="pointer-events:none;"> ${ag.nombre}
-                </li>`;
-            });
-
-            return `
-                <div class="custom-multiselect-container">
-                    <div class="multiselect-header" onclick="toggleMultiSelect(this, event)">
-                        <span style="color: #888; overflow:hidden; text-overflow:ellipsis;">Seleccionar Camillero(s)...</span>
-                        <span>▼</span>
-                    </div>
-                    <div class="multiselect-dropdown">
-                        <input type="text" class="multiselect-search" placeholder="Buscar camillero..." onkeyup="filtrarMultiSelect(this)" onclick="event.stopPropagation()">
-                        <ul class="multiselect-options-list">
-                            ${listHTML}
-                        </ul>
-                    </div>
-                </div>
-            `;
-        }
-
         function guardarDatos() {
             document.querySelectorAll('#cuerpo-tabla tr').forEach(tr => {
                 tr.querySelectorAll('select').forEach(select => {
@@ -797,14 +650,6 @@
                 });
                 tr.querySelectorAll('input').forEach(i => {
                     i.setAttribute('value', i.value);
-                });
-                // Guardar estado de los camilleros seleccionados en el DOM
-                tr.querySelectorAll('.multiselect-options-list li').forEach(li => {
-                    if(li.classList.contains('selected')) {
-                        li.setAttribute('data-selected', 'true');
-                    } else {
-                        li.removeAttribute('data-selected');
-                    }
                 });
             });
             localStorage.setItem('dsg_camilleros_tabla', cuerpoTabla.innerHTML);
@@ -889,12 +734,6 @@
                 const inputHora = tr.querySelector('.input-hora');
                 
                 if (inputHora && inputHora.value.trim() !== '') {
-                    // Recopilar camilleros múltiples seleccionados
-                    let camillerosSeleccionados = [];
-                    tr.querySelectorAll('.multiselect-options-list li.selected').forEach(li => {
-                        camillerosSeleccionados.push(li.getAttribute('data-value'));
-                    });
-
                     await supabaseClient.from('registros_camilleros').insert({
                         fecha_cierre: fechaVal,
                         turno: turnoVal,
@@ -904,7 +743,7 @@
                         destino: tr.querySelector('.input-destino')?.value || '',
                         duracion_estancia: tr.querySelector('.input-estancia')?.value || '',
                         tipo_movilidad: tr.querySelector('.input-movilidad')?.value || '',
-                        personal_asignado: camillerosSeleccionados.join(', '),
+                        personal_asignado: tr.querySelector('.input-personal')?.value || '',
                         hora_finalizacion: tr.querySelector('.input-finalizacion')?.value || '',
                         observaciones: observacionesVal
                     });
@@ -964,8 +803,7 @@
                     <style>
                         #contenedor-historicos .tabla-camilleros th:first-child, 
                         #contenedor-historicos .tabla-camilleros td:first-child { display: none !important; }
-                        #contenedor-historicos input, #contenedor-historicos select, #contenedor-historicos .multiselect-dropdown { border: none !important; background: transparent !important; pointer-events: none !important; font-size: 13px !important; }
-                        #contenedor-historicos .multiselect-header span:last-child { display: none !important; }
+                        #contenedor-historicos input, #contenedor-historicos select { border: none !important; background: transparent !important; pointer-events: none !important; font-size: 13px !important; -webkit-appearance: none; -moz-appearance: none; appearance: none; }
                         #contenedor-historicos .tabla-camilleros { table-layout: auto !important; font-size: 13px !important; }
                         #contenedor-historicos .tabla-camilleros th, 
                         #contenedor-historicos .tabla-camilleros td { font-size: 13px !important; }
@@ -1085,15 +923,6 @@
             const t = localStorage.getItem('dsg_camilleros_tabla');
             if (t) {
                 cuerpoTabla.innerHTML = t;
-                // Restaurar estados seleccionados visualmente tras cargar del localStorage
-                cuerpoTabla.querySelectorAll('.custom-multiselect-container').forEach(container => {
-                    container.querySelectorAll('.multiselect-options-list li').forEach(li => {
-                        if(li.hasAttribute('data-selected')) {
-                            li.classList.add('selected');
-                        }
-                    });
-                    actualizarTextoMultiselect(container);
-                });
             } else {
                 cuerpoTabla.innerHTML = '<tr>' + crearFilaHTML() + '</tr>';
             }
@@ -1105,6 +934,18 @@
             cargarEstadoAscensores();
             cargarNovedades();
         };
+
+        function obtenerOpcionesCamilleros() {
+            const turnoActual = localStorage.getItem('usuario_turno') || "Mañana";
+            const agentesTurno = agentes.filter(a => a.turno === turnoActual);
+            agentesTurno.sort((a, b) => parseInt(a.legajo) - parseInt(b.legajo));
+            
+            let optionsHTML = '<option value="">Seleccionar Camillero...</option>';
+            agentesTurno.forEach(ag => {
+                optionsHTML += `<option value="${ag.nombre}">${ag.nombre}</option>`;
+            });
+            return optionsHTML;
+        }
 
         function crearFilaHTML() { 
             return '<td><button class="btn-borrar" onclick="borrarFila(this)">X</button></td>' +
@@ -1133,13 +974,15 @@
                          '</select>' +
                     '</td>' +
                     '<td>' +
-                         crearMultiSelectHTML() +
+                         '<select class="input-c input-personal" onchange="guardarDatos()" style="width: 100%; height: 100%; border: none; background: transparent; font-size: 11px; font-family: inherit;">' +
+                             obtenerOpcionesCamilleros() +
+                         '</select>' +
                     '</td>' +
                     '<td><input class="input-c input-finalizacion" type="time" onchange="guardarDatos()"></td>'; 
         }
 
         function registrarHora(input) { if (input.value === "") { const ahora = new Date(); input.value = ahora.getHours().toString().padStart(2, '0') + ":" + ahora.getMinutes().toString().padStart(2, '0'); input.setAttribute('readonly', 'readonly'); guardarDatos(); } }
-        function borrarFila(btn) { const tr = btn.closest('tr'); if (cuerpoTabla.getElementsByTagName('tr').length > 1) tr.remove(); else { tr.querySelectorAll('input, select').forEach(i => { i.value = ''; i.removeAttribute('readonly'); }); tr.querySelectorAll('.multiselect-options-list li').forEach(li => li.classList.remove('selected')); tr.querySelectorAll('.custom-multiselect-container').forEach(c => actualizarTextoMultiselect(c)); } guardarDatos(); }
+        function borrarFila(btn) { const tr = btn.closest('tr'); if (cuerpoTabla.getElementsByTagName('tr').length > 1) tr.remove(); else { tr.querySelectorAll('input, select').forEach(i => { i.value = ''; i.removeAttribute('readonly'); }); } guardarDatos(); }
         function detectarEnter(e) { if (e.key === 'Enter') { e.preventDefault(); const tr = document.createElement('tr'); tr.innerHTML = crearFilaHTML(); cuerpoTabla.appendChild(tr); tr.querySelectorAll('input')[1].focus(); } }
         function mostrar(id, titulo) { 
             document.querySelectorAll('.seccion').forEach(s => s.classList.remove('activo')); 
