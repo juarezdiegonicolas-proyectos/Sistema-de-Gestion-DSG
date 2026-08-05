@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Escritorio Conmutador - DSG</title>
+    <title>Escritorio Higiene y Seguridad - DSG</title>
     <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -48,27 +48,13 @@
             padding-top: 30px;
         }
         
-        .tabla-camilleros { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; table-layout: fixed; }
-        .tabla-camilleros th, .tabla-camilleros td { border: 1px solid #000; padding: 6px; text-align: center; word-wrap: break-word; }
-        .tabla-camilleros th { background-color: #1a3a5f; color: white; height: 40px; }
-        .col-hora { width: 85px; }
-        .input-c { width: 95%; border: none; text-align: center; }
-        .input-fecha, .input-select { border: 1px solid #ccc; padding: 8px; border-radius: 4px; font-family: inherit; cursor: pointer; }
-        .btn-borrar { background: red; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 12px; }
+        .input-fecha { border: 1px solid #ccc; padding: 8px; border-radius: 4px; font-family: inherit; cursor: pointer; }
         .area-acciones { margin-top: 20px; display: flex; gap: 10px; }
         .btn-gestion { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; }
         .btn-imprimir { background: #6c757d; color: white; }
         #info-supervisor { margin-bottom: 20px; color: #1a3a5f; font-weight: bold; border: 1px solid #ddd; padding: 10px; border-radius: 6px; background: #f9f9f9; }
         .header-logos { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
         .header-logos img { height: 110px; width: auto; object-fit: contain; }
-        .filtros-historicos { display: flex; gap: 15px; background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #eee; align-items: center; }
-        .celda-asistencia { cursor: pointer; width: 25px; height: 25px; border: 2px solid #333; display: inline-block; transition: background 0.3s; margin: auto; }
-        .estado-P { background-color: #28a745 !important; }
-        .estado-A { background-color: #dc3545 !important; }
-        .estado-L { background-color: #ffc107 !important; }
-        .botonera-porcentaje { background-color: #1a3a5f; color: white; padding: 12px 20px; border-radius: 8px; font-weight: bold; margin-bottom: 10px; display: inline-block; width: 250px; text-align: left; }
-
-        #rrhh .tabla-camilleros { width: 99.5% !important; border-right: 1px solid #000 !important; }
 
         /* Estilos Ascensores y Novedades integrados */
         .grid-ascensores { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 25px; }
@@ -85,11 +71,7 @@
         .card-novedad .fecha-nov { font-size: 11px; color: #777; margin-top: 8px; display: block; }
 
         @media print {
-            .sidebar, .btn-accion-global, .btn-cerrar, .menu-item, .no-imprimir, .btn-imprimir, .btn-borrar { display: none !important; }
-            
-            #planillas .tabla-camilleros th:first-child, 
-            #planillas .tabla-camilleros td:first-child { display: none !important; }
-            
+            .sidebar, .btn-accion-global, .btn-cerrar, .menu-item, .no-imprimir, .btn-imprimir { display: none !important; }
             body, html, .contenido, .seccion.activo, .hoja { background-color: white !important; margin: 0 !important; padding: 0 !important; width: 100% !important; height: auto !important; overflow: visible !important; box-shadow: none !important; display: block !important; }
             .seccion { display: none !important; }
             .seccion.activo { display: block !important; } 
@@ -116,15 +98,12 @@
             <p id="nombre-supervisor-sidebar">---</p>
         </div>
         <div class="sidebar-header-title">
-            <h2>Panel <span id="titulo-panel">Conmutador</span></h2>
+            <h2>Panel <span id="titulo-panel">Higiene y Seguridad</span></h2>
         </div>
         <div class="menu-links">
             <div class="menu-item" onclick="mostrar('reportes', 'Reportes')"><span>📊 Reportes</span></div>
-            <div class="menu-item" onclick="mostrar('planillas', 'Planillas (Operativa)')"><span>🛠 Planillas (Operativa)</span></div>
-            <div class="menu-item" onclick="mostrar('historicos', 'Registros Históricos')"><span>📂 Registros Históricos</span></div>
+            <div class="menu-item" onclick="mostrar('ascensores', 'Estado de Ascensores')"><span>🛗 Estado de Ascensores</span></div>
             <div class="menu-item" onclick="mostrar('novedades', 'Novedades')"><span>📢 Novedades</span> <span id="badge-novedades" class="badge-novedad">0</span></div>
-            <div class="menu-item" onclick="mostrar('rrhh', 'RR.HH.')"><span>👥 RR.HH.</span></div>
-            <div class="menu-item" onclick="mostrar('resoluciones', 'Resoluciones')"><span>⚖️ Resoluciones</span></div>
         </div>
         <button class="btn-accion-global" onclick="cerrarJornadaGlobal()">📥 CERRAR JORNADA</button>
         <a href="index.html" class="btn-cerrar">CERRAR SESIÓN</a>
@@ -148,56 +127,19 @@
             <div class="area-acciones"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button></div>
         </div>
 
-        <div id="planillas" class="seccion">
+        <div id="ascensores" class="seccion">
             <div class="header-logos">
                 <img src="logo_hospi.png" alt="Logo Hospital" onerror="this.src='https://via.placeholder.com/150?text=Hospital'">
-                <h1 style="margin: 0; text-align: center; flex: 1; font-size: 30px;">Auxiliares Conmutador</h1>
+                <h1 style="margin: 0; text-align: center; flex: 1; font-size: 30px;">Estado de Ascensores</h1>
                 <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
             </div>
             <div id="info-supervisor">Supervisor: <span id="display-nombre">---</span> | Turno: <span id="display-turno">---</span> | Depto: <span id="display-depto">---</span></div>
             
-            <!-- Visualización Estado Actual de Ascensores en Planilla/Operativa -->
-            <h3 style="color: #1a3a5f; margin-top: 15px; margin-bottom: 10px;">Estado Actual de Ascensores</h3>
+            <h3 style="color: #1a3a5f; margin-top: 15px; margin-bottom: 15px;">Monitoreo en Tiempo Real</h3>
             <div id="grid-ascensores-operativa" class="grid-ascensores">
                 <!-- Se inyecta dinámicamente -->
             </div>
-
-            <table class="tabla-camilleros" id="tabla-exportar">
-                <thead>
-                    <tr><th style="width:30px;"></th><th class="col-hora">HORA</th><th>ORIGEN</th><th>DESTINO</th><th>MOTIVO</th><th>ESTADO</th><th>OBSERVACIONES</th></tr>
-                </thead>
-                <tbody id="cuerpo-tabla" onkeydown="detectarEnter(event)"></tbody>
-            </table>
             <div class="area-acciones"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button></div>
-        </div>
-
-        <div id="historicos" class="seccion">
-            <div class="header-logos">
-                <img src="logo_hospi.png" alt="Logo Hospital" onerror="this.src='https://via.placeholder.com/150?text=Hospital'">
-                <h1 style="margin: 0; text-align: center; flex: 1;">Registros Históricos</h1>
-                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
-            </div>
-            <div id="info-supervisor">Departamento: <span id="depto-hist-label">---</span></div>
-            <div class="filtros-historicos">
-                <select id="select-tipo" class="input-select">
-                    <option value="planilla">Planilla Operativa</option>
-                    <option value="reporte">Reporte Diario</option>
-                    <option value="asistencia">Asistencia de Personal</option>
-                </select>
-                <select id="select-turno" class="input-select">
-                    <option value="Mañana">Turno Mañana</option>
-                    <option value="Tarde">Turno Tarde</option>
-                    <option value="Noche A">Turno Noche A</option>
-                    <option value="Noche B">Turno Noche B</option>
-                    <option value="Sadofe">Sadofe</option>
-                </select>
-                <input type="date" id="filtro-fecha-hist" class="input-fecha">
-                <button class="btn-gestion no-imprimir" style="background: #1a3a5f; color: white;" onclick="cargarHistoricos()">Buscar Registros</button>
-            </div>
-            <div id="contenedor-historicos" style="border: 1px solid #ccc; padding: 20px; border-radius: 8px;">
-                <p>Selecciona filtros y presiona "Buscar" para visualizar registros.</p>
-            </div>
-            <div class="area-acciones"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir Resultados</button></div>
         </div>
         
         <div id="novedades" class="seccion">
@@ -210,44 +152,11 @@
                 <p>Cargando novedades...</p>
             </div>
         </div>
-
-        <div id="rrhh" class="seccion">
-            <div class="header-logos">
-                <img src="logo_hospi.png" alt="Logo Hospital" onerror="this.src='https://via.placeholder.com/150?text=Hospital'">
-                <h1 style="margin: 0; text-align: center; flex: 1;">Personal - Turno: <span id="display-turno-rrhh">---</span></h1>
-                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
-            </div>
-            <table class="tabla-camilleros" style="table-layout: auto;">
-                <thead><tr><th>LEGAJO</th><th>APELLIDO Y NOMBRE</th><th>PRESENTE</th><th>AUSENTE</th><th>LICENCIA</th></tr></thead>
-                <tbody id="cuerpo-rrhh"></tbody>
-            </table>
-            <div class="area-acciones">
-                <button class="btn-gestion no-imprimir" style="background: #28a745; color: white;" onclick="guardarAsistencia()">💾 Guardar Asistencia</button>
-                <button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
-            </div>
-            
-            <div style="margin-top: 30px; text-align: center; color: #1a3a5f; font-weight: bold; font-size: 20px; margin-bottom: 10px;">Control de Asistencia</div>
-            <div style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #ddd; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; justify-content: center; align-items: center; gap: 50px;">
-                <div id="resumen-rrhh" style="font-weight:bold; color: #1a3a5f; font-size: 16px; line-height: 2.0; display: flex; flex-direction: column;"></div>
-                <div style="width: 220px; height: 220px;">
-                    <canvas id="graficoRRHH"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <div id="resoluciones" class="seccion">
-            <div class="header-logos">
-                <img src="logo_hospi.png" alt="Logo Hospital" onerror="this.src='https://via.placeholder.com/150?text=Hospital'">
-                <h1 style="margin: 0; text-align: center; flex: 1;">Resoluciones</h1>
-                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
-            </div>
-            <p>Sección de resoluciones institucionales y normativas vigentes.</p>
-        </div>
     </div>
 
     <script>
         // Configuración e Inicialización de Supabase
-        const SUPABASE_URL = 'https://TU_SUPABASE_URL.supabase.co'; // Reemplazar con credenciales reales si es necesario o configurar entorno
+        const SUPABASE_URL = 'https://TU_SUPABASE_URL.supabase.co'; 
         const SUPABASE_KEY = 'TU_SUPABASE_ANON_KEY';
         let supabaseClient = null;
         try {
@@ -256,116 +165,19 @@
             }
         } catch(e) { console.warn("Supabase no inicializado con credenciales válidas todavía."); }
 
-        const cuerpoTabla = document.getElementById('cuerpo-tabla');
         const editorReporte = document.getElementById('editor-reporte');
         const spanHoja = document.getElementById('numero-hoja');
         const inputFecha = document.getElementById('fecha-reporte');
-        let chartRRHH;
-        
-        const agentes = [{legajo:"000001", nombre:"PERSONAL CONMUTADOR 1", turno:"Mañana"}];
 
         function obtenerFechaHoyISO() { return new Date().toISOString().split('T')[0]; }
 
-        let contadorHoja = parseInt(localStorage.getItem('conmutador_contador_hoja')) || 1;
+        let contadorHoja = parseInt(localStorage.getItem('hyc_contador_hoja')) || 1;
         spanHoja.innerText = String(contadorHoja).padStart(3, '0');
-        inputFecha.value = localStorage.getItem('conmutador_fecha') || obtenerFechaHoyISO();
-        document.getElementById('filtro-fecha-hist').value = obtenerFechaHoyISO();
-
-        function actualizarGrafico(p, a, l) {
-            const ctx = document.getElementById('graficoRRHH').getContext('2d');
-            if (chartRRHH) chartRRHH.destroy();
-            chartRRHH = new Chart(ctx, {
-                type: 'pie',
-                data: {
-                    labels: ['Presentes', 'Ausentes', 'Licencias'],
-                    datasets: [{ data: [p, a, l], backgroundColor: ['#28a745', '#dc3545', '#ffc107'] }]
-                },
-                options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
-            });
-        }
-
-        function cargarRRHH() {
-            const body = document.getElementById('cuerpo-rrhh');
-            const turnoActual = localStorage.getItem('usuario_turno') || "Mañana";
-            const nombreUsuarioActual = localStorage.getItem('usuario_nombre') || "Invitado";
-            const legajoUsuarioActual = localStorage.getItem('usuario_legajo') || "999999";
-
-            document.getElementById('display-turno-rrhh').innerText = turnoActual;
-
-            let agentesTurno = agentes.filter(a => a.turno === turnoActual);
-            if (!agentesTurno.some(a => a.nombre.toLowerCase() === nombreUsuarioActual.toLowerCase())) {
-                agentesTurno.push({ legajo: legajoUsuarioActual, nombre: nombreUsuarioActual, turno: turnoActual });
-            }
-
-            const asistenciasGuardadas = JSON.parse(localStorage.getItem('asistencia_rrhh_conmutador') || "{}");
-            body.innerHTML = '';
-            let p=0, a=0, l=0;
-            agentesTurno.forEach(agent => {
-                const estado = asistenciasGuardadas[agent.legajo] || "";
-                if(estado === 'P') p++; else if(estado === 'A') a++; else if(estado === 'L') l++;
-                body.innerHTML += `<tr><td>${agent.legajo}</td><td>${agent.nombre}</td>
-                    <td><div class="celda-asistencia ${estado === 'P' ? 'estado-P' : ''}" id="P-${agent.legajo}" onclick="marcar('${agent.legajo}', 'P')"></div></td>
-                    <td><div class="celda-asistencia ${estado === 'A' ? 'estado-A' : ''}" id="A-${agent.legajo}" onclick="marcar('${agent.legajo}', 'A')"></div></td>
-                    <td><div class="celda-asistencia ${estado === 'L' ? 'estado-L' : ''}" id="L-${agent.legajo}" onclick="marcar('${agent.legajo}', 'L')"></div></td>
-                    <input type="hidden" id="estado-${agent.legajo}" value="${estado}"></tr>`;
-            });
-            if(p+a+l > 0) {
-                document.getElementById('resumen-rrhh').innerHTML = 
-                    `<div class="botonera-porcentaje">Presentismo: ${((p/(p+a+l))*100).toFixed(1)}% (${p})</div>
-                     <div class="botonera-porcentaje">Ausentismo: ${((a/(p+a+l))*100).toFixed(1)}% (${a})</div>
-                     <div class="botonera-porcentaje">Licencias: ${((l/(p+a+l))*100).toFixed(1)}% (${l})</div>`;
-                actualizarGrafico(p, a, l);
-            }
-        }
-
-        function marcar(legajo, estado) {
-            ['P', 'A', 'L'].forEach(e => document.getElementById(`${e}-${legajo}`).className = 'celda-asistencia');
-            document.getElementById(`${estado}-${legajo}`).className = `celda-asistencia estado-${estado}`;
-            document.getElementById(`estado-${legajo}`).value = estado;
-        }
-
-        function guardarAsistencia() {
-            let registro = {}, presentes = 0, ausentes = 0, licencias = 0;
-            const turnoActual = localStorage.getItem('usuario_turno') || "Mañana";
-            const nombreUsuarioActual = localStorage.getItem('usuario_nombre') || "Invitado";
-            const legajoUsuarioActual = localStorage.getItem('usuario_legajo') || "999999";
-
-            let agentesTurno = agentes.filter(a => a.turno === turnoActual);
-            if (!agentesTurno.some(a => a.nombre.toLowerCase() === nombreUsuarioActual.toLowerCase())) {
-                agentesTurno.push({ legajo: legajoUsuarioActual, nombre: nombreUsuarioActual, turno: turnoActual });
-            }
-
-            const totalAgentes = agentesTurno.length;
-            
-            agentesTurno.forEach(a => {
-                let val = document.getElementById(`estado-${a.legajo}`).value;
-                registro[a.legajo] = val;
-                if (val === 'P') presentes++;
-                else if (val === 'A') ausentes++;
-                else if (val === 'L') licencias++;
-            });
-            
-            let noMarcados = totalAgentes - (presentes + ausentes + licencias);
-            if (noMarcados > 0) { alert("¡Atención! Falta cargar la totalidad de los agentes."); return; }
-            
-            let pP = ((presentes / totalAgentes) * 100).toFixed(1);
-            let pA = ((ausentes / totalAgentes) * 100).toFixed(1);
-            let pL = ((licencias / totalAgentes) * 100).toFixed(1);
-
-            localStorage.setItem('asistencia_rrhh_conmutador', JSON.stringify(registro));
-            document.getElementById('resumen-rrhh').innerHTML = 
-                `<div class="botonera-porcentaje">Presentismo: ${pP}% (${presentes})</div>
-                 <div class="botonera-porcentaje">Ausentismo: ${pA}% (${ausentes})</div>
-                 <div class="botonera-porcentaje">Licencias: ${pL}% (${licencias})</div>`;
-            actualizarGrafico(presentes, ausentes, licencias);
-            alert(`¡Asistencia completa!\nPresentismo: ${pP}%\nAusentismo: ${pA}%\nLicencias: ${pL}%`);
-        }
+        inputFecha.value = localStorage.getItem('hyc_fecha') || obtenerFechaHoyISO();
 
         function guardarDatos() {
-            document.querySelectorAll('#cuerpo-tabla input').forEach(i => i.setAttribute('value', i.value));
-            localStorage.setItem('conmutador_tabla', cuerpoTabla.innerHTML);
-            localStorage.setItem('conmutador_reporte', editorReporte.innerHTML);
-            localStorage.setItem('conmutador_fecha', inputFecha.value);
+            localStorage.setItem('hyc_reporte', editorReporte.innerHTML);
+            localStorage.setItem('hyc_fecha', inputFecha.value);
         }
 
         function cerrarJornadaGlobal() {
@@ -374,10 +186,8 @@
             const cierre = { 
                 fecha: inputFecha.value, 
                 turno: localStorage.getItem('usuario_turno') || "Mañana", 
-                depto: "Conmutador", 
+                depto: "Higiene y Seguridad", 
                 reporte: editorReporte.innerHTML, 
-                tabla: cuerpoTabla.innerHTML, 
-                asistencia: JSON.parse(localStorage.getItem('asistencia_rrhh_conmutador') || "{}"), 
                 timestamp: new Date().toISOString() 
             };
             
@@ -385,95 +195,11 @@
             historial.push(cierre);
             localStorage.setItem('historial_jornadas', JSON.stringify(historial));
             
-            localStorage.removeItem('conmutador_tabla'); 
-            localStorage.removeItem('asistencia_rrhh_conmutador'); 
-            localStorage.removeItem('conmutador_reporte');
-            localStorage.setItem('conmutador_contador_hoja', contadorHoja + 1);
+            localStorage.removeItem('hyc_reporte');
+            localStorage.setItem('hyc_contador_hoja', contadorHoja + 1);
             
             alert("Jornada cerrada con éxito.");
             location.reload();
-        }
-
-        function cargarHistoricos() {
-            const f = document.getElementById('filtro-fecha-hist').value; 
-            const t = document.getElementById('select-turno').value; 
-            const tipo = document.getElementById('select-tipo').value;
-            
-            const hist = JSON.parse(localStorage.getItem('historial_jornadas') || "[]");
-            const reg = hist.find(r => String(r.fecha).trim() === String(f).trim() && String(r.turno).trim().toLowerCase() === String(t).trim().toLowerCase() && String(r.depto).trim().toLowerCase() === "conmutador");
-            
-            const cont = document.getElementById('contenedor-historicos');
-            if (!reg) { cont.innerHTML = "No se encontraron registros para esta selección."; return; }
-            
-            cont.style.display = "block";
-
-            if (tipo === 'planilla') {
-                cont.innerHTML = `
-                    <style>
-                        #contenedor-historicos .tabla-camilleros th:first-child, 
-                        #contenedor-historicos .tabla-camilleros td:first-child { display: none !important; }
-                        #contenedor-historicos input { border: none !important; background: transparent !important; pointer-events: none !important; }
-                    </style>
-                    <div style="border: 2px solid #1a3a5f; padding: 20px;">
-                        <h3>PLANILLA OPERATIVA</h3>
-                        <table class="tabla-camilleros" style="width: 100%;">
-                            <thead>
-                                <tr><th></th><th>HORA</th><th>ORIGEN</th><th>DESTINO</th><th>MOTIVO</th><th>ESTADO</th><th>OBSERVACIONES</th></tr>
-                            </thead>
-                            <tbody>${reg.tabla}</tbody>
-                        </table>
-                    </div>`;
-            } else if (tipo === 'asistencia') {
-                let p = 0, a = 0, l = 0;
-                let rowsHTML = "";
-                
-                agentes.forEach(ag => {
-                    const estado = reg.asistencia[ag.legajo] || "";
-                    if(estado === 'P') p++; else if(estado === 'A') a++; else if(estado === 'L') l++;
-                    
-                    rowsHTML += `
-                        <tr style="height: 40px;">
-                            <td style="border: 1px solid #1a3a5f; text-align: center;">${ag.legajo}</td>
-                            <td style="border: 1px solid #1a3a5f; padding-left: 10px;">${ag.nombre}</td>
-                            <td style="border: 1px solid #1a3a5f; text-align: center;"><div class="celda-asistencia ${estado === 'P' ? 'estado-P' : ''}"></div></td>
-                            <td style="border: 1px solid #1a3a5f; text-align: center;"><div class="celda-asistencia ${estado === 'A' ? 'estado-A' : ''}"></div></td>
-                            <td style="border: 1px solid #1a3a5f; text-align: center;"><div class="celda-asistencia ${estado === 'L' ? 'estado-L' : ''}"></div></td>
-                        </tr>`;
-                });
-
-                const total = p + a + l || 1;
-                cont.innerHTML = `
-                    <div style="border: 2px solid #1a3a5f; padding: 20px;">
-                        <h3>ASISTENCIA DE PERSONAL</h3>
-                        <table style="width: 100%; border-collapse: collapse; border: 2px solid #1a3a5f;">
-                            <thead style="background-color: #1a3a5f; color: white;">
-                                <tr>
-                                    <th style="padding: 10px; border: 1px solid white;">LEGAJO</th>
-                                    <th style="padding: 10px; border: 1px solid white;">APELLIDO Y NOMBRE</th>
-                                    <th style="padding: 10px; border: 1px solid white;">PRESENTE</th>
-                                    <th style="padding: 10px; border: 1px solid white;">AUSENTE</th>
-                                    <th style="padding: 10px; border: 1px solid white;">LICENCIA</th>
-                                </tr>
-                            </thead>
-                            <tbody>${rowsHTML}</tbody>
-                        </table>
-                        <div style="margin-top: 20px; background: #f9f9f9; padding: 15px; border: 1px solid #ddd;">
-                            <div style="font-weight:bold; color: #1a3a5f;">
-                                <div>Resumen Consolidado:</div>
-                                <div>Presentismo: ${((p / total) * 100).toFixed(1)}% (${p})</div>
-                                <div>Ausentismo: ${((a / total) * 100).toFixed(1)}% (${a})</div>
-                                <div>Licencias: ${((l / total) * 100).toFixed(1)}% (${l})</div>
-                            </div>
-                        </div>
-                    </div>`;
-            } else {
-                const estiloRenglones = `background-image: linear-gradient(#e0e0e0 1px, transparent 1px); background-size: 100% 30px; line-height: 30px; padding-left: 10px; font-family: 'Courier New', Courier, monospace; min-height: 400px; white-space: pre-wrap; display: block;`;
-                cont.innerHTML = `
-                    <div style="border: 2px solid #1a3a5f; padding: 20px;">
-                        <h3>REPORTE ENCONTRADO</h3>
-                        <div style="${estiloRenglones}">${reg.reporte}</div>
-                    </div>`;
-            }
         }
 
         // Lógica de Ascensores (Estado Actual)
@@ -490,7 +216,7 @@
             }
 
             if (ascensores.length === 0) {
-                ascensores = JSON.parse(localStorage.getItem('ascensores_estado') || '[{"id": 1, "nombre": "Ascensor 1 (Central)", "estado": "Operativo"}, {"id": 2, "nombre": "Ascensor 2 (Guardia)", "estado": "Operativo"}]');
+                ascensores = JSON.parse(localStorage.getItem('ascensores_estado') || '[{"id": 1, "nombre": "Ascensor 1 (Central)", "estado": "Operativo"}, {"id": 2, "nombre": "Ascensor 2 (Guardia)", "estado": "Operativo"}, {"id": 3, "nombre": "Ascensor 3 (Servicios)", "estado": "Mantenimiento"}]');
             }
 
             container.innerHTML = '';
@@ -523,7 +249,7 @@
             }
 
             if (novedades.length === 0) {
-                novedades = JSON.parse(localStorage.getItem('novedades_comunicados') || '[{"id": 1, "titulo": "Bienvenido al Sistema Conmutador", "contenido": "Sistema operativo y sincronizado correctamente.", "created_at": "2026-03-30"}]');
+                novedades = JSON.parse(localStorage.getItem('novedades_comunicados') || '[{"id": 1, "titulo": "Bienvenido al Sistema de Higiene y Seguridad", "contenido": "Módulo operativo configurado y sincronizado correctamente.", "created_at": "2026-03-30"}]');
             }
 
             const ultimaLeidaId = parseInt(localStorage.getItem('ultima_novedad_leida') || '0');
@@ -551,9 +277,7 @@
             }
         }
 
-        // Marcar novedades como leídas al abrir la sección
-        const originalMostrar = window.mostrar;
-        window.mostrar = function(id, titulo) {
+        function mostrar(id, titulo) {
             document.querySelectorAll('.seccion').forEach(s => s.classList.remove('activo'));
             document.getElementById(id).classList.add('activo');
             document.getElementById('titulo-panel').innerText = titulo;
@@ -561,19 +285,18 @@
             if (id === 'novedades') {
                 const badge = document.getElementById('badge-novedades');
                 badge.classList.remove('activo');
-                // Guardar la máxima ID como leída
                 let novedades = JSON.parse(localStorage.getItem('novedades_comunicados') || '[{"id":1}]');
                 if (novedades.length > 0) {
                     const maxId = Math.max(...novedades.map(n => n.id));
                     localStorage.setItem('ultima_novedad_leida', maxId);
                 }
             }
-        };
+        }
 
         window.onload = () => {
             const nombre = localStorage.getItem('usuario_nombre') || "Invitado"; 
             const turno = localStorage.getItem('usuario_turno') || "Mañana"; 
-            const depto = "Conmutador";
+            const depto = "Higiene y Seguridad";
             
             document.getElementById('nombre-supervisor-sidebar').innerText = nombre;
             document.getElementById('display-nombre').innerText = nombre; 
@@ -582,21 +305,13 @@
             document.getElementById('display-nombre-rep').innerText = nombre; 
             document.getElementById('display-turno-rep').innerText = turno; 
             document.getElementById('display-depto-rep').innerText = depto;
-            document.getElementById('depto-hist-label').innerText = depto;
             
-            const t = localStorage.getItem('conmutador_tabla');
-            if (t) cuerpoTabla.innerHTML = t; else cuerpoTabla.innerHTML = '<tr>' + crearFilaHTML() + '</tr>';
-            editorReporte.innerHTML = localStorage.getItem('conmutador_reporte') || "";
+            editorReporte.innerHTML = localStorage.getItem('hyc_reporte') || "";
             
-            cargarRRHH();
             cargarEstadoAscensores();
             cargarNovedades();
         };
-
-        function crearFilaHTML() { return '<td><button class="btn-borrar" onclick="borrarFila(this)">X</button></td><td><input class="input-c" type="text" onclick="registrarHora(this)"></td><td><input class="input-c" type="text" oninput="guardarDatos()"></td><td><input class="input-c" type="text" oninput="guardarDatos()"></td><td><input class="input-c" type="text" oninput="guardarDatos()"></td><td><input class="input-c" type="text" oninput="guardarDatos()"></td><td><input class="input-c" type="text" oninput="guardarDatos()"></td>'; }
-        function registrarHora(input) { if (input.value === "") { const ahora = new Date(); input.value = ahora.getHours().toString().padStart(2, '0') + ":" + ahora.getMinutes().toString().padStart(2, '0'); input.setAttribute('readonly', 'readonly'); guardarDatos(); } }
-        function borrarFila(btn) { const tr = btn.closest('tr'); if (cuerpoTabla.getElementsByTagName('tr').length > 1) tr.remove(); else { tr.querySelectorAll('input').forEach(i => { i.value = ''; i.removeAttribute('readonly'); }); } guardarDatos(); }
-        function detectarEnter(e) { if (e.key === 'Enter') { e.preventDefault(); const tr = document.createElement('tr'); tr.innerHTML = crearFilaHTML(); cuerpoTabla.appendChild(tr); tr.querySelectorAll('input')[1].focus(); } }
     </script>
 </body>
 </html>
+
