@@ -1,4 +1,6 @@
-<!DOCTYPE html><html lang="es"><head>
+<!DOCTYPE html>
+<html lang="es">
+<head>
     <meta charset="UTF-8">
     <title>Escritorio Camilleros - DSG</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -16,9 +18,11 @@
         .sidebar-header-title h2 { font-size: 18px; margin: 0; line-height: 1.2; }
 
         .menu-links { flex: 1; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; margin-bottom: 8px; }
-        .menu-item { display: flex; align-items: center; color: #ddd; padding: 10px 12px; text-decoration: none; border-bottom: 1px solid rgba(93, 141, 187, 0.3); font-weight: 500; cursor: pointer; font-size: 15px; transition: background 0.2s, color 0.2s; border-radius: 4px; }
+        .menu-item { display: flex; align-items: center; justify-content: space-between; color: #ddd; padding: 10px 12px; text-decoration: none; border-bottom: 1px solid rgba(93, 141, 187, 0.3); font-weight: 500; cursor: pointer; font-size: 15px; transition: background 0.2s, color 0.2s; border-radius: 4px; }
         .menu-item:hover { background-color: #5d8dbb; color: white; }
         
+        .badge-novedades { background-color: #dc3545; color: white; font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 10px; display: none; }
+
         .sidebar-footer { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; padding-top: 5px; }
         .btn-accion-global { width: 100%; padding: 10px; background: linear-gradient(135deg, #28a745, #218838); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: opacity 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
         .btn-accion-global:hover { opacity: 0.9; }
@@ -137,7 +141,9 @@
             }
         }
         @page { size: auto; margin: 1cm; }
-    </style></head><body>
+    </style>
+</head>
+<body>
     <div class="sidebar">
         <div class="bienvenida-box">
             <h3>Bienvenido Agente:</h3>
@@ -149,13 +155,13 @@
         </div>
 
         <div class="menu-links">
-            <div class="menu-item" onclick="mostrar('reportes', 'Reportes')">📊 Reportes</div>
-            <div class="menu-item" onclick="mostrar('planillas', 'Planillas (Operativa)')">🛠 Planillas (Operativa)</div>
-            <div class="menu-item" onclick="mostrar('historicos', 'Registros Históricos')">📂 Registros Históricos</div>
-            <div class="menu-item" onclick="mostrar('novedades', 'Novedades')">📢 Novedades</div>
-            <div class="menu-item" onclick="mostrar('ascensores', 'Estado de Ascensores')">🛗 Estado de Ascensores</div>
-            <div class="menu-item" onclick="mostrar('rrhh', 'RR.HH.')">👥 RR.HH.</div>
-            <div class="menu-item" onclick="mostrar('resoluciones', 'Resoluciones')">⚖️ Resoluciones</div>
+            <div class="menu-item" onclick="mostrar('reportes', 'Reportes')"><span>📊 Reportes</span></div>
+            <div class="menu-item" onclick="mostrar('planillas', 'Planillas (Operativa)')"><span>🛠 Planillas (Operativa)</span></div>
+            <div class="menu-item" onclick="mostrar('historicos', 'Registros Históricos')"><span>📂 Registros Históricos</span></div>
+            <div class="menu-item" onclick="mostrar('novedades', 'Novedades')"><span>📢 Novedades</span><span id="badge-novedades" class="badge-novedades">0</span></div>
+            <div class="menu-item" onclick="mostrar('ascensores', 'Estado de Ascensores')"><span>🛗 Estado de Ascensores</span></div>
+            <div class="menu-item" onclick="mostrar('rrhh', 'RR.HH.')"><span>👥 RR.HH.</span></div>
+            <div class="menu-item" onclick="mostrar('resoluciones', 'Resoluciones')"><span>⚖️ Resoluciones</span></div>
         </div>
 
         <div class="sidebar-footer">
@@ -337,6 +343,60 @@
             window.location.href = './';
         }
 
+        async function verificarNovedadesNoLeidas() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('comunicados_memos')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error || !data) return;
+
+                const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim();
+                const novedadesFiltradas = data.filter(item => {
+                    const clave = (item.id_clave || '').toLowerCase();
+                    const contenidoObj = item.contenido || {};
+                    const turnoMsg = (contenidoObj.turno || "").toLowerCase();
+
+                    const esParaTodos = clave.includes('todos') || clave.includes('general') || turnoMsg === 'todos' || turnoMsg === 'general';
+                    const esParaDepto = clave.includes('camilleros');
+
+                    if (!esParaDepto && !esParaTodos) return false;
+                    if (esParaTodos) return true;
+                    if (turnoMsg && turnoMsg !== "todos" && turnoMsg !== "general") {
+                        if (turnoMsg !== turnoActual.toLowerCase()) return false;
+                    }
+                    return true;
+                });
+
+                if (novedadesFiltradas.length === 0) return;
+
+                const ultimoIdLeido = localStorage.getItem('dsg_camilleros_ultimo_novedad_leida');
+                let noLeidasCount = 0;
+
+                if (!ultimoIdLeido) {
+                    noLeidasCount = novedadesFiltradas.length;
+                } else {
+                    for (let item of novedadesFiltradas) {
+                        if (String(item.id) === String(ultimoIdLeido)) break;
+                        noLeidasCount++;
+                    }
+                }
+
+                const badge = document.getElementById('badge-novedades');
+                if (badge) {
+                    if (noLeidasCount > 0) {
+                        badge.innerText = noLeidasCount;
+                        badge.style.display = 'inline-block';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+            } catch (err) {
+                console.error("Error al verificar novedades no leídas:", err);
+            }
+        }
+
         async function cargarNovedades() {
             const contenedorNov = document.getElementById('contenedor-novedades');
             if (!contenedorNov) return;
@@ -351,7 +411,8 @@
 
                 const { data, error } = await supabaseClient
                     .from('comunicados_memos')
-                    .select('*');
+                    .select('*')
+                    .order('created_at', { ascending: false });
 
                 if (error) throw error;
 
@@ -362,12 +423,31 @@
 
                 const filtrados = data.filter(item => {
                     const clave = (item.id_clave || '').toLowerCase();
-                    return clave.includes('camilleros') || clave.includes('todos');
+                    const contenidoObj = item.contenido || {};
+                    const turnoMsg = (contenidoObj.turno || "").toLowerCase();
+                    const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim();
+
+                    const esParaTodos = clave.includes('todos') || clave.includes('general') || turnoMsg === 'todos' || turnoMsg === 'general';
+                    const esParaDepto = clave.includes('camilleros');
+
+                    if (!esParaDepto && !esParaTodos) return false;
+                    if (esParaTodos) return true;
+                    if (turnoMsg && turnoMsg !== "todos" && turnoMsg !== "general") {
+                        if (turnoMsg !== turnoActual.toLowerCase()) return false;
+                    }
+                    return true;
                 });
 
                 if (filtrados.length === 0) {
                     contenedorNov.innerHTML = '<p style="color: #666;">No hay comunicaciones dirigidas a este sector.</p>';
                     return;
+                }
+
+                // Marcar como leído el último elemento (el más reciente) para este usuario al abrir la solapa
+                if (filtrados.length > 0) {
+                    localStorage.setItem('dsg_camilleros_ultimo_novedad_leida', filtrados[0].id);
+                    const badge = document.getElementById('badge-novedades');
+                    if (badge) badge.style.display = 'none';
                 }
 
                 let html = '';
@@ -748,7 +828,6 @@
                 const inputHora = tr.querySelector('.input-hora');
                 
                 if (inputHora && inputHora.value.trim() !== '') {
-                    // Extraer los agentes seleccionados mediante el multiselect personalizado
                     let personalSeleccionadoStr = '';
                     const labelSpan = tr.querySelector('.multiselect-label');
                     if (labelSpan) {
@@ -953,7 +1032,7 @@
             }
             cargarRRHH();
             cargarEstadoAscensores();
-            cargarNovedades();
+            verificarNovedadesNoLeidas();
         };
 
         function obtenerOpcionesCamillerosCheck() {
@@ -1047,6 +1126,7 @@
         function registrarHora(input) { if (input.value === "") { const ahora = new Date(); input.value = ahora.getHours().toString().padStart(2, '0') + ":" + ahora.getMinutes().toString().padStart(2, '0'); input.setAttribute('readonly', 'readonly'); guardarDatos(); } }
         function borrarFila(btn) { const tr = btn.closest('tr'); if (cuerpoTabla.getElementsByTagName('tr').length > 1) tr.remove(); else { tr.querySelectorAll('input, select').forEach(i => { i.value = ''; i.removeAttribute('readonly'); }); } guardarDatos(); }
         function detectarEnter(e) { if (e.key === 'Enter') { e.preventDefault(); const tr = document.createElement('tr'); tr.innerHTML = crearFilaHTML(); cuerpoTabla.appendChild(tr); tr.querySelectorAll('input')[1].focus(); } }
+        
         function mostrar(id, titulo) { 
             document.querySelectorAll('.seccion').forEach(s => s.classList.remove('activo')); 
             document.getElementById(id).classList.add('activo'); 
