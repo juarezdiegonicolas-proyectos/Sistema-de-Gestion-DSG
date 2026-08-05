@@ -203,6 +203,7 @@
                     const contenidoObj = item.contenido || {};
                     const turnoMsg = (contenidoObj.turno || "").toLowerCase();
 
+                    // Mapeo adaptado para detectar "higiene", "seguridad" o comunicados generales
                     const esParaTodos = clave.includes('todos') || clave.includes('general') || turnoMsg === 'todos' || turnoMsg === 'general';
                     const esParaDepto = clave.includes('higiene') || clave.includes('seguridad');
 
@@ -273,6 +274,7 @@
                     const turnoMsg = (contenidoObj.turno || "").toLowerCase();
                     const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim();
 
+                    // Mapeo adaptado para el departamento de Higiene y Seguridad
                     const esParaTodos = clave.includes('todos') || clave.includes('general') || turnoMsg === 'todos' || turnoMsg === 'general';
                     const esParaDepto = clave.includes('higiene') || clave.includes('seguridad');
 
