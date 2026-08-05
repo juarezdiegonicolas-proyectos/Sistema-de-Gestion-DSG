@@ -55,7 +55,7 @@
         .header-logos { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
         .header-logos img { height: 110px; width: auto; object-fit: contain; }
 
-        /* Estilos específicos adaptados para sección Novedades y Muro */
+        /* Estilos específicos para sección Novedades y Muro */
         .filtros-historicos { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 20px; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #ddd; }
         .input-select { padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; font-size: 13px; background: white; cursor: pointer; }
         .btn-adjuntar { background: #17a2b8; color: white; }
@@ -225,24 +225,48 @@
         }
 
         async function cerrarJornadaGlobal() {
-            if (!confirm("¿Cerrar jornada? Se consolidarán los datos y se reiniciará el sistema.")) return;
+            if (!confirm("¿Cerrar jornada? Se guardará el reporte en la base de datos y se reiniciará el sistema.")) return;
 
-            const cierre = { 
-                fecha: inputFecha.value, 
-                turno: localStorage.getItem('usuario_turno') || "Mañana", 
-                depto: "Higiene y Seguridad", 
-                reporte: editorReporte.innerHTML, 
-                timestamp: new Date().toISOString() 
-            };
-            
-            let historial = JSON.parse(localStorage.getItem('historial_jornadas') || "[]");
-            historial.push(cierre);
-            localStorage.setItem('historial_jornadas', JSON.stringify(historial));
-            
-            localStorage.removeItem('hyc_reporte');
-            
-            alert("Jornada cerrada con éxito.");
-            location.reload();
+            const nombreSupervisor = localStorage.getItem('usuario_nombre') || "Invitado";
+            const turnoSupervisor = localStorage.getItem('usuario_turno') || "Mañana";
+            const deptoActual = "Higiene y Seguridad";
+            const contenidoReporte = editorReporte.innerHTML;
+            const fechaReporte = inputFecha.value;
+
+            if (!contenidoReporte.trim()) {
+                alert("El reporte está vacío. Escriba contenido antes de cerrar la jornada.");
+                return;
+            }
+
+            try {
+                // Inserción directa en la tabla existente 'cierres_jornada' sin crear tablas nuevas
+                const { error } = await db
+                    .from('cierres_jornada')
+                    .insert([
+                        {
+                            departamento: deptoActual,
+                            turno: turnoSupervisor,
+                            supervisor: nombreSupervisor,
+                            fecha: fechaReporte,
+                            reporte: contenidoReporte,
+                            timestamp: new Date().toISOString()
+                        }
+                    ]);
+
+                if (error) {
+                    console.error("Error al registrar el cierre en Supabase:", error);
+                    alert("Hubo un error al guardar el reporte en la base de datos: " + error.message);
+                    return;
+                }
+
+                localStorage.removeItem('hyc_reporte');
+                alert("Jornada cerrada y reporte guardado con éxito en la base de datos.");
+                location.reload();
+
+            } catch (err) {
+                console.error("Excepción al cerrar jornada:", err);
+                alert("Error de conexión al intentar guardar la jornada.");
+            }
         }
 
         function actualizarPrint(id) {
