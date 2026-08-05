@@ -21,11 +21,10 @@
         .menu-item:hover { background-color: #5d8dbb; color: white; }
         
         /* Badge para Novedades */
-        .badge-novedad { background-color: #d32f2f; color: white; font-size: 11px; padding: 2px 6px; border-radius: 10px; font-weight: bold; display: none; }
-        .badge-novedad.activo { display: inline-block; }
+        .badge-novedades { background-color: #dc3545; color: white; font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 10px; display: none; }
 
         .btn-accion-global { width: 100%; padding: 15px; margin-bottom: 10px; background: #28a745; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        .btn-cerrar { margin-top: 10px; padding: 15px; background: #d32f2f; color: white; text-align: center; text-decoration: none; border-radius: 6px; font-weight: bold; }
+        .btn-cerrar { margin-top: 10px; padding: 15px; background: #d32f2f; color: white; text-align: center; text-decoration: none; border-radius: 6px; font-weight: bold; border: none; cursor: pointer; width: 100%; box-sizing: border-box; }
         .contenido { flex: 1; padding: 40px; overflow-y: auto; }
         .seccion { display: none; background: white; padding: 40px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         .seccion.activo { display: block; } 
@@ -56,20 +55,6 @@
         .header-logos { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
         .header-logos img { height: 110px; width: auto; object-fit: contain; }
 
-        /* Estilos Ascensores y Novedades integrados */
-        .grid-ascensores { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 25px; }
-        .card-ascensor { background: #f9f9f9; border: 1px solid #ddd; padding: 15px; border-radius: 8px; text-align: center; border-left: 5px solid #1a3a5f; }
-        .card-ascensor.operativo { border-left-color: #28a745; }
-        .card-ascensor.detenido { border-left-color: #dc3545; }
-        .card-ascensor.mantenimiento { border-left-color: #ffc107; }
-
-        .lista-novedades { display: flex; flex-direction: column; gap: 15px; }
-        .card-novedad { background: #fff; border: 1px solid #ddd; border-left: 5px solid #2d5a8e; padding: 15px 20px; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
-        .card-novedad.no-leida { background: #f0f7ff; border-left-color: #d32f2f; }
-        .card-novedad h4 { margin: 0 0 5px 0; color: #1a3a5f; }
-        .card-novedad p { margin: 0; color: #444; font-size: 14px; }
-        .card-novedad .fecha-nov { font-size: 11px; color: #777; margin-top: 8px; display: block; }
-
         @media print {
             .sidebar, .btn-accion-global, .btn-cerrar, .menu-item, .no-imprimir, .btn-imprimir { display: none !important; }
             body, html, .contenido, .seccion.activo, .hoja { background-color: white !important; margin: 0 !important; padding: 0 !important; width: 100% !important; height: auto !important; overflow: visible !important; box-shadow: none !important; display: block !important; }
@@ -98,15 +83,15 @@
             <p id="nombre-supervisor-sidebar">---</p>
         </div>
         <div class="sidebar-header-title">
-            <h2>Panel <span id="titulo-panel">Higiene y Seguridad</span></h2>
+            <h2 id="titulo-panel">Reportes</h2>
         </div>
         <div class="menu-links">
             <div class="menu-item" onclick="mostrar('reportes', 'Reportes')"><span>📊 Reportes</span></div>
+            <div class="menu-item" onclick="mostrar('novedades', 'Novedades')"><span>📢 Novedades</span> <span id="badge-novedades" class="badge-novedades">0</span></div>
             <div class="menu-item" onclick="mostrar('ascensores', 'Estado de Ascensores')"><span>🛗 Estado de Ascensores</span></div>
-            <div class="menu-item" onclick="mostrar('novedades', 'Novedades')"><span>📢 Novedades</span> <span id="badge-novedades" class="badge-novedad">0</span></div>
         </div>
         <button class="btn-accion-global" onclick="cerrarJornadaGlobal()">📥 CERRAR JORNADA</button>
-        <a href="index.html" class="btn-cerrar">CERRAR SESIÓN</a>
+        <button class="btn-cerrar" onclick="cerrarSesion()">🚪 CERRAR SESIÓN</button>
     </div>
 
     <div class="contenido">
@@ -126,21 +111,6 @@
             </div>
             <div class="area-acciones"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button></div>
         </div>
-
-        <div id="ascensores" class="seccion">
-            <div class="header-logos">
-                <img src="static/logo_hospi.png" alt="Logo Hospital" onerror="this.src='https://via.placeholder.com/150?text=Hospital'">
-                <h1 style="margin: 0; text-align: center; flex: 1; font-size: 30px;">Estado de Ascensores</h1>
-                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
-            </div>
-            <div id="info-supervisor">Supervisor: <span id="display-nombre">---</span> | Turno: <span id="display-turno">---</span> | Depto: <span id="display-depto">---</span></div>
-            
-            <h3 style="color: #1a3a5f; margin-top: 15px; margin-bottom: 15px;">Monitoreo en Tiempo Real</h3>
-            <div id="grid-ascensores-operativa" class="grid-ascensores">
-                <!-- Se inyecta dinámicamente -->
-            </div>
-            <div class="area-acciones"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button></div>
-        </div>
         
         <div id="novedades" class="seccion">
             <div class="header-logos">
@@ -148,39 +118,54 @@
                 <h1 style="margin: 0; text-align: center; flex: 1;">Novedades y Comunicados</h1>
                 <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
             </div>
-            <div id="contenedor-novedades" class="lista-novedades">
-                <p>Cargando novedades...</p>
+            <div id="contenedor-novedades" style="margin-top: 20px;">
+                <p>Cargando novedades desde la base de datos...</p>
             </div>
+            <div class="area-acciones" style="margin-top: 20px;"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button></div>
+        </div>
+
+        <div id="ascensores" class="seccion">
+            <div class="header-logos">
+                <img src="static/logo_hospi.png" alt="Logo Hospital" onerror="this.src='https://via.placeholder.com/150?text=Hospital'">
+                <h1 style="margin: 0; text-align: center; flex: 1;">Estado Actual de Ascensores</h1>
+                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
+            </div>
+            <div id="info-supervisor" style="margin-bottom: 20px; color: #1a3a5f; font-weight: bold; border: 1px solid #ddd; padding: 10px; border-radius: 6px; background: #f9f9f9;">
+                Supervisor: <span id="display-nombre-asc">---</span> | Turno: <span id="display-turno-asc">---</span> | Depto: <span id="display-depto-asc">---</span>
+            </div>
+            <div id="contenedor-ascensores" style="border: 1px solid #ccc; padding: 20px; border-radius: 8px; background: #fafafa;">
+                <p>Cargando estado actual de ascensores...</p>
+            </div>
+            <div class="area-acciones"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button></div>
         </div>
     </div>
 
     <script>
-        // Configuración e Inicialización de Supabase
-        const SUPABASE_URL = 'https://TU_SUPABASE_URL.supabase.co'; 
-        const SUPABASE_KEY = 'TU_SUPABASE_ANON_KEY';
-        let supabaseClient = null;
-        try {
-            if (typeof supabase !== 'undefined' && SUPABASE_URL.startsWith('https://')) {
-                supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-            }
-        } catch(e) { console.warn("Supabase no inicializado con credenciales válidas todavía."); }
+        // CONFIGURACIÓN DE SUPABASE CONECTADA
+        const SUPABASE_URL = 'https://ydcbdvosxbwcutddxaze.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_EvvZ8n7Ve2cF9FB4SXA0Ug_7q6qWh9f';
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         const editorReporte = document.getElementById('editor-reporte');
         const spanHoja = document.getElementById('numero-hoja');
         const inputFecha = document.getElementById('fecha-reporte');
 
         function obtenerFechaHoyISO() { return new Date().toISOString().split('T')[0]; }
-
-        let contadorHoja = parseInt(localStorage.getItem('hyc_contador_hoja')) || 1;
-        spanHoja.innerText = String(contadorHoja).padStart(3, '0');
         inputFecha.value = localStorage.getItem('hyc_fecha') || obtenerFechaHoyISO();
+
+        function cerrarSesion() {
+            localStorage.removeItem('usuario_nombre');
+            localStorage.removeItem('usuario_turno');
+            localStorage.removeItem('hyc_reporte');
+            window.location.href = './';
+        }
 
         function guardarDatos() {
             localStorage.setItem('hyc_reporte', editorReporte.innerHTML);
             localStorage.setItem('hyc_fecha', inputFecha.value);
         }
 
-        function cerrarJornadaGlobal() {
+        async function cerrarJornadaGlobal() {
             if (!confirm("¿Cerrar jornada? Se consolidarán los datos y se reiniciará el sistema.")) return;
 
             const cierre = { 
@@ -196,113 +181,305 @@
             localStorage.setItem('historial_jornadas', JSON.stringify(historial));
             
             localStorage.removeItem('hyc_reporte');
-            localStorage.setItem('hyc_contador_hoja', contadorHoja + 1);
             
             alert("Jornada cerrada con éxito.");
             location.reload();
         }
 
-        // Lógica de Ascensores (Estado Actual) conectada a Supabase
-        async function cargarEstadoAscensores() {
-            const container = document.getElementById('grid-ascensores-operativa');
-            if (!container) return;
+        async function verificarNovedadesNoLeidas() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('comunicados_memos')
+                    .select('*')
+                    .order('created_at', { ascending: false });
 
-            let ascensores = [];
-            if (supabaseClient) {
-                try {
-                    const { data, error } = await supabaseClient
-                        .from('estado_actual_ascensores')
-                        .select('*')
-                        .order('identificador_dispositivo', { ascending: true });
-                    if (!error && data) {
-                        // Mapeo adaptado a la estructura de la tabla estado_actual_ascensores
-                        ascensores = data.map(item => ({
-                            id: item.identificador_dispositivo,
-                            nombre: `Dispositivo / Ascensor ${item.identificador_dispositivo} (${item.uso || 'General'})`,
-                            estado: item.estado,
-                            observaciones: item.observaciones
-                        }));
+                if (error || !data) return;
+
+                const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim();
+                const usuarioActual = (localStorage.getItem('usuario_nombre') || "invitado").trim().toLowerCase();
+
+                const novedadesFiltradas = data.filter(item => {
+                    const clave = (item.id_clave || '').toLowerCase();
+                    const contenidoObj = item.contenido || {};
+                    const turnoMsg = (contenidoObj.turno || "").toLowerCase();
+
+                    const esParaTodos = clave.includes('todos') || clave.includes('general') || turnoMsg === 'todos' || turnoMsg === 'general';
+                    const esParaDepto = clave.includes('higiene') || clave.includes('seguridad');
+
+                    if (!esParaDepto && !esParaTodos) return false;
+                    if (esParaTodos) return true;
+                    if (turnoMsg && turnoMsg !== "todos" && turnoMsg !== "general") {
+                        if (turnoMsg !== turnoActual.toLowerCase()) return false;
                     }
-                } catch(e) { console.warn("No se pudo conectar a Supabase para ascensores, usando datos locales o de ejemplo."); }
-            }
+                    return true;
+                });
 
-            if (ascensores.length === 0) {
-                ascensores = JSON.parse(localStorage.getItem('ascensores_estado') || '[{"id": 1, "nombre": "Ascensor 1 (Central)", "estado": "Operativo"}, {"id": 2, "nombre": "Ascensor 2 (Guardia)", "estado": "Operativo"}, {"id": 3, "nombre": "Ascensor 3 (Servicios)", "estado": "Mantenimiento"}]');
-            }
+                if (novedadesFiltradas.length === 0) return;
 
-            container.innerHTML = '';
-            ascensores.forEach(asc => {
-                let claseEstado = 'operativo';
-                if (asc.estado === 'Detenido') claseEstado = 'detenido';
-                if (asc.estado === 'Mantenimiento' || asc.estado === 'Fuera de Servicio') claseEstado = 'mantenimiento';
+                const claveStorage = `dsg_hyc_ultimo_novedad_leida_${usuarioActual}`;
+                const ultimoIdLeido = localStorage.getItem(claveStorage);
+                let noLeidasCount = 0;
 
-                container.innerHTML += `
-                    <div class="card-ascensor ${claseEstado}">
-                        <h4 style="margin: 0 0 5px 0; color: #1a3a5f;">${asc.nombre || 'Ascensor ' + asc.id}</h4>
-                        <p style="margin: 0; font-weight: bold;">Estado: ${asc.estado}</p>
-                        ${asc.observaciones ? `<p style="margin: 5px 0 0 0; font-size: 12px; color: #666;">Obs: ${asc.observaciones}</p>` : ''}
-                    </div>
-                `;
-            });
-        }
-
-        // Lógica de Novedades / Comunicados y Badge Notificaciones con filtros y soporte de adjuntos
-        async function cargarNovedades() {
-            const container = document.getElementById('contenedor-novedades');
-            const badge = document.getElementById('badge-novedades');
-            if (!container) return;
-
-            let novedades = [];
-            const usuarioTurnoActual = localStorage.getItem('usuario_turno') || "Mañana";
-            
-            if (supabaseClient) {
-                try {
-                    const { data, error } = await supabaseClient.from('comunicados_memos').select('*').order('created_at', { ascending: false });
-                    if (!error && data) {
-                        // Filtrar comunicados aplicando filtros de departamento (ej. camilleros o higiene/seguridad) y turno si corresponde
-                        novedades = data.filter(nov => {
-                            // Si id_clave u objeto contenido define restricciones, se pueden evaluar aca
-                            return true; 
-                        });
+                if (!ultimoIdLeido) {
+                    noLeidasCount = novedadesFiltradas.length;
+                } else {
+                    for (let item of novedadesFiltradas) {
+                        if (String(item.id) === String(ultimoIdLeido)) break;
+                        noLeidasCount++;
                     }
-                } catch(e) { console.warn("Error al cargar novedades desde Supabase."); }
-            }
-
-            if (novedades.length === 0) {
-                novedades = JSON.parse(localStorage.getItem('novedades_comunicados') || '[{"id": 1, "titulo": "Bienvenido al Sistema de Higiene y Seguridad", "contenido": "Módulo operativo configurado y sincronizado correctamente.", "created_at": "2026-03-30"}]');
-            }
-
-            const usuarioActualKey = localStorage.getItem('usuario_nombre') || 'default';
-            const ultimaLeidaId = parseInt(localStorage.getItem(`dsg_camilleros_ultimo_novedad_leida_${usuarioActualKey}`) || localStorage.getItem('ultima_novedad_leida') || '0');
-            let noLeidasCount = 0;
-
-            container.innerHTML = '';
-            novedades.forEach(nov => {
-                const novId = nov.id || nov.id_clave || 0;
-                const esNoLeida = novId > ultimaLeidaId;
-                if (esNoLeida) noLeidasCount++;
-
-                // Manejo de adjuntos o imágenes en base64 si existen
-                let adjuntoHtml = '';
-                if (nov.contenido && typeof nov.contenido === 'object' && nov.contenido.archivo) {
-                    adjuntoHtml = `<div style="margin-top: 10px;"><a href="${nov.contenido.archivo}" target="_blank" class="btn-gestion" style="background:#1a3a5f; color:#fff; display:inline-block; text-decoration:none;">Ver Adjunto</a></div>`;
                 }
 
-                container.innerHTML += `
-                    <div class="card-novedad ${esNoLeida ? 'no-leida' : ''}">
-                        <h4>${nov.titulo || nov.asunto || 'Comunicado'} ${esNoLeida ? '<span style="color:#d32f2f; font-size:12px;">(Nuevo)</span>' : ''}</h4>
-                        <p>${typeof nov.contenido === 'string' ? nov.contenido : (nov.contenido?.texto || JSON.stringify(nov.contenido))}</p>
-                        ${adjuntoHtml}
-                        <span class="fecha-nov">${nov.created_at || nov.fecha || 'Fecha reciente'}</span>
-                    </div>
-                `;
-            });
+                const badge = document.getElementById('badge-novedades');
+                if (badge) {
+                    if (noLeidasCount > 0) {
+                        badge.innerText = noLeidasCount;
+                        badge.style.display = 'inline-block';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+            } catch (err) {
+                console.error("Error al verificar novedades no leídas:", err);
+            }
+        }
 
-            if (noLeidasCount > 0) {
-                badge.innerText = noLeidasCount;
-                badge.classList.add('activo');
-            } else {
-                badge.classList.remove('activo');
+        async function cargarNovedades() {
+            const contenedorNov = document.getElementById('contenedor-novedades');
+            if (!contenedorNov) return;
+            
+            contenedorNov.innerHTML = "<p>Buscando comunicados y novedades en Supabase...</p>";
+
+            try {
+                if (!supabaseClient) {
+                    contenedorNov.innerHTML = '<p style="color: #666;">No hay conexión a Supabase.</p>';
+                    return;
+                }
+
+                const { data, error } = await supabaseClient
+                    .from('comunicados_memos')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                if (!data || data.length === 0) {
+                    contenedorNov.innerHTML = '<p style="color: #666;">No hay registros disponibles.</p>';
+                    return;
+                }
+
+                const filtrados = data.filter(item => {
+                    const clave = (item.id_clave || '').toLowerCase();
+                    const contenidoObj = item.contenido || {};
+                    const turnoMsg = (contenidoObj.turno || "").toLowerCase();
+                    const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim();
+
+                    const esParaTodos = clave.includes('todos') || clave.includes('general') || turnoMsg === 'todos' || turnoMsg === 'general';
+                    const esParaDepto = clave.includes('higiene') || clave.includes('seguridad');
+
+                    if (!esParaDepto && !esParaTodos) return false;
+                    if (esParaTodos) return true;
+                    if (turnoMsg && turnoMsg !== "todos" && turnoMsg !== "general") {
+                        if (turnoMsg !== turnoActual.toLowerCase()) return false;
+                    }
+                    return true;
+                });
+
+                if (filtrados.length === 0) {
+                    contenedorNov.innerHTML = '<p style="color: #666;">No hay comunicaciones dirigidas a este sector.</p>';
+                    return;
+                }
+
+                if (filtrados.length > 0) {
+                    const usuarioActual = (localStorage.getItem('usuario_nombre') || "invitado").trim().toLowerCase();
+                    localStorage.setItem(`dsg_hyc_ultimo_novedad_leida_${usuarioActual}`, filtrados[0].id);
+                    const badge = document.getElementById('badge-novedades');
+                    if (badge) badge.style.display = 'none';
+                }
+
+                let html = '';
+                filtrados.forEach(item => {
+                    const contenidoObj = item.contenido || {};
+                    const texto = contenidoObj.texto || 'Sin contenido';
+                    const fecha = contenidoObj.fecha || 'Sin fecha';
+                    const turnoMsg = contenidoObj.turno || 'General';
+
+                    let archivosArr = [];
+                    if (Array.isArray(contenidoObj.archivos)) {
+                        archivosArr = contenidoObj.archivos;
+                    } else if (contenidoObj.archivo && contenidoObj.archivo.data) {
+                        archivosArr = [contenidoObj.archivo];
+                    }
+
+                    let archivosHtml = "";
+                    if (archivosArr.length > 0) {
+                        archivosHtml = '<div style="margin-top: 15px; display: flex; flex-direction: column; gap: 10px;">';
+                        archivosArr.forEach(arch => {
+                            if (!arch || !arch.data) return;
+                            let base64Data = arch.data;
+                            let nombreArchivo = arch.name || "adjunto_descargable";
+                            let esImagen = base64Data.startsWith('data:image/') || /\.(jpg|jpeg|png|gif|webp)$/i.test(nombreArchivo);
+
+                            if (esImagen) {
+                                archivosHtml += `
+                                    <div style="text-align: center; background: #fafafa; border: 1px solid #ddd; padding: 10px; border-radius: 6px;">
+                                        <div style="margin-bottom: 8px;">
+                                            <img src="${base64Data}" alt="Archivo adjunto" style="max-width: 100%; max-height: 350px; border-radius: 4px; border: 1px solid #ddd; object-fit: contain;" />
+                                        </div>
+                                        <a href="${base64Data}" download="${nombreArchivo}" style="display: inline-block; background: #1a3a5f; color: #fff; padding: 6px 14px; border-radius: 4px; text-decoration: none; font-size: 13px; font-weight: 500;">
+                                            📥 Descargar Imagen (${nombreArchivo})
+                                        </a>
+                                    </div>
+                                `;
+                            } else {
+                                archivosHtml += `
+                                    <div style="background: #f8f9fa; border: 1px solid #ddd; padding: 10px 14px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                                        <div style="display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1;">
+                                            <span style="font-size: 26px; flex-shrink: 0; line-height: 1;">📄</span>
+                                            <div style="min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+                                                <strong style="font-size: 13px; color: #333; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${nombreArchivo}">${nombreArchivo}</strong>
+                                                <span style="font-size: 11px; color: #666; display: block;">Documento adjunto</span>
+                                            </div>
+                                        </div>
+                                        <a href="${base64Data}" download="${nombreArchivo}" style="background: #1a3a5f; color: #fff; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 13px; font-weight: 500; display: inline-flex; align-items: center; gap: 55px; white-space: nowrap; flex-shrink: 0;">
+                                            📥 Descargar Archivo
+                                        </a>
+                                    </div>
+                                `;
+                            }
+                        });
+                        archivosHtml += '</div>';
+                    }
+
+                    html += `
+                        <div style="background: #fff; border-left: 5px solid #1a3a5f; border-top: 1px solid #ddd; border-right: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 20px; border-radius: 6px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 8px; flex-wrap: wrap; gap: 8px;">
+                                <strong style="color: #1a3a5f; font-size: 16px;">📢 Comunicado Oficial</strong>
+                                <span style="font-size: 12px; color: #666; background: #f1f1f1; padding: 4px 10px; border-radius: 4px;">Turno: ${turnoMsg} | Fecha: ${fecha} | <strong>Enviado por:</strong> Dirección de Servicios Generales</span>
+                            </div>
+                            <div style="font-size: 15px; color: #333; white-space: pre-wrap; line-height: 1.5; font-family: inherit;">${texto}</div>
+                            ${archivosHtml}
+                        </div>`;
+                });
+
+                contenedorNov.innerHTML = html;
+
+            } catch (err) {
+                console.error("Error al cargar comunicados:", err);
+                contenedorNov.innerHTML = '<p style="color: red;">Error al sincronizar con la base de datos.</p>';
+            }
+        }
+
+        async function cargarEstadoAscensores() {
+            const contenedorAsc = document.getElementById('contenedor-ascensores');
+            if (!contenedorAsc) return;
+            
+            contenedorAsc.innerHTML = "<p>Consultando estado de ascensores en la base de datos...</p>";
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('estado_actual_ascensores')
+                    .select('*');
+
+                if (error) {
+                    console.error("Error al obtener ascensores:", error);
+                    contenedorAsc.innerHTML = "<p style='color:red;'>No se pudo cargar el estado de los ascensores desde Supabase.</p>";
+                    return;
+                }
+
+                if (!data || data.length === 0) {
+                    contenedorAsc.innerHTML = "<p>No hay registros de ascensores disponibles en este momento.</p>";
+                    return;
+                }
+
+                let ultimaFechaStr = '';
+                let legajoOperador = '';
+                let nombreSupervisor = '---';
+
+                data.forEach(item => {
+                    let fechaItem = item.updated_at; 
+                    if (fechaItem) {
+                        if (!ultimaFechaStr || new Date(fechaItem) > new Date(ultimaFechaStr)) {
+                            ultimaFechaStr = fechaItem;
+                        }
+                    }
+                    let legajoItem = item.legajo_operador;
+                    if (legajoItem && !legajoOperador) {
+                        legajoOperador = String(legajoItem).trim();
+                    }
+                });
+
+                let fechaFormateada = '---';
+                if (ultimaFechaStr) {
+                    try {
+                        let fObj = new Date(ultimaFechaStr);
+                        fechaFormateada = fObj.toLocaleString('es-AR', {
+                            day: '2-digit', month: '2-digit', year: 'numeric',
+                            hour: '2-digit', minute: '2-digit', second: '2-digit',
+                            hour12: false
+                        });
+                    } catch(e) {
+                        fechaFormateada = ultimaFechaStr;
+                    }
+                }
+
+                if (legajoOperador) {
+                    const { data: userData, error: userError } = await supabaseClient
+                        .from('usuarios')
+                        .select('nombre_completo')
+                        .eq('legajo', legajoOperador)
+                        .maybeSingle();
+
+                    if (!userError && userData && userData.nombre_completo) {
+                        nombreSupervisor = userData.nombre_completo.toUpperCase();
+                    } else {
+                        nombreSupervisor = `LEGAJO: ${legajoOperador}`;
+                    }
+                }
+
+                data.sort((a, b) => {
+                    let idA = a.id || 0;
+                    let idB = b.id || 0;
+                    return idA - idB;
+                });
+
+                let htmlCabeceraInfo = `
+                    <div style="background: #f8f9fa; border: 1px solid #ddd; padding: 12px 15px; border-radius: 6px; margin-bottom: 20px; font-size: 15px; color: #333;">
+                        Última actualización: <strong style="color: #000;">${fechaFormateada}</strong> | Registrado por: <strong style="color: #000;">${nombreSupervisor}</strong>
+                    </div>`;
+
+                let htmlTabla = `
+                    <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                        <thead>
+                            <tr style="background: #1a3a5f; color: white;">
+                                <th style="padding: 10px; border: 1px solid #ddd; text-align: center; width: 15%;">Dispositivo</th>
+                                <th style="padding: 10px; border: 1px solid #ddd; text-align: center; width: 25%;">Estado</th>
+                                <th style="padding: 10px; border: 1px solid #ddd; text-align: left; width: 30%;">Uso Asignado</th>
+                                <th style="padding: 10px; border: 1px solid #ddd; text-align: left; width: 30%;">Observaciones / Detalles</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+
+                data.forEach(asc => {
+                    let dispositivo = asc.identificador_dispositivo || `Dispositivo ${asc.id || ''}`;
+                    let estado = asc.estado || '-';
+                    let uso = asc.uso || '-';
+                    let observaciones = asc.observaciones && asc.observaciones !== 'EMPTY' ? asc.observaciones : '-';
+
+                    htmlTabla += `
+                        <tr>
+                            <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold; text-align: center;">${dispositivo}</td>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">${estado}</td>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: left;">${uso}</td>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: left;">${observaciones}</td>
+                        </tr>`;
+                });
+
+                htmlTabla += `</tbody></table>`;
+                contenedorAsc.innerHTML = htmlCabeceraInfo + htmlTabla;
+
+            } catch (err) {
+                console.error("Excepción al cargar ascensores:", err);
+                contenedorAsc.innerHTML = "<p style='color:red;'>Ocurrió un error al intentar conectar con la tabla de ascensores.</p>";
             }
         }
 
@@ -312,37 +489,44 @@
             document.getElementById('titulo-panel').innerText = titulo;
 
             if (id === 'novedades') {
-                const badge = document.getElementById('badge-novedades');
-                badge.classList.remove('activo');
-                
-                // Actualizar control de no leídos usando localStorage específico por usuario
-                let novedades = JSON.parse(localStorage.getItem('novedades_comunicados') || '[{"id":1}]');
-                if (novedades.length > 0) {
-                    const maxId = Math.max(...novedades.map(n => n.id || n.id_clave || 1));
-                    const usuarioActualKey = localStorage.getItem('usuario_nombre') || 'default';
-                    localStorage.setItem(`dsg_camilleros_ultimo_novedad_leida_${usuarioActualKey}`, maxId);
-                    localStorage.setItem('ultima_novedad_leida', maxId);
-                }
+                cargarNovedades();
+            } else if (id === 'ascensores') {
+                cargarEstadoAscensores();
             }
         }
 
-        window.onload = () => {
+        window.onload = async () => {
             const nombre = localStorage.getItem('usuario_nombre') || "Invitado"; 
             const turno = localStorage.getItem('usuario_turno') || "Mañana"; 
             const depto = "Higiene y Seguridad";
             
             document.getElementById('nombre-supervisor-sidebar').innerText = nombre;
-            document.getElementById('display-nombre').innerText = nombre; 
-            document.getElementById('display-turno').innerText = turno; 
-            document.getElementById('display-depto').innerText = depto;
             document.getElementById('display-nombre-rep').innerText = nombre; 
             document.getElementById('display-turno-rep').innerText = turno; 
             document.getElementById('display-depto-rep').innerText = depto;
+            document.getElementById('display-nombre-asc').innerText = nombre;
+            document.getElementById('display-turno-asc').innerText = turno;
+            document.getElementById('display-depto-asc').innerText = depto;
             
+            let numeroHojaReal = 1;
+            try {
+                const { count, error } = await supabaseClient
+                    .from('cierres_jornada')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('departamento', depto);
+
+                if (!error && count !== null) {
+                    numeroHojaReal = count + 1;
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener el conteo dinámico de Supabase.");
+            }
+
+            spanHoja.innerText = String(numeroHojaReal).padStart(3, '0');
             editorReporte.innerHTML = localStorage.getItem('hyc_reporte') || "";
             
             cargarEstadoAscensores();
-            cargarNovedades();
+            verificarNovedadesNoLeidas();
         };
     </script>
 </body>
