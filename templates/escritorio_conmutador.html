@@ -87,8 +87,8 @@
         </div>
         <div class="menu-links">
             <div class="menu-item" onclick="mostrar('reportes', 'Reportes')"><span>📊 Reportes</span></div>
-            <div class="menu-item" onclick="mostrar('novedades', 'Novedades')"><span>📢 Novedades</span> <span id="badge-novedades" class="badge-novedades">0</span></div>
             <div class="menu-item" onclick="mostrar('ascensores', 'Estado de Ascensores')"><span>🛗 Estado de Ascensores</span></div>
+            <div class="menu-item" onclick="mostrar('novedades', 'Novedades')"><span>📢 Novedades</span> <span id="badge-novedades" class="badge-novedades">0</span></div>
         </div>
         <button class="btn-accion-global" onclick="cerrarJornadaGlobal()">📥 CERRAR JORNADA</button>
         <button class="btn-cerrar" onclick="cerrarSesion()">🚪 CERRAR SESIÓN</button>
@@ -112,18 +112,6 @@
             <div class="area-acciones"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button></div>
         </div>
         
-        <div id="novedades" class="seccion">
-            <div class="header-logos">
-                <img src="static/logo_hospi.png" alt="Logo Hospital" onerror="this.src='https://via.placeholder.com/150?text=Hospital'">
-                <h1 style="margin: 0; text-align: center; flex: 1;">Novedades y Comunicados</h1>
-                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
-            </div>
-            <div id="contenedor-novedades" style="margin-top: 20px;">
-                <p>Cargando novedades desde la base de datos...</p>
-            </div>
-            <div class="area-acciones" style="margin-top: 20px;"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button></div>
-        </div>
-
         <div id="ascensores" class="seccion">
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo Hospital" onerror="this.src='https://via.placeholder.com/150?text=Hospital'">
@@ -137,6 +125,18 @@
                 <p>Cargando estado actual de ascensores...</p>
             </div>
             <div class="area-acciones"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button></div>
+        </div>
+
+        <div id="novedades" class="seccion">
+            <div class="header-logos">
+                <img src="static/logo_hospi.png" alt="Logo Hospital" onerror="this.src='https://via.placeholder.com/150?text=Hospital'">
+                <h1 style="margin: 0; text-align: center; flex: 1;">Novedades y Comunicados</h1>
+                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
+            </div>
+            <div id="contenedor-novedades" style="margin-top: 20px;">
+                <p>Cargando novedades desde la base de datos...</p>
+            </div>
+            <div class="area-acciones" style="margin-top: 20px;"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button></div>
         </div>
     </div>
 
