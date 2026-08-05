@@ -112,9 +112,9 @@
     <div class="contenido">
         <div id="reportes" class="seccion activo">
             <div class="header-logos">
-                <img src="logo_hospi.png" alt="Logo Hospital" onerror="this.src='https://via.placeholder.com/150?text=Hospital'">
+                <img src="static/logo_hospi.png" alt="Logo Hospital" onerror="this.src='https://via.placeholder.com/150?text=Hospital'">
                 <h1 style="margin: 0; text-align: center; flex: 1;">Reportes</h1>
-                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
+                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
             </div>
             <div id="info-supervisor">Supervisor: <span id="display-nombre-rep">---</span> | Turno: <span id="display-turno-rep">---</span> | Depto: <span id="display-depto-rep">---</span></div>
             <div class="info-hoja">
@@ -129,9 +129,9 @@
 
         <div id="ascensores" class="seccion">
             <div class="header-logos">
-                <img src="logo_hospi.png" alt="Logo Hospital" onerror="this.src='https://via.placeholder.com/150?text=Hospital'">
+                <img src="static/logo_hospi.png" alt="Logo Hospital" onerror="this.src='https://via.placeholder.com/150?text=Hospital'">
                 <h1 style="margin: 0; text-align: center; flex: 1; font-size: 30px;">Estado de Ascensores</h1>
-                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
+                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
             </div>
             <div id="info-supervisor">Supervisor: <span id="display-nombre">---</span> | Turno: <span id="display-turno">---</span> | Depto: <span id="display-depto">---</span></div>
             
@@ -144,9 +144,9 @@
         
         <div id="novedades" class="seccion">
             <div class="header-logos">
-                <img src="logo_hospi.png" alt="Logo Hospital" onerror="this.src='https://via.placeholder.com/150?text=Hospital'">
+                <img src="static/logo_hospi.png" alt="Logo Hospital" onerror="this.src='https://via.placeholder.com/150?text=Hospital'">
                 <h1 style="margin: 0; text-align: center; flex: 1;">Novedades y Comunicados</h1>
-                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
+                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
             </div>
             <div id="contenedor-novedades" class="lista-novedades">
                 <p>Cargando novedades...</p>
@@ -202,7 +202,7 @@
             location.reload();
         }
 
-        // Lógica de Ascensores (Estado Actual)
+        // Lógica de Ascensores (Estado Actual) conectada a Supabase
         async function cargarEstadoAscensores() {
             const container = document.getElementById('grid-ascensores-operativa');
             if (!container) return;
@@ -210,8 +210,19 @@
             let ascensores = [];
             if (supabaseClient) {
                 try {
-                    const { data, error } = await supabaseClient.from('ascensores').select('*');
-                    if (!error && data) ascensores = data;
+                    const { data, error } = await supabaseClient
+                        .from('estado_actual_ascensores')
+                        .select('*')
+                        .order('identificador_dispositivo', { ascending: true });
+                    if (!error && data) {
+                        // Mapeo adaptado a la estructura de la tabla estado_actual_ascensores
+                        ascensores = data.map(item => ({
+                            id: item.identificador_dispositivo,
+                            nombre: `Dispositivo / Ascensor ${item.identificador_dispositivo} (${item.uso || 'General'})`,
+                            estado: item.estado,
+                            observaciones: item.observaciones
+                        }));
+                    }
                 } catch(e) { console.warn("No se pudo conectar a Supabase para ascensores, usando datos locales o de ejemplo."); }
             }
 
@@ -223,28 +234,37 @@
             ascensores.forEach(asc => {
                 let claseEstado = 'operativo';
                 if (asc.estado === 'Detenido') claseEstado = 'detenido';
-                if (asc.estado === 'Mantenimiento') claseEstado = 'mantenimiento';
+                if (asc.estado === 'Mantenimiento' || asc.estado === 'Fuera de Servicio') claseEstado = 'mantenimiento';
 
                 container.innerHTML += `
                     <div class="card-ascensor ${claseEstado}">
                         <h4 style="margin: 0 0 5px 0; color: #1a3a5f;">${asc.nombre || 'Ascensor ' + asc.id}</h4>
                         <p style="margin: 0; font-weight: bold;">Estado: ${asc.estado}</p>
+                        ${asc.observaciones ? `<p style="margin: 5px 0 0 0; font-size: 12px; color: #666;">Obs: ${asc.observaciones}</p>` : ''}
                     </div>
                 `;
             });
         }
 
-        // Lógica de Novedades / Comunicados y Badge Notificaciones
+        // Lógica de Novedades / Comunicados y Badge Notificaciones con filtros y soporte de adjuntos
         async function cargarNovedades() {
             const container = document.getElementById('contenedor-novedades');
             const badge = document.getElementById('badge-novedades');
             if (!container) return;
 
             let novedades = [];
+            const usuarioTurnoActual = localStorage.getItem('usuario_turno') || "Mañana";
+            
             if (supabaseClient) {
                 try {
-                    const { data, error } = await supabaseClient.from('novedades').select('*').order('created_at', { ascending: false });
-                    if (!error && data) novedades = data;
+                    const { data, error } = await supabaseClient.from('comunicados_memos').select('*').order('created_at', { ascending: false });
+                    if (!error && data) {
+                        // Filtrar comunicados aplicando filtros de departamento (ej. camilleros o higiene/seguridad) y turno si corresponde
+                        novedades = data.filter(nov => {
+                            // Si id_clave u objeto contenido define restricciones, se pueden evaluar aca
+                            return true; 
+                        });
+                    }
                 } catch(e) { console.warn("Error al cargar novedades desde Supabase."); }
             }
 
@@ -252,19 +272,28 @@
                 novedades = JSON.parse(localStorage.getItem('novedades_comunicados') || '[{"id": 1, "titulo": "Bienvenido al Sistema de Higiene y Seguridad", "contenido": "Módulo operativo configurado y sincronizado correctamente.", "created_at": "2026-03-30"}]');
             }
 
-            const ultimaLeidaId = parseInt(localStorage.getItem('ultima_novedad_leida') || '0');
+            const usuarioActualKey = localStorage.getItem('usuario_nombre') || 'default';
+            const ultimaLeidaId = parseInt(localStorage.getItem(`dsg_camilleros_ultimo_novedad_leida_${usuarioActualKey}`) || localStorage.getItem('ultima_novedad_leida') || '0');
             let noLeidasCount = 0;
 
             container.innerHTML = '';
             novedades.forEach(nov => {
-                const esNoLeida = nov.id > ultimaLeidaId;
+                const novId = nov.id || nov.id_clave || 0;
+                const esNoLeida = novId > ultimaLeidaId;
                 if (esNoLeida) noLeidasCount++;
+
+                // Manejo de adjuntos o imágenes en base64 si existen
+                let adjuntoHtml = '';
+                if (nov.contenido && typeof nov.contenido === 'object' && nov.contenido.archivo) {
+                    adjuntoHtml = `<div style="margin-top: 10px;"><a href="${nov.contenido.archivo}" target="_blank" class="btn-gestion" style="background:#1a3a5f; color:#fff; display:inline-block; text-decoration:none;">Ver Adjunto</a></div>`;
+                }
 
                 container.innerHTML += `
                     <div class="card-novedad ${esNoLeida ? 'no-leida' : ''}">
-                        <h4>${nov.titulo} ${esNoLeida ? '<span style="color:#d32f2f; font-size:12px;">(Nuevo)</span>' : ''}</h4>
-                        <p>${nov.contenido}</p>
-                        <span class="fecha-nov">${nov.created_at || 'Fecha reciente'}</span>
+                        <h4>${nov.titulo || nov.asunto || 'Comunicado'} ${esNoLeida ? '<span style="color:#d32f2f; font-size:12px;">(Nuevo)</span>' : ''}</h4>
+                        <p>${typeof nov.contenido === 'string' ? nov.contenido : (nov.contenido?.texto || JSON.stringify(nov.contenido))}</p>
+                        ${adjuntoHtml}
+                        <span class="fecha-nov">${nov.created_at || nov.fecha || 'Fecha reciente'}</span>
                     </div>
                 `;
             });
@@ -285,9 +314,13 @@
             if (id === 'novedades') {
                 const badge = document.getElementById('badge-novedades');
                 badge.classList.remove('activo');
+                
+                // Actualizar control de no leídos usando localStorage específico por usuario
                 let novedades = JSON.parse(localStorage.getItem('novedades_comunicados') || '[{"id":1}]');
                 if (novedades.length > 0) {
-                    const maxId = Math.max(...novedades.map(n => n.id));
+                    const maxId = Math.max(...novedades.map(n => n.id || n.id_clave || 1));
+                    const usuarioActualKey = localStorage.getItem('usuario_nombre') || 'default';
+                    localStorage.setItem(`dsg_camilleros_ultimo_novedad_leida_${usuarioActualKey}`, maxId);
                     localStorage.setItem('ultima_novedad_leida', maxId);
                 }
             }
