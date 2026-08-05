@@ -18,8 +18,10 @@
         .sidebar-header-title h2 { font-size: 18px; margin: 0; line-height: 1.2; }
 
         .menu-links { flex: 1; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; margin-bottom: 8px; }
-        .menu-item { display: flex; align-items: center; color: #ddd; padding: 10px 12px; text-decoration: none; border-bottom: 1px solid rgba(93, 141, 187, 0.3); font-weight: 500; cursor: pointer; font-size: 15px; transition: background 0.2s, color 0.2s; border-radius: 4px; }
+        .menu-item { display: flex; align-items: center; justify-content: space-between; color: #ddd; padding: 10px 12px; text-decoration: none; border-bottom: 1px solid rgba(93, 141, 187, 0.3); font-weight: 500; cursor: pointer; font-size: 15px; transition: background 0.2s, color 0.2s; border-radius: 4px; }
         .menu-item:hover { background-color: #5d8dbb; color: white; }
+
+        .badge-novedades { background-color: #dc3545; color: white; padding: 2px 6px; border-radius: 10px; font-size: 11px; font-weight: bold; display: none; }
 
         .sidebar-footer { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; padding-top: 5px; }
         .btn-accion-global { width: 100%; padding: 10px; background: linear-gradient(135deg, #28a745, #218838); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: opacity 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
@@ -113,12 +115,12 @@
         </div>
         
         <div class="menu-links">
-            <div class="menu-item" onclick="mostrar('reportes', 'Reportes')">📊 Reportes</div>
-            <div class="menu-item" onclick="mostrar('planillas', 'Planillas (Operativa)')">🛠 Planillas (Operativa)</div>
-            <div class="menu-item" onclick="mostrar('historicos', 'Registros Históricos')">📂 Registros Históricos</div>
-            <div class="menu-item" onclick="mostrar('novedades', 'Novedades')">📢 Novedades</div>
-            <div class="menu-item" onclick="mostrar('rrhh', 'RR.HH.')">👥 RR.HH.</div>
-            <div class="menu-item" onclick="mostrar('resoluciones', 'Resoluciones')">⚖️ Resoluciones</div>
+            <div class="menu-item" onclick="mostrar('reportes', 'Reportes')"><span>📊 Reportes</span></div>
+            <div class="menu-item" onclick="mostrar('planillas', 'Planillas (Operativa)')"><span>🛠 Planillas (Operativa)</span></div>
+            <div class="menu-item" onclick="mostrar('historicos', 'Registros Históricos')"><span>📂 Registros Históricos</span></div>
+            <div class="menu-item" onclick="mostrar('novedades', 'Novedades')"><span>📢 Novedades</span><span id="badge-novedades" class="badge-novedades">0</span></div>
+            <div class="menu-item" onclick="mostrar('rrhh', 'RR.HH.')"><span>👥 RR.HH.</span></div>
+            <div class="menu-item" onclick="mostrar('resoluciones', 'Resoluciones')"><span>⚖️ Resoluciones</span></div>
         </div>
 
         <div class="sidebar-footer">
@@ -212,7 +214,7 @@
                 <h1 style="margin: 0; text-align: center; flex: 1;">Novedades</h1>
                 <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
-            <div id="contenedor-novedades" style="margin-top: 15px;">
+            <div id="visor-novedades" style="margin-top: 15px;">
                 <p>Cargando novedades...</p>
             </div>
         </div>
@@ -265,7 +267,8 @@
         // Configuración de Supabase con tus credenciales reales
         const SUPABASE_URL = 'https://ydcbdvosxbwcutddxaze.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_EvvZ8n7Ve2cF9FB4SXA0Ug_7q6qWh9f';
-        const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+        const db = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+        const supabaseClient = db; // Alias de compatibilidad
 
         const editorReporte = document.getElementById('editor-reporte');
         const spanHoja = document.getElementById('numero-hoja');
@@ -280,11 +283,11 @@
         }
         
         async function obtenerAgentesAscensores() {
-            if (!supabaseClient) return [];
+            if (!db) return [];
             
             const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim();
             try {
-                let { data, error } = await supabaseClient
+                let { data, error } = await db
                     .from('ascensores_personal')
                     .select('*')
                     .eq('turno', turnoActual)
@@ -295,7 +298,7 @@
                 }
 
                 if (!data || data.length === 0) {
-                    let resGeneral = await supabaseClient
+                    let resGeneral = await db
                         .from('ascensores_personal')
                         .select('*')
                         .eq('activo', true);
@@ -515,9 +518,9 @@
             localStorage.setItem('dsg_ascensores_estados', JSON.stringify(estadosGuardar));
             actualizarGraficoAscensores();
 
-            if (supabaseClient && arrayEstadoEnVivo.length > 0) {
+            if (db && arrayEstadoEnVivo.length > 0) {
                 try {
-                    await supabaseClient
+                    await db
                         .from('estado_actual_ascensores')
                         .upsert(arrayEstadoEnVivo, { onConflict: 'identificador_dispositivo' });
                 } catch (err) {
@@ -641,7 +644,7 @@
                  <div class="botonera-porcentaje">Licencias: ${pL}% (${licencias})</div>`;
             actualizarGraficoRRHH(presentes, ausentes, licencias);
 
-            if (supabaseClient) {
+            if (db) {
                 const fechaActual = inputFecha.value || obtenerFechaHoyISO();
                 const turnoActual = localStorage.getItem('usuario_turno') || "Mañana";
                 const deptoActual = "Ascensores";
@@ -657,7 +660,7 @@
                 }));
 
                 try {
-                    const { error: errRrhh } = await supabaseClient
+                    const { error: errRrhh } = await db
                         .from('rrhh_asistencia')
                         .upsert(arrayAsistenciaRRHH, { onConflict: 'fecha,departamento,turno,legajo_empleado' });
                     
@@ -685,9 +688,9 @@
             const deptoActual = "Ascensores";
             const supervisorActual = localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario_legajo') || "Supervisor Turno";
 
-            if (supabaseClient) {
+            if (db) {
                 try {
-                    const { data: existente, error: errExistente } = await supabaseClient
+                    const { data: existente, error: errExistente } = await db
                         .from('cierres_jornada')
                         .select('id')
                         .eq('fecha_cierre', fechaActual)
@@ -758,8 +761,8 @@
                 timestamp: new Date().toISOString() 
             };
             
-            if (supabaseClient) {
-                const { error } = await supabaseClient.from('cierres_jornada').insert([cierre]);
+            if (db) {
+                const { error } = await db.from('cierres_jornada').insert([cierre]);
                 if (error) {
                     console.error("Error al guardar en Supabase:", error);
                     if (error.code === '23505') {
@@ -772,14 +775,14 @@
                 }
 
                 if (arrayRegistrosAscensores.length > 0) {
-                    const { error: errAsc } = await supabaseClient.from('registros_ascensores').insert(arrayRegistrosAscensores);
+                    const { error: errAsc } = await db.from('registros_ascensores').insert(arrayRegistrosAscensores);
                     if (errAsc) {
                         console.error("Error al guardar detalle en registros_ascensores:", errAsc);
                     }
                 }
 
                 let agentesCierre = [];
-                const { data: agentesDB } = await supabaseClient.from('ascensores_personal').select('*').eq('turno', turnoActual);
+                const { data: agentesDB } = await db.from('ascensores_personal').select('*').eq('turno', turnoActual);
                 if (agentesDB && agentesDB.length > 0) {
                     agentesCierre = agentesDB;
                 } else if (typeof agentes !== 'undefined') {
@@ -796,7 +799,7 @@
                         registrado_por: localStorage.getItem('usuario_legajo') || "Desconocido"
                     }));
 
-                    const { error: errRrhh } = await supabaseClient.from('rrhh_asistencia').upsert(arrayAsistenciaRRHH, { onConflict: 'fecha,departamento,turno,legajo_empleado' });
+                    const { error: errRrhh } = await db.from('rrhh_asistencia').upsert(arrayAsistenciaRRHH, { onConflict: 'fecha,departamento,turno,legajo_empleado' });
                     if (errRrhh) {
                         console.error("Error al guardar asistencia en rrhh_asistencia:", errRrhh);
                     }
@@ -824,8 +827,8 @@
             const visor = document.getElementById('contenedor-historicos');
             
             let reg = null;
-            if (supabaseClient) {
-                const { data, error } = await supabaseClient
+            if (db) {
+                const { data, error } = await db
                     .from('cierres_jornada')
                     .select('*')
                     .eq('fecha_cierre', f)
@@ -882,8 +885,8 @@
                     let rowsHTML = "";
                     
                     let agentesHist = [];
-                    if (supabaseClient) {
-                        const { data } = await supabaseClient.from('ascensores_personal').select('*');
+                    if (db) {
+                        const { data } = await db.from('ascensores_personal').select('*');
                         if (data) agentesHist = data;
                     }
                     if (agentesHist.length === 0 && typeof agentes !== 'undefined') {
@@ -948,21 +951,209 @@
             }
         }
 
-        async function cargarComunicadosMemos(tipoFiltro, contenedorId) {
-            const contenedor = document.getElementById(contenedorId);
+        // --- SISTEMA DE NOVEDADES OPERATIVO (Ordenadas de más nueva a más vieja, por supervisor) ---
+        async function verificarNovedadesNoLeidas() {
+            try {
+                if (!db) return;
+                const { data, error } = await db
+                    .from('comunicados_memos')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error || !data) return;
+
+                const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim();
+                const usuarioActual = (localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario') || "invitado").trim();
+                const claveStoragePersonal = `dsg_novedades_ultimo_id_${usuarioActual}`;
+
+                const novedadesFiltradas = data.filter(item => {
+                    const idClave = (item.id_clave || "").toLowerCase();
+                    const contenidoObj = item.contenido || {};
+                    const turnoMsg = (contenidoObj.turno || "").toLowerCase();
+
+                    const esParaTodos = idClave.includes("todos") || idClave.includes("general") || turnoMsg === "todos" || turnoMsg === "general";
+                    const esParaSector = idClave.includes("ascensores") || idClave.includes("intendencia");
+
+                    if (!esParaSector && !esParaTodos) return false;
+                    if (esParaTodos) return true;
+                    if (turnoMsg && turnoMsg !== "todos" && turnoMsg !== "general") {
+                        if (turnoMsg !== turnoActual.toLowerCase()) return false;
+                    }
+                    return true;
+                });
+
+                if (novedadesFiltradas.length === 0) return;
+
+                const ultimoIdLeido = localStorage.getItem(claveStoragePersonal);
+                let noLeidasCount = 0;
+
+                if (!ultimoIdLeido) {
+                    noLeidasCount = novedadesFiltradas.length;
+                } else {
+                    for (let item of novedadesFiltradas) {
+                        if (String(item.id) === String(ultimoIdLeido)) break;
+                        noLeidasCount++;
+                    }
+                }
+
+                const badge = document.getElementById('badge-novedades');
+                if (badge) {
+                    if (noLeidasCount > 0) {
+                        badge.innerText = noLeidasCount;
+                        badge.style.display = 'inline-block';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+            } catch (err) {
+                console.error("Error al verificar novedades no leídas:", err);
+            }
+        }
+
+        async function cargarNovedadesVivo() {
+            const visor = document.getElementById('visor-novedades');
+            if (!visor) return;
+
+            visor.innerHTML = '<p style="text-align:center;">Cargando novedades...</p>';
+            
+            try {
+                if (!db) {
+                    visor.innerHTML = '<p style="text-align:center; color: #666;">No hay conexión a Supabase.</p>';
+                    return;
+                }
+
+                const { data, error } = await db
+                    .from('comunicados_memos')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                if (!data || data.length === 0) {
+                    visor.innerHTML = '<p style="text-align:center; color: #666;">No hay registros de novedades.</p>';
+                    return;
+                }
+
+                const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim();
+
+                const novedadesFiltradas = data.filter(item => {
+                    const idClave = (item.id_clave || "").toLowerCase();
+                    const contenidoObj = item.contenido || {};
+                    const turnoMsg = (contenidoObj.turno || "").toLowerCase();
+
+                    const esParaTodos = idClave.includes("todos") || idClave.includes("general") || turnoMsg === "todos" || turnoMsg === "general";
+                    const esParaSector = idClave.includes("ascensores") || idClave.includes("intendencia");
+
+                    if (!esParaSector && !esParaTodos) return false;
+                    if (esParaTodos) return true;
+                    if (turnoMsg && turnoMsg !== "todos" && turnoMsg !== "general") {
+                        if (turnoMsg !== turnoActual.toLowerCase()) return false;
+                    }
+                    return true;
+                });
+
+                if (novedadesFiltradas.length > 0) {
+                    const usuarioActual = (localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario') || "invitado").trim();
+                    const claveStoragePersonal = `dsg_novedades_ultimo_id_${usuarioActual}`;
+                    
+                    localStorage.setItem(claveStoragePersonal, novedadesFiltradas[0].id);
+                    const badge = document.getElementById('badge-novedades');
+                    if (badge) badge.style.display = 'none';
+                }
+
+                if (novedadesFiltradas.length === 0) {
+                    visor.innerHTML = '<p style="text-align:center; color: #666;">No hay novedades disponibles para este sector en este turno.</p>';
+                    return;
+                }
+
+                let html = '';
+                novedadesFiltradas.forEach(item => {
+                    const contenidoObj = item.contenido || {};
+                    const texto = contenidoObj.texto || 'Sin contenido';
+                    const fecha = contenidoObj.fecha || 'Sin fecha';
+                    const turnoMsg = contenidoObj.turno || 'General';
+
+                    let archivosArray = [];
+                    if (Array.isArray(contenidoObj.archivos)) {
+                        archivosArray = contenidoObj.archivos;
+                    } else if (contenidoObj.archivo && contenidoObj.archivo.data) {
+                        archivosArray = [contenidoObj.archivo];
+                    }
+
+                    let archivosHtml = "";
+                    if (archivosArray.length > 0) {
+                        archivosArray.forEach(arch => {
+                            let base64Data = arch.data || "";
+                            let nombreArchivo = arch.name || "adjunto_descargable";
+                            
+                            let esImagen = base64Data.startsWith('data:image/') || 
+                                           /\.(jpg|jpeg|png|gif|webp)$/i.test(nombreArchivo);
+
+                            if (esImagen) {
+                                archivosHtml += `
+                                    <div style="margin-top: 15px; text-align: center;">
+                                        <div style="margin-bottom: 10px;">
+                                            <img src="${base64Data}" alt="Archivo adjunto" style="max-width: 100%; max-height: 400px; border-radius: 6px; border: 1px solid #ddd; object-fit: contain;" />
+                                        </div>
+                                        <a href="${base64Data}" download="${nombreArchivo}" style="display: inline-block; background: #1a3a5f; color: #fff; padding: 8px 15px; border-radius: 4px; text-decoration: none; font-size: 14px; font-weight: 500;">
+                                            📥 Descargar Imagen
+                                        </a>
+                                    </div>
+                                `;
+                            } else {
+                                archivosHtml += `
+                                    <div style="margin-top: 15px; background: #f8f9fa; border: 1px solid #ddd; padding: 12px 15px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                            <span style="font-size: 24px;">📄</span>
+                                            <div>
+                                                <strong style="font-size: 14px; color: #333; display: block; word-break: break-all;">${nombreArchivo}</strong>
+                                                <span style="font-size: 12px; color: #666;">Documento adjunto disponible para descarga</span>
+                                            </div>
+                                        </div>
+                                        <a href="${base64Data}" download="${nombreArchivo}" style="background: #1a3a5f; color: #fff; padding: 8px 15px; border-radius: 4px; text-decoration: none; font-size: 14px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px;">
+                                            📥 Descargar Archivo
+                                        </a>
+                                    </div>
+                                `;
+                            }
+                        });
+                    }
+
+                    html += `
+                        <div style="background: #fff; border-left: 5px solid #1a3a5f; border-top: 1px solid #ddd; border-right: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 20px; border-radius: 6px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 8px; flex-wrap: wrap; gap: 8px;">
+                                <strong style="color: #1a3a5f; font-size: 16px;">📢 Comunicado Oficial</strong>
+                                <span style="font-size: 12px; color: #666; background: #f1f1f1; padding: 4px 10px; border-radius: 4px;">Turno: ${turnoMsg} | Fecha: ${fecha} | <strong>Enviado por:</strong> Dirección de Servicios Generales</span>
+                            </div>
+                            <div style="font-size: 15px; color: #333; white-space: pre-wrap; line-height: 1.5; font-family: inherit;">${texto}</div>
+                            ${archivosHtml}
+                        </div>`;
+                });
+
+                visor.innerHTML = html;
+
+            } catch (err) {
+                console.error("Error al cargar novedades:", err);
+                visor.innerHTML = '<p style="text-align:center; color: red;">Error al cargar los datos de novedades.</p>';
+            }
+        }
+
+        async function cargarResolucionesVivo() {
+            const contenedor = document.getElementById('contenedor-resoluciones');
             if (!contenedor) return;
 
-            contenedor.innerHTML = "<p>Buscando comunicados y novedades en Supabase...</p>";
+            contenedor.innerHTML = "<p>Buscando resoluciones en Supabase...</p>";
 
             try {
-                if (!supabaseClient) {
+                if (!db) {
                     contenedor.innerHTML = '<p style="color: #666;">No hay conexión a Supabase.</p>';
                     return;
                 }
 
-                const { data, error } = await supabaseClient
+                const { data, error } = await db
                     .from('comunicados_memos')
-                    .select('*');
+                    .select('*')
+                    .order('created_at', { ascending: false });
 
                 if (error) throw error;
 
@@ -973,11 +1164,11 @@
 
                 const filtrados = data.filter(item => {
                     const clave = (item.id_clave || '').toLowerCase();
-                    return clave.includes('ascensores') || clave.includes('todos');
+                    return clave.includes('ascensores') || clave.includes('todos') || clave.includes('resoluciones');
                 });
 
                 if (filtrados.length === 0) {
-                    contenedor.innerHTML = '<p style="color: #666;">No hay comunicaciones dirigidas a este sector.</p>';
+                    contenedor.innerHTML = '<p style="color: #666;">No hay resoluciones dirigidas a este sector.</p>';
                     return;
                 }
 
@@ -1038,7 +1229,7 @@
                     html += `
                         <div style="background: #fff; border-left: 5px solid #1a3a5f; border-top: 1px solid #ddd; border-right: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 20px; border-radius: 6px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 8px; flex-wrap: wrap; gap: 8px;">
-                                <strong style="color: #1a3a5f; font-size: 16px;">📢 Comunicado Oficial</strong>
+                                <strong style="color: #1a3a5f; font-size: 16px;">⚖️ Resolución Oficial</strong>
                                 <span style="font-size: 12px; color: #666; background: #f1f1f1; padding: 4px 10px; border-radius: 4px;">Turno: ${turnoMsg} | Fecha: ${fecha} | <strong>Enviado por:</strong> Dirección de Servicios Generales</span>
                             </div>
                             <div style="font-size: 15px; color: #333; white-space: pre-wrap; line-height: 1.5; font-family: inherit;">${texto}</div>
@@ -1049,7 +1240,7 @@
                 contenedor.innerHTML = html;
 
             } catch (err) {
-                console.error("Error al cargar comunicados:", err);
+                console.error("Error al cargar resoluciones:", err);
                 contenedor.innerHTML = '<p style="color: red;">Error al sincronizar con la base de datos.</p>';
             }
         }
@@ -1069,9 +1260,9 @@
             document.getElementById('depto-hist-label').innerText = depto;
             
             let numeroHojaReal = 1;
-            if (supabaseClient) {
+            if (db) {
                 try {
-                    const { data: cierresPrevios, error } = await supabaseClient
+                    const { data: cierresPrevios, error } = await db
                         .from('cierres_jornada')
                         .select('id')
                         .eq('departamento', depto);
@@ -1101,19 +1292,22 @@
             await generarLista();
             await cargarRRHH();
             
-            await cargarComunicadosMemos('novedades', 'contenedor-novedades');
-            await cargarComunicadosMemos('resoluciones', 'contenedor-resoluciones');
+            await verificarNovedadesNoLeidas();
+            await cargarResolucionesVivo();
         };
 
         function mostrar(id, titulo) { 
             document.querySelectorAll('.seccion').forEach(s => s.classList.remove('activo')); 
             document.getElementById(id).classList.add('activo'); 
             document.getElementById('titulo-panel').innerText = titulo; 
+            
+            if (id === 'novedades') {
+                cargarNovedadesVivo();
+            }
         }
     </script>
 </body>
 </html>
-
 
 
 
