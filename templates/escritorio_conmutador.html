@@ -166,23 +166,53 @@
         }
 
         async function cerrarJornadaGlobal() {
-            if (!confirm("¿Cerrar jornada? Se consolidarán los datos y se reiniciará el sistema.")) return;
+            if (!confirm("¿Cerrar jornada? Se consolidarán los datos y se enviarán al sistema de auditoría.")) return;
 
-            const cierre = { 
-                fecha: inputFecha.value, 
-                turno: localStorage.getItem('usuario_turno') || "Mañana", 
-                depto: "Higiene y Seguridad", 
-                reporte: editorReporte.innerHTML, 
-                timestamp: new Date().toISOString() 
-            };
-            
+            const fechaActual = inputFecha.value;
+            const turnoActual = localStorage.getItem('usuario_turno') || "Mañana";
+            const deptoActual = "Higiene y Seguridad";
+            const legajoActual = localStorage.getItem('usuario_legajo') || localStorage.getItem('usuario_id') || "0000";
+            const reporteHTML = editorReporte.innerHTML;
+
+            // Inserción adaptada bajo clave unificada para auditoría de admin (cierres_jornada)
+            try {
+                const { error: insertError } = await supabaseClient
+                    .from('cierres_jornada')
+                    .insert([
+                        {
+                            fecha: fechaActual,
+                            turno: turnoActual,
+                            departamento: deptoActual,
+                            legajo_operador: legajoActual,
+                            reporte: reporteHTML,
+                            timestamp: new Date().toISOString()
+                        }
+                    ]);
+
+                if (insertError) {
+                    console.error("Error al registrar en Supabase:", insertError);
+                    alert("Hubo un error al guardar los datos en la base de datos central.");
+                    return;
+                }
+            } catch (err) {
+                console.error("Excepción en cierre de jornada:", err);
+                alert("Error de conexión al intentar cerrar la jornada.");
+                return;
+            }
+
             let historial = JSON.parse(localStorage.getItem('historial_jornadas') || "[]");
-            historial.push(cierre);
+            historial.push({ 
+                fecha: fechaActual, 
+                turno: turnoActual, 
+                depto: deptoActual, 
+                reporte: reporteHTML, 
+                timestamp: new Date().toISOString() 
+            });
             localStorage.setItem('historial_jornadas', JSON.stringify(historial));
             
             localStorage.removeItem('hyc_reporte');
             
-            alert("Jornada cerrada con éxito.");
+            alert("Jornada cerrada y enviada correctamente para su auditoría.");
             location.reload();
         }
 
@@ -203,7 +233,7 @@
                     const contenidoObj = item.contenido || {};
                     const turnoMsg = (contenidoObj.turno || "").toLowerCase();
 
-                    // Mapeo adaptado para detectar "higiene", "seguridad" o comunicados generales
+                    // Mapeo adaptado para detectar "higiene", "seguridad" o comunicados generales bajo la misma clave
                     const esParaTodos = clave.includes('todos') || clave.includes('general') || turnoMsg === 'todos' || turnoMsg === 'general';
                     const esParaDepto = clave.includes('higiene') || clave.includes('seguridad');
 
@@ -274,7 +304,6 @@
                     const turnoMsg = (contenidoObj.turno || "").toLowerCase();
                     const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim();
 
-                    // Mapeo adaptado para el departamento de Higiene y Seguridad
                     const esParaTodos = clave.includes('todos') || clave.includes('general') || turnoMsg === 'todos' || turnoMsg === 'general';
                     const esParaDepto = clave.includes('higiene') || clave.includes('seguridad');
 
