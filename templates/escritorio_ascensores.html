@@ -972,12 +972,15 @@
                 }
 
                 const filtrados = data.filter(item => {
+                    const tipoRegistro = (item.tipo || '').toLowerCase();
                     const clave = (item.id_clave || '').toLowerCase();
-                    return clave.includes('ascensores') || clave.includes('todos');
+                    const esTipoCorrecto = tipoRegistro === tipoFiltro.toLowerCase();
+                    const esParaSector = clave.includes('ascensores') || clave.includes('todos');
+                    return esTipoCorrecto && esParaSector;
                 });
 
                 if (filtrados.length === 0) {
-                    contenedor.innerHTML = '<p style="color: #666;">No hay comunicaciones dirigidas a este sector.</p>';
+                    contenedor.innerHTML = `<p style="color: #666;">No hay ${tipoFiltro} dirigidas a este sector.</p>`;
                     return;
                 }
 
