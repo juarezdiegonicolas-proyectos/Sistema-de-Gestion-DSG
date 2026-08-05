@@ -370,22 +370,6 @@
                     return;
                 }
 
-                // ORDEN CRONOLÓGICO INVERSO: Del más nuevo arriba al más viejo abajo
-                filtrados.sort((a, b) => {
-                    let fechaA = new Date(a.created_at || a.updated_at || (a.contenido && a.contenido.fecha) || 0);
-                    let fechaB = new Date(b.created_at || b.updated_at || (b.contenido && b.contenido.fecha) || 0);
-                    if (fechaA.getTime() === fechaB.getTime()) {
-                        return (b.id || 0) - (a.id || 0);
-                    }
-                    return fechaB - fechaA;
-                });
-
-                // MARCAR AUTOMÁTICAMENTE COMO LEÍDO (al ingresar a novedades, almacenamos los IDs vistos)
-                let leidas = JSON.parse(localStorage.getItem('dsg_novedades_leidas_camilleros') || "[]");
-                let idsNuevos = filtrados.map(item => String(item.id));
-                let actualizadasLeidas = Array.from(new Set([...leidas, ...idsNuevos]));
-                localStorage.setItem('dsg_novedades_leidas_camilleros', JSON.stringify(actualizadasLeidas));
-
                 let html = '';
                 filtrados.forEach(item => {
                     const contenidoObj = item.contenido || {};
@@ -764,6 +748,7 @@
                 const inputHora = tr.querySelector('.input-hora');
                 
                 if (inputHora && inputHora.value.trim() !== '') {
+                    // Extraer los agentes seleccionados mediante el multiselect personalizado
                     let personalSeleccionadoStr = '';
                     const labelSpan = tr.querySelector('.multiselect-label');
                     if (labelSpan) {
