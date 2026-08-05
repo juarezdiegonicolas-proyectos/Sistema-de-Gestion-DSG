@@ -160,7 +160,7 @@
             <div class="menu-item" onclick="mostrar('historicos', 'Registros Históricos')"><span>📂 Registros Históricos</span></div>
             <div class="menu-item" onclick="mostrar('novedades', 'Novedades')"><span>📢 Novedades</span><span id="badge-novedades" class="badge-novedades">0</span></div>
             <div class="menu-item" onclick="mostrar('ascensores', 'Estado de Ascensores')"><span>🛗 Estado de Ascensores</span></div>
-            <div class="menu-item" onclick="mostrar('rrhh', 'RR.HH.')"><span>👥 RR.HH.</span></div>
+            <div class="menu-item" onclick="mostrar('rrhh', '👥 RR.HH.')" onclick="mostrar('rrhh', 'RR.HH.')"><span>👥 RR.HH.</span></div>
             <div class="menu-item" onclick="mostrar('resoluciones', 'Resoluciones')"><span>⚖️ Resoluciones</span></div>
         </div>
 
@@ -353,6 +353,8 @@
                 if (error || !data) return;
 
                 const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim();
+                const usuarioActual = (localStorage.getItem('usuario_nombre') || "invitado").trim().toLowerCase();
+
                 const novedadesFiltradas = data.filter(item => {
                     const clave = (item.id_clave || '').toLowerCase();
                     const contenidoObj = item.contenido || {};
@@ -371,7 +373,8 @@
 
                 if (novedadesFiltradas.length === 0) return;
 
-                const ultimoIdLeido = localStorage.getItem('dsg_camilleros_ultimo_novedad_leida');
+                const claveStorage = `dsg_camilleros_ultimo_novedad_leida_${usuarioActual}`;
+                const ultimoIdLeido = localStorage.getItem(claveStorage);
                 let noLeidasCount = 0;
 
                 if (!ultimoIdLeido) {
@@ -443,9 +446,10 @@
                     return;
                 }
 
-                // Marcar como leído el último elemento (el más reciente) para este usuario al abrir la solapa
+                // Marcar como leído el último elemento (el más reciente) exclusivamente para este usuario
                 if (filtrados.length > 0) {
-                    localStorage.setItem('dsg_camilleros_ultimo_novedad_leida', filtrados[0].id);
+                    const usuarioActual = (localStorage.getItem('usuario_nombre') || "invitado").trim().toLowerCase();
+                    localStorage.setItem(`dsg_camilleros_ultimo_novedad_leida_${usuarioActual}`, filtrados[0].id);
                     const badge = document.getElementById('badge-novedades');
                     if (badge) badge.style.display = 'none';
                 }
