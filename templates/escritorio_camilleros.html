@@ -378,23 +378,22 @@
 
                 // ORDENAR HISTÓRICOS DE NOVEDADES: Los más nuevos arriba, los más viejos abajo
                 filtrados.sort((a, b) => {
-                    let idA = a.id || 0;
-                    let idB = b.id || 0;
                     let fechaA = a.created_at || (a.contenido && a.contenido.fecha) || '';
                     let fechaB = b.created_at || (b.contenido && b.contenido.fecha) || '';
                     
                     if (fechaA && fechaB && fechaA !== fechaB) {
                         return new Date(fechaB) - new Date(fechaA);
                     }
-                    return idB - idA;
+                    return (b.id || 0) - (a.id || 0);
                 });
 
-                // Notificaciones: Comprobar si hay novedades nuevas no leídas
-                let ultimaLeidaId = localStorage.getItem('dsg_camilleros_ultima_novedad_leida') || '0';
-                let idMasReciente = filtrados[0].id ? String(filtrados[0].id) : '0';
+                // CORRECCIÓN NOTIFICACIÓN: Se evalúa de manera unívoca por id o id_clave
+                let ultimaLeidaId = localStorage.getItem('dsg_camilleros_ultima_novedad_leida') || '';
+                let elementoMasReciente = filtrados[0];
+                let idMasReciente = String(elementoMasReciente.id || elementoMasReciente.id_clave || '');
                 
                 if (badgeNov) {
-                    if (idMasReciente !== ultimaLeidaId) {
+                    if (idMasReciente && idMasReciente !== ultimaLeidaId) {
                         badgeNov.style.display = 'inline-block';
                     } else {
                         badgeNov.style.display = 'none';
@@ -468,8 +467,8 @@
 
                 contenedorNov.innerHTML = html;
 
-                // Al abrir la sección y cargar, marcamos automáticamente como leído y ocultamos la notificación
-                if (idMasReciente !== '0') {
+                // Al abrir y renderizar la sección, se actualiza el localStorage para que el indicador rojo desaparezca tras la lectura
+                if (idMasReciente) {
                     localStorage.setItem('dsg_camilleros_ultima_novedad_leida', idMasReciente);
                     if (badgeNov) badgeNov.style.display = 'none';
                 }
