@@ -239,7 +239,7 @@
             }
 
             try {
-                // Inserción directa en la tabla existente 'cierres_jornada' sin crear tablas nuevas
+                // Inserción adaptada a la tabla existente 'cierres_jornada' con columnas corregidas
                 const { error } = await db
                     .from('cierres_jornada')
                     .insert([
@@ -247,8 +247,8 @@
                             departamento: deptoActual,
                             turno: turnoSupervisor,
                             supervisor: nombreSupervisor,
-                            fecha: fechaReporte,
-                            reporte: contenidoReporte,
+                            fecha_cierre: fechaReporte,
+                            reporte_diario: contenidoReporte,
                             timestamp: new Date().toISOString()
                         }
                     ]);
