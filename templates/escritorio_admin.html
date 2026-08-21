@@ -9,12 +9,6 @@
         body { margin: 0; font-family: 'Roboto', sans-serif; display: flex; height: 100vh; background-color: #f4f1ea; }
         .sidebar { width: 260px; background-color: #1a3a5f; color: white; padding: 25px 20px; display: flex; flex-direction: column; }
         .sidebar h2 { font-size: 20px; margin-bottom: 30px; border-bottom: 1px solid #5d8dbb; padding-bottom: 10px; }
-        
-        /* Estilos para el bloque de bienvenida */
-        .bienvenida-box { background: rgba(255, 255, 255, 0.1); padding: 12px 15px; border-radius: 6px; margin-bottom: 20px; border-left: 4px solid #5d8dbb; }
-        .bienvenida-box h3 { font-size: 13px; margin: 0 0 5px 0; color: #b0c4de; font-weight: normal; text-transform: uppercase; letter-spacing: 0.5px; }
-        .bienvenida-box p { font-size: 15px; margin: 0; font-weight: bold; color: #ffffff; word-break: break-word; }
-
         .menu-links { flex: 1; }
         .menu-item { display: block; color: #ddd; padding: 15px; text-decoration: none; border-bottom: 1px solid #5d8dbb; font-weight: 500; cursor: pointer; }
         .menu-item:hover { background-color: #5d8dbb; color: white; }
@@ -119,12 +113,6 @@
 </head>
 <body>
     <div class="sidebar">
-        <!-- Bloque de bienvenida agregado con la frase solicitada -->
-        <div class="bienvenida-box">
-            <h3>Bienvenido Jefe de Departamento:</h3>
-            <p id="nombre-jefe-sidebar">Cargando...</p>
-        </div>
-
         <h2>Panel <span id="titulo-panel">Administrador</span></h2>
         <div class="menu-links">
             <div class="menu-item" onclick="mostrar('reportes', 'Reportes Históricos')">📊 Reportes</div>
@@ -144,15 +132,6 @@
             const SUPABASE_URL = 'https://ydcbdvosxbwcutddxaze.supabase.co';
             const SUPABASE_KEY = 'sb_publishable_EvvZ8n7Ve2cF9FB4SXA0Ug_7q6qWh9f';
             const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-            // Script para cargar el nombre del usuario logueado en el sidebar
-            window.addEventListener('DOMContentLoaded', () => {
-                const nombreUsuario = localStorage.getItem('usuario_nombre') || localStorage.getItem('nombre_completo') || "Administrador";
-                const elementoNombre = document.getElementById('nombre-jefe-sidebar');
-                if (elementoNombre) {
-                    elementoNombre.innerText = nombreUsuario;
-                }
-            });
 
             function imprimirConOrientacion() {
                 const seleccion = prompt("¿Cómo deseas imprimir?\n\nEscribe 'V' para Vertical\nEscribe 'H' para Horizontal", "H");
