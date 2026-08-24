@@ -165,7 +165,7 @@
             const SUPABASE_KEY = 'sb_publishable_EvvZ8n7Ve2cF9FB4SXA0Ug_7q6qWh9f';
             const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-            const nombre = localStorage.getItem('usuario_nombre') || "Invitado"; 
+            const nombre = localStorage.getItem('usuario_nombre') || "Invitado";[cite: 6]
             const elemSidebar = document.getElementById('nombre-supervisor-sidebar');
             if (elemSidebar) elemSidebar.innerText = nombre;
 
@@ -208,6 +208,54 @@
                 }
             }
 
+            // NUEVA FUNCIÓN: Carga supervisores en el select de novedades según el departamento de la tabla 'usuarios'
+            async function actualizarSupervisoresNovedades() {
+                const selectDepto = document.getElementById('depto-destino-novedades');
+                const contenedorSup = document.getElementById('contenedor-supervisor-novedades');
+                const selectSup = document.getElementById('supervisor-destino-novedades');
+
+                if (!selectDepto || !contenedorSup || !selectSup) return;
+
+                const deptoVal = selectDepto.value;
+                actualizarPrint('novedades');
+
+                if (deptoVal !== 'Todos') {
+                    contenedorSup.style.display = 'inline-block';
+                    try {
+                        let deptoFiltroSup = deptoVal;
+                        if (deptoVal === 'division-ascensores') deptoFiltroSup = 'Ascensores';
+                        if (deptoVal === 'intendencia') deptoFiltroSup = 'Intendencia';
+                        if (deptoVal === 'direccion-servicios-generales') deptoFiltroSup = 'Dirección Servicios Generales';
+                        if (deptoVal === 'lavadero-central') deptoFiltroSup = 'Lavadero Central';
+                        if (deptoVal === 'camilleros-central') deptoFiltroSup = 'Camilleros';
+                        if (deptoVal === 'higiene-y-seguridad') deptoFiltroSup = 'Higiene y Seguridad';
+                        if (deptoVal === 'dalo') deptoFiltroSup = 'DALO';
+
+                        const { data, error } = await db
+                            .from('usuarios')
+                            .select('nombre_completo')
+                            .eq('departamento', deptoFiltroSup);
+
+                        if (error) throw error;
+
+                        selectSup.innerHTML = '<option value="Todos">Todos los supervisores</option>';
+                        const unicos = [...new Set((data || []).map(item => item.nombre_completo))].filter(Boolean).sort();
+
+                        unicos.forEach(nombreSup => {
+                            const opt = document.createElement('option');
+                            opt.value = nombreSup;
+                            opt.textContent = nombreSup;
+                            selectSup.appendChild(opt);
+                        });
+                    } catch (err) {
+                        console.error("Error al cargar supervisores para novedades:", err);
+                    }
+                } else {
+                    contenedorSup.style.display = 'none';
+                    selectSup.value = 'Todos';
+                }
+            }
+
             function crearSeccion(id, titulo, tipoContenido) {
                 if (id === 'novedades') {
                     document.write(`
@@ -218,7 +266,7 @@
                                 <img src="{{ url_for('static', filename='logo_dsg.png') }}" alt="Logo DSG" style="height: 135px;">
                             </div>
                             <div class="filtros-historicos">
-                                <select id="depto-destino-novedades" class="input-select" onchange="actualizarPrint('novedades')">
+                                <select id="depto-destino-novedades" class="input-select" onchange="actualizarSupervisoresNovedades()">
                                     <option value="Todos">Todos los departamentos</option>
                                     <option value="direccion-servicios-generales">Dirección Servicios Generales</option>
                                     <option value="intendencia">Intendencia</option>
@@ -228,6 +276,11 @@
                                     <option value="higiene-y-seguridad">Higiene y Seguridad</option>
                                     <option value="dalo">DALO</option>
                                 </select>
+                                <div id="contenedor-supervisor-novedades" style="display: none;">
+                                    <select id="supervisor-destino-novedades" class="input-select" onchange="actualizarPrint('novedades')">
+                                        <option value="Todos">Todos los supervisores</option>
+                                    </select>
+                                </div>
                                 <select id="turno-destino-novedades" class="input-select" onchange="actualizarPrint('novedades')">
                                     <option value="Todos">Todos los turnos</option>
                                     <option value="Mañana">Mañana</option>
@@ -404,13 +457,19 @@
             document.getElementById('print-' + id).innerText = '';
             document.getElementById('preview-' + id).style.display = 'none';
             document.getElementById('preview-' + id).innerHTML = '';
-            document.getElementById('depto-destino-' + id).value = 'Todos';
-            document.getElementById('turno-destino-' + id).value = 'Todos';
+            
+            if (id === 'novedades') {
+                document.getElementById('depto-destino-novedades').value = 'Todos';
+                document.getElementById('supervisor-destino-novedades').value = 'Todos';
+                document.getElementById('contenedor-supervisor-novedades').style.display = 'none';
+                document.getElementById('turno-destino-novedades').value = 'Todos';
+                archivosMultiplesNovedades = [];
+            } else {
+                document.getElementById('depto-destino-' + id).value = 'Todos';
+                document.getElementById('turno-destino-' + id).value = 'Todos';
+            }
             actualizarPrint(id);
             delete archivoData[id];
-            if (id === 'novedades') {
-                archivosMultiplesNovedades = [];
-            }
         }
 
         async function previsualizarMultiples(input, id) {
@@ -465,6 +524,7 @@
                     const texto = contenido.texto || 'Sin texto';
                     const fecha = contenido.fecha || row.created_at || 'Fecha desconocida';
                     const depto = contenido.departamento || 'Todos';
+                    const supervisor = contenido.supervisor || 'Todos';
                     const turno = contenido.turno || 'Todos';
 
                     let adjuntosHtml = '';
@@ -481,7 +541,7 @@
                     html += `
                         <div class="muro-item">
                             <div class="muro-header">
-                                <span><b>Destino:</b> ${depto} | <b>Turno:</b> ${turno}</span>
+                                <span><b>Destino:</b> ${depto} | <b>Supervisor:</b> ${supervisor} | <b>Turno:</b> ${turno}</span>
                                 <span>${fecha}</span>
                             </div>
                             <div class="muro-body">${texto}</div>
@@ -642,7 +702,12 @@
         function actualizarPrint(id) {
             const depto = document.getElementById('depto-destino-' + id).value;
             const turno = document.getElementById('turno-destino-' + id).value;
-            document.getElementById('print-header-' + id).innerText = `Dirigido a: ${depto} | Turno: ${turno}`;
+            if (id === 'novedades') {
+                const supervisor = document.getElementById('supervisor-destino-novedades')?.value || 'Todos';
+                document.getElementById('print-header-' + id).innerText = `Dirigido a: ${depto} | Supervisor: ${supervisor} | Turno: ${turno}`;
+            } else {
+                document.getElementById('print-header-' + id).innerText = `Dirigido a: ${depto} | Turno: ${turno}`;
+            }
         }
 
         function previsualizar(input, id) {
@@ -661,6 +726,11 @@
             const destino = document.getElementById('depto-destino-' + id).value;
             const turno = document.getElementById('turno-destino-' + id).value;
             const textoEscrito = document.getElementById('txt-' + id).value;
+            let supervisorSeleccionado = 'Todos';
+
+            if (id === 'novedades') {
+                supervisorSeleccionado = document.getElementById('supervisor-destino-novedades')?.value || 'Todos';
+            }
 
             let listaArchivos = [];
             let primerArchivo = null;
@@ -679,6 +749,7 @@
                 archivo: primerArchivo,
                 fecha: new Date().toLocaleString(),
                 departamento: destino,
+                supervisor: supervisorSeleccionado,
                 turno: turno
             };
             
@@ -692,7 +763,9 @@
             if (destino === 'direccion-servicios-generales') nombreDeptoClave = 'DSG';
             if (destino === 'Todos') nombreDeptoClave = 'Todos';
 
-            const claveUnica = `comunicado_novedades_${nombreDeptoClave}_${turno}_${Date.now()}`;
+            let nombreSupClave = supervisorSeleccionado.replace(/\s+/g, '_');
+
+            const claveUnica = `comunicado_novedades_${nombreDeptoClave}_${nombreSupClave}_${turno}_${Date.now()}`;
             
             const { error } = await db
                 .from('comunicados_memos')
@@ -1089,7 +1162,6 @@
                             let personalTexto = row.personal_asignado || '';
                             let listaCam = [];
                             
-                            // Separamos por cualquier delimitador posible (coma, guion, salto de línea o barra)
                             if (personalTexto.includes(',')) {
                                 listaCam = personalTexto.split(',').map(c => c.trim()).filter(Boolean);
                             } else if (personalTexto.includes('\n')) {
@@ -1100,7 +1172,6 @@
                                 listaCam = [personalTexto.trim()];
                             }
 
-                            // Si hay más de un elemento, los mostramos separados por saltos de línea (break)
                             let personalFormateado = listaCam.join('<br>');
 
                             tablaDinamica += `<tr>
