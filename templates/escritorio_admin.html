@@ -172,79 +172,152 @@
             const agentesGlobal = [{"legajo":"120369", "nombre":"VEGA JUAN CARLOS"},{"legajo":"122011", "nombre":"GONZALEZ CARLOS HECTOR"},{"legajo":"128217", "nombre":"CARLOTTO GABRIEL HORACIO"},{"legajo":"130087", "nombre":"GARAY LEONARDO EMILIO"},{"legajo":"130187", "nombre":"CISNEROS NESTOR EDUARDO"},{"legajo":"131954", "nombre":"GORENA JORGE RICARDO"},{"legajo":"132059", "nombre":"BUSTO JUAN MANUEL"},{"legajo":"132831", "nombre":"GORT PEDRO ALBERTO"},{"legajo":"144694", "nombre":"LEDESMA HECTOR CARLOS"},{"legajo":"145765", "nombre":"BARRAZA CRISTIAN JAVIER"},{"legajo":"147812", "nombre":"RODRIGUEZ GONZALO LEANDRO"},{"legajo":"147944", "nombre":"MORENO FERNANDO DANIEL"},{"legajo":"147946", "nombre":"ALVAREZ ANTONIO OSCAR"},{"legajo":"151978", "nombre":"LUZI CHRISTIAN DARIO"},{"legajo":"151979", "nombre":"ALMEIDA CARLOS ALBERTO"},{"legajo":"151980", "nombre":"GONZALEZ PATRICIO ALBERTO"},{"legajo":"151982", "nombre":"VARELA EDUARDO JOSE"},{"legajo":"151983", "nombre":"MARCIANO MARCELO DANIEL"},{"legajo":"151996", "nombre":"FIDEL RUBEN DARIO"},{"legajo":"152016", "nombre":"PAPINI JUAN JOSE"},{"legajo":"152301", "nombre":"CISNEROS LEONARDO SEBASTIAN"},{"legajo":"152302", "nombre":"BAZAN DIEGO ANTONIO"},{"legajo":"153090", "nombre":"OLIVA CRISTIAN RUBEN"},{"legajo":"153572", "nombre":"CANABIDEZ CRISTIAN ALBERTO"},{"legajo":"154334", "nombre":"VAZQUEZ JORGE OSVALDO"},{"legajo":"154335", "nombre":"SANTORO CHRISTIAN RODRIGO"},{"legajo":"154973", "nombre":"HIDALGO SEBASTIAN ARIEL"},{"legajo":"164370", "nombre":"VASCONCELLO SERGIO EDUARDO"},{"legajo":"164669", "nombre":"DIAZ BELFOR ALBERTO"},{"legajo":"166919", "nombre":"BARRAGAN MARIANO JAVIER"},{"legajo":"167190", "nombre":"MORALES EREZUMA LEONARDO AND"},{"legajo":"168007", "nombre":"ICAÑO MARTIN FABIAN"},{"legajo":"169981", "nombre":"KAMINOVICH LEONARDO MARTIN"},{"legajo":"176828", "nombre":"REYNA SANCHEZ EDUARDO GASTON"},{"legajo":"195446", "nombre":"VASQUEZ JORGE ALFREDO"},{"legajo":"195452", "nombre":"FLORES RODRIGO NICOLAS"},{"legajo":"216727", "nombre":"MIRANDA NORBERTO MATIAS"},{"legajo":"235008", "nombre":"BARROCA GERARDO EZEQUIEL"},{"legajo":"243734", "nombre":"VARGAS AXEL BRIAN"},{"legajo":"249665", "nombre":"SANSOGNE MATIAS MAURICIO"},{"legajo":"250625", "nombre":"SOTO NAHUEL MARCELO"},{"legajo":"251466", "nombre":"DOMINGUEZ HECTOR OMAR CIRO"},{"legajo":"261471", "nombre":"VERON NORBERTO MARIO MANUEL"},{"legajo":"259586", "nombre":"LOPEZ VICTOR HUGO"},{"legajo":"244105", "nombre":"REA JUAN GABRIEL"},{"legajo":"242264", "nombre":"ELIAS GUSTAVO DANIEL"},{"legajo":"195453", "nombre":"BARROCA FRANCO DANIEL"}];
 
             async function manejarCambioDepto(idSeccion) {
-                const selectDepto = document.getElementById('depto-' + idSeccion);
-                const contenedorSup = document.getElementById('contenedor-supervisor-' + idSeccion);
-                const selectSup = document.getElementById('supervisor-' + idSeccion);
 
-                if (!selectDepto || !contenedorSup || !selectSup) return;
+                const selectDepto = document.getElementById('depto-' + idSeccion);
 
-                const deptoVal = selectDepto.value;
-                
-                // Mapear el valor del select a cómo se guarda en la BD
-                let nombreDeptoBD = 'Intendencia';
-                if (deptoVal === 'intendencia') nombreDeptoBD = 'Intendencia';
-                else if (deptoVal === 'division-ascensores') nombreDeptoBD = 'Ascensores';
-                else if (deptoVal === 'camilleros-central') nombreDeptoBD = 'Camilleros';
-                else if (deptoVal === 'lavadero-central') nombreDeptoBD = 'Lavadero Central';
-                else if (deptoVal === 'higiene-y-seguridad') nombreDeptoBD = ['higiene-y-seguridad', 'Higiene y Seguridad', 'Higiene y seguridad', 'Higiene Y Seguridad'];
-                else if (deptoVal === 'dalo') nombreDeptoBD = 'DALO';
-                else if (deptoVal === 'direccion-servicios-generales') nombreDeptoBD = 'Dirección Servicios Generales';
+                const contenedorSup = document.getElementById('contenedor-supervisor-' + idSeccion);
 
-                if (deptoVal !== 'Todos' && deptoVal !== '') {
-                    contenedorSup.style.display = 'inline-block';
-                    try {
-                        let listaSupervisores = [];
+                const selectSup = document.getElementById('supervisor-' + idSeccion);
 
-                        // 1. Consultar directamente en la tabla usuarios de Supabase
-                        let queryUser = db.from('usuarios').select('nombre_completo, nombre');
-                        if (Array.isArray(nombreDeptoBD)) {
-                            queryUser = queryUser.in('departamento', nombreDeptoBD);
-                        } else {
-                            queryUser = queryUser.eq('departamento', nombreDeptoBD);
-                        }
-                        const { data: dataUsuarios, error: errUsuarios } = await queryUser;
-                        if (!errUsuarios && dataUsuarios) {
-                            dataUsuarios.forEach(u => {
-                                const nombreUser = u.nombre_completo || u.nombre;
-                                if (nombreUser) listaSupervisores.push(nombreUser);
-                            });
-                        }
 
-                        // 2. Consultar también en cierres_jornada por si ya hay partes históricos
-                        let querySup = db.from('cierres_jornada').select('supervisor');
-                        if (Array.isArray(nombreDeptoBD)) {
-                            querySup = querySup.in('departamento', nombreDeptoBD);
-                        } else {
-                            querySup = querySup.eq('departamento', nombreDeptoBD);
-                        }
-                        const { data, error } = await querySup;
-                        if (!error && data) {
-                            data.forEach(item => {
-                                if (item.supervisor) listaSupervisores.push(item.supervisor);
-                            });
-                        }
 
-                        selectSup.innerHTML = '<option value="">-- Todos los supervisores --</option>';
-                        const unicos = [...new Set(listaSupervisores)].filter(Boolean).sort();
+                if (!selectDepto || !contenedorSup || !selectSup) return;
 
-                        unicos.forEach(nombreSup => {
-                            const opt = document.createElement('option');
-                            opt.value = nombreSup;
-                            opt.textContent = nombreSup;
-                            selectSup.appendChild(opt);
-                        });
-                    } catch (err) {
-                        console.error("Error al cargar supervisores:", err);
-                    }
-                } else {
-                    contenedorSup.style.display = 'none';
-                    selectSup.value = '';
-                }
-                
-                if (typeof actualizarPrint === 'function') {
-                    actualizarPrint(idSeccion);
-                }
-            }
+
+
+                const deptoVal = selectDepto.value;
+
+                
+
+                // Mapear el valor del select a cómo se guarda en la BD
+
+                let nombreDeptoBD = 'Intendencia';
+
+                if (deptoVal === 'intendencia') nombreDeptoBD = 'Intendencia';
+
+                else if (deptoVal === 'division-ascensores') nombreDeptoBD = 'Ascensores';
+
+                else if (deptoVal === 'camilleros-central') nombreDeptoBD = 'Camilleros';
+
+                else if (deptoVal === 'lavadero-central') nombreDeptoBD = 'Lavadero Central';
+
+                else if (deptoVal === 'higiene-y-seguridad') nombreDeptoBD = ['higiene-y-seguridad', 'Higiene y Seguridad', 'Higiene y seguridad', 'Higiene Y Seguridad'];
+
+                else if (deptoVal === 'dalo') nombreDeptoBD = 'DALO';
+
+                else if (deptoVal === 'direccion-servicios-generales') nombreDeptoBD = 'Dirección Servicios Generales';
+
+
+
+                if (deptoVal !== 'Todos' && deptoVal !== '') {
+
+                    contenedorSup.style.display = 'inline-block';
+
+                    try {
+
+                        let listaSupervisores = [];
+
+
+
+                        // 1. Consultar directamente en la tabla usuarios de Supabase
+
+                        let queryUser = db.from('usuarios').select('nombre_completo, nombre');
+
+                        if (Array.isArray(nombreDeptoBD)) {
+
+                            queryUser = queryUser.in('departamento', nombreDeptoBD);
+
+                        } else {
+
+                            queryUser = queryUser.eq('departamento', nombreDeptoBD);
+
+                        }
+
+                        const { data: dataUsuarios, error: errUsuarios } = await queryUser;
+
+                        if (!errUsuarios && dataUsuarios) {
+
+                            dataUsuarios.forEach(u => {
+
+                                const nombreUser = u.nombre_completo || u.nombre;
+
+                                if (nombreUser) listaSupervisores.push(nombreUser);
+
+                            });
+
+                        }
+
+
+
+                        // 2. Consultar también en cierres_jornada por si ya hay partes históricos
+
+                        let querySup = db.from('cierres_jornada').select('supervisor');
+
+                        if (Array.isArray(nombreDeptoBD)) {
+
+                            querySup = querySup.in('departamento', nombreDeptoBD);
+
+                        } else {
+
+                            querySup = querySup.eq('departamento', nombreDeptoBD);
+
+                        }
+
+                        const { data, error } = await querySup;
+
+                        if (!error && data) {
+
+                            data.forEach(item => {
+
+                                if (item.supervisor) listaSupervisores.push(item.supervisor);
+
+                            });
+
+                        }
+
+
+
+                        selectSup.innerHTML = '<option value="">-- Todos los supervisores --</option>';
+
+                        const unicos = [...new Set(listaSupervisores)].filter(Boolean).sort();
+
+
+
+                        unicos.forEach(nombreSup => {
+
+                            const opt = document.createElement('option');
+
+                            opt.value = nombreSup;
+
+                            opt.textContent = nombreSup;
+
+                            selectSup.appendChild(opt);
+
+                        });
+
+                    } catch (err) {
+
+                        console.error("Error al cargar supervisores:", err);
+
+                    }
+
+                } else {
+
+                    contenedorSup.style.display = 'none';
+
+                    selectSup.value = '';
+
+                }
+
+                
+
+                if (typeof actualizarPrint === 'function') {
+
+                    actualizarPrint(idSeccion);
+
+                }
+
+            }
 
             function crearSeccion(id, titulo, tipoContenido) {
                 if (id === 'novedades') {
