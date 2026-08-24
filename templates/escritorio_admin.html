@@ -186,26 +186,46 @@
                 else if (deptoVal === 'division-ascensores') nombreDeptoBD = 'Ascensores';
                 else if (deptoVal === 'camilleros-central') nombreDeptoBD = 'Camilleros';
                 else if (deptoVal === 'lavadero-central') nombreDeptoBD = 'Lavadero Central';
-                else if (deptoVal === 'higiene-y-seguridad') nombreDeptoBD = ['Higiene y Seguridad', 'Higiene y seguridad', 'Higiene Y Seguridad'];
+                else if (deptoVal === 'higiene-y-seguridad') nombreDeptoBD = ['higiene-y-seguridad', 'Higiene y Seguridad', 'Higiene y seguridad', 'Higiene Y Seguridad'];
                 else if (deptoVal === 'dalo') nombreDeptoBD = 'DALO';
                 else if (deptoVal === 'direccion-servicios-generales') nombreDeptoBD = 'Dirección Servicios Generales';
 
                 if (deptoVal !== 'Todos' && deptoVal !== '') {
                     contenedorSup.style.display = 'inline-block';
                     try {
+                        let listaSupervisores = [];
+
+                        // 1. Consultar directamente en la tabla usuarios de Supabase
+                        let queryUser = db.from('usuarios').select('nombre_completo, nombre');
+                        if (Array.isArray(nombreDeptoBD)) {
+                            queryUser = queryUser.in('departamento', nombreDeptoBD);
+                        } else {
+                            queryUser = queryUser.eq('departamento', nombreDeptoBD);
+                        }
+                        const { data: dataUsuarios, error: errUsuarios } = await queryUser;
+                        if (!errUsuarios && dataUsuarios) {
+                            dataUsuarios.forEach(u => {
+                                const nombreUser = u.nombre_completo || u.nombre;
+                                if (nombreUser) listaSupervisores.push(nombreUser);
+                            });
+                        }
+
+                        // 2. Consultar también en cierres_jornada por si ya hay partes históricos
                         let querySup = db.from('cierres_jornada').select('supervisor');
                         if (Array.isArray(nombreDeptoBD)) {
                             querySup = querySup.in('departamento', nombreDeptoBD);
                         } else {
                             querySup = querySup.eq('departamento', nombreDeptoBD);
                         }
-
                         const { data, error } = await querySup;
-
-                        if (error) throw error;
+                        if (!error && data) {
+                            data.forEach(item => {
+                                if (item.supervisor) listaSupervisores.push(item.supervisor);
+                            });
+                        }
 
                         selectSup.innerHTML = '<option value="">-- Todos los supervisores --</option>';
-                        const unicos = [...new Set((data || []).map(item => item.supervisor))].filter(Boolean).sort();
+                        const unicos = [...new Set(listaSupervisores)].filter(Boolean).sort();
 
                         unicos.forEach(nombreSup => {
                             const opt = document.createElement('option');
