@@ -182,11 +182,13 @@
                 
                 // Mapear el valor del select a cómo se guarda en la BD
                 let nombreDeptoBD = 'Intendencia';
-                if (deptoVal === 'intendencia') nombreDeptoBD = 'intendencia';
+                if (deptoVal === 'intendencia') nombreDeptoBD = 'Intendencia';
                 else if (deptoVal === 'division-ascensores') nombreDeptoBD = 'Ascensores';
                 else if (deptoVal === 'camilleros-central') nombreDeptoBD = 'Camilleros';
                 else if (deptoVal === 'lavadero-central') nombreDeptoBD = 'Lavadero Central';
-                else if (deptoVal === 'higiene-y-seguridad' || deptoVal.toLowerCase().includes('higiene')) nombreDeptoBD = 'higiene-y-seguridad';
+                else if (deptoVal === 'higiene-y-seguridad' || deptoVal === 'Higiene y Seguridad' || deptoVal.toLowerCase().includes('higiene')) {
+                    nombreDeptoBD = ['higiene-y-seguridad', 'Higiene y Seguridad', 'Higiene y seguridad', 'Higiene Y Seguridad', 'higiene y seguridad'];
+                }
                 else if (deptoVal === 'dalo') nombreDeptoBD = 'DALO';
                 else if (deptoVal === 'direccion-servicios-generales') nombreDeptoBD = 'Dirección Servicios Generales';
 
@@ -337,7 +339,7 @@
                                     <span style="font-weight: bold; color: #1a3a5f;">Estado en tiempo real de la tabla estado_actual_ascensores</span>
                                     <button class="btn-gestion" style="background: #1a3a5f; color: white; margin-left: auto;" onclick="cargarEstadoAscensoresVivo()">Actualizar Datos</button>
                                 ` : `
-                                    <select id="depto-destino-${id}" class="input-select" onchange="actualizarPrint('${id}')">
+                                    <select id="depto-destino-${id}" class="input-select" onchange="manejarCambioDepto('destino-${id}')">
                                         <option value="Todos">Todos los departamentos</option>
                                         <option value="direccion-servicios-generales">Dirección Servicios Generales</option>
                                         <option value="intendencia">Intendencia</option>
@@ -347,6 +349,11 @@
                                         <option value="higiene-y-seguridad">Higiene y Seguridad</option>
                                         <option value="dalo">DALO</option>
                                     </select>
+                                    <div id="contenedor-supervisor-destino-${id}" style="display: none;">
+                                        <select id="supervisor-destino-${id}" class="input-select" onchange="actualizarPrint('${id}')">
+                                            <option value="">-- Todos los supervisores --</option>
+                                        </select>
+                                    </div>
                                     <select id="turno-destino-${id}" class="input-select" onchange="actualizarPrint('${id}')">
                                         <option value="Todos">Todos los turnos</option>
                                         <option value="Mañana">Mañana</option>
@@ -851,20 +858,15 @@
             if (depto === 'direccion-servicios-generales') deptoFiltro = 'Dirección Servicios Generales';
             if (depto === 'lavadero-central') deptoFiltro = 'Lavadero Central';
             if (depto === 'camilleros-central') deptoFiltro = 'Camilleros';
-            if (depto === 'higiene-y-seguridad') deptoFiltro = ['Higiene y Seguridad', 'Higiene y seguridad', 'Higiene Y Seguridad'];
+            if (depto === 'higiene-y-seguridad') deptoFiltro = 'Higiene y Seguridad';
             if (depto === 'dalo') deptoFiltro = 'DALO';
             
             let queryReg = db
                 .from('cierres_jornada')
                 .select('*')
                 .eq('fecha_cierre', fechaBusqueda)
-                .eq('turno', turno);
-
-            if (Array.isArray(deptoFiltro)) {
-                queryReg = queryReg.in('departamento', deptoFiltro);
-            } else {
-                queryReg = queryReg.eq('departamento', deptoFiltro);
-            }
+                .eq('turno', turno)
+                .eq('departamento', deptoFiltro);
 
             if (supervisorSeleccionado) {
                 queryReg = queryReg.eq('supervisor', supervisorSeleccionado);
@@ -887,12 +889,11 @@
                 }
 
                 let tablaPersonal = 'intendencia_personal';
-                let deptoStrVal = Array.isArray(deptoFiltro) ? deptoFiltro[0] : deptoFiltro;
-                if (deptoStrVal === 'Ascensores') {
+                if (deptoFiltro === 'Ascensores') {
                     tablaPersonal = 'ascensores_personal';
-                } else if (deptoStrVal === 'Camilleros') {
+                } else if (deptoFiltro === 'Camilleros') {
                     tablaPersonal = 'camilleros_personal';
-                } else if (deptoStrVal === 'Lavadero Central') {
+                } else if (deptoFiltro === 'Lavadero Central') {
                     tablaPersonal = 'lavadero_personal';
                 }
 
@@ -987,8 +988,7 @@
                 }, 50);
             
             } else if (tipo === 'planillas') {
-                let deptoStrVal = Array.isArray(deptoFiltro) ? deptoFiltro[0] : deptoFiltro;
-                if (deptoStrVal === 'Ascensores') {
+                if (deptoFiltro === 'Ascensores') {
                     const { data: dispData } = await db.from('registros_ascensores').select('*').eq('fecha_cierre', fechaBusqueda).eq('turno', turno);
 
                     let tablaDinamica = `<table style="width: 100%; border-collapse: collapse; margin-top: 15px;"><thead><tr><th style="border: 1px solid #333; padding: 10px; background-color: #1a3a5f; color: white;">N° de Ascensor</th><th style="border: 1px solid #333; padding: 10px; background-color: #1a3a5f; color: white;">Estado</th><th style="border: 1px solid #333; padding: 10px; background-color: #1a3a5f; color: white;">Uso Asignado</th><th style="border: 1px solid #333; padding: 10px; background-color: #1a3a5f; color: white;">Observaciones / Detalle</th></tr></thead><tbody>`;
@@ -1066,7 +1066,7 @@
                         }
                     }, 50);
 
-                } else if (deptoStrVal === 'Intendencia') {
+                } else if (deptoFiltro === 'Intendencia') {
                     let queryInt = db.from('registros_intendencia').select('*').eq('fecha_cierre', fechaBusqueda).eq('turno', turno);
                     if (supervisorSeleccionado) queryInt = queryInt.eq('supervisor', supervisorSeleccionado);
                     const { data: intData } = await queryInt;
@@ -1129,7 +1129,7 @@
                     </div>`;
                     visor.innerHTML = tablaDinamica;
 
-                } else if (deptoStrVal === 'Camilleros') {
+                } else if (deptoFiltro === 'Camilleros') {
                     const { data: camData } = await db.from('registros_camilleros').select('*').eq('fecha_cierre', fechaBusqueda).eq('turno', turno);
 
                     let tablaDinamica = `
@@ -1201,7 +1201,7 @@
 
                 } else {
                     if (error || !reg) {
-                        visor.innerHTML = `<p style='color: red; font-weight: bold;'>No se encontraron registros para el departamento en el turno ${turno} (${fechaBusqueda}).</p>`;
+                        visor.innerHTML = `<p style='color: red; font-weight: bold;'>No se encontraron registros para ${deptoFiltro} en el turno ${turno} (${fechaBusqueda}).</p>`;
                         return;
                     }
 
@@ -1219,7 +1219,7 @@
 
             } else if (tipo === 'reportes' || tipo === 'insumos') {
                 if (error || !reg) {
-                    visor.innerHTML = `<p style='color: red; font-weight: bold;'>No se encontraron registros para el departamento en el turno ${turno} (${fechaBusqueda}).</p>`;
+                    visor.innerHTML = `<p style='color: red; font-weight: bold;'>No se encontraron registros para ${deptoFiltro} en el turno ${turno} (${fechaBusqueda}).</p>`;
                     return;
                 }
                 visor.innerHTML = `<h3>Reporte Diario - Vista de Auditoría</h3><style>.hoja-modelo-limpio { width: 100% !important; background-color: #fff !important; border: 1px solid #ccc !important; padding: 30px !important; position: relative !important; min-height: 800px !important; font-family: 'Courier New', Courier, monospace !important; font-size: 16px !important; line-height: 30px !important; box-sizing: border-box !important; background-image: linear-gradient(to right, transparent 0px, transparent 0px), linear-gradient(#e0e0e0 1px, transparent 1px) !important; background-size: 100% 30px !important; white-space: pre-wrap !important; }</style><div class="hoja-modelo-limpio">${reg.reporte_diario || 'No hay contenido de reporte.'}</div>`;
