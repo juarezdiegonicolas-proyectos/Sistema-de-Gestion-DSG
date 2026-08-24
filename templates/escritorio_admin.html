@@ -928,7 +928,7 @@
                         <div style="width: 220px; height: 220px;">
                             <canvas id="graficoRrhh"></canvas>
                         </div>
-                    </div>`;
+                    `;
 
                 visor.innerHTML = html;
 
@@ -1056,9 +1056,18 @@
                     
                     if (intData && intData.length > 0) {
                         intData.forEach(row => {
+                            let agentesTexto = row.agentes_asignados || '';
+                            // Modificación para reflejar de manera explícita si son dos o más agentes
+                            if (agentesTexto.includes(',')) {
+                                const listaAg = agentesTexto.split(',').map(a => a.trim()).filter(Boolean);
+                                if (listaAg.length >= 2) {
+                                    agentesTexto = `${listaAg.length} agentes: ` + listaAg.join(' - ');
+                                }
+                            }
+
                             tablaDinamica += `<tr>
                                 <td style="border: 1px solid #333; padding: 10px; text-align: center;">${row.sector || ''}</td>
-                                <td style="border: 1px solid #333; padding: 10px; text-align: center;">${row.agentes_asignados || ''}</td>
+                                <td style="border: 1px solid #333; padding: 10px; text-align: center;">${agentesTexto}</td>
                                 <td style="border: 1px solid #333; padding: 10px; text-align: center;">${row.hora_desde || ''}</td>
                                 <td style="border: 1px solid #333; padding: 10px; text-align: center;">${row.hora_hasta || ''}</td>
                             </tr>`;
@@ -1106,6 +1115,15 @@
                     
                     if (camData && camData.length > 0) {
                         camData.forEach((row) => {
+                            let personalTexto = row.personal_asignado || '';
+                            // Modificación explícita para ver si son dos o más agentes en la planilla operativa de camillero
+                            if (personalTexto.includes(',')) {
+                                const listaCam = personalTexto.split(',').map(c => c.trim()).filter(Boolean);
+                                if (listaCam.length >= 2) {
+                                    personalTexto = `${listaCam.length} agentes: ` + listaCam.join(' - ');
+                                }
+                            }
+
                             tablaDinamica += `<tr>
                                 <td style="border: 1px solid #333; padding: 6px 4px; text-align: center;">${row.hora || ''}</td>
                                 <td style="border: 1px solid #333; padding: 6px 4px; text-align: center;">${row.numero_cama || ''}</td>
@@ -1113,7 +1131,7 @@
                                 <td style="border: 1px solid #333; padding: 6px 4px; text-align: center;">${row.destino || ''}</td>
                                 <td style="border: 1px solid #333; padding: 6px 4px; text-align: center;">${row.duracion_estancia || ''}</td>
                                 <td style="border: 1px solid #333; padding: 6px 4px; text-align: center;">${row.tipo_movilidad || ''}</td>
-                                <td style="border: 1px solid #333; padding: 6px 4px; text-align: center;">${row.personal_asignado || ''}</td>
+                                <td style="border: 1px solid #333; padding: 6px 4px; text-align: center;">${personalTexto}</td>
                                 <td style="border: 1px solid #333; padding: 6px 4px; text-align: center;">${row.hora_finalizacion || ''}</td>
                             </tr>`;
                         });
