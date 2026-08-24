@@ -180,29 +180,27 @@
 
                 const deptoVal = selectDepto.value;
                 
-                // Mapear el valor del select a cómo se guarda en la BD
-                let nombreDeptoBD = 'Intendencia';
-                if (deptoVal === 'intendencia') nombreDeptoBD = 'Intendencia';
-                else if (deptoVal === 'division-ascensores') nombreDeptoBD = 'Ascensores';
-                else if (deptoVal === 'camilleros-central') nombreDeptoBD = 'Camilleros';
-                else if (deptoVal === 'lavadero-central') nombreDeptoBD = 'Lavadero Central';
-                else if (deptoVal === 'higiene-y-seguridad') nombreDeptoBD = ['higiene-y-seguridad', 'Higiene y Seguridad', 'Higiene y seguridad', 'Higiene Y Seguridad'];
-                else if (deptoVal === 'dalo') nombreDeptoBD = 'DALO';
-                else if (deptoVal === 'direccion-servicios-generales') nombreDeptoBD = 'Dirección Servicios Generales';
+                // Mapear el valor del select al texto exacto que está en la BD de Supabase
+                let nombreDeptoBD = 'intendencia';
+                if (deptoVal === 'intendencia') nombreDeptoBD = 'intendencia';
+                else if (deptoVal === 'division-ascensores') nombreDeptoBD = 'division-ascensores';
+                else if (deptoVal === 'camilleros-central') nombreDeptoBD = 'camilleros-central';
+                else if (deptoVal === 'lavadero-central') nombreDeptoBD = 'lavadero-central';
+                else if (deptoVal === 'higiene-y-seguridad' || deptoVal === 'Higiene y Seguridad') nombreDeptoBD = 'higiene-y-seguridad';
+                else if (deptoVal === 'dalo') nombreDeptoBD = 'dalo';
+                else if (deptoVal === 'direccion-servicios-generales') nombreDeptoBD = 'direccion-servicios-generales';
 
                 if (deptoVal !== 'Todos' && deptoVal !== '') {
                     contenedorSup.style.display = 'inline-block';
                     try {
                         let listaSupervisores = [];
 
-                        // 1. Consultar directamente en la tabla usuarios de Supabase
-                        let queryUser = db.from('usuarios').select('nombre_completo, nombre');
-                        if (Array.isArray(nombreDeptoBD)) {
-                            queryUser = queryUser.in('departamento', nombreDeptoBD);
-                        } else {
-                            queryUser = queryUser.eq('departamento', nombreDeptoBD);
-                        }
-                        const { data: dataUsuarios, error: errUsuarios } = await queryUser;
+                        // 1. Consultar directamente en la tabla usuarios de Supabase usando eq (evita errores 400)
+                        const { data: dataUsuarios, error: errUsuarios } = await db
+                            .from('usuarios')
+                            .select('nombre_completo, nombre')
+                            .eq('departamento', nombreDeptoBD);
+
                         if (!errUsuarios && dataUsuarios) {
                             dataUsuarios.forEach(u => {
                                 const nombreUser = u.nombre_completo || u.nombre;
@@ -211,15 +209,13 @@
                         }
 
                         // 2. Consultar también en cierres_jornada por si ya hay partes históricos
-                        let querySup = db.from('cierres_jornada').select('supervisor');
-                        if (Array.isArray(nombreDeptoBD)) {
-                            querySup = querySup.in('departamento', nombreDeptoBD);
-                        } else {
-                            querySup = querySup.eq('departamento', nombreDeptoBD);
-                        }
-                        const { data, error } = await querySup;
-                        if (!error && data) {
-                            data.forEach(item => {
+                        const { data: dataCierres, error: errCierres } = await db
+                            .from('cierres_jornada')
+                            .select('supervisor')
+                            .eq('departamento', nombreDeptoBD);
+
+                        if (!errCierres && dataCierres) {
+                            dataCierres.forEach(item => {
                                 if (item.supervisor) listaSupervisores.push(item.supervisor);
                             });
                         }
