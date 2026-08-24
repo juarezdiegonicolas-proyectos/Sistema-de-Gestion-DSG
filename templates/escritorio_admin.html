@@ -6,14 +6,18 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { margin: 0; font-family: 'Roboto', sans-serif; display: flex; height: 100vh; background-color: #f4f1ea; }
-        .sidebar { width: 260px; background-color: #1a3a5f; color: white; padding: 25px 20px; display: flex; flex-direction: column; }
-        .sidebar h2 { font-size: 20px; margin-bottom: 30px; border-bottom: 1px solid #5d8dbb; padding-bottom: 10px; }
-        .menu-links { flex: 1; }
-        .menu-item { display: block; color: #ddd; padding: 15px; text-decoration: none; border-bottom: 1px solid #5d8dbb; font-weight: 500; cursor: pointer; }
+        body { margin: 0; font-family: 'Roboto', sans-serif; display: block; height: 100vh; background-color: #f4f1ea; overflow: hidden; }
+        .sidebar { position: fixed; top: 0; left: 0; width: 260px; background-color: #1a3a5f; color: white; padding: 20px 15px; display: flex; flex-direction: column; box-sizing: border-box; height: 100vh; overflow-y: auto; z-index: 1000; }
+        
+        /* Contenedor fijo para evitar el desplazamiento vertical del menú */
+        .sidebar-header-container { flex-shrink: 0; min-height: 100px; display: flex; flex-direction: column; justify-content: flex-start; }
+        .sidebar h2 { font-size: 18px; margin: 15px 0 5px 0; border-bottom: 1px solid #5d8dbb; padding-bottom: 8px; flex-shrink: 0; line-height: 1.2; }
+        
+        .menu-links { flex: 1; overflow-y: auto; }
+        .menu-item { display: block; color: #ddd; padding: 12px 10px; text-decoration: none; border-bottom: 1px solid #5d8dbb; font-weight: 500; cursor: pointer; font-size: 15.5px; }
         .menu-item:hover { background-color: #5d8dbb; color: white; }
-        .btn-cerrar { margin-top: 10px; padding: 15px; background: #d32f2f; color: white; text-align: center; text-decoration: none; border-radius: 6px; font-weight: bold; }
-        .contenido { flex: 1; padding: 40px; overflow-y: auto; }
+        .btn-cerrar { margin-top: auto; padding: 12px; background: #d32f2f; color: white; text-align: center; text-decoration: none; border-radius: 6px; font-weight: bold; flex-shrink: 0; display: block; }
+        .contenido { margin-left: 260px; padding: 40px; overflow-y: auto; height: 100vh; box-sizing: border-box; }
         .seccion { display: none; background: white; padding: 40px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         .seccion.activo { display: block; } 
         .filtros-historicos { display: flex; gap: 10px; background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #eee; align-items: center; flex-wrap: wrap; }
@@ -44,6 +48,28 @@
         .muro-body { font-family: 'Courier New', monospace; font-size: 14px; white-space: pre-wrap; line-height: 1.5; color: #333; }
         .muro-adjuntos { margin-top: 10px; font-size: 12px; }
         .muro-adjuntos a { color: #1a3a5f; text-decoration: underline; margin-right: 15px; }
+
+        /* Estilos del bloque de bienvenida */
+        .bienvenida-box { 
+            background-color: #2d5a8e; 
+            padding: 10px; 
+            border-radius: 8px; 
+            margin-bottom: 10px; 
+            text-align: center; 
+            border: 1px solid #5d8dbb; 
+            flex-shrink: 0; 
+        }
+        .bienvenida-box h3 { 
+            margin: 0; 
+            font-size: 12px; 
+            font-weight: 300; 
+            color: #cce7ff; 
+        }
+        .bienvenida-box p { 
+            margin: 3px 0 0 0; 
+            font-size: 14px; 
+            font-weight: bold; 
+        }
 
         @media print {
         .sidebar, .filtros-historicos, .btn-cerrar, .area-acciones, .btn-adjuntar, textarea, .btn-limpiar, .historial-muro-container { display: none !important; }
@@ -113,7 +139,13 @@
 </head>
 <body>
     <div class="sidebar">
-        <h2>Panel <span id="titulo-panel">Administrador</span></h2>
+        <div class="bienvenida-box">
+            <h3>Bienvenido Jefe de Departamento:</h3>
+            <p id="nombre-supervisor-sidebar">---</p>
+        </div>
+        <div class="sidebar-header-container">
+            <h2>Panel <span id="titulo-panel">Administrador</span></h2>
+        </div>
         <div class="menu-links">
             <div class="menu-item" onclick="mostrar('reportes', 'Reportes Históricos')">📊 Reportes</div>
             <div class="menu-item" onclick="mostrar('planillas', 'Planillas Históricas')">🛠 Planillas</div>
@@ -132,6 +164,11 @@
             const SUPABASE_URL = 'https://ydcbdvosxbwcutddxaze.supabase.co';
             const SUPABASE_KEY = 'sb_publishable_EvvZ8n7Ve2cF9FB4SXA0Ug_7q6qWh9f';
             const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+            // Script para inicializar y mostrar el nombre dinámicamente en el sidebar
+            const nombre = localStorage.getItem('usuario_nombre') || "Invitado"; 
+            const elemSidebar = document.getElementById('nombre-supervisor-sidebar');
+            if (elemSidebar) elemSidebar.innerText = nombre;
 
             function imprimirConOrientacion() {
                 const seleccion = prompt("¿Cómo deseas imprimir?\n\nEscribe 'V' para Vertical\nEscribe 'H' para Horizontal", "H");
