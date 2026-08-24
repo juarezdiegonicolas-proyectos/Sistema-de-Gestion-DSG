@@ -186,17 +186,21 @@
                 else if (deptoVal === 'division-ascensores') nombreDeptoBD = 'Ascensores';
                 else if (deptoVal === 'camilleros-central') nombreDeptoBD = 'Camilleros';
                 else if (deptoVal === 'lavadero-central') nombreDeptoBD = 'Lavadero Central';
-                else if (deptoVal === 'higiene-y-seguridad') nombreDeptoBD = 'Higiene y Seguridad';
+                else if (deptoVal === 'higiene-y-seguridad') nombreDeptoBD = ['Higiene y Seguridad', 'Higiene y seguridad', 'Higiene Y Seguridad'];
                 else if (deptoVal === 'dalo') nombreDeptoBD = 'DALO';
                 else if (deptoVal === 'direccion-servicios-generales') nombreDeptoBD = 'Dirección Servicios Generales';
 
                 if (deptoVal !== 'Todos' && deptoVal !== '') {
                     contenedorSup.style.display = 'inline-block';
                     try {
-                        const { data, error } = await db
-                            .from('cierres_jornada')
-                            .select('supervisor')
-                            .eq('departamento', nombreDeptoBD);
+                        let querySup = db.from('cierres_jornada').select('supervisor');
+                        if (Array.isArray(nombreDeptoBD)) {
+                            querySup = querySup.in('departamento', nombreDeptoBD);
+                        } else {
+                            querySup = querySup.eq('departamento', nombreDeptoBD);
+                        }
+
+                        const { data, error } = await querySup;
 
                         if (error) throw error;
 
@@ -827,15 +831,20 @@
             if (depto === 'direccion-servicios-generales') deptoFiltro = 'Dirección Servicios Generales';
             if (depto === 'lavadero-central') deptoFiltro = 'Lavadero Central';
             if (depto === 'camilleros-central') deptoFiltro = 'Camilleros';
-            if (depto === 'higiene-y-seguridad') deptoFiltro = 'Higiene y Seguridad';
+            if (depto === 'higiene-y-seguridad') deptoFiltro = ['Higiene y Seguridad', 'Higiene y seguridad', 'Higiene Y Seguridad'];
             if (depto === 'dalo') deptoFiltro = 'DALO';
             
             let queryReg = db
                 .from('cierres_jornada')
                 .select('*')
                 .eq('fecha_cierre', fechaBusqueda)
-                .eq('turno', turno)
-                .eq('departamento', deptoFiltro);
+                .eq('turno', turno);
+
+            if (Array.isArray(deptoFiltro)) {
+                queryReg = queryReg.in('departamento', deptoFiltro);
+            } else {
+                queryReg = queryReg.eq('departamento', deptoFiltro);
+            }
 
             if (supervisorSeleccionado) {
                 queryReg = queryReg.eq('supervisor', supervisorSeleccionado);
@@ -858,11 +867,12 @@
                 }
 
                 let tablaPersonal = 'intendencia_personal';
-                if (deptoFiltro === 'Ascensores') {
+                let deptoStrVal = Array.isArray(deptoFiltro) ? deptoFiltro[0] : deptoFiltro;
+                if (deptoStrVal === 'Ascensores') {
                     tablaPersonal = 'ascensores_personal';
-                } else if (deptoFiltro === 'Camilleros') {
+                } else if (deptoStrVal === 'Camilleros') {
                     tablaPersonal = 'camilleros_personal';
-                } else if (deptoFiltro === 'Lavadero Central') {
+                } else if (deptoStrVal === 'Lavadero Central') {
                     tablaPersonal = 'lavadero_personal';
                 }
 
@@ -957,7 +967,8 @@
                 }, 50);
             
             } else if (tipo === 'planillas') {
-                if (deptoFiltro === 'Ascensores') {
+                let deptoStrVal = Array.isArray(deptoFiltro) ? deptoFiltro[0] : deptoFiltro;
+                if (deptoStrVal === 'Ascensores') {
                     const { data: dispData } = await db.from('registros_ascensores').select('*').eq('fecha_cierre', fechaBusqueda).eq('turno', turno);
 
                     let tablaDinamica = `<table style="width: 100%; border-collapse: collapse; margin-top: 15px;"><thead><tr><th style="border: 1px solid #333; padding: 10px; background-color: #1a3a5f; color: white;">N° de Ascensor</th><th style="border: 1px solid #333; padding: 10px; background-color: #1a3a5f; color: white;">Estado</th><th style="border: 1px solid #333; padding: 10px; background-color: #1a3a5f; color: white;">Uso Asignado</th><th style="border: 1px solid #333; padding: 10px; background-color: #1a3a5f; color: white;">Observaciones / Detalle</th></tr></thead><tbody>`;
@@ -1035,7 +1046,7 @@
                         }
                     }, 50);
 
-                } else if (deptoFiltro === 'Intendencia') {
+                } else if (deptoStrVal === 'Intendencia') {
                     let queryInt = db.from('registros_intendencia').select('*').eq('fecha_cierre', fechaBusqueda).eq('turno', turno);
                     if (supervisorSeleccionado) queryInt = queryInt.eq('supervisor', supervisorSeleccionado);
                     const { data: intData } = await queryInt;
@@ -1098,7 +1109,7 @@
                     </div>`;
                     visor.innerHTML = tablaDinamica;
 
-                } else if (deptoFiltro === 'Camilleros') {
+                } else if (deptoStrVal === 'Camilleros') {
                     const { data: camData } = await db.from('registros_camilleros').select('*').eq('fecha_cierre', fechaBusqueda).eq('turno', turno);
 
                     let tablaDinamica = `
@@ -1170,7 +1181,7 @@
 
                 } else {
                     if (error || !reg) {
-                        visor.innerHTML = `<p style='color: red; font-weight: bold;'>No se encontraron registros para ${deptoFiltro} en el turno ${turno} (${fechaBusqueda}).</p>`;
+                        visor.innerHTML = `<p style='color: red; font-weight: bold;'>No se encontraron registros para el departamento en el turno ${turno} (${fechaBusqueda}).</p>`;
                         return;
                     }
 
@@ -1188,7 +1199,7 @@
 
             } else if (tipo === 'reportes' || tipo === 'insumos') {
                 if (error || !reg) {
-                    visor.innerHTML = `<p style='color: red; font-weight: bold;'>No se encontraron registros para ${deptoFiltro} en el turno ${turno} (${fechaBusqueda}).</p>`;
+                    visor.innerHTML = `<p style='color: red; font-weight: bold;'>No se encontraron registros para el departamento en el turno ${turno} (${fechaBusqueda}).</p>`;
                     return;
                 }
                 visor.innerHTML = `<h3>Reporte Diario - Vista de Auditoría</h3><style>.hoja-modelo-limpio { width: 100% !important; background-color: #fff !important; border: 1px solid #ccc !important; padding: 30px !important; position: relative !important; min-height: 800px !important; font-family: 'Courier New', Courier, monospace !important; font-size: 16px !important; line-height: 30px !important; box-sizing: border-box !important; background-image: linear-gradient(to right, transparent 0px, transparent 0px), linear-gradient(#e0e0e0 1px, transparent 1px) !important; background-size: 100% 30px !important; white-space: pre-wrap !important; }</style><div class="hoja-modelo-limpio">${reg.reporte_diario || 'No hay contenido de reporte.'}</div>`;
