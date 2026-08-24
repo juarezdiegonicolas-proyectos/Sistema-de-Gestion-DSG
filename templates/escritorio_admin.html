@@ -8,7 +8,10 @@
     <style>
         body { margin: 0; font-family: 'Roboto', sans-serif; display: flex; height: 100vh; background-color: #f4f1ea; }
         .sidebar { width: 260px; background-color: #1a3a5f; color: white; padding: 25px 20px; display: flex; flex-direction: column; }
-        .sidebar h2 { font-size: 20px; margin-bottom: 30px; border-bottom: 1px solid #5d8dbb; padding-bottom: 10px; }
+        .sidebar h2 { font-size: 20px; margin-bottom: 20px; border-bottom: 1px solid #5d8dbb; padding-bottom: 10px; }
+        .bienvenida-box { background-color: #2d5a8e; padding: 10px; border-radius: 8px; margin-bottom: 20px; text-align: center; border: 1px solid #5d8dbb; flex-shrink: 0; }
+        .bienvenida-box h3 { margin: 0; font-size: 13px; font-weight: 300; color: #cce7ff; }
+        .bienvenida-box p { margin: 3px 0 0 0; font-size: 15px; font-weight: bold; }
         .menu-links { flex: 1; }
         .menu-item { display: block; color: #ddd; padding: 15px; text-decoration: none; border-bottom: 1px solid #5d8dbb; font-weight: 500; cursor: pointer; }
         .menu-item:hover { background-color: #5d8dbb; color: white; }
@@ -114,6 +117,10 @@
 <body>
     <div class="sidebar">
         <h2>Panel <span id="titulo-panel">Administrador</span></h2>
+        <div class="bienvenida-box">
+            <h3>Bienvenido Agente:</h3>
+            <p id="nombre-supervisor-sidebar">---</p>
+        </div>
         <div class="menu-links">
             <div class="menu-item" onclick="mostrar('reportes', 'Reportes Históricos')">📊 Reportes</div>
             <div class="menu-item" onclick="mostrar('planillas', 'Planillas Históricas')">🛠 Planillas</div>
@@ -132,6 +139,13 @@
             const SUPABASE_URL = 'https://ydcbdvosxbwcutddxaze.supabase.co';
             const SUPABASE_KEY = 'sb_publishable_EvvZ8n7Ve2cF9FB4SXA0Ug_7q6qWh9f';
             const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+            // Inyección del nombre de bienvenida en la barra lateral
+            const nombreUsuarioSidebar = localStorage.getItem('usuario_nombre') || "Invitado";
+            const elemSidebar = document.getElementById('nombre-supervisor-sidebar');
+            if (elemSidebar) {
+                elemSidebar.innerText = nombreUsuarioSidebar;
+            }
 
             function imprimirConOrientacion() {
                 const seleccion = prompt("¿Cómo deseas imprimir?\n\nEscribe 'V' para Vertical\nEscribe 'H' para Horizontal", "H");
