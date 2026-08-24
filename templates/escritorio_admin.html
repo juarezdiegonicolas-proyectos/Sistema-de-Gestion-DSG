@@ -165,43 +165,11 @@
             const SUPABASE_KEY = 'sb_publishable_EvvZ8n7Ve2cF9FB4SXA0Ug_7q6qWh9f';
             const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-            // Script para inicializar y mostrar el nombre dinámicamente en el sidebar
             const nombre = localStorage.getItem('usuario_nombre') || "Invitado"; 
             const elemSidebar = document.getElementById('nombre-supervisor-sidebar');
             if (elemSidebar) elemSidebar.innerText = nombre;
 
-            function imprimirConOrientacion() {
-                const seleccion = prompt("¿Cómo deseas imprimir?\n\nEscribe 'V' para Vertical\nEscribe 'H' para Horizontal", "H");
-                
-                if (seleccion === null) return; 
-
-                const opcion = seleccion.trim().toUpperCase();
-                
-                const viejo = document.getElementById('estilo-forzado-impresion');
-                if (viejo) viejo.remove();
-
-                const nuevoEstilo = document.createElement('style');
-                nuevoEstilo.id = 'estilo-forzado-impresion';
-
-                if (opcion === 'V') {
-                    nuevoEstilo.innerHTML = '@media print { @page { size: A4 portrait !important; margin: 10mm !important; } }';
-                } else {
-                    nuevoEstilo.innerHTML = '@media print { @page { size: A4 landscape !important; margin: 10mm !important; } }';
-                }
-
-                document.head.appendChild(nuevoEstilo);
-
-                setTimeout(() => {
-                    window.print();
-                }, 100);
-            }
-
             const agentesGlobal = [{"legajo":"120369", "nombre":"VEGA JUAN CARLOS"},{"legajo":"122011", "nombre":"GONZALEZ CARLOS HECTOR"},{"legajo":"128217", "nombre":"CARLOTTO GABRIEL HORACIO"},{"legajo":"130087", "nombre":"GARAY LEONARDO EMILIO"},{"legajo":"130187", "nombre":"CISNEROS NESTOR EDUARDO"},{"legajo":"131954", "nombre":"GORENA JORGE RICARDO"},{"legajo":"132059", "nombre":"BUSTO JUAN MANUEL"},{"legajo":"132831", "nombre":"GORT PEDRO ALBERTO"},{"legajo":"144694", "nombre":"LEDESMA HECTOR CARLOS"},{"legajo":"145765", "nombre":"BARRAZA CRISTIAN JAVIER"},{"legajo":"147812", "nombre":"RODRIGUEZ GONZALO LEANDRO"},{"legajo":"147944", "nombre":"MORENO FERNANDO DANIEL"},{"legajo":"147946", "nombre":"ALVAREZ ANTONIO OSCAR"},{"legajo":"151978", "nombre":"LUZI CHRISTIAN DARIO"},{"legajo":"151979", "nombre":"ALMEIDA CARLOS ALBERTO"},{"legajo":"151980", "nombre":"GONZALEZ PATRICIO ALBERTO"},{"legajo":"151982", "nombre":"VARELA EDUARDO JOSE"},{"legajo":"151983", "nombre":"MARCIANO MARCELO DANIEL"},{"legajo":"151996", "nombre":"FIDEL RUBEN DARIO"},{"legajo":"152016", "nombre":"PAPINI JUAN JOSE"},{"legajo":"152301", "nombre":"CISNEROS LEONARDO SEBASTIAN"},{"legajo":"152302", "nombre":"BAZAN DIEGO ANTONIO"},{"legajo":"153090", "nombre":"OLIVA CRISTIAN RUBEN"},{"legajo":"153572", "nombre":"CANABIDEZ CRISTIAN ALBERTO"},{"legajo":"154334", "nombre":"VAZQUEZ JORGE OSVALDO"},{"legajo":"154335", "nombre":"SANTORO CHRISTIAN RODRIGO"},{"legajo":"154973", "nombre":"HIDALGO SEBASTIAN ARIEL"},{"legajo":"164370", "nombre":"VASCONCELLO SERGIO EDUARDO"},{"legajo":"164669", "nombre":"DIAZ BELFOR ALBERTO"},{"legajo":"166919", "nombre":"BARRAGAN MARIANO JAVIER"},{"legajo":"167190", "nombre":"MORALES EREZUMA LEONARDO AND"},{"legajo":"168007", "nombre":"ICAÑO MARTIN FABIAN"},{"legajo":"169981", "nombre":"KAMINOVICH LEONARDO MARTIN"},{"legajo":"176828", "nombre":"REYNA SANCHEZ EDUARDO GASTON"},{"legajo":"195446", "nombre":"VASQUEZ JORGE ALFREDO"},{"legajo":"195452", "nombre":"FLORES RODRIGO NICOLAS"},{"legajo":"216727", "nombre":"MIRANDA NORBERTO MATIAS"},{"legajo":"235008", "nombre":"BARROCA GERARDO EZEQUIEL"},{"legajo":"243734", "nombre":"VARGAS AXEL BRIAN"},{"legajo":"249665", "nombre":"SANSOGNE MATIAS MAURICIO"},{"legajo":"250625", "nombre":"SOTO NAHUEL MARCELO"},{"legajo":"251466", "nombre":"DOMINGUEZ HECTOR OMAR CIRO"},{"legajo":"261471", "nombre":"VERON NORBERTO MARIO MANUEL"},{"legajo":"259586", "nombre":"LOPEZ VICTOR HUGO"},{"legajo":"244105", "nombre":"REA JUAN GABRIEL"},{"legajo":"242264", "nombre":"ELIAS GUSTAVO DANIEL"},{"legajo":"195453", "nombre":"BARROCA FRANCO DANIEL"}];
-
-            async function apiGuardar(key, data) {
-                const { error } = await db.from('comunicados_memos').upsert({ id_clave: key, contenido: data });
-                if (error) console.error("Error al guardar en Supabase:", error);
-            }
 
             async function manejarCambioDepto(idSeccion) {
                 const selectDepto = document.getElementById('depto-' + idSeccion);
@@ -1057,17 +1025,20 @@
                     if (intData && intData.length > 0) {
                         intData.forEach(row => {
                             let agentesTexto = row.agentes_asignados || '';
-                            // Modificación para reflejar de manera explícita si son dos o más agentes
+                            let listaAg = [];
                             if (agentesTexto.includes(',')) {
-                                const listaAg = agentesTexto.split(',').map(a => a.trim()).filter(Boolean);
-                                if (listaAg.length >= 2) {
-                                    agentesTexto = `${listaAg.length} agentes: ` + listaAg.join(' - ');
-                                }
+                                listaAg = agentesTexto.split(',').map(a => a.trim()).filter(Boolean);
+                            } else if (agentesTexto.includes('\n')) {
+                                listaAg = agentesTexto.split('\n').map(a => a.trim()).filter(Boolean);
+                            } else if (agentesTexto.trim() !== '') {
+                                listaAg = [agentesTexto.trim()];
                             }
+
+                            let agentesFormateados = listaAg.join('<br>');
 
                             tablaDinamica += `<tr>
                                 <td style="border: 1px solid #333; padding: 10px; text-align: center;">${row.sector || ''}</td>
-                                <td style="border: 1px solid #333; padding: 10px; text-align: center;">${agentesTexto}</td>
+                                <td style="border: 1px solid #333; padding: 10px; text-align: center;">${agentesFormateados}</td>
                                 <td style="border: 1px solid #333; padding: 10px; text-align: center;">${row.hora_desde || ''}</td>
                                 <td style="border: 1px solid #333; padding: 10px; text-align: center;">${row.hora_hasta || ''}</td>
                             </tr>`;
@@ -1116,13 +1087,21 @@
                     if (camData && camData.length > 0) {
                         camData.forEach((row) => {
                             let personalTexto = row.personal_asignado || '';
-                            // Modificación explícita para ver si son dos o más agentes en la planilla operativa de camillero
+                            let listaCam = [];
+                            
+                            // Separamos por cualquier delimitador posible (coma, guion, salto de línea o barra)
                             if (personalTexto.includes(',')) {
-                                const listaCam = personalTexto.split(',').map(c => c.trim()).filter(Boolean);
-                                if (listaCam.length >= 2) {
-                                    personalTexto = `${listaCam.length} agentes: ` + listaCam.join(' - ');
-                                }
+                                listaCam = personalTexto.split(',').map(c => c.trim()).filter(Boolean);
+                            } else if (personalTexto.includes('\n')) {
+                                listaCam = personalTexto.split('\n').map(c => c.trim()).filter(Boolean);
+                            } else if (personalTexto.includes(' - ')) {
+                                listaCam = personalTexto.split(' - ').map(c => c.trim()).filter(Boolean);
+                            } else if (personalTexto.trim() !== '') {
+                                listaCam = [personalTexto.trim()];
                             }
+
+                            // Si hay más de un elemento, los mostramos separados por saltos de línea (break)
+                            let personalFormateado = listaCam.join('<br>');
 
                             tablaDinamica += `<tr>
                                 <td style="border: 1px solid #333; padding: 6px 4px; text-align: center;">${row.hora || ''}</td>
@@ -1131,7 +1110,7 @@
                                 <td style="border: 1px solid #333; padding: 6px 4px; text-align: center;">${row.destino || ''}</td>
                                 <td style="border: 1px solid #333; padding: 6px 4px; text-align: center;">${row.duracion_estancia || ''}</td>
                                 <td style="border: 1px solid #333; padding: 6px 4px; text-align: center;">${row.tipo_movilidad || ''}</td>
-                                <td style="border: 1px solid #333; padding: 6px 4px; text-align: center;">${personalTexto}</td>
+                                <td style="border: 1px solid #333; padding: 6px 4px; text-align: center;">${personalFormateado}</td>
                                 <td style="border: 1px solid #333; padding: 6px 4px; text-align: center;">${row.hora_finalizacion || ''}</td>
                             </tr>`;
                         });
