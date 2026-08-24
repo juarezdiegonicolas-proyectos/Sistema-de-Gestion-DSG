@@ -179,24 +179,34 @@
                 if (!selectDepto || !contenedorSup || !selectSup) return;
 
                 const deptoVal = selectDepto.value;
+                
+                // Mapear el valor del select a cómo se guarda en la BD
+                let nombreDeptoBD = 'Intendencia';
+                if (deptoVal === 'intendencia') nombreDeptoBD = 'Intendencia';
+                else if (deptoVal === 'division-ascensores') nombreDeptoBD = 'Ascensores';
+                else if (deptoVal === 'camilleros-central') nombreDeptoBD = 'Camilleros';
+                else if (deptoVal === 'lavadero-central') nombreDeptoBD = 'Lavadero Central';
+                else if (deptoVal === 'higiene-y-seguridad') nombreDeptoBD = 'Higiene y Seguridad';
+                else if (deptoVal === 'dalo') nombreDeptoBD = 'DALO';
+                else if (deptoVal === 'direccion-servicios-generales') nombreDeptoBD = 'Dirección Servicios Generales';
 
-                if (deptoVal === 'intendencia') {
+                if (deptoVal !== 'Todos' && deptoVal !== '') {
                     contenedorSup.style.display = 'inline-block';
                     try {
                         const { data, error } = await db
                             .from('cierres_jornada')
                             .select('supervisor')
-                            .eq('departamento', 'Intendencia');
+                            .eq('departamento', nombreDeptoBD);
 
                         if (error) throw error;
 
                         selectSup.innerHTML = '<option value="">-- Todos los supervisores --</option>';
                         const unicos = [...new Set((data || []).map(item => item.supervisor))].filter(Boolean).sort();
 
-                        unicos.forEach(nombre => {
+                        unicos.forEach(nombreSup => {
                             const opt = document.createElement('option');
-                            opt.value = nombre;
-                            opt.textContent = nombre;
+                            opt.value = nombreSup;
+                            opt.textContent = nombreSup;
                             selectSup.appendChild(opt);
                         });
                     } catch (err) {
@@ -205,6 +215,10 @@
                 } else {
                     contenedorSup.style.display = 'none';
                     selectSup.value = '';
+                }
+                
+                if (typeof actualizarPrint === 'function') {
+                    actualizarPrint(idSeccion);
                 }
             }
 
@@ -218,7 +232,7 @@
                                 <img src="{{ url_for('static', filename='logo_dsg.png') }}" alt="Logo DSG" style="height: 135px;">
                             </div>
                             <div class="filtros-historicos">
-                                <select id="depto-destino-novedades" class="input-select" onchange="actualizarPrint('novedades')">
+                                <select id="depto-destino-novedades" class="input-select" onchange="manejarCambioDepto('destino-novedades')">
                                     <option value="Todos">Todos los departamentos</option>
                                     <option value="direccion-servicios-generales">Dirección Servicios Generales</option>
                                     <option value="intendencia">Intendencia</option>
@@ -228,6 +242,11 @@
                                     <option value="higiene-y-seguridad">Higiene y Seguridad</option>
                                     <option value="dalo">DALO</option>
                                 </select>
+                                <div id="contenedor-supervisor-destino-novedades" style="display: none;">
+                                    <select id="supervisor-destino-novedades" class="input-select" onchange="actualizarPrint('novedades')">
+                                        <option value="">-- Todos los supervisores --</option>
+                                    </select>
+                                </div>
                                 <select id="turno-destino-novedades" class="input-select" onchange="actualizarPrint('novedades')">
                                     <option value="Todos">Todos los turnos</option>
                                     <option value="Mañana">Mañana</option>
@@ -406,6 +425,11 @@
             document.getElementById('preview-' + id).innerHTML = '';
             document.getElementById('depto-destino-' + id).value = 'Todos';
             document.getElementById('turno-destino-' + id).value = 'Todos';
+            const supSelect = document.getElementById('supervisor-destino-' + id);
+            if (supSelect) supSelect.value = '';
+            const contenedorSup = document.getElementById('contenedor-supervisor-destino-' + id);
+            if (contenedorSup) contenedorSup.style.display = 'none';
+            
             actualizarPrint(id);
             delete archivoData[id];
             if (id === 'novedades') {
@@ -465,6 +489,7 @@
                     const texto = contenido.texto || 'Sin texto';
                     const fecha = contenido.fecha || row.created_at || 'Fecha desconocida';
                     const depto = contenido.departamento || 'Todos';
+                    const supervisor = contenido.supervisor ? ` | Supervisor: ${contenido.supervisor}` : '';
                     const turno = contenido.turno || 'Todos';
 
                     let adjuntosHtml = '';
@@ -481,7 +506,7 @@
                     html += `
                         <div class="muro-item">
                             <div class="muro-header">
-                                <span><b>Destino:</b> ${depto} | <b>Turno:</b> ${turno}</span>
+                                <span><b>Destino:</b> ${depto}${supervisor} | <b>Turno:</b> ${turno}</span>
                                 <span>${fecha}</span>
                             </div>
                             <div class="muro-body">${texto}</div>
@@ -640,9 +665,15 @@
         }
 
         function actualizarPrint(id) {
-            const depto = document.getElementById('depto-destino-' + id).value;
-            const turno = document.getElementById('turno-destino-' + id).value;
-            document.getElementById('print-header-' + id).innerText = `Dirigido a: ${depto} | Turno: ${turno}`;
+            const depto = document.getElementById('depto-destino-' + id)?.value || 'Todos';
+            const turno = document.getElementById('turno-destino-' + id)?.value || 'Todos';
+            const supervisorSelect = document.getElementById('supervisor-destino-' + id);
+            const supervisor = supervisorSelect && supervisorSelect.value ? ` | Supervisor: ${supervisorSelect.value}` : '';
+            
+            const headerElem = document.getElementById('print-header-' + id);
+            if (headerElem) {
+                headerElem.innerText = `Dirigido a: ${depto}${supervisor} | Turno: ${turno}`;
+            }
         }
 
         function previsualizar(input, id) {
@@ -660,6 +691,8 @@
         async function guardarRedaccion(id) {
             const destino = document.getElementById('depto-destino-' + id).value;
             const turno = document.getElementById('turno-destino-' + id).value;
+            const supervisorSelect = document.getElementById('supervisor-destino-' + id);
+            const supervisor = supervisorSelect ? supervisorSelect.value : '';
             const textoEscrito = document.getElementById('txt-' + id).value;
 
             let listaArchivos = [];
@@ -679,6 +712,7 @@
                 archivo: primerArchivo,
                 fecha: new Date().toLocaleString(),
                 departamento: destino,
+                supervisor: supervisor,
                 turno: turno
             };
             
@@ -692,7 +726,8 @@
             if (destino === 'direccion-servicios-generales') nombreDeptoClave = 'DSG';
             if (destino === 'Todos') nombreDeptoClave = 'Todos';
 
-            const claveUnica = `comunicado_novedades_${nombreDeptoClave}_${turno}_${Date.now()}`;
+            let sufijoSup = supervisor ? `_${supervisor.replace(/\s+/g, '_')}` : '';
+            const claveUnica = `comunicado_novedades_${nombreDeptoClave}${sufijoSup}_${turno}_${Date.now()}`;
             
             const { error } = await db
                 .from('comunicados_memos')
@@ -802,7 +837,7 @@
                 .eq('turno', turno)
                 .eq('departamento', deptoFiltro);
 
-            if (deptoFiltro === 'Intendencia' && supervisorSeleccionado) {
+            if (supervisorSeleccionado) {
                 queryReg = queryReg.eq('supervisor', supervisorSeleccionado);
             }
 
@@ -1089,7 +1124,6 @@
                             let personalTexto = row.personal_asignado || '';
                             let listaCam = [];
                             
-                            // Separamos por cualquier delimitador posible (coma, guion, salto de línea o barra)
                             if (personalTexto.includes(',')) {
                                 listaCam = personalTexto.split(',').map(c => c.trim()).filter(Boolean);
                             } else if (personalTexto.includes('\n')) {
@@ -1100,7 +1134,6 @@
                                 listaCam = [personalTexto.trim()];
                             }
 
-                            // Si hay más de un elemento, los mostramos separados por saltos de línea (break)
                             let personalFormateado = listaCam.join('<br>');
 
                             tablaDinamica += `<tr>
