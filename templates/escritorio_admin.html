@@ -182,13 +182,13 @@
                 
                 // Mapear el valor del select a cómo se guarda en la BD
                 let nombreDeptoBD = 'Intendencia';
-                if (deptoVal === 'intendencia') nombreDeptoBD = 'Intendencia';
-                else if (deptoVal === 'division-ascensores') nombreDeptoBD = 'Ascensores';
-                else if (deptoVal === 'camilleros-central') nombreDeptoBD = 'Camilleros';
-                else if (deptoVal === 'lavadero-central') nombreDeptoBD = 'Lavadero Central';
+                if (deptoVal === 'intendencia') nombreDeptoBD = 'intendencia';
+                else if (deptoVal === 'division-ascensores') nombreDeptoBD = 'division-ascensores';
+                else if (deptoVal === 'camilleros-central') nombreDeptoBD = 'camilleros-central';
+                else if (deptoVal === 'lavadero-central') nombreDeptoBD = 'lavadero-central';
                 else if (deptoVal === 'higiene-y-seguridad') nombreDeptoBD = ['higiene-y-seguridad', 'Higiene y Seguridad', 'Higiene y seguridad', 'Higiene Y Seguridad'];
-                else if (deptoVal === 'dalo') nombreDeptoBD = 'DALO';
-                else if (deptoVal === 'direccion-servicios-generales') nombreDeptoBD = 'Dirección Servicios Generales';
+                else if (deptoVal === 'dalo') nombreDeptoBD = 'dalo';
+                else if (deptoVal === 'direccion-servicios-generales') nombreDeptoBD = 'direccion-servicios-generales';
 
                 if (deptoVal !== 'Todos' && deptoVal !== '') {
                     contenedorSup.style.display = 'inline-block';
