@@ -160,7 +160,7 @@
             <div class="menu-item" onclick="mostrar('historicos', 'Registros Históricos')"><span>📂 Registros Históricos</span></div>
             <div class="menu-item" onclick="mostrar('novedades', 'Novedades')"><span>📢 Novedades</span><span id="badge-novedades" class="badge-novedades">0</span></div>
             <div class="menu-item" onclick="mostrar('ascensores', 'Estado de Ascensores')"><span>🛗 Estado de Ascensores</span></div>
-            <div class="menu-item" onclick="mostrar('rrhh', '👥 RR.HH.')" onclick="mostrar('rrhh', 'RR.HH.')"><span>👥 RR.HH.</span></div>
+            <div class="menu-item" onclick="mostrar('rrhh', '👥 RR.HH.')"><span>👥 RR.HH.</span></div>
             <div class="menu-item" onclick="mostrar('resoluciones', 'Resoluciones')"><span>⚖️ Resoluciones</span></div>
         </div>
 
@@ -832,11 +832,12 @@
                 const inputHora = tr.querySelector('.input-hora');
                 
                 if (inputHora && inputHora.value.trim() !== '') {
-                    let personalSeleccionadoStr = '';
-                    const labelSpan = tr.querySelector('.multiselect-label');
-                    if (labelSpan) {
-                        personalSeleccionadoStr = labelSpan.innerText;
-                    }
+                    // MODIFICACIÓN REALIZADA AQUÍ: Extrae los nombres reales de los checkboxes tildados
+                    let personalSeleccionadosArr = [];
+                    tr.querySelectorAll('.custom-multiselect input[type="checkbox"]:checked').forEach(chk => {
+                        personalSeleccionadosArr.push(chk.value);
+                    });
+                    let personalSeleccionadoStr = personalSeleccionadosArr.join(', ');
 
                     await supabaseClient.from('registros_camilleros').insert({
                         fecha_cierre: fechaVal,
@@ -847,7 +848,7 @@
                         destino: tr.querySelector('.input-destino')?.value || '',
                         duracion_estancia: tr.querySelector('.input-estancia')?.value || '',
                         tipo_movilidad: tr.querySelector('.input-movilidad')?.value || '',
-                        personal_asignado: personalSeleccionadoStr,
+                        personal_asignado: personalSeleccionadoStr, // Se guardan los nombres reales separados por coma
                         hora_finalizacion: tr.querySelector('.input-finalizacion')?.value || '',
                         observaciones: observacionesVal
                     });
