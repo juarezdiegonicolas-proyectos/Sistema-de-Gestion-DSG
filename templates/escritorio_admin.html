@@ -113,98 +113,98 @@
 </head>
 <body>
     <div class="sidebar">
-        <h2>Panel <span id="titulo-panel">Administrador</span>[cite: 8]</h2>
+        <h2>Panel <span id="titulo-panel">Administrador</span></h2>
         <div class="menu-links">
-            <div class="menu-item" onclick="mostrar('reportes', 'Reportes Históricos')">📊 Reportes[cite: 8]</div>
-            <div class="menu-item" onclick="mostrar('planillas', 'Planillas Históricas')">🛠 Planillas[cite: 8]</div>
-            <div class="menu-item" onclick="mostrar('rrhh', 'Auditoría RRHH')">👥 RRHH[cite: 8]</div>
-            <div class="menu-item" onclick="mostrar('insumos', 'Auditoría Insumos')">📦 Insumos[cite: 8]</div>
-            <div class="menu-item" onclick="mostrar('estado-ascensores', 'Estado Actual de Ascensores')">🛗 Estado Ascensores[cite: 8]</div>
-            <div class="menu-item" onclick="mostrar('novedades', 'Novedades')">📝 Novedades[cite: 8]</div>
-            <div class="menu-item" onclick="mostrar('memos', 'Memos y Resoluciones')">📜 Memos y Resoluciones[cite: 8]</div>
-            <div class="menu-item" onclick="mostrar('estadisticas', 'Estadísticas Mensuales')">📈 Estadísticas Mensuales[cite: 8]</div>
+            <div class="menu-item" onclick="mostrar('reportes', 'Reportes Históricos')">📊 Reportes</div>
+            <div class="menu-item" onclick="mostrar('planillas', 'Planillas Históricas')">🛠 Planillas</div>
+            <div class="menu-item" onclick="mostrar('rrhh', 'Auditoría RRHH')">👥 RRHH</div>
+            <div class="menu-item" onclick="mostrar('insumos', 'Auditoría Insumos')">📦 Insumos</div>
+            <div class="menu-item" onclick="mostrar('estado-ascensores', 'Estado Actual de Ascensores')">🛗 Estado Ascensores</div>
+            <div class="menu-item" onclick="mostrar('novedades', 'Novedades')">📝 Novedades</div>
+            <div class="menu-item" onclick="mostrar('memos', 'Memos y Resoluciones')">📜 Memos y Resoluciones</div>
+            <div class="menu-item" onclick="mostrar('estadisticas', 'Estadísticas Mensuales')">📈 Estadísticas Mensuales</div>
         </div>
-        <a href="https://sistema-hospital-dsg.onrender.com" class="btn-cerrar">CERRAR SESIÓN[cite: 8]</a>
+        <a href="https://sistema-hospital-dsg.onrender.com" class="btn-cerrar">CERRAR SESIÓN</a>
     </div>
 
     <div class="contenido">
         <script>
-            const SUPABASE_URL = 'https://ydcbdvosxbwcutddxaze.supabase.co';[cite: 8]
-            const SUPABASE_KEY = 'sb_publishable_EvvZ8n7Ve2cF9FB4SXA0Ug_7q6qWh9f';[cite: 8]
-            const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);[cite: 8]
+            const SUPABASE_URL = 'https://ydcbdvosxbwcutddxaze.supabase.co';
+            const SUPABASE_KEY = 'sb_publishable_EvvZ8n7Ve2cF9FB4SXA0Ug_7q6qWh9f';
+            const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-            function imprimirConOrientacion() {[cite: 8]
-                const seleccion = prompt("¿Cómo deseas imprimir?\n\nEscribe 'V' para Vertical\nEscribe 'H' para Horizontal", "H");[cite: 8]
+            function imprimirConOrientacion() {
+                const seleccion = prompt("¿Cómo deseas imprimir?\n\nEscribe 'V' para Vertical\nEscribe 'H' para Horizontal", "H");
                 
-                if (seleccion === null) return;[cite: 8]
+                if (seleccion === null) return; 
 
-                const opcion = seleccion.trim().toUpperCase();[cite: 8]
+                const opcion = seleccion.trim().toUpperCase();
                 
-                const viejo = document.getElementById('estilo-forzado-impresion');[cite: 8]
-                if (viejo) viejo.remove();[cite: 8]
+                const viejo = document.getElementById('estilo-forzado-impresion');
+                if (viejo) viejo.remove();
 
-                const nuevoEstilo = document.createElement('style');[cite: 8]
-                nuevoEstilo.id = 'estilo-forzado-impresion';[cite: 8]
+                const nuevoEstilo = document.createElement('style');
+                nuevoEstilo.id = 'estilo-forzado-impresion';
 
-                if (opcion === 'V') {[cite: 8]
-                    nuevoEstilo.innerHTML = '@media print { @page { size: A4 portrait !important; margin: 10mm !important; } }';[cite: 8]
+                if (opcion === 'V') {
+                    nuevoEstilo.innerHTML = '@media print { @page { size: A4 portrait !important; margin: 10mm !important; } }';
                 } else {
-                    nuevoEstilo.innerHTML = '@media print { @page { size: A4 landscape !important; margin: 10mm !important; } }';[cite: 8]
+                    nuevoEstilo.innerHTML = '@media print { @page { size: A4 landscape !important; margin: 10mm !important; } }';
                 }
 
-                document.head.appendChild(nuevoEstilo);[cite: 8]
+                document.head.appendChild(nuevoEstilo);
 
-                setTimeout(() => {[cite: 8]
-                    window.print();[cite: 8]
-                }, 100);[cite: 8]
+                setTimeout(() => {
+                    window.print();
+                }, 100);
             }
 
-            const agentesGlobal = [{"legajo":"120369", "nombre":"VEGA JUAN CARLOS"},{"legajo":"122011", "nombre":"GONZALEZ CARLOS HECTOR"},{"legajo":"128217", "nombre":"CARLOTTO GABRIEL HORACIO"},{"legajo":"130087", "nombre":"GARAY LEONARDO EMILIO"},{"legajo":"130187", "nombre":"CISNEROS NESTOR EDUARDO"},{"legajo":"131954", "nombre":"GORENA JORGE RICARDO"},{"legajo":"132059", "nombre":"BUSTO JUAN MANUEL"},{"legajo":"132831", "nombre":"GORT PEDRO ALBERTO"},{"legajo":"144694", "nombre":"LEDESMA HECTOR CARLOS"},{"legajo":"145765", "nombre":"BARRAZA CRISTIAN JAVIER"},{"legajo":"147812", "nombre":"RODRIGUEZ GONZALO LEANDRO"},{"legajo":"147944", "nombre":"MORENO FERNANDO DANIEL"},{"legajo":"147946", "nombre":"ALVAREZ ANTONIO OSCAR"},{"legajo":"151978", "nombre":"LUZI CHRISTIAN DARIO"},{"legajo":"151979", "nombre":"ALMEIDA CARLOS ALBERTO"},{"legajo":"151980", "nombre":"GONZALEZ PATRICIO ALBERTO"},{"legajo":"151982", "nombre":"VARELA EDUARDO JOSE"},{"legajo":"151983", "nombre":"MARCIANO MARCELO DANIEL"},{"legajo":"151996", "nombre":"FIDEL RUBEN DARIO"},{"legajo":"152016", "nombre":"PAPINI JUAN JOSE"},{"legajo":"152301", "nombre":"CISNEROS LEONARDO SEBASTIAN"},{"legajo":"152302", "nombre":"BAZAN DIEGO ANTONIO"},{"legajo":"153090", "nombre":"OLIVA CRISTIAN RUBEN"},{"legajo":"153572", "nombre":"CANABIDEZ CRISTIAN ALBERTO"},{"legajo":"154334", "nombre":"VAZQUEZ JORGE OSVALDO"},{"legajo":"154335", "nombre":"SANTORO CHRISTIAN RODRIGO"},{"legajo":"154973", "nombre":"HIDALGO SEBASTIAN ARIEL"},{"legajo":"164370", "nombre":"VASCONCELLO SERGIO EDUARDO"},{"legajo":"164669", "nombre":"DIAZ BELFOR ALBERTO"},{"legajo":"166919", "nombre":"BARRAGAN MARIANO JAVIER"},{"legajo":"167190", "nombre":"MORALES EREZUMA LEONARDO AND"},{"legajo":"168007", "nombre":"ICAÑO MARTIN FABIAN"},{"legajo":"169981", "nombre":"KAMINOVICH LEONARDO MARTIN"},{"legajo":"176828", "nombre":"REYNA SANCHEZ EDUARDO GASTON"},{"legajo":"195446", "nombre":"VASQUEZ JORGE ALFREDO"},{"legajo":"195452", "nombre":"FLORES RODRIGO NICOLAS"},{"legajo":"216727", "nombre":"MIRANDA NORBERTO MATIAS"},{"legajo":"235008", "nombre":"BARROCA GERARDO EZEQUIEL"},{"legajo":"243734", "nombre":"VARGAS AXEL BRIAN"},{"legajo":"249665", "nombre":"SANSOGNE MATIAS MAURICIO"},{"legajo":"250625", "nombre":"SOTO NAHUEL MARCELO"},{"legajo":"251466", "nombre":"DOMINGUEZ HECTOR OMAR CIRO"},{"legajo":"261471", "nombre":"VERON NORBERTO MARIO MANUEL"},{"legajo":"259586", "nombre":"LOPEZ VICTOR HUGO"},{"legajo":"244105", "nombre":"REA JUAN GABRIEL"},{"legajo":"242264", "nombre":"ELIAS GUSTAVO DANIEL"},{"legajo":"195453", "nombre":"BARROCA FRANCO DANIEL"}];[cite: 8]
+            const agentesGlobal = [{"legajo":"120369", "nombre":"VEGA JUAN CARLOS"},{"legajo":"122011", "nombre":"GONZALEZ CARLOS HECTOR"},{"legajo":"128217", "nombre":"CARLOTTO GABRIEL HORACIO"},{"legajo":"130087", "nombre":"GARAY LEONARDO EMILIO"},{"legajo":"130187", "nombre":"CISNEROS NESTOR EDUARDO"},{"legajo":"131954", "nombre":"GORENA JORGE RICARDO"},{"legajo":"132059", "nombre":"BUSTO JUAN MANUEL"},{"legajo":"132831", "nombre":"GORT PEDRO ALBERTO"},{"legajo":"144694", "nombre":"LEDESMA HECTOR CARLOS"},{"legajo":"145765", "nombre":"BARRAZA CRISTIAN JAVIER"},{"legajo":"147812", "nombre":"RODRIGUEZ GONZALO LEANDRO"},{"legajo":"147944", "nombre":"MORENO FERNANDO DANIEL"},{"legajo":"147946", "nombre":"ALVAREZ ANTONIO OSCAR"},{"legajo":"151978", "nombre":"LUZI CHRISTIAN DARIO"},{"legajo":"151979", "nombre":"ALMEIDA CARLOS ALBERTO"},{"legajo":"151980", "nombre":"GONZALEZ PATRICIO ALBERTO"},{"legajo":"151982", "nombre":"VARELA EDUARDO JOSE"},{"legajo":"151983", "nombre":"MARCIANO MARCELO DANIEL"},{"legajo":"151996", "nombre":"FIDEL RUBEN DARIO"},{"legajo":"152016", "nombre":"PAPINI JUAN JOSE"},{"legajo":"152301", "nombre":"CISNEROS LEONARDO SEBASTIAN"},{"legajo":"152302", "nombre":"BAZAN DIEGO ANTONIO"},{"legajo":"153090", "nombre":"OLIVA CRISTIAN RUBEN"},{"legajo":"153572", "nombre":"CANABIDEZ CRISTIAN ALBERTO"},{"legajo":"154334", "nombre":"VAZQUEZ JORGE OSVALDO"},{"legajo":"154335", "nombre":"SANTORO CHRISTIAN RODRIGO"},{"legajo":"154973", "nombre":"HIDALGO SEBASTIAN ARIEL"},{"legajo":"164370", "nombre":"VASCONCELLO SERGIO EDUARDO"},{"legajo":"164669", "nombre":"DIAZ BELFOR ALBERTO"},{"legajo":"166919", "nombre":"BARRAGAN MARIANO JAVIER"},{"legajo":"167190", "nombre":"MORALES EREZUMA LEONARDO AND"},{"legajo":"168007", "nombre":"ICAÑO MARTIN FABIAN"},{"legajo":"169981", "nombre":"KAMINOVICH LEONARDO MARTIN"},{"legajo":"176828", "nombre":"REYNA SANCHEZ EDUARDO GASTON"},{"legajo":"195446", "nombre":"VASQUEZ JORGE ALFREDO"},{"legajo":"195452", "nombre":"FLORES RODRIGO NICOLAS"},{"legajo":"216727", "nombre":"MIRANDA NORBERTO MATIAS"},{"legajo":"235008", "nombre":"BARROCA GERARDO EZEQUIEL"},{"legajo":"243734", "nombre":"VARGAS AXEL BRIAN"},{"legajo":"249665", "nombre":"SANSOGNE MATIAS MAURICIO"},{"legajo":"250625", "nombre":"SOTO NAHUEL MARCELO"},{"legajo":"251466", "nombre":"DOMINGUEZ HECTOR OMAR CIRO"},{"legajo":"261471", "nombre":"VERON NORBERTO MARIO MANUEL"},{"legajo":"259586", "nombre":"LOPEZ VICTOR HUGO"},{"legajo":"244105", "nombre":"REA JUAN GABRIEL"},{"legajo":"242264", "nombre":"ELIAS GUSTAVO DANIEL"},{"legajo":"195453", "nombre":"BARROCA FRANCO DANIEL"}];
 
-            async function apiGuardar(key, data) {[cite: 8]
-                const { error } = await db.from('comunicados_memos').upsert({ id_clave: key, contenido: data });[cite: 8]
-                if (error) console.error("Error al guardar en Supabase:", error);[cite: 8]
+            async function apiGuardar(key, data) {
+                const { error } = await db.from('comunicados_memos').upsert({ id_clave: key, contenido: data });
+                if (error) console.error("Error al guardar en Supabase:", error);
             }
 
-            async function manejarCambioDepto(idSeccion) {[cite: 8]
-                const selectDepto = document.getElementById('depto-' + idSeccion);[cite: 8]
-                const contenedorSup = document.getElementById('contenedor-supervisor-' + idSeccion);[cite: 8]
-                const selectSup = document.getElementById('supervisor-' + idSeccion);[cite: 8]
+            async function manejarCambioDepto(idSeccion) {
+                const selectDepto = document.getElementById('depto-' + idSeccion);
+                const contenedorSup = document.getElementById('contenedor-supervisor-' + idSeccion);
+                const selectSup = document.getElementById('supervisor-' + idSeccion);
 
-                if (!selectDepto || !contenedorSup || !selectSup) return;[cite: 8]
+                if (!selectDepto || !contenedorSup || !selectSup) return;
 
-                const deptoVal = selectDepto.value;[cite: 8]
+                const deptoVal = selectDepto.value;
 
-                if (deptoVal === 'intendencia') {[cite: 8]
-                    contenedorSup.style.display = 'inline-block';[cite: 8]
+                if (deptoVal === 'intendencia') {
+                    contenedorSup.style.display = 'inline-block';
                     try {
-                        const { data, error } = await db[cite: 8]
-                            .from('cierres_jornada')[cite: 8]
-                            .select('supervisor')[cite: 8]
-                            .eq('departamento', 'Intendencia');[cite: 8]
+                        const { data, error } = await db
+                            .from('cierres_jornada')
+                            .select('supervisor')
+                            .eq('departamento', 'Intendencia');
 
-                        if (error) throw error;[cite: 8]
+                        if (error) throw error;
 
-                        selectSup.innerHTML = '<option value="">-- Todos los supervisores --</option>';[cite: 8]
-                        const unicos = [...new Set((data || []).map(item => item.supervisor))].filter(Boolean).sort();[cite: 8]
+                        selectSup.innerHTML = '<option value="">-- Todos los supervisores --</option>';
+                        const unicos = [...new Set((data || []).map(item => item.supervisor))].filter(Boolean).sort();
 
-                        unicos.forEach(nombre => {[cite: 8]
-                            const opt = document.createElement('option');[cite: 8]
-                            opt.value = nombre;[cite: 8]
-                            opt.textContent = nombre;[cite: 8]
-                            selectSup.appendChild(opt);[cite: 8]
+                        unicos.forEach(nombre => {
+                            const opt = document.createElement('option');
+                            opt.value = nombre;
+                            opt.textContent = nombre;
+                            selectSup.appendChild(opt);
                         });
                     } catch (err) {
-                        console.error("Error al cargar supervisores:", err);[cite: 8]
+                        console.error("Error al cargar supervisores:", err);
                     }
                 } else {
-                    contenedorSup.style.display = 'none';[cite: 8]
-                    selectSup.value = '';[cite: 8]
+                    contenedorSup.style.display = 'none';
+                    selectSup.value = '';
                 }
             }
 
-            function crearSeccion(id, titulo, tipoContenido) {[cite: 8]
-                if (id === 'novedades') {[cite: 8]
+            function crearSeccion(id, titulo, tipoContenido) {
+                if (id === 'novedades') {
                     document.write(`
                         <div id="novedades" class="seccion">
                             <div class="header-logos">
@@ -325,152 +325,152 @@
                     `);
                 }
             }
-            crearSeccion('reportes', 'Reportes Históricos', 'auditoria');[cite: 8]
-            crearSeccion('planillas', 'Planillas Históricas', 'auditoria');[cite: 8]
-            crearSeccion('rrhh', 'Auditoría RRHH', 'auditoria');[cite: 8]
-            crearSeccion('insumos', 'Auditoría Insumos', 'auditoria');[cite: 8]
-            crearSeccion('estado-ascensores', 'Estado Actual de Ascensores', 'estado-ascensores-vivo');[cite: 8]
-            crearSeccion('novedades', 'Novedades', 'redaccion');[cite: 8]
-            crearSeccion('memos', 'Memos y Resoluciones', 'redaccion');[cite: 8]
+            crearSeccion('reportes', 'Reportes Históricos', 'auditoria');
+            crearSeccion('planillas', 'Planillas Históricas', 'auditoria');
+            crearSeccion('rrhh', 'Auditoría RRHH', 'auditoria');
+            crearSeccion('insumos', 'Auditoría Insumos', 'auditoria');
+            crearSeccion('estado-ascensores', 'Estado Actual de Ascensores', 'estado-ascensores-vivo');
+            crearSeccion('novedades', 'Novedades', 'redaccion');
+            crearSeccion('memos', 'Memos y Resoluciones', 'redaccion');
         </script>
 
         <!-- SECCIÓN ESTADÍSTICAS -->
-        <div id="estadisticas" class="seccion">[cite: 8]
-            <div class="header-logos">[cite: 8]
-                <img src="{{ url_for('static', filename='logo_hospi.png') }}" alt="Logo">[cite: 8]
-                <h1 style="margin: 0; text-align: center; flex: 1;" class="titulo-caja">Estadísticas Mensuales</h1>[cite: 8]
-                <img src="{{ url_for('static', filename='logo_dsg.png') }}" alt="Logo DSG" style="height: 135px;">[cite: 8]
+        <div id="estadisticas" class="seccion">
+            <div class="header-logos">
+                <img src="{{ url_for('static', filename='logo_hospi.png') }}" alt="Logo">
+                <h1 style="margin: 0; text-align: center; flex: 1;" class="titulo-caja">Estadísticas Mensuales</h1>
+                <img src="{{ url_for('static', filename='logo_dsg.png') }}" alt="Logo DSG" style="height: 135px;">
             </div>
-            <div class="filtros-historicos">[cite: 8]
-                <select id="est-tipo" class="input-select">[cite: 8]
-                    <option value="rrhh">Asistencia (RRHH)</option>[cite: 8]
-                    <option value="ascensores">Estado de Ascensores</option>[cite: 8]
+            <div class="filtros-historicos">
+                <select id="est-tipo" class="input-select">
+                    <option value="rrhh">Asistencia (RRHH)</option>
+                    <option value="ascensores">Estado de Ascensores</option>
                 </select>
-                <select id="est-depto" class="input-select">[cite: 8]
-                    <option value="Todos">Todos los departamentos</option>[cite: 8]
-                    <option value="direccion-servicios-generales">Dirección Servicios Generales</option>[cite: 8]
-                    <option value="intendencia">Intendencia</option>[cite: 8]
-                    <option value="division-ascensores">Ascensores</option>[cite: 8]
-                    <option value="lavadero-central">Lavadero Central</option>[cite: 8]
-                    <option value="camilleros-central">Camilleros</option>[cite: 8]
-                    <option value="higiene-y-seguridad">Higiene y Seguridad</option>[cite: 8]
-                    <option value="dalo">DALO</option>[cite: 8]
+                <select id="est-depto" class="input-select">
+                    <option value="Todos">Todos los departamentos</option>
+                    <option value="direccion-servicios-generales">Dirección Servicios Generales</option>
+                    <option value="intendencia">Intendencia</option>
+                    <option value="division-ascensores">Ascensores</option>
+                    <option value="lavadero-central">Lavadero Central</option>
+                    <option value="camilleros-central">Camilleros</option>
+                    <option value="higiene-y-seguridad">Higiene y Seguridad</option>
+                    <option value="dalo">DALO</option>
                 </select>
-                <select id="est-turno" class="input-select">[cite: 8]
-                    <option value="Todos">Todos los turnos</option>[cite: 8]
-                    <option value="Mañana">Mañana</option>[cite: 8]
-                    <option value="Tarde">Tarde</option>[cite: 8]
-                    <option value="Noche A">Noche A</option>[cite: 8]
-                    <option value="Noche B">Noche B</option>[cite: 8]
-                    <option value="Sadofe">Sadofe</option>[cite: 8]
+                <select id="est-turno" class="input-select">
+                    <option value="Todos">Todos los turnos</option>
+                    <option value="Mañana">Mañana</option>
+                    <option value="Tarde">Tarde</option>
+                    <option value="Noche A">Noche A</option>
+                    <option value="Noche B">Noche B</option>
+                    <option value="Sadofe">Sadofe</option>
                 </select>
-                <select id="est-mes" class="input-select">[cite: 8]
-                    <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>[cite: 8]
-                    <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>[cite: 8]
-                    <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>[cite: 8]
-                    <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>[cite: 8]
+                <select id="est-mes" class="input-select">
+                    <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
+                    <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
+                    <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
+                    <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
                 </select>
-                <input type="number" id="est-anio" class="input-fecha" value="2026" style="width:100px;">[cite: 8]
-                <button class="btn-gestion" style="background: #1a3a5f; color: white;" onclick="generarReporteMensual()">Generar Reporte</button>[cite: 8]
+                <input type="number" id="est-anio" class="input-fecha" value="2026" style="width:100px;">
+                <button class="btn-gestion" style="background: #1a3a5f; color: white;" onclick="generarReporteMensual()">Generar Reporte</button>
             </div>
-            <div id="visor-estadisticas" style="padding: 20px; border: 1px solid #eee; text-align: center;">[cite: 8]
-                <p>Seleccione tipo de reporte, mes y año para consolidar.</p>[cite: 8]
+            <div id="visor-estadisticas" style="padding: 20px; border: 1px solid #eee; text-align: center;">
+                <p>Seleccione tipo de reporte, mes y año para consolidar.</p>
             </div>
         </div>
     </div>
 
     <script>
-        let archivoData = {};[cite: 8]
-        let archivosMultiplesNovedades = [];[cite: 8]
+        let archivoData = {};
+        let archivosMultiplesNovedades = [];
 
-        function mostrar(id, titulo) {[cite: 8] 
-            document.querySelectorAll('.seccion').forEach(s => s.classList.remove('activo'));[cite: 8] 
-            document.getElementById(id).classList.add('activo');[cite: 8] 
-            document.getElementById('titulo-panel').innerText = titulo;[cite: 8] 
-            if (id === 'estado-ascensores') {[cite: 8]
-                cargarEstadoAscensoresVivo();[cite: 8]
+        function mostrar(id, titulo) { 
+            document.querySelectorAll('.seccion').forEach(s => s.classList.remove('activo')); 
+            document.getElementById(id).classList.add('activo'); 
+            document.getElementById('titulo-panel').innerText = titulo; 
+            if (id === 'estado-ascensores') {
+                cargarEstadoAscensoresVivo();
             }
-            if (id === 'novedades') {[cite: 8]
-                cargarHistorialMuroNovedades();[cite: 8]
-            }
-        }
-        function limpiarPantalla(id) {[cite: 8]
-            document.getElementById('txt-' + id).value = '';[cite: 8]
-            document.getElementById('print-' + id).innerText = '';[cite: 8]
-            document.getElementById('preview-' + id).style.display = 'none';[cite: 8]
-            document.getElementById('preview-' + id).innerHTML = '';[cite: 8]
-            document.getElementById('depto-destino-' + id).value = 'Todos';[cite: 8]
-            document.getElementById('turno-destino-' + id).value = 'Todos';[cite: 8]
-            actualizarPrint(id);[cite: 8]
-            delete archivoData[id];[cite: 8]
-            if (id === 'novedades') {[cite: 8]
-                archivosMultiplesNovedades = [];[cite: 8]
+            if (id === 'novedades') {
+                cargarHistorialMuroNovedades();
             }
         }
+        function limpiarPantalla(id) {
+            document.getElementById('txt-' + id).value = '';
+            document.getElementById('print-' + id).innerText = '';
+            document.getElementById('preview-' + id).style.display = 'none';
+            document.getElementById('preview-' + id).innerHTML = '';
+            document.getElementById('depto-destino-' + id).value = 'Todos';
+            document.getElementById('turno-destino-' + id).value = 'Todos';
+            actualizarPrint(id);
+            delete archivoData[id];
+            if (id === 'novedades') {
+                archivosMultiplesNovedades = [];
+            }
+        }
 
-        async function previsualizarMultiples(input, id) {[cite: 8]
-            if (!input.files || input.files.length === 0) return;[cite: 8]
-            archivosMultiplesNovedades = [];[cite: 8]
-            const prev = document.getElementById('preview-' + id);[cite: 8]
-            prev.style.display = 'block';[cite: 8]
-            prev.innerHTML = '<b>Archivos seleccionados:</b><ul style="margin: 5px 0 0 20px; padding:0;"></ul>';[cite: 8]
-            const listaUl = prev.querySelector('ul');[cite: 8]
+        async function previsualizarMultiples(input, id) {
+            if (!input.files || input.files.length === 0) return;
+            archivosMultiplesNovedades = [];
+            const prev = document.getElementById('preview-' + id);
+            prev.style.display = 'block';
+            prev.innerHTML = '<b>Archivos seleccionados:</b><ul style="margin: 5px 0 0 20px; padding:0;"></ul>';
+            const listaUl = prev.querySelector('ul');
 
-            for (let i = 0; i < input.files.length; i++) {[cite: 8]
-                const file = input.files[i];[cite: 8]
-                const reader = new FileReader();[cite: 8]
+            for (let i = 0; i < input.files.length; i++) {
+                const file = input.files[i];
+                const reader = new FileReader();
                 
-                (function(f) {[cite: 8]
-                    reader.onload = function(e) {[cite: 8]
-                        archivosMultiplesNovedades.push({[cite: 8]
-                            name: f.name,[cite: 8]
-                            type: f.type,[cite: 8]
-                            data: e.target.result[cite: 8]
+                (function(f) {
+                    reader.onload = function(e) {
+                        archivosMultiplesNovedades.push({
+                            name: f.name,
+                            type: f.type,
+                            data: e.target.result
                         });
-                        const li = document.createElement('li');[cite: 8]
-                        li.textContent = f.name;[cite: 8]
-                        listaUl.appendChild(li);[cite: 8]
+                        const li = document.createElement('li');
+                        li.textContent = f.name;
+                        listaUl.appendChild(li);
                     };
-                    reader.readAsDataURL(f);[cite: 8]
+                    reader.readAsDataURL(f);
                 })(file);
             }
         }
 
-        async function cargarHistorialMuroNovedades() {[cite: 8]
-            const contenedorMuro = document.getElementById('historial-muro-novedades');[cite: 8]
-            contenedorMuro.innerHTML = 'Cargando registros históricos...';[cite: 8]
+        async function cargarHistorialMuroNovedades() {
+            const contenedorMuro = document.getElementById('historial-muro-novedades');
+            contenedorMuro.innerHTML = 'Cargando registros históricos...';
 
             try {
-                const { data, error } = await db[cite: 8]
-                    .from('comunicados_memos')[cite: 8]
-                    .select('*')[cite: 8]
-                    .ilike('id_clave', 'comunicado_novedades_%')[cite: 8]
-                    .order('created_at', { ascending: false });[cite: 8]
+                const { data, error } = await db
+                    .from('comunicados_memos')
+                    .select('*')
+                    .ilike('id_clave', 'comunicado_novedades_%')
+                    .order('created_at', { ascending: false });
 
-                if (error) throw error;[cite: 8]
+                if (error) throw error;
 
-                if (!data || data.length === 0) {[cite: 8]
-                    contenedorMuro.innerHTML = '<p style="color: #666; font-style: italic;">No hay envíos registrados en el muro de novedades.</p>';[cite: 8]
+                if (!data || data.length === 0) {
+                    contenedorMuro.innerHTML = '<p style="color: #666; font-style: italic;">No hay envíos registrados en el muro de novedades.</p>';
                     return;
                 }
 
-                let html = '';[cite: 8]
-                data.forEach(row => {[cite: 8]
-                    const contenido = row.contenido || {};[cite: 8]
-                    const texto = contenido.texto || 'Sin texto';[cite: 8]
-                    const fecha = contenido.fecha || row.created_at || 'Fecha desconocida';[cite: 8]
-                    const depto = contenido.departamento || 'Todos';[cite: 8]
-                    const turno = contenido.turno || 'Todos';[cite: 8]
+                let html = '';
+                data.forEach(row => {
+                    const contenido = row.contenido || {};
+                    const texto = contenido.texto || 'Sin texto';
+                    const fecha = contenido.fecha || row.created_at || 'Fecha desconocida';
+                    const depto = contenido.departamento || 'Todos';
+                    const turno = contenido.turno || 'Todos';
 
-                    let adjuntosHtml = '';[cite: 8]
-                    if (contenido.archivos && Array.isArray(contenido.archivos) && contenido.archivos.length > 0) {[cite: 8]
-                        adjuntosHtml = '<div class="muro-adjuntos"><b>Archivos:</b> ';[cite: 8]
-                        contenido.archivos.forEach(adj => {[cite: 8]
-                            adjuntosHtml += `<a href="${adj.data}" download="${adj.name}" target="_blank">📥 ${adj.name}</a>`;[cite: 8]
+                    let adjuntosHtml = '';
+                    if (contenido.archivos && Array.isArray(contenido.archivos) && contenido.archivos.length > 0) {
+                        adjuntosHtml = '<div class="muro-adjuntos"><b>Archivos:</b> ';
+                        contenido.archivos.forEach(adj => {
+                            adjuntosHtml += `<a href="${adj.data}" download="${adj.name}" target="_blank">📥 ${adj.name}</a>`;
                         });
-                        adjuntosHtml += '</div>';[cite: 8]
-                    } else if (contenido.archivo && contenido.archivo.name) {[cite: 8]
-                        adjuntosHtml = `<div class="muro-adjuntos"><b>Archivo:</b> <a href="${contenido.archivo.data}" download="${contenido.archivo.name}" target="_blank">📥 ${contenido.archivo.name}</a></div>`;[cite: 8]
+                        adjuntosHtml += '</div>';
+                    } else if (contenido.archivo && contenido.archivo.name) {
+                        adjuntosHtml = `<div class="muro-adjuntos"><b>Archivo:</b> <a href="${contenido.archivo.data}" download="${contenido.archivo.name}" target="_blank">📥 ${contenido.archivo.name}</a></div>`;
                     }
 
                     html += `
@@ -485,100 +485,100 @@
                     `;
                 });
 
-                contenedorMuro.innerHTML = html;[cite: 8]
+                contenedorMuro.innerHTML = html;
             } catch (err) {
-                console.error("Error al cargar historial del muro de novedades:", err);[cite: 8]
-                contenedorMuro.innerHTML = '<p style="color: red;">Error al cargar el historial del muro.</p>';[cite: 8]
+                console.error("Error al cargar historial del muro de novedades:", err);
+                contenedorMuro.innerHTML = '<p style="color: red;">Error al cargar el historial del muro.</p>';
             }
         }
 
-        async function cargarEstadoAscensoresVivo() {[cite: 8]
-            const visor = document.getElementById('visor-estado-ascensores');[cite: 8]
-            visor.innerHTML = '<p style="text-align:center;">Cargando estado actual de ascensores...</p>';[cite: 8]
+        async function cargarEstadoAscensoresVivo() {
+            const visor = document.getElementById('visor-estado-ascensores');
+            visor.innerHTML = '<p style="text-align:center;">Cargando estado actual de ascensores...</p>';
             
             try {
-                const { data, error } = await db.from('estado_actual_ascensores').select('*');[cite: 8]
-                if (error) throw error;[cite: 8]
+                const { data, error } = await db.from('estado_actual_ascensores').select('*');
+                if (error) throw error;
 
-                if (!data || data.length === 0) {[cite: 8]
-                    visor.innerHTML = '<p style="text-align:center;">No hay registros en la tabla estado_actual_ascensores.</p>';[cite: 8]
+                if (!data || data.length === 0) {
+                    visor.innerHTML = '<p style="text-align:center;">No hay registros en la tabla estado_actual_ascensores.</p>';
                     return;
                 }
 
-                let ultimaFechaStr = '';[cite: 8]
-                let legajoOperador = null;[cite: 8]
+                let ultimaFechaStr = '';
+                let legajoOperador = null;
 
-                data.forEach(item => {[cite: 8]
-                    let fechaItem = item.updated_at || item.actualizado_at || item.actualizado_en || item.fecha;[cite: 8]
+                data.forEach(item => {
+                    let fechaItem = item.updated_at || item.actualizado_at || item.actualizado_en || item.fecha;
                     if (fechaItem) {
-                        if (!ultimaFechaStr || new Date(fechaItem) > new Date(ultimaFechaStr)) {[cite: 8]
-                            ultimaFechaStr = fechaItem;[cite: 8]
+                        if (!ultimaFechaStr || new Date(fechaItem) > new Date(ultimaFechaStr)) {
+                            ultimaFechaStr = fechaItem;
                         }
                     }
-                    let legajoItem = item.legajo_operador || item.legajo;[cite: 8]
-                    if (legajoItem && !legajoOperador) {[cite: 8]
-                        legajoOperador = String(legajoItem).trim();[cite: 8]
+                    let legajoItem = item.legajo_operador || item.legajo;
+                    if (legajoItem && !legajoOperador) {
+                        legajoOperador = String(legajoItem).trim();
                     }
                 });
 
-                let nombreSupervisor = 'Sistema / Desconocido';[cite: 8]
+                let nombreSupervisor = 'Sistema / Desconocido';
                 if (legajoOperador) {
-                    const { data: userData, error: userError } = await db[cite: 8]
-                        .from('usuarios')[cite: 8]
-                        .select('nombre_completo')[cite: 8]
-                        .eq('legajo', legajoOperador)[cite: 8]
-                        .maybeSingle();[cite: 8]
+                    const { data: userData, error: userError } = await db
+                        .from('usuarios')
+                        .select('nombre_completo')
+                        .eq('legajo', legajoOperador)
+                        .maybeSingle();
 
-                    if (!userError && userData && userData.nombre_completo) {[cite: 8]
-                        nombreSupervisor = userData.nombre_completo;[cite: 8]
+                    if (!userError && userData && userData.nombre_completo) {
+                        nombreSupervisor = userData.nombre_completo;
                     } else {
-                        nombreSupervisor = `Legajo: ${legajoOperador}`;[cite: 8]
+                        nombreSupervisor = `Legajo: ${legajoOperador}`;
                     }
                 }
 
-                let fechaFormateada = 'Sin fecha registrada';[cite: 8]
+                let fechaFormateada = 'Sin fecha registrada';
                 if (ultimaFechaStr) {
-                    let f = new Date(ultimaFechaStr);[cite: 8]
+                    let f = new Date(ultimaFechaStr);
                     if (!isNaN(f.getTime())) {
-                        fechaFormateada = f.toLocaleString('es-AR', {[cite: 8]
-                            year: 'numeric', month: '2-digit', day: '2-digit',[cite: 8]
-                            hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false[cite: 8]
+                        fechaFormateada = f.toLocaleString('es-AR', {
+                            year: 'numeric', month: '2-digit', day: '2-digit',
+                            hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
                         });
                     } else {
-                        fechaFormateada = ultimaFechaStr;[cite: 8]
+                        fechaFormateada = ultimaFechaStr;
                     }
                 }
 
-                const tituloContenedor = document.querySelector('#visor-estado-ascensores').previousElementSibling;[cite: 8]
+                const tituloContenedor = document.querySelector('#visor-estado-ascensores').previousElementSibling;
                 if (tituloContenedor) {
-                    tituloContenedor.innerHTML = `Última actualización: <b>${fechaFormateada}</b> | Registrado por: <b>${nombreSupervisor}</b>`;[cite: 8]
+                    tituloContenedor.innerHTML = `Última actualización: <b>${fechaFormateada}</b> | Registrado por: <b>${nombreSupervisor}</b>`;
                 }
 
-                data.sort((a, b) => (a.id || 0) - (b.id || 0));[cite: 8]
+                data.sort((a, b) => (a.id || 0) - (b.id || 0));
 
-                let cVerde = 0, cAmarillo = 0, cRojo = 0, cMixto = 0;[cite: 8]
-                let totalAscensores = data.length;[cite: 8]
+                let cVerde = 0, cAmarillo = 0, cRojo = 0, cMixto = 0;
+                let totalAscensores = data.length;
 
-                let html = '<table style="width:100%; border-collapse: collapse; text-align: left;">';[cite: 8]
-                html += '<thead><tr style="background: #1a3a5f; color: white;"><th style="padding: 10px; border: 1px solid #ddd; text-align: center; width: 15%;">Dispositivo</th><th style="padding: 10px; border: 1px solid #ddd; width: 25%;">Estado</th><th style="padding: 10px; border: 1px solid #ddd; width: 30%;">Uso Asignado</th><th style="padding: 10px; border: 1px solid #ddd; width: 30%;">Observaciones / Detalles</th></tr></thead><tbody>';[cite: 8]
+                let html = '<table style="width:100%; border-collapse: collapse; text-align: left;">';
+                html += '<thead><tr style="background: #1a3a5f; color: white;"><th style="padding: 10px; border: 1px solid #ddd; text-align: center; width: 15%;">Dispositivo</th><th style="padding: 10px; border: 1px solid #ddd; width: 25%;">Estado</th><th style="padding: 10px; border: 1px solid #ddd; width: 30%;">Uso Asignado</th><th style="padding: 10px; border: 1px solid #ddd; width: 30%;">Observaciones / Detalles</th></tr></thead><tbody>';
 
-                data.forEach(item => {[cite: 8]
-                    let dispositivo = item.identificador_dispositivo || `Dispositivo ${item.id}`;[cite: 8]
-                    let estado = item.estado || '-';[cite: 8]
-                    let uso = item.uso || '-';[cite: 8]
-                    let observaciones = item.observaciones && item.observaciones !== 'EMPTY' ? item.observaciones : '-';[cite: 8]
+                data.forEach(item => {
+                    let dispositivo = item.identificador_dispositivo || `Dispositivo ${item.id}`;
+                    let estado = item.estado || '-';
+                    let uso = item.uso || '-';
+                    let observaciones = item.observaciones && item.observaciones !== 'EMPTY' ? item.observaciones : '-';
 
-                    let estLower = String(estado).toLowerCase();[cite: 8]
-                    if (estLower.includes('funcionando') && !estLower.includes('ascensorista')) {[cite: 8]
-                        cVerde++;[cite: 8]
+                    let estLower = String(estado).toLowerCase();
+                    if (estLower.includes('funcionando') && !estLower.includes('ascensorista')) {
+                        cVerde++;
                     } else if (estLower.includes('mantenimiento')) {
-                        cAmarillo++;[cite: 8]
+                        cAmarillo++;
                     } else if (estLower.includes('fuera') || estLower.includes('servicio')) {
-                        cRojo++;[cite: 8]
+                        cRojo++;
                     } else if (estLower.includes('ascensorista') || estLower.includes('mixto')) {
-                        cMixto++;[cite: 8]
+                        cMixto++;
                     } else {
-                        cVerde++;[cite: 8]
+                        cVerde++;
                     }
 
                     html += `<tr>
@@ -589,7 +589,7 @@
                     </tr>`;
                 });
 
-                html += '</tbody></table>';[cite: 8]
+                html += '</tbody></table>';
 
                 html += `
                     <div style="margin-top: 30px; text-align: center; color: #1a3a5f; font-weight: bold; font-size: 20px; margin-bottom: 10px;">Estadísticas de Funcionalidad</div>
@@ -605,13 +605,13 @@
                         </div>
                     </div>`;
 
-                visor.innerHTML = html;[cite: 8]
+                visor.innerHTML = html;
 
                 setTimeout(() => {
-                    const ctx = document.getElementById('graficoEstadoAscensoresVivo')?.getContext('2d');[cite: 8]
+                    const ctx = document.getElementById('graficoEstadoAscensoresVivo')?.getContext('2d');
                     if (ctx) {
-                        if (typeof chartAscVivo !== 'undefined' && chartAscVivo) chartAscVivo.destroy();[cite: 8]
-                        window.chartAscVivo = new Chart(ctx, {[cite: 8]
+                        if (typeof chartAscVivo !== 'undefined' && chartAscVivo) chartAscVivo.destroy();
+                        window.chartAscVivo = new Chart(ctx, {
                             type: 'pie',
                             data: { 
                                 labels: ['Funcionando', 'Mantenimiento', 'Fuera de Servicio', 'Ascensoristas'], 
@@ -629,43 +629,43 @@
                 }, 50);
 
             } catch (err) {
-                console.error("Error al obtener estado actual de ascensores:", err);[cite: 8]
-                visor.innerHTML = '<p style="text-align:center; color: red;">Error al cargar los datos de ascensores y escaleras.</p>';[cite: 8]
+                console.error("Error al obtener estado actual de ascensores:", err);
+                visor.innerHTML = '<p style="text-align:center; color: red;">Error al cargar los datos de ascensores y escaleras.</p>';
             }
         }
 
-        function actualizarPrint(id) {[cite: 8]
-            const depto = document.getElementById('depto-destino-' + id).value;[cite: 8]
-            const turno = document.getElementById('turno-destino-' + id).value;[cite: 8]
-            document.getElementById('print-header-' + id).innerText = `Dirigido a: ${depto} | Turno: ${turno}`;[cite: 8]
+        function actualizarPrint(id) {
+            const depto = document.getElementById('depto-destino-' + id).value;
+            const turno = document.getElementById('turno-destino-' + id).value;
+            document.getElementById('print-header-' + id).innerText = `Dirigido a: ${depto} | Turno: ${turno}`;
         }
 
-        function previsualizar(input, id) {[cite: 8]
-            const file = input.files[0];[cite: 8]
-            const reader = new FileReader();[cite: 8]
-            reader.onload = function(e) {[cite: 8]
-                archivoData[id] = { name: file.name, type: file.type, data: e.target.result };[cite: 8]
-                const prev = document.getElementById('preview-' + id);[cite: 8]
-                prev.style.display = 'block';[cite: 8]
-                prev.innerHTML = file.type.startsWith('image') ? `<img src="${e.target.result}" style="max-width:200px; display:block; margin-top:10px;">` : `Archivo adjunto: ${file.name}`;[cite: 8]
+        function previsualizar(input, id) {
+            const file = input.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                archivoData[id] = { name: file.name, type: file.type, data: e.target.result };
+                const prev = document.getElementById('preview-' + id);
+                prev.style.display = 'block';
+                prev.innerHTML = file.type.startsWith('image') ? `<img src="${e.target.result}" style="max-width:200px; display:block; margin-top:10px;">` : `Archivo adjunto: ${file.name}`;
             };
-            reader.readAsDataURL(file);[cite: 8]
+            reader.readAsDataURL(file);
         }
 
-        async function guardarRedaccion(id) {[cite: 8]
-            const destino = document.getElementById('depto-destino-' + id).value;[cite: 8]
-            const turno = document.getElementById('turno-destino-' + id).value;[cite: 8]
-            const textoEscrito = document.getElementById('txt-' + id).value;[cite: 8]
+        async function guardarRedaccion(id) {
+            const destino = document.getElementById('depto-destino-' + id).value;
+            const turno = document.getElementById('turno-destino-' + id).value;
+            const textoEscrito = document.getElementById('txt-' + id).value;
 
-            let listaArchivos = [];[cite: 8]
-            let primerArchivo = null;[cite: 8]
+            let listaArchivos = [];
+            let primerArchivo = null;
 
-            if (id === 'novedades') {[cite: 8]
-                listaArchivos = archivosMultiplesNovedades;[cite: 8]
-                primerArchivo = archivosMultiplesNovedades.length > 0 ? archivosMultiplesNovedades[0] : null;[cite: 8]
+            if (id === 'novedades') {
+                listaArchivos = archivosMultiplesNovedades;
+                primerArchivo = archivosMultiplesNovedades.length > 0 ? archivosMultiplesNovedades[0] : null;
             } else {
-                primerArchivo = archivoData[id] || null;[cite: 8]
-                listaArchivos = primerArchivo ? [primerArchivo] : [];[cite: 8]
+                primerArchivo = archivoData[id] || null;
+                listaArchivos = primerArchivo ? [primerArchivo] : [];
             }
 
             const data = {
@@ -677,169 +677,169 @@
                 turno: turno
             };
             
-            let nombreDeptoClave = destino;[cite: 8]
-            if (destino === 'division-ascensores') nombreDeptoClave = 'Ascensores';[cite: 8]
-            if (destino === 'camilleros-central') nombreDeptoClave = 'Camilleros';[cite: 8]
-            if (destino === 'intendencia') nombreDeptoClave = 'Intendencia';[cite: 8]
-            if (destino === 'lavadero-central') nombreDeptoClave = 'Lavadero';[cite: 8]
-            if (destino === 'higiene-y-seguridad') nombreDeptoClave = 'Higiene y Seguridad';[cite: 8]
-            if (destino === 'dalo') nombreDeptoClave = 'DALO';[cite: 8]
-            if (destino === 'direccion-servicios-generales') nombreDeptoClave = 'DSG';[cite: 8]
-            if (destino === 'Todos') nombreDeptoClave = 'Todos';[cite: 8]
+            let nombreDeptoClave = destino;
+            if (destino === 'division-ascensores') nombreDeptoClave = 'Ascensores';
+            if (destino === 'camilleros-central') nombreDeptoClave = 'Camilleros';
+            if (destino === 'intendencia') nombreDeptoClave = 'Intendencia';
+            if (destino === 'lavadero-central') nombreDeptoClave = 'Lavadero';
+            if (destino === 'higiene-y-seguridad') nombreDeptoClave = 'Higiene y Seguridad';
+            if (destino === 'dalo') nombreDeptoClave = 'DALO';
+            if (destino === 'direccion-servicios-generales') nombreDeptoClave = 'DSG';
+            if (destino === 'Todos') nombreDeptoClave = 'Todos';
 
-            const claveUnica = `comunicado_novedades_${nombreDeptoClave}_${turno}_${Date.now()}`;[cite: 8]
+            const claveUnica = `comunicado_novedades_${nombreDeptoClave}_${turno}_${Date.now()}`;
             
-            const { error } = await db[cite: 8]
-                .from('comunicados_memos')[cite: 8]
+            const { error } = await db
+                .from('comunicados_memos')
                 .upsert(
-                    { id_clave: claveUnica, contenido: data },[cite: 8]
-                    { onConflict: 'id_clave' }[cite: 8]
+                    { id_clave: claveUnica, contenido: data },
+                    { onConflict: 'id_clave' }
                 );
 
             if (error) {
-                console.error("Error al guardar en Supabase:", error);[cite: 8]
-                alert("Error al enviar a la base de datos: " + error.message);[cite: 8]
+                console.error("Error al guardar en Supabase:", error);
+                alert("Error al enviar a la base de datos: " + error.message);
             } else {
-                alert("Novedad enviada correctamente al destino seleccionado.");[cite: 8]
+                alert("Novedad enviada correctamente al destino seleccionado.");
                 if (id === 'novedades') {
-                    cargarHistorialMuroNovedades();[cite: 8]
-                    archivosMultiplesNovedades = [];[cite: 8]
+                    cargarHistorialMuroNovedades();
+                    archivosMultiplesNovedades = [];
                 }
             }
         }
 
-        async function generarReporteMensual() {[cite: 8]
-            const tipo = document.getElementById('est-tipo').value;[cite: 8]
-            const deptoSeleccionado = document.getElementById('est-depto').value;[cite: 8]
-            const turnoSeleccionado = document.getElementById('est-turno').value;[cite: 8]
-            const mes = document.getElementById('est-mes').value;[cite: 8]
-            const anio = document.getElementById('est-anio').value;[cite: 8]
-            const visor = document.getElementById('visor-estadisticas');[cite: 8]
+        async function generarReporteMensual() {
+            const tipo = document.getElementById('est-tipo').value;
+            const deptoSeleccionado = document.getElementById('est-depto').value;
+            const turnoSeleccionado = document.getElementById('est-turno').value;
+            const mes = document.getElementById('est-mes').value;
+            const anio = document.getElementById('est-anio').value;
+            const visor = document.getElementById('visor-estadisticas');
             
-            visor.innerHTML = "<p>Cargando datos desde la nube...</p>";[cite: 8]
+            visor.innerHTML = "<p>Cargando datos desde la nube...</p>";
 
             if (tipo === 'rrhh') {
-                let p = 0, a = 0, l = 0;[cite: 8]
-                const { data: asistData } = await db.from('rrhh_asistencia').select('*');[cite: 8]
+                let p = 0, a = 0, l = 0;
+                const { data: asistData } = await db.from('rrhh_asistencia').select('*');
                 if (asistData) {
                     asistData.forEach(ag => {
-                        const f = new Date(ag.fecha);[cite: 8]
-                        const matchFecha = (f.getMonth() + 1) == mes && f.getFullYear() == anio;[cite: 8]
-                        const matchTurno = (turnoSeleccionado === 'Todos' || ag.turno === turnoSeleccionado);[cite: 8]
-                        const matchDepto = (deptoSeleccionado === 'Todos' || ag.departamento === deptoSeleccionado);[cite: 8]
+                        const f = new Date(ag.fecha);
+                        const matchFecha = (f.getMonth() + 1) == mes && f.getFullYear() == anio;
+                        const matchTurno = (turnoSeleccionado === 'Todos' || ag.turno === turnoSeleccionado);
+                        const matchDepto = (deptoSeleccionado === 'Todos' || ag.departamento === deptoSeleccionado);
 
                         if (matchFecha && matchTurno && matchDepto) {
-                            const est = String(ag.estado_asistencia || '').trim().toLowerCase();[cite: 8]
-                            if (est === 'presente' || est === 'p') p++;[cite: 8]
-                            else if (est === 'ausente' || est === 'a') a++;[cite: 8]
-                            else if (est === 'licencia' || est === 'l') l++;[cite: 8]
+                            const est = String(ag.estado_asistencia || '').trim().toLowerCase();
+                            if (est === 'presente' || est === 'p') p++;
+                            else if (est === 'ausente' || est === 'a') a++;
+                            else if (est === 'licencia' || est === 'l') l++;
                         }
                     });
                 }
                 
-                if (p+a+l === 0) { visor.innerHTML = "No hay datos para esta selección."; return; }[cite: 8]
-                visor.innerHTML = `<h3>Asistencia (${deptoSeleccionado}) ${mes}/${anio}</h3><div style="width:300px; height:300px; margin:auto;"><canvas id="graficoMes"></canvas></div><p><b>Presentismo:</b> ${((p/(p+a+l))*100).toFixed(1)}%</p>`;[cite: 8]
-                new Chart(document.getElementById('graficoMes'), { type: 'doughnut', data: { labels: ['Presentes', 'Ausentes', 'Licencias'], datasets: [{ data: [p, a, l], backgroundColor: ['#28a745', '#dc3545', '#ffc107'] }] } });[cite: 8]
+                if (p+a+l === 0) { visor.innerHTML = "No hay datos para esta selección."; return; }
+                visor.innerHTML = `<h3>Asistencia (${deptoSeleccionado}) ${mes}/${anio}</h3><div style="width:300px; height:300px; margin:auto;"><canvas id="graficoMes"></canvas></div><p><b>Presentismo:</b> ${((p/(p+a+l))*100).toFixed(1)}%</p>`;
+                new Chart(document.getElementById('graficoMes'), { type: 'doughnut', data: { labels: ['Presentes', 'Ausentes', 'Licencias'], datasets: [{ data: [p, a, l], backgroundColor: ['#28a745', '#dc3545', '#ffc107'] }] } });
             
             } else if (tipo === 'ascensores') {
-                const { data: ascData } = await db.from('registros_ascensores').select('*');[cite: 8]
-                let func = 0, falla = 0;[cite: 8]
+                const { data: ascData } = await db.from('registros_ascensores').select('*');
+                let func = 0, falla = 0;
                 if (ascData) {
                     ascData.forEach(item => {
-                        const f = new Date(item.fecha_cierre);[cite: 8]
-                        const matchFecha = (f.getMonth() + 1) == mes && f.getFullYear() == anio;[cite: 8]
-                        const matchTurno = (turnoSeleccionado === 'Todos' || item.turno === turnoSeleccionado);[cite: 8]
-                        const matchDepto = (deptoSeleccionado === 'Todos' || item.departamento === deptoSeleccionado);[cite: 8]
+                        const f = new Date(item.fecha_cierre);
+                        const matchFecha = (f.getMonth() + 1) == mes && f.getFullYear() == anio;
+                        const matchTurno = (turnoSeleccionado === 'Todos' || item.turno === turnoSeleccionado);
+                        const matchDepto = (deptoSeleccionado === 'Todos' || item.departamento === deptoSeleccionado);
 
                         if (matchFecha && matchTurno && matchDepto) {
-                            const txt = String(item.estado || '').trim().toLowerCase();[cite: 8]
-                            if (txt.includes('funciona') || txt.includes('ok') || txt === 'p') func++;[cite: 8]
-                            else if (txt.includes('falla') || txt.includes('fuera') || txt === 'a' || txt === 'l') falla++;[cite: 8]
+                            const txt = String(item.estado || '').trim().toLowerCase();
+                            if (txt.includes('funciona') || txt.includes('ok') || txt === 'p') func++;
+                            else if (txt.includes('falla') || txt.includes('fuera') || txt === 'a' || txt === 'l') falla++;
                         }
                     });
                 }
 
-                if (func+falla === 0) { visor.innerHTML = "No hay registros para esta selección."; return; }[cite: 8]
-                visor.innerHTML = `<h3>Estado Ascensores (${deptoSeleccionado}) ${mes}/${anio}</h3><div style="width:300px; height:300px; margin:auto;"><canvas id="graficoMes"></canvas></div><p><b>% Funcionamiento:</b> ${((func/(func+falla))*100).toFixed(1)}%</p>`;[cite: 8]
-                new Chart(document.getElementById('graficoMes'), { type: 'pie', data: { labels: ['En Servicio', 'En Falla'], datasets: [{ data: [func, falla], backgroundColor: ['#28a745', '#dc3545'] }] } });[cite: 8]
+                if (func+falla === 0) { visor.innerHTML = "No hay registros para esta selección."; return; }
+                visor.innerHTML = `<h3>Estado Ascensores (${deptoSeleccionado}) ${mes}/${anio}</h3><div style="width:300px; height:300px; margin:auto;"><canvas id="graficoMes"></canvas></div><p><b>% Funcionamiento:</b> ${((func/(func+falla))*100).toFixed(1)}%</p>`;
+                new Chart(document.getElementById('graficoMes'), { type: 'pie', data: { labels: ['En Servicio', 'En Falla'], datasets: [{ data: [func, falla], backgroundColor: ['#28a745', '#dc3545'] }] } });
             }
         }
 
-        let chartAsc;[cite: 8] 
+        let chartAsc; 
 
-        async function consultar(tipo) {[cite: 8]
-            const depto = document.getElementById('depto-' + tipo).value;[cite: 8]
-            const turno = document.getElementById('turno-' + tipo).value;[cite: 8]
-            const fechaBusqueda = document.getElementById('fecha-' + tipo).value;[cite: 8]
-            const supervisorSeleccionado = document.getElementById('supervisor-' + tipo)?.value || '';[cite: 8]
-            const visor = document.getElementById('visor-' + tipo);[cite: 8]
+        async function consultar(tipo) {
+            const depto = document.getElementById('depto-' + tipo).value;
+            const turno = document.getElementById('turno-' + tipo).value;
+            const fechaBusqueda = document.getElementById('fecha-' + tipo).value;
+            const supervisorSeleccionado = document.getElementById('supervisor-' + tipo)?.value || '';
+            const visor = document.getElementById('visor-' + tipo);
             
             if (!fechaBusqueda) {
-                visor.innerHTML = `<p style='color: red; font-weight: bold;'>Por favor, seleccione una fecha válida.</p>`;[cite: 8]
+                visor.innerHTML = `<p style='color: red; font-weight: bold;'>Por favor, seleccione una fecha válida.</p>`;
                 return;
             }
 
-            visor.innerHTML = "<p>Buscando en la base de datos...</p>";[cite: 8]
+            visor.innerHTML = "<p>Buscando en la base de datos...</p>";
             
-            let deptoFiltro = depto;[cite: 8]
-            if (depto === 'division-ascensores') deptoFiltro = 'Ascensores';[cite: 8]
-            if (depto === 'intendencia') deptoFiltro = 'Intendencia';[cite: 8]
-            if (depto === 'direccion-servicios-generales') deptoFiltro = 'Dirección Servicios Generales';[cite: 8]
-            if (depto === 'lavadero-central') deptoFiltro = 'Lavadero Central';[cite: 8]
-            if (depto === 'camilleros-central') deptoFiltro = 'Camilleros';[cite: 8]
-            if (depto === 'higiene-y-seguridad') deptoFiltro = 'Higiene y Seguridad';[cite: 8]
-            if (depto === 'dalo') deptoFiltro = 'DALO';[cite: 8]
+            let deptoFiltro = depto;
+            if (depto === 'division-ascensores') deptoFiltro = 'Ascensores';
+            if (depto === 'intendencia') deptoFiltro = 'Intendencia';
+            if (depto === 'direccion-servicios-generales') deptoFiltro = 'Dirección Servicios Generales';
+            if (depto === 'lavadero-central') deptoFiltro = 'Lavadero Central';
+            if (depto === 'camilleros-central') deptoFiltro = 'Camilleros';
+            if (depto === 'higiene-y-seguridad') deptoFiltro = 'Higiene y Seguridad';
+            if (depto === 'dalo') deptoFiltro = 'DALO';
             
-            let queryReg = db[cite: 8]
-                .from('cierres_jornada')[cite: 8]
-                .select('*')[cite: 8]
-                .eq('fecha_cierre', fechaBusqueda)[cite: 8]
-                .eq('turno', turno)[cite: 8]
-                .eq('departamento', deptoFiltro);[cite: 8]
+            let queryReg = db
+                .from('cierres_jornada')
+                .select('*')
+                .eq('fecha_cierre', fechaBusqueda)
+                .eq('turno', turno)
+                .eq('departamento', deptoFiltro);
 
-            if (deptoFiltro === 'Intendencia' && supervisorSeleccionado) {[cite: 8]
-                queryReg = queryReg.eq('supervisor', supervisorSeleccionado);[cite: 8]
+            if (deptoFiltro === 'Intendencia' && supervisorSeleccionado) {
+                queryReg = queryReg.eq('supervisor', supervisorSeleccionado);
             }
 
-            const { data: reg, error } = await queryReg.maybeSingle();[cite: 8]
+            const { data: reg, error } = await queryReg.maybeSingle();
             
             if (tipo === 'rrhh') {
                 if (error || !reg || !reg.asistencia_personal) {
-                    visor.innerHTML = `<p style='color: red; font-weight: bold;'>No se encontraron registros de asistencia en la nube para esta selección.</p>`;[cite: 8]
+                    visor.innerHTML = `<p style='color: red; font-weight: bold;'>No se encontraron registros de asistencia en la nube para esta selección.</p>`;
                     return;
                 }
 
-                const jsonAsistencia = reg.asistencia_personal;[cite: 8]
-                const legajos = Object.keys(jsonAsistencia);[cite: 8]
+                const jsonAsistencia = reg.asistencia_personal;
+                const legajos = Object.keys(jsonAsistencia);
 
                 if (legajos.length === 0) {
-                    visor.innerHTML = "<p style='color: red; font-weight: bold;'>El registro de asistencia está vacío.</p>";[cite: 8]
+                    visor.innerHTML = "<p style='color: red; font-weight: bold;'>El registro de asistencia está vacío.</p>";
                     return;
                 }
 
-                let tablaPersonal = 'intendencia_personal';[cite: 8]
+                let tablaPersonal = 'intendencia_personal';
                 if (deptoFiltro === 'Ascensores') {
-                    tablaPersonal = 'ascensores_personal';[cite: 8]
+                    tablaPersonal = 'ascensores_personal';
                 } else if (deptoFiltro === 'Camilleros') {
-                    tablaPersonal = 'camilleros_personal';[cite: 8]
+                    tablaPersonal = 'camilleros_personal';
                 } else if (deptoFiltro === 'Lavadero Central') {
-                    tablaPersonal = 'lavadero_personal';[cite: 8]
+                    tablaPersonal = 'lavadero_personal';
                 }
 
-                const { data: resPersonal, error: errPers } = await db[cite: 8]
-                    .from(tablaPersonal)[cite: 8]
-                    .select('legajo, apellido_y_nombre')[cite: 8]
-                    .in('legajo', legajos);[cite: 8]
+                const { data: resPersonal, error: errPers } = await db
+                    .from(tablaPersonal)
+                    .select('legajo, apellido_y_nombre')
+                    .in('legajo', legajos);
 
-                const mapaNombres = {};[cite: 8]
+                const mapaNombres = {};
                 if (resPersonal) {
                     resPersonal.forEach(p => {
-                        if (p.legajo != null) mapaNombres[String(p.legajo).trim()] = p.apellido_y_nombre || 'Desconocido';[cite: 8]
+                        if (p.legajo != null) mapaNombres[String(p.legajo).trim()] = p.apellido_y_nombre || 'Desconocido';
                     });
                 }
 
-                let presentes = 0, ausentes = 0, licencias = 0;[cite: 8]
-                let total = legajos.length;[cite: 8]
+                let presentes = 0, ausentes = 0, licencias = 0;
+                let total = legajos.length;
 
                 let html = `<table style="width: 100%; border-collapse: collapse; font-size: 13px;">
                     <thead>
@@ -854,20 +854,20 @@
                     <tbody>`;
                 
                 legajos.forEach(legajo => {
-                    const legTrim = String(legajo).trim();[cite: 8]
-                    let nombre = mapaNombres[legTrim];[cite: 8]
+                    const legTrim = String(legajo).trim();
+                    let nombre = mapaNombres[legTrim];
                     if (!nombre && typeof agentesGlobal !== 'undefined') {
-                        const encontradoGlobal = agentesGlobal.find(ag => String(ag.legajo).trim() === legTrim);[cite: 8]
-                        if (encontradoGlobal) nombre = encontradoGlobal.nombre;[cite: 8]
+                        const encontradoGlobal = agentesGlobal.find(ag => String(ag.legajo).trim() === legTrim);
+                        if (encontradoGlobal) nombre = encontradoGlobal.nombre;
                     }
-                    if (!nombre) nombre = `Legajo N° ${legTrim}`;[cite: 8]
+                    if (!nombre) nombre = `Legajo N° ${legTrim}`;
                     
-                    const estRaw = String(jsonAsistencia[legajo] || 'P').trim().toUpperCase();[cite: 8]
-                    let estadoChar = (estRaw === 'A' || estRaw === 'L' || estRaw === 'P') ? estRaw : 'P';[cite: 8]
+                    const estRaw = String(jsonAsistencia[legajo] || 'P').trim().toUpperCase();
+                    let estadoChar = (estRaw === 'A' || estRaw === 'L' || estRaw === 'P') ? estRaw : 'P';
 
-                    if (estadoChar === 'P') presentes++;[cite: 8]
-                    else if (estadoChar === 'A') ausentes++;[cite: 8]
-                    else if (estadoChar === 'L') licencias++;[cite: 8]
+                    if (estadoChar === 'P') presentes++; 
+                    else if (estadoChar === 'A') ausentes++; 
+                    else if (estadoChar === 'L') licencias++;
 
                     html += `<tr>
                         <td style="border: 1px solid #000; padding: 8px; text-align: center;">${legTrim}</td>
@@ -878,7 +878,7 @@
                     </tr>`;
                 });
                 
-                html += `</tbody></table>`;[cite: 8]
+                html += `</tbody></table>`;
                 
                 html += `
                     <div style="margin-top: 30px; text-align: center; color: #1a3a5f; font-weight: bold; font-size: 20px; margin-bottom: 10px;">Estadísticas de Presentismo</div>
@@ -893,13 +893,13 @@
                         </div>
                     </div>`;
 
-                visor.innerHTML = html;[cite: 8]
+                visor.innerHTML = html;
 
                 setTimeout(() => {
-                    const ctx = document.getElementById('graficoRrhh')?.getContext('2d');[cite: 8]
+                    const ctx = document.getElementById('graficoRrhh')?.getContext('2d');
                     if (ctx) {
-                        if (typeof chartRrhh !== 'undefined' && chartRrhh) chartRrhh.destroy();[cite: 8]
-                        window.chartRrhh = new Chart(ctx, {[cite: 8]
+                        if (typeof chartRrhh !== 'undefined' && chartRrhh) chartRrhh.destroy();
+                        window.chartRrhh = new Chart(ctx, {
                             type: 'pie',
                             data: { 
                                 labels: ['Presentes', 'Ausentes', 'Licencias'], 
@@ -918,45 +918,45 @@
             
             } else if (tipo === 'planillas') {
                 if (deptoFiltro === 'Ascensores') {
-                    const { data: dispData } = await db.from('registros_ascensores').select('*').eq('fecha_cierre', fechaBusqueda).eq('turno', turno);[cite: 8]
+                    const { data: dispData } = await db.from('registros_ascensores').select('*').eq('fecha_cierre', fechaBusqueda).eq('turno', turno);
 
-                    let tablaDinamica = `<table style="width: 100%; border-collapse: collapse; margin-top: 15px;"><thead><tr><th style="border: 1px solid #333; padding: 10px; background-color: #1a3a5f; color: white;">N° de Ascensor</th><th style="border: 1px solid #333; padding: 10px; background-color: #1a3a5f; color: white;">Estado</th><th style="border: 1px solid #333; padding: 10px; background-color: #1a3a5f; color: white;">Uso Asignado</th><th style="border: 1px solid #333; padding: 10px; background-color: #1a3a5f; color: white;">Observaciones / Detalle</th></tr></thead><tbody>`;[cite: 8]
+                    let tablaDinamica = `<table style="width: 100%; border-collapse: collapse; margin-top: 15px;"><thead><tr><th style="border: 1px solid #333; padding: 10px; background-color: #1a3a5f; color: white;">N° de Ascensor</th><th style="border: 1px solid #333; padding: 10px; background-color: #1a3a5f; color: white;">Estado</th><th style="border: 1px solid #333; padding: 10px; background-color: #1a3a5f; color: white;">Uso Asignado</th><th style="border: 1px solid #333; padding: 10px; background-color: #1a3a5f; color: white;">Observaciones / Detalle</th></tr></thead><tbody>`;
                     
-                    let cVerde = 0, cAmarillo = 0, cRojo = 0, cMixto = 0;[cite: 8]
-                    let totalAscensores = dispData ? dispData.length : 0;[cite: 8]
+                    let cVerde = 0, cAmarillo = 0, cRojo = 0, cMixto = 0;
+                    let totalAscensores = dispData ? dispData.length : 0;
 
                     if (dispData && dispData.length > 0) {
                         dispData.forEach(item => {
-                            let estadoNormalizado = String(item.estado || '').trim();[cite: 8]
-                            let textoOriginal = item.observaciones || '-';[cite: 8]
-                            let usoAsignado = textoOriginal;[cite: 8]
-                            let detalleObs = '-';[cite: 8]
+                            let estadoNormalizado = String(item.estado || '').trim();
+                            let textoOriginal = item.observaciones || '-';
+                            let usoAsignado = textoOriginal;
+                            let detalleObs = '-';
 
                             if (textoOriginal.includes('(')) {
-                                let indiceParentesis = textoOriginal.indexOf('(');[cite: 8]
-                                usoAsignado = textoOriginal.substring(0, indiceParentesis).trim();[cite: 8]
-                                detalleObs = textoOriginal.substring(indiceParentesis).trim();[cite: 8]
+                                let indiceParentesis = textoOriginal.indexOf('(');
+                                usoAsignado = textoOriginal.substring(0, indiceParentesis).trim();
+                                detalleObs = textoOriginal.substring(indiceParentesis).trim();
                             }
 
-                            let estLower = estadoNormalizado.toLowerCase();[cite: 8]
+                            let estLower = estadoNormalizado.toLowerCase();
                             if (estLower.includes('funcionando') && !estLower.includes('ascensorista')) {
-                                cVerde++;[cite: 8]
+                                cVerde++;
                             } else if (estLower.includes('mantenimiento')) {
-                                cAmarillo++;[cite: 8]
+                                cAmarillo++;
                             } else if (estLower.includes('fuera') || estLower.includes('servicio')) {
-                                cRojo++;[cite: 8]
+                                cRojo++;
                             } else if (estLower.includes('ascensorista') || estLower.includes('mixto')) {
-                                cMixto++;[cite: 8]
+                                cMixto++;
                             } else {
-                                cVerde++;[cite: 8]
+                                cVerde++;
                             }
 
                             tablaDinamica += `<tr><td style="border: 1px solid #333; padding: 8px; text-align: center;">${item.identificador_dispositivo}</td><td style="border: 1px solid #333; padding: 8px; text-align: center;">${estadoNormalizado}</td><td style="border: 1px solid #333; padding: 8px; text-align: center;">${usoAsignado}</td><td style="border: 1px solid #333; padding: 8px; text-align: center;">${detalleObs}</td></tr>`;
                         });
                     } else {
-                        tablaDinamica += `<tr><td colspan="4" style="border: 1px solid #333; padding: 12px; text-align: center;">No hay registros detallados de ascensores para esta fecha.</td></tr>`;[cite: 8]
+                        tablaDinamica += `<tr><td colspan="4" style="border: 1px solid #333; padding: 12px; text-align: center;">No hay registros detallados de ascensores para esta fecha.</td></tr>`;
                     }
-                    tablaDinamica += `</tbody></table>`;[cite: 8]
+                    tablaDinamica += `</tbody></table>`;
 
                     tablaDinamica += `
                         <div style="margin-top: 30px; text-align: center; color: #1a3a5f; font-weight: bold; font-size: 20px; margin-bottom: 10px;">Estadísticas de Funcionalidad</div>
@@ -972,13 +972,13 @@
                             </div>
                         </div>`;
 
-                    visor.innerHTML = tablaDinamica;[cite: 8]
+                    visor.innerHTML = tablaDinamica;
 
                     setTimeout(() => {
-                        const ctx = document.getElementById('graficoAscensores')?.getContext('2d');[cite: 8]
+                        const ctx = document.getElementById('graficoAscensores')?.getContext('2d');
                         if (ctx) {
-                            if (typeof chartAsc !== 'undefined' && chartAsc) chartAsc.destroy();[cite: 8]
-                            window.chartAsc = new Chart(ctx, {[cite: 8]
+                            if (typeof chartAsc !== 'undefined' && chartAsc) chartAsc.destroy();
+                            window.chartAsc = new Chart(ctx, {
                                 type: 'pie',
                                 data: { 
                                     labels: ['Funcionando', 'Mantenimiento', 'Fuera de Servicio', 'Ascensoristas'], 
@@ -996,16 +996,12 @@
                     }, 50);
 
                 } else if (deptoFiltro === 'Intendencia') {
-                    let queryInt = db.from('registros_intendencia').select('*').eq('fecha_cierre', fechaBusqueda).eq('turno', turno);[cite: 8]
-                    if (supervisorSeleccionado) queryInt = queryInt.eq('supervisor', supervisorSeleccionado);[cite: 8]
-                    const { data: intData } = await queryInt;[cite: 8]
+                    let queryInt = db.from('registros_intendencia').select('*').eq('fecha_cierre', fechaBusqueda).eq('turno', turno);
+                    if (supervisorSeleccionado) queryInt = queryInt.eq('supervisor', supervisorSeleccionado);
+                    const { data: intData } = await queryInt;
 
                     let tablaDinamica = `
                         <div style="background: #fff; width: 100%; box-sizing: border-box;">
-                            <!-- MODIFICACIÓN SOLICITADA: Mensaje de Panel debajo del mensaje de bienvenida y cambio de texto -->
-                            <div style="margin-bottom: 15px; font-size: 14px; font-weight: bold; color: #1a3a5f; text-align: left;">
-                                Bienvenido Jefe de Departamento: ${supervisorSeleccionado ? supervisorSeleccionado : 'TODOS'}
-                            </div>
                             <div style="font-size: 16px; font-weight: bold; color: #1a3a5f; margin-bottom: 10px;">Planilla Operativa - Intendencia ${supervisorSeleccionado ? '(' + supervisorSeleccionado + ')' : ''}</div>
                             <table style="width: 100%; border-collapse: collapse; margin-bottom: 0;">
                                 <thead>
@@ -1031,15 +1027,15 @@
                             </tr>`;
                         });
                     } else {
-                        tablaDinamica += `<tr><td colspan="4" style="border: 1px solid #333; padding: 12px; text-align: center;">No hay registros detallados de Intendencia para esta fecha y turno con este supervisor.</td></tr>`;[cite: 8]
+                        tablaDinamica += `<tr><td colspan="4" style="border: 1px solid #333; padding: 12px; text-align: center;">No hay registros detallados de Intendencia para esta fecha y turno con este supervisor.</td></tr>`;
                     }
-                    tablaDinamica += `</tbody></table>`;[cite: 8]
+                    tablaDinamica += `</tbody></table>`;
                     
-                    let obsFinal = '';[cite: 8]
-                    if (reg && reg.observaciones) obsFinal = reg.observaciones;[cite: 8]
+                    let obsFinal = '';
+                    if (reg && reg.observaciones) obsFinal = reg.observaciones;
                     else if (intData && intData.length > 0) {
-                        const encontrada = intData.find(r => r.observaciones && r.observaciones.trim() !== '');[cite: 8]
-                        obsFinal = encontrada ? encontrada.observaciones : '';[cite: 8]
+                        const encontrada = intData.find(r => r.observaciones && r.observaciones.trim() !== '');
+                        obsFinal = encontrada ? encontrada.observaciones : '';
                     }
 
                     tablaDinamica += `
@@ -1048,10 +1044,10 @@
                             <p style="margin: 0; padding: 0; white-space: pre-wrap;">${obsFinal || 'Sin observaciones registradas.'}</p>
                         </div>
                     </div>`;
-                    visor.innerHTML = tablaDinamica;[cite: 8]
+                    visor.innerHTML = tablaDinamica;
 
                 } else if (deptoFiltro === 'Camilleros') {
-                    const { data: camData } = await db.from('registros_camilleros').select('*').eq('fecha_cierre', fechaBusqueda).eq('turno', turno);[cite: 8]
+                    const { data: camData } = await db.from('registros_camilleros').select('*').eq('fecha_cierre', fechaBusqueda).eq('turno', turno);
 
                     let tablaDinamica = `
                         <div style="background: #fff; width: 100%; box-sizing: border-box;">
@@ -1085,15 +1081,15 @@
                             </tr>`;
                         });
                     } else {
-                        tablaDinamica += `<tr><td colspan="8" style="border: 1px solid #333; padding: 12px; text-align: center;">No hay registros de movimientos de camilleros para esta fecha.</td></tr>`;[cite: 8]
+                        tablaDinamica += `<tr><td colspan="8" style="border: 1px solid #333; padding: 12px; text-align: center;">No hay registros de movimientos de camilleros para esta fecha.</td></tr>`;
                     }
-                    tablaDinamica += `</tbody></table>`;[cite: 8]
+                    tablaDinamica += `</tbody></table>`;
 
-                    let obsCamilleros = '';[cite: 8]
-                    if (reg && reg.observaciones) obsCamilleros = reg.observaciones;[cite: 8]
+                    let obsCamilleros = '';
+                    if (reg && reg.observaciones) obsCamilleros = reg.observaciones;
                     else if (camData && camData.length > 0) {
-                        const obsEncontrada = camData.find(r => r.observaciones && r.observaciones.trim() !== '');[cite: 8]
-                        obsCamilleros = obsEncontrada ? obsEncontrada.observaciones : '';[cite: 8]
+                        const obsEncontrada = camData.find(r => r.observaciones && r.observaciones.trim() !== '');
+                        obsCamilleros = obsEncontrada ? obsEncontrada.observaciones : '';
                     }
 
                     tablaDinamica += `
@@ -1103,11 +1099,11 @@
                         </div>
                     </div>`;
 
-                    visor.innerHTML = tablaDinamica;[cite: 8]
+                    visor.innerHTML = tablaDinamica;
 
                 } else {
                     if (error || !reg) {
-                        visor.innerHTML = `<p style='color: red; font-weight: bold;'>No se encontraron registros para ${deptoFiltro} en el turno ${turno} (${fechaBusqueda}).</p>`;[cite: 8]
+                        visor.innerHTML = `<p style='color: red; font-weight: bold;'>No se encontraron registros para ${deptoFiltro} en el turno ${turno} (${fechaBusqueda}).</p>`;
                         return;
                     }
 
@@ -1120,18 +1116,18 @@
                             </div>
                         </div>
                     `;
-                    visor.innerHTML = tablaDinamica;[cite: 8]
+                    visor.innerHTML = tablaDinamica;
                 }
 
             } else if (tipo === 'reportes' || tipo === 'insumos') {
                 if (error || !reg) {
-                    visor.innerHTML = `<p style='color: red; font-weight: bold;'>No se encontraron registros para ${deptoFiltro} en el turno ${turno} (${fechaBusqueda}).</p>`;[cite: 8]
+                    visor.innerHTML = `<p style='color: red; font-weight: bold;'>No se encontraron registros para ${deptoFiltro} en el turno ${turno} (${fechaBusqueda}).</p>`;
                     return;
                 }
-                visor.innerHTML = `<h3>Reporte Diario - Vista de Auditoría</h3><style>.hoja-modelo-limpio { width: 100% !important; background-color: #fff !important; border: 1px solid #ccc !important; padding: 30px !important; position: relative !important; min-height: 800px !important; font-family: 'Courier New', Courier, monospace !important; font-size: 16px !important; line-height: 30px !important; box-sizing: border-box !important; background-image: linear-gradient(to right, transparent 0px, transparent 0px), linear-gradient(#e0e0e0 1px, transparent 1px) !important; background-size: 100% 30px !important; white-space: pre-wrap !important; }</style><div class="hoja-modelo-limpio">${reg.reporte_diario || 'No hay contenido de reporte.'}</div>`;[cite: 8]
+                visor.innerHTML = `<h3>Reporte Diario - Vista de Auditoría</h3><style>.hoja-modelo-limpio { width: 100% !important; background-color: #fff !important; border: 1px solid #ccc !important; padding: 30px !important; position: relative !important; min-height: 800px !important; font-family: 'Courier New', Courier, monospace !important; font-size: 16px !important; line-height: 30px !important; box-sizing: border-box !important; background-image: linear-gradient(to right, transparent 0px, transparent 0px), linear-gradient(#e0e0e0 1px, transparent 1px) !important; background-size: 100% 30px !important; white-space: pre-wrap !important; }</style><div class="hoja-modelo-limpio">${reg.reporte_diario || 'No hay contenido de reporte.'}</div>`;
             }
         }
-        document.getElementById('reportes').classList.add('activo');[cite: 8]
+        document.getElementById('reportes').classList.add('activo');
         cargarHistorialMuroNovedades();
     </script>
 </body>
