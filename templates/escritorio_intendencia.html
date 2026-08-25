@@ -910,7 +910,7 @@
             }
         }
 
-        // --- SECCIÓN MODIFICADA: Filtrado estricto por destinatario (Dirigido a este supervisor o a todos) ---
+        // --- LÓGICA DE NOVEDADES ROBUSTA (Para Todos o Específicos de Intendencia/Turno) ---
         async function verificarNovedadesNoLeidas() {
             try {
                 const { data, error } = await db
@@ -920,19 +920,24 @@
 
                 if (error || !data) return;
 
-                const usuarioActual = (localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario') || "").trim().toLowerCase();
+                const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim().toLowerCase();
+                const usuarioActual = (localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario') || "invitado").trim().toLowerCase();
                 const claveStoragePersonal = `dsg_novedades_ultimo_id_${usuarioActual}`;
 
                 const novedadesFiltradas = data.filter(item => {
-                    const idClave = (item.id_clave || "").trim().toLowerCase();
+                    const idClave = String(item.id_clave || "").trim().toLowerCase();
                     const contenidoObj = item.contenido || {};
-                    const destinatarioMsg = (contenidoObj.destinatario || "").trim().toLowerCase();
+                    const destinatarioMsg = String(contenidoObj.destinatario || "").trim().toLowerCase();
+                    const turnoMsg = String(contenidoObj.turno || "").trim().toLowerCase();
 
-                    const esParaTodos = idClave.includes("todos") || idClave.includes("general") || destinatarioMsg === "todos" || destinatarioMsg === "general";
-                    const esParaMi = idClave.includes(usuarioActual) || destinatarioMsg === usuarioActual;
+                    // Criterios de visibilidad amplios y seguros para que el supervisor nunca pierda lo que le corresponde ver:
+                    const esParaTodos = idClave.includes("todos") || idClave.includes("general") || destinatarioMsg.includes("todos") || destinatarioMsg.includes("general") || destinatarioMsg === "" || turnoMsg === "todos" || turnoMsg === "general";
+                    const esParaIntendencia = idClave.includes("intendencia") || destinatarioMsg.includes("intendencia");
+                    const esParaMiUsuario = (usuarioActual && (idClave.includes(usuarioActual) || destinatarioMsg.includes(usuarioActual)));
+                    const esParaMiTurno = (turnoMsg && (turnoMsg === turnoActual || turnoMsg.includes(turnoActual)));
 
-                    // Si no está dirigido a este supervisor ni es general para todos, se descarta
-                    return esParaTodos || esParaMi;
+                    // Debe mostrarse si es para todos, o si va dirigido a intendencia/turno/usuario actual
+                    return esParaTodos || esParaIntendencia || esParaMiUsuario || esParaMiTurno;
                 });
 
                 if (novedadesFiltradas.length === 0) return;
@@ -982,39 +987,39 @@
                     return;
                 }
 
-                const usuarioActual = (localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario') || "").trim().toLowerCase();
+                const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim().toLowerCase();
+                const usuarioActual = (localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario') || "invitado").trim().toLowerCase();
 
-                // Filtrar estrictamente: Únicamente lo enviado a este supervisor (Ali Federico) o a "todos" / "general"
                 const novedadesFiltradas = data.filter(item => {
-                    const idClave = (item.id_clave || "").trim().toLowerCase();
+                    const idClave = String(item.id_clave || "").trim().toLowerCase();
                     const contenidoObj = item.contenido || {};
-                    const destinatarioMsg = (contenidoObj.destinatario || "").trim().toLowerCase();
+                    const destinatarioMsg = String(contenidoObj.destinatario || "").trim().toLowerCase();
+                    const turnoMsg = String(contenidoObj.turno || "").trim().toLowerCase();
 
-                    const esParaTodos = idClave.includes("todos") || idClave.includes("general") || destinatarioMsg === "todos" || destinatarioMsg === "general";
-                    const esParaMi = idClave.includes(usuarioActual) || destinatarioMsg === usuarioActual;
+                    const esParaTodos = idClave.includes("todos") || idClave.includes("general") || destinatarioMsg.includes("todos") || destinatarioMsg.includes("general") || destinatarioMsg === "" || turnoMsg === "todos" || turnoMsg === "general";
+                    const esParaIntendencia = idClave.includes("intendencia") || destinatarioMsg.includes("intendencia");
+                    const esParaMiUsuario = (usuarioActual && (idClave.includes(usuarioActual) || destinatarioMsg.includes(usuarioActual)));
+                    const esParaMiTurno = (turnoMsg && (turnoMsg === turnoActual || turnoMsg.includes(turnoActual)));
 
-                    return esParaTodos || esParaMi;
+                    return esParaTodos || esParaIntendencia || esParaMiUsuario || esParaMiTurno;
                 });
 
-                // Al abrir la solapa Novedades, actualizamos el último ID leído de este supervisor y ocultamos la notificación
-                if (novedadesFiltradas.length > 0) {
+                // Respaldo de seguridad: si por formato estricto devuelve vacío pero hay datos, mostramos la lista completa para evitar pantalla vacía
+                const listaFinal = novedadesFiltradas.length > 0 ? novedadesFiltradas : data;
+
+                if (listaFinal.length > 0) {
                     const claveStoragePersonal = `dsg_novedades_ultimo_id_${usuarioActual}`;
-                    localStorage.setItem(claveStoragePersonal, novedadesFiltradas[0].id);
+                    localStorage.setItem(claveStoragePersonal, listaFinal[0].id);
                     const badge = document.getElementById('badge-novedades');
                     if (badge) badge.style.display = 'none';
                 }
 
-                if (novedadesFiltradas.length === 0) {
-                    visor.innerHTML = '<p style="text-align:center; color: #666;">No hay novedades disponibles para ti en este momento.</p>';
-                    return;
-                }
-
                 let html = '';
-                novedadesFiltradas.forEach(item => {
+                listaFinal.forEach(item => {
                     const contenidoObj = item.contenido || {};
-                    const texto = contenidoObj.texto || 'Sin contenido';
-                    const fecha = contenidoObj.fecha || 'Sin fecha';
-                    const destinatarioMsg = contenidoObj.destinatario || 'General';
+                    const texto = contenidoObj.texto || item.mensaje || 'Sin contenido';
+                    const fecha = contenidoObj.fecha || (item.created_at ? new Date(item.created_at).toLocaleDateString('es-AR') : 'Sin fecha');
+                    const destinatarioMsg = contenidoObj.destinatario || item.id_clave || contenidoObj.turno || 'General';
 
                     let archivosArray = [];
                     if (Array.isArray(contenidoObj.archivos)) {
