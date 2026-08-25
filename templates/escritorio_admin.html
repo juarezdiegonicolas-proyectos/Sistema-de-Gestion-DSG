@@ -227,6 +227,28 @@
             const SUPABASE_KEY = 'sb_publishable_EvvZ8n7Ve2cF9FB4SXA0Ug_7q6qWh9f';
             const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+            // Mapeo automático del agente logueado al iniciar la página
+            async function inicializarDatosAgente() {
+                const legajoLogueado = localStorage.getItem('legajo') || sessionStorage.getItem('legajo');
+                if (legajoLogueado) {
+                    try {
+                        const { data, error } = await db
+                            .from('usuarios')
+                            .select('nombre_completo')
+                            .eq('legajo', legajoLogueado)
+                            .maybeSingle();
+
+                        if (!error && data && data.nombre_completo) {
+                            const elSidebar = document.getElementById('nombre-supervisor-sidebar');
+                            if (elSidebar) elSidebar.textContent = data.nombre_completo;
+                        }
+                    } catch (err) {
+                        console.error("No se pudo obtener el nombre del agente:", err);
+                    }
+                }
+            }
+            inicializarDatosAgente();
+
             function imprimirConOrientacion() {
                 const seleccion = prompt("¿Cómo deseas imprimir?\n\nEscribe 'V' para Vertical\nEscribe 'H' para Horizontal", "H");
                 
