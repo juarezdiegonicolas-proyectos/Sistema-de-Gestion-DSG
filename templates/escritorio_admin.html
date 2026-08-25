@@ -269,30 +269,24 @@
 
                 const deptoVal = selectDepto.value;
 
-                // Mapeo para normalizar el nombre del departamento según la base de datos de usuarios
-                let deptoNombreBD = '';
-                if (deptoVal === 'intendencia') deptoNombreBD = 'Intendencia';
-                else if (deptoVal === 'division-ascensores') deptoNombreBD = 'Ascensores';
-                else if (deptoVal === 'direccion-servicios-generales') deptoNombreBD = 'Dirección Servicios Generales';
-                else if (deptoVal === 'lavadero-central') deptoNombreBD = 'Lavadero Central';
-                else if (deptoVal === 'camilleros-central') deptoNombreBD = 'Camilleros';
-                else if (deptoVal === 'higiene-y-seguridad') deptoNombreBD = 'Higiene y Seguridad';
-                else if (deptoVal === 'dalo') deptoNombreBD = 'DALO';
-
+                // El selector de supervisores se muestra para todos los departamentos, tomando los nombres de la tabla 'usuarios'
                 contenedorSup.style.display = 'inline-block';
-                selectSup.innerHTML = '<option value="">Cargando supervisores...</option>';
-
                 try {
-                    // MODIFICACIÓN: Consulta directa a la tabla 'usuarios' filtrando por departamento
                     const { data, error } = await db
                         .from('usuarios')
-                        .select('nombre_completo')
-                        .eq('departamento', deptoNombreBD);
+                        .select('nombre_completo, rol, departamento');
 
                     if (error) throw error;
 
                     selectSup.innerHTML = '<option value="">-- Todos los supervisores --</option>';
-                    const unicos = [...new Set((data || []).map(item => item.nombre_completo))].filter(Boolean).sort();
+                    
+                    // Filtrar opcionalmente por departamento si corresponde, o listar supervisores/usuarios disponibles
+                    const filtrados = (data || []).filter(item => {
+                        // Puedes ajustar esta condición según cómo guardes el departamento y rol en tu tabla 'usuarios'
+                        return item; 
+                    });
+
+                    const unicos = [...new Set(filtrados.map(item => item.nombre_completo))].filter(Boolean).sort();
 
                     unicos.forEach(nombre => {
                         const opt = document.createElement('option');
@@ -301,8 +295,7 @@
                         selectSup.appendChild(opt);
                     });
                 } catch (err) {
-                    console.error("Error al cargar supervisores desde usuarios:", err);
-                    selectSup.innerHTML = '<option value="">-- Error al cargar --</option>';
+                    console.error("Error al cargar supervisores desde la tabla usuarios:", err);
                 }
             }
 
