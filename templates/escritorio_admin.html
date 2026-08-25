@@ -269,26 +269,17 @@
 
                 const deptoVal = selectDepto.value;
 
-                let nombreDeptoMap = '';
-                if (deptoVal === 'intendencia') nombreDeptoMap = 'Intendencia';
-                else if (deptoVal === 'division-ascensores') nombreDeptoMap = 'Ascensores';
-                else if (deptoVal === 'lavadero-central') nombreDeptoMap = 'Lavadero Central';
-                else if (deptoVal === 'camilleros-central') nombreDeptoMap = 'Camilleros';
-                else if (deptoVal === 'higiene-y-seguridad') nombreDeptoMap = 'Higiene y Seguridad';
-                else if (deptoVal === 'dalo') nombreDeptoMap = 'DALO';
-                else if (deptoVal === 'direccion-servicios-generales') nombreDeptoMap = 'Dirección Servicios Generales';
-
-                if (deptoVal !== 'Todos' && deptoVal !== '') {
+                if (deptoVal === 'intendencia') {
                     contenedorSup.style.display = 'inline-block';
                     try {
                         const { data, error } = await db
                             .from('cierres_jornada')
                             .select('supervisor')
-                            .eq('departamento', nombreDeptoMap);
+                            .eq('departamento', 'Intendencia');
 
                         if (error) throw error;
 
-                        selectSup.innerHTML = '<option value="Todos">-- Todos los supervisores --</option>';
+                        selectSup.innerHTML = '<option value="">-- Todos los supervisores --</option>';
                         const unicos = [...new Set((data || []).map(item => item.supervisor))].filter(Boolean).sort();
 
                         unicos.forEach(nombre => {
@@ -302,9 +293,8 @@
                     }
                 } else {
                     contenedorSup.style.display = 'none';
-                    selectSup.value = 'Todos';
+                    selectSup.value = '';
                 }
-                actualizarPrint(idSeccion);
             }
 
             function crearSeccion(id, titulo, tipoContenido) {
@@ -317,7 +307,7 @@
                                 <img src="{{ url_for('static', filename='logo_dsg.png') }}" alt="Logo DSG" style="height: 135px;">
                             </div>
                             <div class="filtros-historicos">
-                                <select id="depto-destino-novedades" class="input-select" onchange="manejarCambioDepto('novedades')">
+                                <select id="depto-destino-novedades" class="input-select" onchange="actualizarPrint('novedades')">
                                     <option value="Todos">Todos los departamentos</option>
                                     <option value="direccion-servicios-generales">Dirección Servicios Generales</option>
                                     <option value="intendencia">Intendencia</option>
@@ -335,17 +325,12 @@
                                     <option value="Noche B">Noche B</option>
                                     <option value="Sadofe">Sadofe</option>
                                 </select>
-                                <div id="contenedor-supervisor-novedades" style="display: none;">
-                                    <select id="supervisor-novedades" class="input-select" onchange="actualizarPrint('novedades')">
-                                        <option value="Todos">-- Todos los supervisores --</option>
-                                    </select>
-                                </div>
                                 <button class="btn-gestion btn-adjuntar" onclick="document.getElementById('file-novedades').click()">📎 Adjuntar Archivos</button>
                                 <input type="file" id="file-novedades" style="display:none" multiple onchange="previsualizarMultiples(this, 'novedades')">
                                 <button class="btn-gestion" style="background: #28a745; color: white;" onclick="guardarRedaccion('novedades')">Guardar y Enviar</button>
                             </div>
                             
-                            <div id="print-header-novedades" class="print-header">Dirigido a: Todos los departamentos | Turno: Todos los turnos | Supervisor: Todos</div>
+                            <div id="print-header-novedades" class="print-header">Dirigido a: Todos los departamentos | Turno: Todos los turnos</div>
                             <textarea id="txt-novedades" oninput="document.getElementById('print-novedades').innerText = this.value" placeholder="Escriba aquí el contenido..."></textarea>
                             <div id="print-novedades" class="print-only"></div>
                             <div id="preview-novedades" class="preview-adjunto"></div>
@@ -389,7 +374,7 @@
                                     </select>
                                     <div id="contenedor-supervisor-${id}" style="display: none;">
                                         <select id="supervisor-${id}" class="input-select">
-                                            <option value="Todos">-- Todos los supervisores --</option>
+                                            <option value="">-- Todos los supervisores --</option>
                                         </select>
                                     </div>
                                     <input type="date" id="fecha-${id}" class="input-fecha">
@@ -398,7 +383,7 @@
                                     <span style="font-weight: bold; color: #1a3a5f;">Estado en tiempo real de la tabla estado_actual_ascensores</span>
                                     <button class="btn-gestion" style="background: #1a3a5f; color: white; margin-left: auto;" onclick="cargarEstadoAscensoresVivo()">Actualizar Datos</button>
                                 ` : `
-                                    <select id="depto-destino-${id}" class="input-select" onchange="manejarCambioDepto('${id}')">
+                                    <select id="depto-destino-${id}" class="input-select" onchange="actualizarPrint('${id}')">
                                         <option value="Todos">Todos los departamentos</option>
                                         <option value="direccion-servicios-generales">Dirección Servicios Generales</option>
                                         <option value="intendencia">Intendencia</option>
@@ -416,11 +401,6 @@
                                         <option value="Noche B">Noche B</option>
                                         <option value="Sadofe">Sadofe</option>
                                     </select>
-                                    <div id="contenedor-supervisor-${id}" style="display: none;">
-                                        <select id="supervisor-${id}" class="input-select" onchange="actualizarPrint('${id}')">
-                                            <option value="Todos">-- Todos los supervisores --</option>
-                                        </select>
-                                    </div>
                                     <button class="btn-gestion btn-adjuntar" onclick="document.getElementById('file-${id}').click()">📎 Adjuntar</button>
                                     <input type="file" id="file-${id}" style="display:none" onchange="previsualizar(this, '${id}')">
                                     <button class="btn-gestion" style="background: #28a745; color: white;" onclick="guardarRedaccion('${id}')">Guardar y Enviar</button>
@@ -429,7 +409,7 @@
                             
                             ${tipoContenido === 'auditoria' ? `<div id="visor-${id}" style="border: 1px solid #ccc; padding: 20px; min-height: 200px;">Seleccione filtros para auditar.</div>` : 
                               tipoContenido === 'estado-ascensores-vivo' ? `<div id="visor-${id}" style="border: 1px solid #ccc; padding: 20px; min-height: 200px; background: #fff;">Cargando datos actuales...</div>` :
-                              `<div id="print-header-${id}" class="print-header">Dirigido a: Todos los departamentos | Turno: Todos los turnos | Supervisor: Todos</div><textarea id="txt-${id}" oninput="document.getElementById('print-${id}').innerText = this.value" placeholder="Escriba aquí el contenido..."></textarea><div id="print-${id}" class="print-only"></div><div id="preview-${id}" class="preview-adjunto"></div>`}
+                              `<div id="print-header-${id}" class="print-header">Dirigido a: Todos los departamentos | Turno: Todos los turnos</div><textarea id="txt-${id}" oninput="document.getElementById('print-${id}').innerText = this.value" placeholder="Escriba aquí el contenido..."></textarea><div id="print-${id}" class="print-only"></div><div id="preview-${id}" class="preview-adjunto"></div>`}
                             
                             <div class="area-acciones">
                                 <button id="btn-print-${id}" class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
@@ -513,14 +493,8 @@
             document.getElementById('print-' + id).innerText = '';
             document.getElementById('preview-' + id).style.display = 'none';
             document.getElementById('preview-' + id).innerHTML = '';
-            const deptoEl = document.getElementById('depto-destino-' + id) || document.getElementById('depto-' + id);
-            if (deptoEl) deptoEl.value = 'Todos';
-            const turnoEl = document.getElementById('turno-destino-' + id) || document.getElementById('turno-' + id);
-            if (turnoEl) turnoEl.value = 'Todos';
-            const contSup = document.getElementById('contenedor-supervisor-' + id);
-            if (contSup) contSup.style.display = 'none';
-            const selSup = document.getElementById('supervisor-' + id);
-            if (selSup) selSup.value = 'Todos';
+            document.getElementById('depto-destino-' + id).value = 'Todos';
+            document.getElementById('turno-destino-' + id).value = 'Todos';
             actualizarPrint(id);
             delete archivoData[id];
             if (id === 'novedades') {
@@ -581,7 +555,6 @@
                     const fecha = contenido.fecha || row.created_at || 'Fecha desconocida';
                     const depto = contenido.departamento || 'Todos';
                     const turno = contenido.turno || 'Todos';
-                    const supervisor = contenido.supervisor || 'Todos';
 
                     let adjuntosHtml = '';
                     if (contenido.archivos && Array.isArray(contenido.archivos) && contenido.archivos.length > 0) {
@@ -597,7 +570,7 @@
                     html += `
                         <div class="muro-item">
                             <div class="muro-header">
-                                <span><b>Destino:</b> ${depto} | <b>Turno:</b> ${turno} | <b>Supervisor:</b> ${supervisor}</span>
+                                <span><b>Destino:</b> ${depto} | <b>Turno:</b> ${turno}</span>
                                 <span>${fecha}</span>
                             </div>
                             <div class="muro-body">${texto}</div>
@@ -756,18 +729,9 @@
         }
 
         function actualizarPrint(id) {
-            const deptoEl = document.getElementById('depto-destino-' + id) || document.getElementById('depto-' + id);
-            const turnoEl = document.getElementById('turno-destino-' + id) || document.getElementById('turno-' + id);
-            const supEl = document.getElementById('supervisor-' + id);
-
-            const depto = deptoEl ? deptoEl.value : 'Todos';
-            const turno = turnoEl ? turnoEl.value : 'Todos';
-            const supervisor = supEl ? supEl.value : 'Todos';
-
-            const headerEl = document.getElementById('print-header-' + id);
-            if (headerEl) {
-                headerEl.innerText = `Dirigido a: ${depto} | Turno: ${turno} | Supervisor: ${supervisor}`;
-            }
+            const depto = document.getElementById('depto-destino-' + id).value;
+            const turno = document.getElementById('turno-destino-' + id).value;
+            document.getElementById('print-header-' + id).innerText = `Dirigido a: ${depto} | Turno: ${turno}`;
         }
 
         function previsualizar(input, id) {
@@ -783,13 +747,8 @@
         }
 
         async function guardarRedaccion(id) {
-            const deptoEl = document.getElementById('depto-destino-' + id) || document.getElementById('depto-' + id);
-            const turnoEl = document.getElementById('turno-destino-' + id) || document.getElementById('turno-' + id);
-            const supEl = document.getElementById('supervisor-' + id);
-
-            const destino = deptoEl ? deptoEl.value : 'Todos';
-            const turno = turnoEl ? turnoEl.value : 'Todos';
-            const supervisor = supEl ? supEl.value : 'Todos';
+            const destino = document.getElementById('depto-destino-' + id).value;
+            const turno = document.getElementById('turno-destino-' + id).value;
             const textoEscrito = document.getElementById('txt-' + id).value;
 
             let listaArchivos = [];
@@ -809,8 +768,7 @@
                 archivo: primerArchivo,
                 fecha: new Date().toLocaleString(),
                 departamento: destino,
-                turno: turno,
-                supervisor: supervisor
+                turno: turno
             };
             
             let nombreDeptoClave = destino;
@@ -823,7 +781,7 @@
             if (destino === 'direccion-servicios-generales') nombreDeptoClave = 'DSG';
             if (destino === 'Todos') nombreDeptoClave = 'Todos';
 
-            const claveUnica = `comunicado_novedades_${nombreDeptoClave}_${turno}_${supervisor}_${Date.now()}`;
+            const claveUnica = `comunicado_novedades_${nombreDeptoClave}_${turno}_${Date.now()}`;
             
             const { error } = await db
                 .from('comunicados_memos')
@@ -907,7 +865,7 @@
             const depto = document.getElementById('depto-' + tipo).value;
             const turno = document.getElementById('turno-' + tipo).value;
             const fechaBusqueda = document.getElementById('fecha-' + tipo).value;
-            const supervisorSeleccionado = document.getElementById('supervisor-' + tipo)?.value || 'Todos';
+            const supervisorSeleccionado = document.getElementById('supervisor-' + tipo)?.value || '';
             const visor = document.getElementById('visor-' + tipo);
             
             if (!fechaBusqueda) {
@@ -933,7 +891,7 @@
                 .eq('turno', turno)
                 .eq('departamento', deptoFiltro);
 
-            if (supervisorSeleccionado && supervisorSeleccionado !== 'Todos') {
+            if (deptoFiltro === 'Intendencia' && supervisorSeleccionado) {
                 queryReg = queryReg.eq('supervisor', supervisorSeleccionado);
             }
 
@@ -1131,16 +1089,14 @@
                         }
                     }, 50);
 
-                } else {
-                    let queryDepto = db.from('cierres_jornada').select('*').eq('fecha_cierre', fechaBusqueda).eq('turno', turno).eq('departamento', deptoFiltro);
-                    if (supervisorSeleccionado && supervisorSeleccionado !== 'Todos') {
-                        queryDepto = queryDepto.eq('supervisor', supervisorSeleccionado);
-                    }
-                    const { data: deptoData } = await queryDepto;
+                } else if (deptoFiltro === 'Intendencia') {
+                    let queryInt = db.from('registros_intendencia').select('*').eq('fecha_cierre', fechaBusqueda).eq('turno', turno);
+                    if (supervisorSeleccionado) queryInt = queryInt.eq('supervisor', supervisorSeleccionado);
+                    const { data: intData } = await queryInt;
 
                     let tablaDinamica = `
                         <div style="background: #fff; width: 100%; box-sizing: border-box;">
-                            <div style="font-size: 16px; font-weight: bold; color: #1a3a5f; margin-bottom: 10px;">Planilla Operativa - ${deptoFiltro} ${supervisorSeleccionado && supervisorSeleccionado !== 'Todos' ? '(' + supervisorSeleccionado + ')' : ''}</div>
+                            <div style="font-size: 16px; font-weight: bold; color: #1a3a5f; margin-bottom: 10px;">Planilla Operativa - Intendencia ${supervisorSeleccionado ? '(' + supervisorSeleccionado + ')' : ''}</div>
                             <table style="width: 100%; border-collapse: collapse; margin-bottom: 0;">
                                 <thead>
                                     <tr style="background-color: #1a3a5f; color: white;">
@@ -1155,8 +1111,8 @@
                                 </thead>
                                <tbody>`;
                     
-                    if (deptoData && deptoData.length > 0) {
-                        deptoData.forEach(row => {
+                    if (intData && intData.length > 0) {
+                        intData.forEach(row => {
                             tablaDinamica += `<tr>
                                 <td style="border: 1px solid #333; padding: 10px; text-align: center;">${row.sector || ''}</td>
                                 <td style="border: 1px solid #333; padding: 10px; text-align: center;">${row.agentes_asignados || ''}</td>
@@ -1165,14 +1121,14 @@
                             </tr>`;
                         });
                     } else {
-                        tablaDinamica += `<tr><td colspan="4" style="border: 1px solid #333; padding: 12px; text-align: center;">No hay registros detallados para esta fecha y turno con este supervisor.</td></tr>`;
+                        tablaDinamica += `<tr><td colspan="4" style="border: 1px solid #333; padding: 12px; text-align: center;">No hay registros detallados de Intendencia para esta fecha y turno con este supervisor.</td></tr>`;
                     }
                     tablaDinamica += `</tbody></table>`;
                     
                     let obsFinal = '';
                     if (reg && reg.observaciones) obsFinal = reg.observaciones;
-                    else if (deptoData && deptoData.length > 0) {
-                        const encontrada = deptoData.find(r => r.observaciones && r.observaciones.trim() !== '');
+                    else if (intData && intData.length > 0) {
+                        const encontrada = intData.find(r => r.observaciones && r.observaciones.trim() !== '');
                         obsFinal = encontrada ? encontrada.observaciones : '';
                     }
 
@@ -1182,6 +1138,78 @@
                             <p style="margin: 0; padding: 0; white-space: pre-wrap;">${obsFinal || 'Sin observaciones registradas.'}</p>
                         </div>
                     </div>`;
+                    visor.innerHTML = tablaDinamica;
+
+                } else if (deptoFiltro === 'Camilleros') {
+                    const { data: camData } = await db.from('registros_camilleros').select('*').eq('fecha_cierre', fechaBusqueda).eq('turno', turno);
+
+                    let tablaDinamica = `
+                        <div style="background: #fff; width: 100%; box-sizing: border-box;">
+                            <div style="font-size: 16px; font-weight: bold; color: #1a3a5f; margin-bottom: 10px;">Planilla Operativa - Camilleros</div>
+                            <table style="width: 100%; border-collapse: collapse; margin-bottom: 0; font-size: 12px;">
+                                <thead>
+                                    <tr style="background-color: #1a3a5f; color: white;">
+                                        <th style="border: 1px solid #333; padding: 8px 4px; text-align: center; width: 10%;">HORA</th>
+                                        <th style="border: 1px solid #333; padding: 8px 4px; text-align: center; width: 15%;">PISO/SALA/CAMA</th>
+                                        <th style="border: 1px solid #333; padding: 8px 4px; text-align: center; width: 20%;">APELLIDO Y NOMBRE</th>
+                                        <th style="border: 1px solid #333; padding: 8px 4px; text-align: center; width: 15%;">DESTINO</th>
+                                        <th style="border: 1px solid #333; padding: 8px 4px; text-align: center; width: 10%;">HORA ESTADÍA</th>
+                                        <th style="border: 1px solid #333; padding: 8px 4px; text-align: center; width: 10%;">MOVILIDAD</th>
+                                        <th style="border: 1px solid #333; padding: 8px 4px; text-align: center; width: 11%;">CAMILLERO</th>
+                                        <th style="border: 1px solid #333; padding: 8px 4px; text-align: center; width: 9%;">HORA DE FINALIZACION</th>
+                                    </tr>
+                                </thead>
+                                <tbody>`;
+                    
+                    if (camData && camData.length > 0) {
+                        camData.forEach((row) => {
+                            tablaDinamica += `<tr>
+                                <td style="border: 1px solid #333; padding: 6px 4px; text-align: center;">${row.hora || ''}</td>
+                                <td style="border: 1px solid #333; padding: 6px 4px; text-align: center;">${row.numero_cama || ''}</td>
+                                <td style="border: 1px solid #333; padding: 6px 4px; text-align: center;">${row.nombre_paciente || ''}</td>
+                                <td style="border: 1px solid #333; padding: 6px 4px; text-align: center;">${row.destino || ''}</td>
+                                <td style="border: 1px solid #333; padding: 6px 4px; text-align: center;">${row.duracion_estancia || ''}</td>
+                                <td style="border: 1px solid #333; padding: 6px 4px; text-align: center;">${row.tipo_movilidad || ''}</td>
+                                <td style="border: 1px solid #333; padding: 6px 4px; text-align: center;">${row.personal_asignado || ''}</td>
+                                <td style="border: 1px solid #333; padding: 6px 4px; text-align: center;">${row.hora_finalizacion || ''}</td>
+                            </tr>`;
+                        });
+                    } else {
+                        tablaDinamica += `<tr><td colspan="8" style="border: 1px solid #333; padding: 12px; text-align: center;">No hay registros de movimientos de camilleros para esta fecha.</td></tr>`;
+                    }
+                    tablaDinamica += `</tbody></table>`;
+
+                    let obsCamilleros = '';
+                    if (reg && reg.observaciones) obsCamilleros = reg.observaciones;
+                    else if (camData && camData.length > 0) {
+                        const obsEncontrada = camData.find(r => r.observaciones && r.observaciones.trim() !== '');
+                        obsCamilleros = obsEncontrada ? obsEncontrada.observaciones : '';
+                    }
+
+                    tablaDinamica += `
+                        <div style="background-color: #1a3a5f; color: white; padding: 8px 12px; font-weight: bold; font-size: 14px; margin-top: 15px; border: 1px solid #333;">Observaciones de la Jornada:</div>
+                        <div style="padding: 0px 15px; min-height: 120px; background: #fff; border: 1px solid #333; border-top: none; font-family: 'Courier New', Courier, monospace; font-size: 16px; line-height: 30px; background-image: linear-gradient(#e0e0e0 1px, transparent 1px); background-size: 100% 30px;">
+                            <p style="margin: 0; padding: 0; white-space: pre-wrap;">${obsCamilleros || 'Sin observaciones registradas.'}</p>
+                        </div>
+                    </div>`;
+
+                    visor.innerHTML = tablaDinamica;
+
+                } else {
+                    if (error || !reg) {
+                        visor.innerHTML = `<p style='color: red; font-weight: bold;'>No se encontraron registros para ${deptoFiltro} en el turno ${turno} (${fechaBusqueda}).</p>`;
+                        return;
+                    }
+
+                    let tablaDinamica = `
+                        <div style="background: #fff; width: 100%; box-sizing: border-box;">
+                            <div style="font-size: 16px; font-weight: bold; color: #1a3a5f; margin-bottom: 10px;">Planilla Operativa (${reg.departamento})</div>
+                            <div style="background-color: #1a3a5f; color: white; padding: 8px 12px; font-weight: bold; font-size: 14px; margin-top: 15px; border: 1px solid #333;">Observaciones y Contenido:</div>
+                            <div style="padding: 0px 15px; min-height: 100px; background: #fff; border: 1px solid #333; border-top: none; font-family: 'Courier New', Courier, monospace; font-size: 16px; line-height: 30px; background-image: linear-gradient(#e0e0e0 1px, transparent 1px); background-size: 100% 30px;">
+                                <p style="margin: 0; padding: 0; white-space: pre-wrap;">${reg.observaciones || 'Sin datos adicionales.'}</p>
+                            </div>
+                        </div>
+                    `;
                     visor.innerHTML = tablaDinamica;
                 }
 
@@ -1198,6 +1226,9 @@
     </script>
 </body>
 </html>
+
+
+
 
 
 
