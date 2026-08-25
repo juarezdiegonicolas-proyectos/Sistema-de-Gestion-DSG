@@ -197,30 +197,9 @@
 <body>
     <div class="sidebar">
         <div class="bienvenida-box">
-            <h3>Bienvenido</h3>
-            <p id="nombre-usuario-sidebar">Administrador</p>
+            <h3>Panel de Control</h3>
+            <p>Administrador</p>
         </div>
-
-        <script>
-            // Script para actualizar el nombre de bienvenida en el sidebar con el usuario logueado en Supabase
-            (async function() {
-                try {
-                    const SUPABASE_URL_LOCAL = 'https://ydcbdvosxbwcutddxaze.supabase.co';
-                    const SUPABASE_KEY_LOCAL = 'sb_publishable_EvvZ8n7Ve2cF9FB4SXA0Ug_7q6qWh9f';
-                    const dbLocal = window.supabase.createClient(SUPABASE_URL_LOCAL, SUPABASE_KEY_LOCAL);
-                    const { data: { session } } = await dbLocal.auth.getSession();
-                    if (session && session.user) {
-                        const emailUser = session.user.email;
-                        const { data: userData } = await dbLocal.from('usuarios').select('nombre_completo').eq('email', emailUser).maybeSingle();
-                        if (userData && userData.nombre_completo) {
-                            document.getElementById('nombre-usuario-sidebar').textContent = userData.nombre_completo;
-                        }
-                    }
-                } catch (e) {
-                    console.error("No se pudo actualizar el nombre de bienvenida en el sidebar:", e);
-                }
-            })();
-        </script>
 
         <div class="sidebar-header-title">
             <h2 id="titulo-panel">Administrador</h2>
@@ -1247,4 +1226,6 @@
     </script>
 </body>
 </html>
+
+
 
