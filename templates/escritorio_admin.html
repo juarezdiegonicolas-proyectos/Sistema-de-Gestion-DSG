@@ -6,18 +6,97 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { margin: 0; font-family: 'Roboto', sans-serif; display: block; height: 100vh; background-color: #f4f1ea; overflow: hidden; }
-        .sidebar { position: fixed; top: 0; left: 0; width: 260px; background-color: #1a3a5f; color: white; padding: 20px 15px; display: flex; flex-direction: column; box-sizing: border-box; height: 100vh; overflow-y: auto; z-index: 1000; }
+        body { margin: 0; font-family: 'Roboto', sans-serif; display: flex; height: 100vh; background-color: #f4f1ea; box-sizing: border-box; overflow: hidden; }
         
-        /* Contenedor fijo para evitar el desplazamiento vertical del menú */
-        .sidebar-header-container { flex-shrink: 0; min-height: 100px; display: flex; flex-direction: column; justify-content: flex-start; }
-        .sidebar h2 { font-size: 18px; margin: 15px 0 5px 0; border-bottom: 1px solid #5d8dbb; padding-bottom: 8px; flex-shrink: 0; line-height: 1.2; }
-        
-        .menu-links { flex: 1; overflow-y: auto; }
-        .menu-item { display: block; color: #ddd; padding: 12px 10px; text-decoration: none; border-bottom: 1px solid #5d8dbb; font-weight: 500; cursor: pointer; font-size: 15.5px; }
+        /* Sidebar rediseñado */
+        .sidebar { 
+            width: 260px; 
+            background-color: #1a3a5f; 
+            color: white; 
+            padding: 15px 15px; 
+            display: flex; 
+            flex-direction: column; 
+            flex-shrink: 0; 
+            height: 100vh; 
+            box-sizing: border-box; 
+            overflow: hidden; 
+        }
+
+        .bienvenida-box { 
+            background-color: #2d5a8e; 
+            padding: 10px; 
+            border-radius: 8px; 
+            margin-bottom: 12px; 
+            text-align: center; 
+            border: 1px solid #5d8dbb; 
+            flex-shrink: 0; 
+        }
+        .bienvenida-box h3 { margin: 0; font-size: 13px; font-weight: 300; color: #cce7ff; }
+        .bienvenida-box p { margin: 3px 0 0 0; font-size: 15px; font-weight: bold; }
+
+        .sidebar-header-title { 
+            min-height: 40px; 
+            margin-bottom: 8px; 
+            display: flex; 
+            align-items: center; 
+            flex-shrink: 0; 
+        }
+        .sidebar-header-title h2 { font-size: 18px; margin: 0; line-height: 1.2; }
+
+        .menu-links { 
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: space-between; 
+            overflow: hidden; 
+            margin-bottom: 8px; 
+        }
+        .menu-item { 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            color: #ddd; 
+            padding: 10px 12px; 
+            text-decoration: none; 
+            border-bottom: 1px solid rgba(93, 141, 187, 0.3); 
+            font-weight: 500; 
+            cursor: pointer; 
+            font-size: 14px; 
+            transition: background 0.2s, color 0.2s; 
+            border-radius: 4px; 
+        }
         .menu-item:hover { background-color: #5d8dbb; color: white; }
-        .btn-cerrar { margin-top: auto; padding: 12px; background: #d32f2f; color: white; text-align: center; text-decoration: none; border-radius: 6px; font-weight: bold; flex-shrink: 0; display: block; }
-        .contenido { margin-left: 260px; padding: 40px; overflow-y: auto; height: 100vh; box-sizing: border-box; }
+
+        .sidebar-footer { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 8px; 
+            flex-shrink: 0; 
+            padding-top: 5px; 
+        }
+        .btn-cerrar { 
+            width: 100%; 
+            padding: 10px; 
+            background: linear-gradient(135deg, #d32f2f, #c62828); 
+            color: white; 
+            text-align: center; 
+            text-decoration: none; 
+            border-radius: 6px; 
+            font-weight: bold; 
+            font-size: 13px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+            box-sizing: border-box; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 6px; 
+            transition: opacity 0.2s; 
+            border: none; 
+            cursor: pointer; 
+        }
+        .btn-cerrar:hover { opacity: 0.9; }
+
+        .contenido { flex: 1; padding: 40px; overflow-y: auto; height: 100vh; box-sizing: border-box; }
         .seccion { display: none; background: white; padding: 40px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         .seccion.activo { display: block; } 
         .filtros-historicos { display: flex; gap: 10px; background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #eee; align-items: center; flex-wrap: wrap; }
@@ -48,28 +127,6 @@
         .muro-body { font-family: 'Courier New', monospace; font-size: 14px; white-space: pre-wrap; line-height: 1.5; color: #333; }
         .muro-adjuntos { margin-top: 10px; font-size: 12px; }
         .muro-adjuntos a { color: #1a3a5f; text-decoration: underline; margin-right: 15px; }
-
-        /* Estilos del bloque de bienvenida */
-        .bienvenida-box { 
-            background-color: #2d5a8e; 
-            padding: 10px; 
-            border-radius: 8px; 
-            margin-bottom: 10px; 
-            text-align: center; 
-            border: 1px solid #5d8dbb; 
-            flex-shrink: 0; 
-        }
-        .bienvenida-box h3 { 
-            margin: 0; 
-            font-size: 12px; 
-            font-weight: 300; 
-            color: #cce7ff; 
-        }
-        .bienvenida-box p { 
-            margin: 3px 0 0 0; 
-            font-size: 14px; 
-            font-weight: bold; 
-        }
 
         @media print {
         .sidebar, .filtros-historicos, .btn-cerrar, .area-acciones, .btn-adjuntar, textarea, .btn-limpiar, .historial-muro-container { display: none !important; }
@@ -140,23 +197,28 @@
 <body>
     <div class="sidebar">
         <div class="bienvenida-box">
-            <h3>Bienvenido Jefe de Departamento:</h3>
-            <p id="nombre-supervisor-sidebar">---</p>
+            <h3>Panel de Control</h3>
+            <p>Administrador</p>
         </div>
-        <div class="sidebar-header-container">
-            <h2>Panel <span id="titulo-panel">Administrador</span></h2>
+
+        <div class="sidebar-header-title">
+            <h2 id="titulo-panel">Administrador</h2>
         </div>
+
         <div class="menu-links">
-            <div class="menu-item" onclick="mostrar('reportes', 'Reportes Históricos')">📊 Reportes</div>
-            <div class="menu-item" onclick="mostrar('planillas', 'Planillas Históricas')">🛠 Planillas</div>
-            <div class="menu-item" onclick="mostrar('rrhh', 'Auditoría RRHH')">👥 RRHH</div>
-            <div class="menu-item" onclick="mostrar('insumos', 'Auditoría Insumos')">📦 Insumos</div>
-            <div class="menu-item" onclick="mostrar('estado-ascensores', 'Estado Actual de Ascensores')">🛗 Estado Ascensores</div>
-            <div class="menu-item" onclick="mostrar('novedades', 'Novedades')">📝 Novedades</div>
-            <div class="menu-item" onclick="mostrar('memos', 'Memos y Resoluciones')">📜 Memos y Resoluciones</div>
-            <div class="menu-item" onclick="mostrar('estadisticas', 'Estadísticas Mensuales')">📈 Estadísticas Mensuales</div>
+            <div class="menu-item" onclick="mostrar('reportes', 'Reportes Históricos')"><span>📊 Reportes</span></div>
+            <div class="menu-item" onclick="mostrar('planillas', 'Planillas Históricas')"><span>🛠 Planillas</span></div>
+            <div class="menu-item" onclick="mostrar('rrhh', 'Auditoría RRHH')"><span>👥 RRHH</span></div>
+            <div class="menu-item" onclick="mostrar('insumos', 'Auditoría Insumos')"><span>📦 Insumos</span></div>
+            <div class="menu-item" onclick="mostrar('estado-ascensores', 'Estado Actual de Ascensores')"><span>🛗 Estado Ascensores</span></div>
+            <div class="menu-item" onclick="mostrar('novedades', 'Novedades')"><span>📝 Novedades</span></div>
+            <div class="menu-item" onclick="mostrar('memos', 'Memos y Resoluciones')"><span>📜 Memos y Resoluciones</span></div>
+            <div class="menu-item" onclick="mostrar('estadisticas', 'Estadísticas Mensuales')"><span>📈 Estadísticas Mensuales</span></div>
         </div>
-        <a href="https://sistema-hospital-dsg.onrender.com" class="btn-cerrar">CERRAR SESIÓN</a>
+
+        <div class="sidebar-footer">
+            <a href="https://sistema-hospital-dsg.onrender.com" class="btn-cerrar">🚪 CERRAR SESIÓN</a>
+        </div>
     </div>
 
     <div class="contenido">
@@ -164,11 +226,6 @@
             const SUPABASE_URL = 'https://ydcbdvosxbwcutddxaze.supabase.co';
             const SUPABASE_KEY = 'sb_publishable_EvvZ8n7Ve2cF9FB4SXA0Ug_7q6qWh9f';
             const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-            // Script para inicializar y mostrar el nombre dinámicamente en el sidebar
-            const nombre = localStorage.getItem('usuario_nombre') || "Invitado"; 
-            const elemSidebar = document.getElementById('nombre-supervisor-sidebar');
-            if (elemSidebar) elemSidebar.innerText = nombre;
 
             function imprimirConOrientacion() {
                 const seleccion = prompt("¿Cómo deseas imprimir?\n\nEscribe 'V' para Vertical\nEscribe 'H' para Horizontal", "H");
