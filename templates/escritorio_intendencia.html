@@ -910,45 +910,7 @@
             }
         }
 
-        // --- FUNCIÓN MODIFICADA PARA FILTRAR NOVEDADES SOLO PARA ÉL O PARA TODOS ---
-        function filtrarNovedadParaSupervisor(item) {
-            const idClave = (item.id_clave || "").toLowerCase();
-            const contenidoObj = item.contenido || {};
-            const turnoMsg = (contenidoObj.turno || "").toLowerCase();
-            const destinatarioMsg = (contenidoObj.destinatario || contenidoObj.dirigido_a || "").toLowerCase();
-
-            const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").toLowerCase().trim();
-            const nombreSupervisor = (localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario') || "").toLowerCase().trim();
-
-            // 1. Verificar si el comunicado es de carácter general o para "todos"
-            const esParaTodos = idClave.includes("todos") || idClave.includes("general") || 
-                               turnoMsg === "todos" || turnoMsg === "general" || 
-                               destinatarioMsg.includes("todos") || destinatarioMsg.includes("general");
-
-            // 2. Verificar si está dirigido a Intendencia
-            const esParaIntendencia = idClave.includes("intendencia") || destinatarioMsg.includes("intendencia");
-
-            // 3. Verificar si está dirigido específicamente al supervisor actual (por su nombre)
-            const esParaSupervisorEspecifico = nombreSupervisor && (
-                idClave.includes(nombreSupervisor) || 
-                destinatarioMsg.includes(nombreSupervisor)
-            );
-
-            // Si no es para todos, ni para intendencia general, ni para él en específico, se descarta
-            if (!esParaTodos && !esParaIntendencia && !esParaSupervisorEspecifico) {
-                return false;
-            }
-
-            // Validar restricción de turno (si el comunicado define un turno particular que no sea todos/general)
-            if (!esParaTodos && turnoMsg && turnoMsg !== "todos" && turnoMsg !== "general") {
-                if (turnoMsg !== turnoActual) {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
+        // Lógica de verificación y conteo de Novedades No Leídas (Independiente por Supervisor)
         async function verificarNovedadesNoLeidas() {
             try {
                 const { data, error } = await db
@@ -958,13 +920,29 @@
 
                 if (error || !data) return;
 
+                const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim();
                 const usuarioActual = (localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario') || "invitado").trim();
                 const claveStoragePersonal = `dsg_novedades_ultimo_id_${usuarioActual}`;
 
-                const novedadesFiltradas = data.filter(item => filtrarNovedadParaSupervisor(item));
+                const novedadesFiltradas = data.filter(item => {
+                    const idClave = (item.id_clave || "").toLowerCase();
+                    const contenidoObj = item.contenido || {};
+                    const turnoMsg = (contenidoObj.turno || "").toLowerCase();
+
+                    const esParaTodos = idClave.includes("todos") || idClave.includes("general") || turnoMsg === "todos" || turnoMsg === "general";
+                    const esParaIntendencia = idClave.includes("intendencia");
+
+                    if (!esParaIntendencia && !esParaTodos) return false;
+                    if (esParaTodos) return true;
+                    if (turnoMsg && turnoMsg !== "todos" && turnoMsg !== "general") {
+                        if (turnoMsg !== turnoActual.toLowerCase()) return false;
+                    }
+                    return true;
+                });
 
                 if (novedadesFiltradas.length === 0) return;
 
+                // Comparamos con el último ID leído almacenado localmente de forma individual por supervisor
                 const ultimoIdLeido = localStorage.getItem(claveStoragePersonal);
                 let noLeidasCount = 0;
 
@@ -1010,10 +988,34 @@
                     return;
                 }
 
-                // Filtrar estrictamente usando la nueva función unificada
-                const novedadesFiltradas = data.filter(item => filtrarNovedadParaSupervisor(item));
+                const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim();
 
-                // Al abrir la solapa Novedades, actualizamos el último ID leído de este supervisor y ocultamos la notificación
+                const novedadesFiltradas = data.filter(item => {
+                    const idClave = (item.id_clave || "").toLowerCase();
+                    const contenidoObj = item.contenido || {};
+                    const turnoMsg = (contenidoObj.turno || "").toLowerCase();
+
+                    const esParaTodos = idClave.includes("todos") || idClave.includes("general") || turnoMsg === "todos" || turnoMsg === "general";
+                    const esParaIntendencia = idClave.includes("intendencia");
+
+                    if (!esParaIntendencia && !esParaTodos) {
+                        return false;
+                    }
+
+                    if (esParaTodos) {
+                        return true;
+                    }
+
+                    if (turnoMsg && turnoMsg !== "todos" && turnoMsg !== "general") {
+                        if (turnoMsg !== turnoActual.toLowerCase()) {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                });
+
+                // Al abrir la solapa Novedades, guardamos el ID más reciente individualmente para este supervisor y ocultamos el badge
                 if (novedadesFiltradas.length > 0) {
                     const usuarioActual = (localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario') || "invitado").trim();
                     const claveStoragePersonal = `dsg_novedades_ultimo_id_${usuarioActual}`;
@@ -1024,7 +1026,7 @@
                 }
 
                 if (novedadesFiltradas.length === 0) {
-                    visor.innerHTML = '<p style="text-align:center; color: #666;">No hay novedades disponibles dirigidas a ti o a todos en este turno.</p>';
+                    visor.innerHTML = '<p style="text-align:center; color: #666;">No hay novedades disponibles para Intendencia en este turno.</p>';
                     return;
                 }
 
@@ -1217,3 +1219,4 @@
     </script>
 </body>
 </html>
+
