@@ -260,27 +260,86 @@
                 if (error) console.error("Error al guardar en Supabase:", error);
             }
 
-            async function cargarSupervisoresNovedades() {
-                const selectSup = document.getElementById('supervisor-destino-novedades');
-                if (!selectSup) return;
-                try {
-                    const { data, error } = await db
-                        .from('usuarios')
-                        .select('nombre_completo');
+            async function manejarCambioDepto(idSeccion) {
+                const selectDepto = document.getElementById('depto-' + idSeccion) || document.getElementById('depto-destino-' + idSeccion);
+                const contenedorSup = document.getElementById('contenedor-supervisor-' + idSeccion);
+                const selectSup = document.getElementById('supervisor-' + idSeccion);
+                const selectTurno = document.getElementById('turno-' + idSeccion) || document.getElementById('turno-destino-' + idSeccion);
 
-                    if (error) throw error;
+                if (!selectDepto) return;
 
-                    selectSup.innerHTML = '<option value="Todos">-- Todos los supervisores --</option>';
-                    const unicos = [...new Set((data || []).map(item => item.nombre_completo))].filter(Boolean).sort();
+                const deptoVal = selectDepto.value;
 
-                    unicos.forEach(nombre => {
-                        const opt = document.createElement('option');
-                        opt.value = nombre;
-                        opt.textContent = nombre;
-                        selectSup.appendChild(opt);
-                    });
-                } catch (err) {
-                    console.error("Error al cargar supervisores para novedades:", err);
+                // Lógica condicional de Turnos según Departamento
+                if (selectTurno) {
+                    if (deptoVal === 'intendencia') {
+                        selectTurno.innerHTML = `
+                            <option value="Mañana">Mañana</option>
+                            <option value="Tarde">Tarde</option>
+                            <option value="Noche">Noche</option>
+                        `;
+                    } else if (deptoVal === 'division-ascensores') {
+                        selectTurno.innerHTML = `
+                            <option value="Mañana">Mañana</option>
+                            <option value="Tarde">Tarde</option>
+                            <option value="Noche A">Noche A</option>
+                            <option value="Noche B">Noche B</option>
+                        `;
+                    } else {
+                        // Opciones por defecto (Todos o estándar)
+                        if (selectTurno.id.includes('destino')) {
+                            selectTurno.innerHTML = `
+                                <option value="Todos">Todos los turnos</option>
+                                <option value="Mañana">Mañana</option>
+                                <option value="Tarde">Tarde</option>
+                                <option value="Noche A">Noche A</option>
+                                <option value="Noche B">Noche B</option>
+                                <option value="Sadofe">Sadofe</option>
+                            `;
+                        } else {
+                            selectTurno.innerHTML = `
+                                <option value="Mañana">Mañana</option>
+                                <option value="Tarde">Tarde</option>
+                                <option value="Noche A">Noche A</option>
+                                <option value="Noche B">Noche B</option>
+                                <option value="Sadofe">Sadofe</option>
+                            `;
+                        }
+                    }
+                }
+
+                // Lógica de Supervisores dependientes (Ejemplo para Intendencia u otros)
+                if (contenedorSup && selectSup) {
+                    if (deptoVal === 'intendencia') {
+                        contenedorSup.style.display = 'inline-block';
+                        try {
+                            const { data, error } = await db
+                                .from('cierres_jornada')
+                                .select('supervisor')
+                                .eq('departamento', 'Intendencia');
+
+                            if (error) throw error;
+
+                            selectSup.innerHTML = '<option value="">-- Todos los supervisores --</option>';
+                            const unicos = [...new Set((data || []).map(item => item.supervisor))].filter(Boolean).sort();
+
+                            unicos.forEach(nombre => {
+                                const opt = document.createElement('option');
+                                opt.value = nombre;
+                                opt.textContent = nombre;
+                                selectSup.appendChild(opt);
+                            });
+                        } catch (err) {
+                            console.error("Error al cargar supervisores:", err);
+                        }
+                    } else {
+                        contenedorSup.style.display = 'none';
+                        selectSup.value = '';
+                    }
+                }
+
+                if (typeof actualizarPrint === 'function' && document.getElementById('print-header-' + idSeccion)) {
+                    actualizarPrint(idSeccion);
                 }
             }
 
@@ -294,7 +353,7 @@
                                 <img src="{{ url_for('static', filename='logo_dsg.png') }}" alt="Logo DSG" style="height: 135px;">
                             </div>
                             <div class="filtros-historicos">
-                                <select id="depto-destino-novedades" class="input-select" onchange="actualizarPrint('novedades')">
+                                <select id="depto-destino-novedades" class="input-select" onchange="manejarCambioDepto('destino-novedades')">
                                     <option value="Todos">Todos los departamentos</option>
                                     <option value="direccion-servicios-generales">Dirección Servicios Generales</option>
                                     <option value="intendencia">Intendencia</option>
@@ -312,15 +371,17 @@
                                     <option value="Noche B">Noche B</option>
                                     <option value="Sadofe">Sadofe</option>
                                 </select>
-                                <select id="supervisor-destino-novedades" class="input-select" onchange="actualizarPrint('novedades')">
-                                    <option value="Todos">-- Todos los supervisores --</option>
-                                </select>
+                                <div id="contenedor-supervisor-destino-novedades" style="display: none;">
+                                    <select id="supervisor-destino-novedades" class="input-select" onchange="actualizarPrint('novedades')">
+                                        <option value="">-- Todos los supervisores --</option>
+                                    </select>
+                                </div>
                                 <button class="btn-gestion btn-adjuntar" onclick="document.getElementById('file-novedades').click()">📎 Adjuntar Archivos</button>
                                 <input type="file" id="file-novedades" style="display:none" multiple onchange="previsualizarMultiples(this, 'novedades')">
                                 <button class="btn-gestion" style="background: #28a745; color: white;" onclick="guardarRedaccion('novedades')">Guardar y Enviar</button>
                             </div>
                             
-                            <div id="print-header-novedades" class="print-header">Dirigido a: Todos los departamentos | Turno: Todos los turnos | Supervisor: Todos</div>
+                            <div id="print-header-novedades" class="print-header">Dirigido a: Todos los departamentos | Turno: Todos los turnos</div>
                             <textarea id="txt-novedades" oninput="document.getElementById('print-novedades').innerText = this.value" placeholder="Escriba aquí el contenido..."></textarea>
                             <div id="print-novedades" class="print-only"></div>
                             <div id="preview-novedades" class="preview-adjunto"></div>
@@ -373,7 +434,7 @@
                                     <span style="font-weight: bold; color: #1a3a5f;">Estado en tiempo real de la tabla estado_actual_ascensores</span>
                                     <button class="btn-gestion" style="background: #1a3a5f; color: white; margin-left: auto;" onclick="cargarEstadoAscensoresVivo()">Actualizar Datos</button>
                                 ` : `
-                                    <select id="depto-destino-${id}" class="input-select" onchange="actualizarPrint('${id}')">
+                                    <select id="depto-destino-${id}" class="input-select" onchange="manejarCambioDepto('destino-${id}')">
                                         <option value="Todos">Todos los departamentos</option>
                                         <option value="direccion-servicios-generales">Dirección Servicios Generales</option>
                                         <option value="intendencia">Intendencia</option>
@@ -391,6 +452,11 @@
                                         <option value="Noche B">Noche B</option>
                                         <option value="Sadofe">Sadofe</option>
                                     </select>
+                                    <div id="contenedor-supervisor-destino-${id}" style="display: none;">
+                                        <select id="supervisor-destino-${id}" class="input-select" onchange="actualizarPrint('${id}')">
+                                            <option value="">-- Todos los supervisores --</option>
+                                        </select>
+                                    </div>
                                     <button class="btn-gestion btn-adjuntar" onclick="document.getElementById('file-${id}').click()">📎 Adjuntar</button>
                                     <input type="file" id="file-${id}" style="display:none" onchange="previsualizar(this, '${id}')">
                                     <button class="btn-gestion" style="background: #28a745; color: white;" onclick="guardarRedaccion('${id}')">Guardar y Enviar</button>
@@ -430,7 +496,7 @@
                     <option value="rrhh">Asistencia (RRHH)</option>
                     <option value="ascensores">Estado de Ascensores</option>
                 </select>
-                <select id="est-depto" class="input-select">
+                <select id="est-depto" class="input-select" onchange="manejarCambioDepto('est')">
                     <option value="Todos">Todos los departamentos</option>
                     <option value="direccion-servicios-generales">Dirección Servicios Generales</option>
                     <option value="intendencia">Intendencia</option>
@@ -448,6 +514,11 @@
                     <option value="Noche B">Noche B</option>
                     <option value="Sadofe">Sadofe</option>
                 </select>
+                <div id="contenedor-supervisor-est" style="display: none;">
+                    <select id="supervisor-est" class="input-select">
+                        <option value="">-- Todos los supervisores --</option>
+                    </select>
+                </div>
                 <select id="est-mes" class="input-select">
                     <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
                     <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
@@ -475,7 +546,6 @@
                 cargarEstadoAscensoresVivo();
             }
             if (id === 'novedades') {
-                cargarSupervisoresNovedades();
                 cargarHistorialMuroNovedades();
             }
         }
@@ -486,9 +556,8 @@
             document.getElementById('preview-' + id).innerHTML = '';
             document.getElementById('depto-destino-' + id).value = 'Todos';
             document.getElementById('turno-destino-' + id).value = 'Todos';
-            if (document.getElementById('supervisor-destino-' + id)) {
-                document.getElementById('supervisor-destino-' + id).value = 'Todos';
-            }
+            const supDestino = document.getElementById('supervisor-destino-' + id);
+            if(supDestino) supDestino.value = '';
             actualizarPrint(id);
             delete archivoData[id];
             if (id === 'novedades') {
@@ -549,7 +618,7 @@
                     const fecha = contenido.fecha || row.created_at || 'Fecha desconocida';
                     const depto = contenido.departamento || 'Todos';
                     const turno = contenido.turno || 'Todos';
-                    const supervisor = contenido.supervisor || 'Todos';
+                    const supervisor = contenido.supervisor ? ` | <b>Supervisor:</b> ${contenido.supervisor}` : '';
 
                     let adjuntosHtml = '';
                     if (contenido.archivos && Array.isArray(contenido.archivos) && contenido.archivos.length > 0) {
@@ -565,7 +634,7 @@
                     html += `
                         <div class="muro-item">
                             <div class="muro-header">
-                                <span><b>Destino:</b> ${depto} | <b>Turno:</b> ${turno} | <b>Supervisor:</b> ${supervisor}</span>
+                                <span><b>Destino:</b> ${depto} | <b>Turno:</b> ${turno}${supervisor}</span>
                                 <span>${fecha}</span>
                             </div>
                             <div class="muro-body">${texto}</div>
@@ -724,11 +793,14 @@
         }
 
         function actualizarPrint(id) {
-            const depto = document.getElementById('depto-destino-' + id).value;
-            const turno = document.getElementById('turno-destino-' + id).value;
-            const supervisorSelect = document.getElementById('supervisor-destino-' + id);
-            const supervisor = supervisorSelect ? supervisorSelect.value : 'Todos';
-            document.getElementById('print-header-' + id).innerText = `Dirigido a: ${depto} | Turno: ${turno} | Supervisor: ${supervisor}`;
+            const depto = document.getElementById('depto-destino-' + id)?.value || 'Todos';
+            const turno = document.getElementById('turno-destino-' + id)?.value || 'Todos';
+            const supervisor = document.getElementById('supervisor-destino-' + id)?.value;
+            let textoSup = supervisor ? ` | Supervisor: ${supervisor}` : '';
+            const headerElem = document.getElementById('print-header-' + id);
+            if(headerElem) {
+                headerElem.innerText = `Dirigido a: ${depto} | Turno: ${turno}${textoSup}`;
+            }
         }
 
         function previsualizar(input, id) {
@@ -746,8 +818,7 @@
         async function guardarRedaccion(id) {
             const destino = document.getElementById('depto-destino-' + id).value;
             const turno = document.getElementById('turno-destino-' + id).value;
-            const supervisorSelect = document.getElementById('supervisor-destino-' + id);
-            const supervisor = supervisorSelect ? supervisorSelect.value : 'Todos';
+            const supervisor = document.getElementById('supervisor-destino-' + id)?.value || null;
             const textoEscrito = document.getElementById('txt-' + id).value;
 
             let listaArchivos = [];
@@ -781,7 +852,8 @@
             if (destino === 'direccion-servicios-generales') nombreDeptoClave = 'DSG';
             if (destino === 'Todos') nombreDeptoClave = 'Todos';
 
-            const claveUnica = `comunicado_novedades_${nombreDeptoClave}_${turno}_${supervisor}_${Date.now()}`;
+            let claveUnica = `comunicado_${id}_${nombreDeptoClave}_${turno}_${Date.now()}`;
+            if(supervisor) claveUnica += `_${supervisor}`;
             
             const { error } = await db
                 .from('comunicados_memos')
@@ -794,7 +866,7 @@
                 console.error("Error al guardar en Supabase:", error);
                 alert("Error al enviar a la base de datos: " + error.message);
             } else {
-                alert("Novedad enviada correctamente al destino seleccionado.");
+                alert("Enviado correctamente al destino seleccionado.");
                 if (id === 'novedades') {
                     cargarHistorialMuroNovedades();
                     archivosMultiplesNovedades = [];
@@ -806,6 +878,7 @@
             const tipo = document.getElementById('est-tipo').value;
             const deptoSeleccionado = document.getElementById('est-depto').value;
             const turnoSeleccionado = document.getElementById('est-turno').value;
+            const supervisorSeleccionado = document.getElementById('supervisor-est')?.value || '';
             const mes = document.getElementById('est-mes').value;
             const anio = document.getElementById('est-anio').value;
             const visor = document.getElementById('visor-estadisticas');
@@ -814,15 +887,18 @@
 
             if (tipo === 'rrhh') {
                 let p = 0, a = 0, l = 0;
-                const { data: asistData } = await db.from('rrhh_asistencia').select('*');
+                let queryAsist = db.from('rrhh_asistencia').select('*');
+                const { data: asistData } = await queryAsist;
+                
                 if (asistData) {
                     asistData.forEach(ag => {
                         const f = new Date(ag.fecha);
                         const matchFecha = (f.getMonth() + 1) == mes && f.getFullYear() == anio;
                         const matchTurno = (turnoSeleccionado === 'Todos' || ag.turno === turnoSeleccionado);
                         const matchDepto = (deptoSeleccionado === 'Todos' || ag.departamento === deptoSeleccionado);
+                        const matchSup = (!supervisorSeleccionado || ag.supervisor === supervisorSeleccionado);
 
-                        if (matchFecha && matchTurno && matchDepto) {
+                        if (matchFecha && matchTurno && matchDepto && matchSup) {
                             const est = String(ag.estado_asistencia || '').trim().toLowerCase();
                             if (est === 'presente' || est === 'p') p++;
                             else if (est === 'ausente' || est === 'a') a++;
@@ -1222,7 +1298,6 @@
             }
         }
         document.getElementById('reportes').classList.add('activo');
-        cargarSupervisoresNovedades();
         cargarHistorialMuroNovedades();
     </script>
 </body>
