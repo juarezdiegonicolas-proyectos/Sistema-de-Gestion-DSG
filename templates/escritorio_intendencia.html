@@ -910,7 +910,7 @@
             }
         }
 
-        // Lógica de verificación y conteo de Novedades No Leídas (Independiente por Supervisor)
+        // Lógica de verificación y conteo de Novedades No Leídas filtradas por turno/intendencia o generales
         async function verificarNovedadesNoLeidas() {
             try {
                 const { data, error } = await db
@@ -933,16 +933,17 @@
                     const esParaIntendencia = idClave.includes("intendencia");
 
                     if (!esParaIntendencia && !esParaTodos) return false;
-                    if (esParaTodos) return true;
-                    if (turnoMsg && turnoMsg !== "todos" && turnoMsg !== "general") {
-                        if (turnoMsg !== turnoActual.toLowerCase()) return false;
+                    
+                    if (!esParaTodos) {
+                        if (turnoMsg && turnoMsg !== "todos" && turnoMsg !== "general") {
+                            if (turnoMsg !== turnoActual.toLowerCase()) return false;
+                        }
                     }
                     return true;
                 });
 
                 if (novedadesFiltradas.length === 0) return;
 
-                // Comparamos con el último ID leído almacenado localmente de forma individual por supervisor
                 const ultimoIdLeido = localStorage.getItem(claveStoragePersonal);
                 let noLeidasCount = 0;
 
@@ -990,6 +991,7 @@
 
                 const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim();
 
+                // Filtrar estrictamente: Solo para Intendencia o para Todos/General, validando coincidencia de turno si corresponde
                 const novedadesFiltradas = data.filter(item => {
                     const idClave = (item.id_clave || "").toLowerCase();
                     const contenidoObj = item.contenido || {};
@@ -998,24 +1000,24 @@
                     const esParaTodos = idClave.includes("todos") || idClave.includes("general") || turnoMsg === "todos" || turnoMsg === "general";
                     const esParaIntendencia = idClave.includes("intendencia");
 
+                    // Si no es para intendencia ni para todos de forma global, descartar
                     if (!esParaIntendencia && !esParaTodos) {
                         return false;
                     }
 
-                    if (esParaTodos) {
-                        return true;
-                    }
-
-                    if (turnoMsg && turnoMsg !== "todos" && turnoMsg !== "general") {
-                        if (turnoMsg !== turnoActual.toLowerCase()) {
-                            return false;
+                    // Si el comunicado especifica un turno particular (distinto a todos/general), validar que coincida con el turno del supervisor actual
+                    if (!esParaTodos) {
+                        if (turnoMsg && turnoMsg !== "todos" && turnoMsg !== "general") {
+                            if (turnoMsg !== turnoActual.toLowerCase()) {
+                                return false;
+                            }
                         }
                     }
 
                     return true;
                 });
 
-                // Al abrir la solapa Novedades, guardamos el ID más reciente individualmente para este supervisor y ocultamos el badge
+                // Al abrir la solapa Novedades, actualizamos el último ID leído de este supervisor y ocultamos la notificación
                 if (novedadesFiltradas.length > 0) {
                     const usuarioActual = (localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario') || "invitado").trim();
                     const claveStoragePersonal = `dsg_novedades_ultimo_id_${usuarioActual}`;
