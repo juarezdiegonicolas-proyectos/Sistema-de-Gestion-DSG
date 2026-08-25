@@ -336,7 +336,7 @@
                             <div id="preview-novedades" class="preview-adjunto"></div>
                             
                             <div class="area-acciones">
-                                <button id="btn-print-novedades" class="btn-gestion btn-imprimir" onclick="imprimirConOrientacion()">🖨 Imprimir</button>
+                                <button id="btn-print-novedades" class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
                                 <button class="btn-gestion btn-limpiar" onclick="limpiarPantalla('novedades')">🧹 Limpiar Pantalla</button>
                             </div>
 
@@ -412,7 +412,7 @@
                               `<div id="print-header-${id}" class="print-header">Dirigido a: Todos los departamentos | Turno: Todos los turnos</div><textarea id="txt-${id}" oninput="document.getElementById('print-${id}').innerText = this.value" placeholder="Escriba aquí el contenido..."></textarea><div id="print-${id}" class="print-only"></div><div id="preview-${id}" class="preview-adjunto"></div>`}
                             
                             <div class="area-acciones">
-                                <button id="btn-print-${id}" class="btn-gestion btn-imprimir" onclick="imprimirConOrientacion()">🖨 Imprimir</button>
+                                <button id="btn-print-${id}" class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
                                 ${tipoContenido === 'redaccion' ? `<button class="btn-gestion btn-limpiar" onclick="limpiarPantalla('${id}')">🧹 Limpiar Pantalla</button>` : ''}
                             </div>
                         </div>
@@ -1226,6 +1226,9 @@
     </script>
 </body>
 </html>
+
+
+
 
 
 
