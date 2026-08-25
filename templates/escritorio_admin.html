@@ -268,14 +268,23 @@
                 if (!selectDepto || !contenedorSup || !selectSup) return;
 
                 const deptoVal = selectDepto.value;
+                
+                let nombreDeptoFiltro = '';
+                if (deptoVal === 'intendencia') nombreDeptoFiltro = 'Intendencia';
+                else if (deptoVal === 'division-ascensores') nombreDeptoFiltro = 'Ascensores';
+                else if (deptoVal === 'lavadero-central') nombreDeptoFiltro = 'Lavadero Central';
+                else if (deptoVal === 'camilleros-central') nombreDeptoFiltro = 'Camilleros';
+                else if (deptoVal === 'higiene-y-seguridad') nombreDeptoFiltro = 'Higiene y Seguridad';
+                else if (deptoVal === 'dalo') nombreDeptoFiltro = 'DALO';
+                else if (deptoVal === 'direccion-servicios-generales') nombreDeptoFiltro = 'Dirección Servicios Generales';
 
-                if (deptoVal === 'intendencia') {
+                if (deptoVal && deptoVal !== 'Todos') {
                     contenedorSup.style.display = 'inline-block';
                     try {
                         const { data, error } = await db
                             .from('cierres_jornada')
                             .select('supervisor')
-                            .eq('departamento', 'Intendencia');
+                            .eq('departamento', nombreDeptoFiltro);
 
                         if (error) throw error;
 
@@ -307,7 +316,7 @@
                                 <img src="{{ url_for('static', filename='logo_dsg.png') }}" alt="Logo DSG" style="height: 135px;">
                             </div>
                             <div class="filtros-historicos">
-                                <select id="depto-destino-novedades" class="input-select" onchange="manejarCambioDepto('destino-novedades'); actualizarPrint('novedades');">
+                                <select id="depto-destino-novedades" class="input-select" onchange="actualizarPrint('novedades')">
                                     <option value="Todos">Todos los departamentos</option>
                                     <option value="direccion-servicios-generales">Dirección Servicios Generales</option>
                                     <option value="intendencia">Intendencia</option>
@@ -325,11 +334,6 @@
                                     <option value="Noche B">Noche B</option>
                                     <option value="Sadofe">Sadofe</option>
                                 </select>
-                                <div id="contenedor-supervisor-destino-novedades" style="display: none;">
-                                    <select id="supervisor-destino-novedades" class="input-select">
-                                        <option value="">-- Todos los supervisores --</option>
-                                    </select>
-                                </div>
                                 <button class="btn-gestion btn-adjuntar" onclick="document.getElementById('file-novedades').click()">📎 Adjuntar Archivos</button>
                                 <input type="file" id="file-novedades" style="display:none" multiple onchange="previsualizarMultiples(this, 'novedades')">
                                 <button class="btn-gestion" style="background: #28a745; color: white;" onclick="guardarRedaccion('novedades')">Guardar y Enviar</button>
@@ -500,11 +504,6 @@
             document.getElementById('preview-' + id).innerHTML = '';
             document.getElementById('depto-destino-' + id).value = 'Todos';
             document.getElementById('turno-destino-' + id).value = 'Todos';
-            const supDestino = document.getElementById('supervisor-destino-' + id);
-            if (supDestino) {
-                supDestino.value = '';
-                document.getElementById('contenedor-supervisor-destino-' + id).style.display = 'none';
-            }
             actualizarPrint(id);
             delete archivoData[id];
             if (id === 'novedades') {
@@ -565,7 +564,6 @@
                     const fecha = contenido.fecha || row.created_at || 'Fecha desconocida';
                     const depto = contenido.departamento || 'Todos';
                     const turno = contenido.turno || 'Todos';
-                    const supervisor = contenido.supervisor ? ` | <b>Supervisor:</b> ${contenido.supervisor}` : '';
 
                     let adjuntosHtml = '';
                     if (contenido.archivos && Array.isArray(contenido.archivos) && contenido.archivos.length > 0) {
@@ -581,7 +579,7 @@
                     html += `
                         <div class="muro-item">
                             <div class="muro-header">
-                                <span><b>Destino:</b> ${depto} | <b>Turno:</b> ${turno}${supervisor}</span>
+                                <span><b>Destino:</b> ${depto} | <b>Turno:</b> ${turno}</span>
                                 <span>${fecha}</span>
                             </div>
                             <div class="muro-body">${texto}</div>
@@ -742,9 +740,7 @@
         function actualizarPrint(id) {
             const depto = document.getElementById('depto-destino-' + id).value;
             const turno = document.getElementById('turno-destino-' + id).value;
-            const supervisor = document.getElementById('supervisor-destino-' + id)?.value;
-            let textoSupervisor = supervisor ? ` | Supervisor: ${supervisor}` : '';
-            document.getElementById('print-header-' + id).innerText = `Dirigido a: ${depto} | Turno: ${turno}${textoSupervisor}`;
+            document.getElementById('print-header-' + id).innerText = `Dirigido a: ${depto} | Turno: ${turno}`;
         }
 
         function previsualizar(input, id) {
@@ -762,7 +758,6 @@
         async function guardarRedaccion(id) {
             const destino = document.getElementById('depto-destino-' + id).value;
             const turno = document.getElementById('turno-destino-' + id).value;
-            const supervisor = document.getElementById('supervisor-destino-' + id)?.value || '';
             const textoEscrito = document.getElementById('txt-' + id).value;
 
             let listaArchivos = [];
@@ -782,8 +777,7 @@
                 archivo: primerArchivo,
                 fecha: new Date().toLocaleString(),
                 departamento: destino,
-                turno: turno,
-                supervisor: supervisor
+                turno: turno
             };
             
             let nombreDeptoClave = destino;
@@ -796,8 +790,7 @@
             if (destino === 'direccion-servicios-generales') nombreDeptoClave = 'DSG';
             if (destino === 'Todos') nombreDeptoClave = 'Todos';
 
-            let sufijoSupervisor = supervisor ? `_${supervisor.replace(/\s+/g, '_')}` : '_todos';
-            const claveUnica = `comunicado_novedades_${nombreDeptoClave}_${turno}${sufijoSupervisor}_${Date.now()}`;
+            const claveUnica = `comunicado_novedades_${nombreDeptoClave}_${turno}_${Date.now()}`;
             
             const { error } = await db
                 .from('comunicados_memos')
@@ -892,22 +885,23 @@
             visor.innerHTML = "<p>Buscando en la base de datos...</p>";
             
             let deptoFiltro = depto;
-            if (depto === 'division-ascensores') deptoFiltro = 'Ascensores';
-            if (depto === 'intendencia') deptoFiltro = 'Intendencia';
-            if (depto === 'direccion-servicios-generales') deptoFiltro = 'Dirección Servicios Generales';
-            if (depto === 'lavadero-central') deptoFiltro = 'Lavadero Central';
-            if (depto === 'camilleros-central') deptoFiltro = 'Camilleros';
-            if (depto === 'higiene-y-seguridad') deptoFiltro = 'Higiene y Seguridad';
-            if (depto === 'dalo') deptoFiltro = 'DALO';
+            let deptoBaseQuery = depto;
+            if (depto === 'division-ascensores') { deptoFiltro = 'Ascensores'; deptoBaseQuery = 'Ascensores'; }
+            if (depto === 'intendencia') { deptoFiltro = 'Intendencia'; deptoBaseQuery = 'Intendencia'; }
+            if (depto === 'direccion-servicios-generales') { deptoFiltro = 'Dirección Servicios Generales'; deptoBaseQuery = 'Dirección Servicios Generales'; }
+            if (depto === 'lavadero-central') { deptoFiltro = 'Lavadero Central'; deptoBaseQuery = 'Lavadero Central'; }
+            if (depto === 'camilleros-central') { deptoFiltro = 'Camilleros'; deptoBaseQuery = 'Camilleros'; }
+            if (depto === 'higiene-y-seguridad') { deptoFiltro = 'Higiene y Seguridad'; deptoBaseQuery = 'Higiene y Seguridad'; }
+            if (depto === 'dalo') { deptoFiltro = 'DALO'; deptoBaseQuery = 'DALO'; }
             
             let queryReg = db
                 .from('cierres_jornada')
                 .select('*')
                 .eq('fecha_cierre', fechaBusqueda)
                 .eq('turno', turno)
-                .eq('departamento', deptoFiltro);
+                .eq('departamento', deptoBaseQuery);
 
-            if (deptoFiltro === 'Intendencia' && supervisorSeleccionado) {
+            if (supervisorSeleccionado) {
                 queryReg = queryReg.eq('supervisor', supervisorSeleccionado);
             }
 
