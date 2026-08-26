@@ -910,7 +910,7 @@
             }
         }
 
-        // Lógica de verificación y conteo de Novedades No Leídas (Independiente por Supervisor)
+        // --- LÓGICA MODIFICADA PARA NOVEDADES (Filtrado adaptado a formato ADMIN -> Supabase) ---
         async function verificarNovedadesNoLeidas() {
             try {
                 const { data, error } = await db
@@ -920,7 +920,7 @@
 
                 if (error || !data) return;
 
-                const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim();
+                const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim().toLowerCase();
                 const usuarioActual = (localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario') || "invitado").trim();
                 const claveStoragePersonal = `dsg_novedades_ultimo_id_${usuarioActual}`;
 
@@ -928,21 +928,27 @@
                     const idClave = (item.id_clave || "").toLowerCase();
                     const contenidoObj = item.contenido || {};
                     const turnoMsg = (contenidoObj.turno || "").toLowerCase();
+                    const destinatarioMsg = (contenidoObj.destinatario || "").toLowerCase();
 
-                    const esParaTodos = idClave.includes("todos") || idClave.includes("general") || turnoMsg === "todos" || turnoMsg === "general";
-                    const esParaIntendencia = idClave.includes("intendencia");
+                    // Comprobamos si el comunicado es para Intendencia o general para todos
+                    const esParaIntendencia = idClave.includes("intendencia") || destinatarioMsg.includes("intendencia");
+                    const esParaTodos = idClave.includes("todos") || idClave.includes("general") || destinatarioMsg.includes("todos") || destinatarioMsg.includes("general") || turnoMsg === "todos" || turnoMsg === "general";
 
                     if (!esParaIntendencia && !esParaTodos) return false;
+                    
+                    // Si es para todos, pasa directamente
                     if (esParaTodos) return true;
+
+                    // Si especifica un turno particular, validamos que coincida con el turno actual del supervisor
                     if (turnoMsg && turnoMsg !== "todos" && turnoMsg !== "general") {
-                        if (turnoMsg !== turnoActual.toLowerCase()) return false;
+                        if (turnoMsg !== turnoActual) return false;
                     }
+
                     return true;
                 });
 
                 if (novedadesFiltradas.length === 0) return;
 
-                // Comparamos con el último ID leído almacenado localmente de forma individual por supervisor
                 const ultimoIdLeido = localStorage.getItem(claveStoragePersonal);
                 let noLeidasCount = 0;
 
@@ -988,15 +994,16 @@
                     return;
                 }
 
-                const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim();
+                const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim().toLowerCase();
 
                 const novedadesFiltradas = data.filter(item => {
                     const idClave = (item.id_clave || "").toLowerCase();
                     const contenidoObj = item.contenido || {};
                     const turnoMsg = (contenidoObj.turno || "").toLowerCase();
+                    const destinatarioMsg = (contenidoObj.destinatario || "").toLowerCase();
 
-                    const esParaTodos = idClave.includes("todos") || idClave.includes("general") || turnoMsg === "todos" || turnoMsg === "general";
-                    const esParaIntendencia = idClave.includes("intendencia");
+                    const esParaIntendencia = idClave.includes("intendencia") || destinatarioMsg.includes("intendencia");
+                    const esParaTodos = idClave.includes("todos") || idClave.includes("general") || destinatarioMsg.includes("todos") || destinatarioMsg.includes("general") || turnoMsg === "todos" || turnoMsg === "general";
 
                     if (!esParaIntendencia && !esParaTodos) {
                         return false;
@@ -1007,7 +1014,7 @@
                     }
 
                     if (turnoMsg && turnoMsg !== "todos" && turnoMsg !== "general") {
-                        if (turnoMsg !== turnoActual.toLowerCase()) {
+                        if (turnoMsg !== turnoActual) {
                             return false;
                         }
                     }
@@ -1015,7 +1022,7 @@
                     return true;
                 });
 
-                // Al abrir la solapa Novedades, guardamos el ID más reciente individualmente para este supervisor y ocultamos el badge
+                // Al abrir la solapa Novedades, actualizamos el último ID leído de este supervisor particular
                 if (novedadesFiltradas.length > 0) {
                     const usuarioActual = (localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario') || "invitado").trim();
                     const claveStoragePersonal = `dsg_novedades_ultimo_id_${usuarioActual}`;
@@ -1033,8 +1040,8 @@
                 let html = '';
                 novedadesFiltradas.forEach(item => {
                     const contenidoObj = item.contenido || {};
-                    const texto = contenidoObj.texto || 'Sin contenido';
-                    const fecha = contenidoObj.fecha || 'Sin fecha';
+                    const texto = contenidoObj.texto || contenidoObj.mensaje || 'Sin contenido';
+                    const fecha = contenidoObj.fecha || item.created_at || 'Sin fecha';
                     const turnoMsg = contenidoObj.turno || 'General';
 
                     let archivosArray = [];
@@ -1101,6 +1108,7 @@
                 visor.innerHTML = '<p style="text-align:center; color: red;">Error al cargar los datos de novedades.</p>';
             }
         }
+        // --- FIN DE LA LÓGICA MODIFICADA PARA NOVEDADES ---
 
         window.onload = async () => {
             const nombre = localStorage.getItem('usuario_nombre') || "Invitado"; 
@@ -1219,5 +1227,4 @@
     </script>
 </body>
 </html>
-
 
