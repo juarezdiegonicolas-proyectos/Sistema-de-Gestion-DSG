@@ -910,7 +910,7 @@
             }
         }
 
-        // --- LÓGICA MODIFICADA PARA NOVEDADES (Filtrado adaptado a formato ADMIN -> Supabase) ---
+        // --- LÓGICA MODIFICADA PARA NOVEDADES (Filtrado estricto adaptado para su supervisor/turno) ---
         async function verificarNovedadesNoLeidas() {
             try {
                 const { data, error } = await db
@@ -930,16 +930,13 @@
                     const turnoMsg = (contenidoObj.turno || "").toLowerCase();
                     const destinatarioMsg = (contenidoObj.destinatario || "").toLowerCase();
 
-                    // Comprobamos si el comunicado es para Intendencia o general para todos
+                    // Comprobamos si el comunicado es estrictamente para Intendencia o general para todos
                     const esParaIntendencia = idClave.includes("intendencia") || destinatarioMsg.includes("intendencia");
                     const esParaTodos = idClave.includes("todos") || idClave.includes("general") || destinatarioMsg.includes("todos") || destinatarioMsg.includes("general") || turnoMsg === "todos" || turnoMsg === "general";
 
                     if (!esParaIntendencia && !esParaTodos) return false;
                     
-                    // Si es para todos, pasa directamente
-                    if (esParaTodos) return true;
-
-                    // Si especifica un turno particular, validamos que coincida con el turno actual del supervisor
+                    // Si el turno especificado en la novedad no coincide con el turno actual del supervisor, se omite
                     if (turnoMsg && turnoMsg !== "todos" && turnoMsg !== "general") {
                         if (turnoMsg !== turnoActual) return false;
                     }
@@ -1007,10 +1004,6 @@
 
                     if (!esParaIntendencia && !esParaTodos) {
                         return false;
-                    }
-
-                    if (esParaTodos) {
-                        return true;
                     }
 
                     if (turnoMsg && turnoMsg !== "todos" && turnoMsg !== "general") {
