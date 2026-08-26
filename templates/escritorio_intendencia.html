@@ -910,7 +910,7 @@
             }
         }
 
-        // --- LÓGICA MODIFICADA PARA AISLAR NOVEDADES POR SUPERVISOR Y TURNO ---
+        // Lógica de verificación y conteo de Novedades No Leídas (Independiente por Supervisor)
         async function verificarNovedadesNoLeidas() {
             try {
                 const { data, error } = await db
@@ -920,11 +920,9 @@
 
                 if (error || !data) return;
 
-                const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim().toLowerCase();
-                const usuarioActual = (localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario') || "invitado").trim().toLowerCase();
-                
-                // Clave de almacenamiento única por usuario y turno para que no se mezcle
-                const claveStoragePersonal = `dsg_novedades_ultimo_id_${usuarioActual}_${turnoActual}`;
+                const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim();
+                const usuarioActual = (localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario') || "invitado").trim();
+                const claveStoragePersonal = `dsg_novedades_ultimo_id_${usuarioActual}`;
 
                 const novedadesFiltradas = data.filter(item => {
                     const idClave = (item.id_clave || "").toLowerCase();
@@ -935,16 +933,16 @@
                     const esParaIntendencia = idClave.includes("intendencia");
 
                     if (!esParaIntendencia && !esParaTodos) return false;
-                    
-                    // Si es para todos, se evalúa si el turno coincide (si aplica)
-                    if (!esParaTodos && turnoMsg && turnoMsg !== "todos" && turnoMsg !== "general") {
-                        if (turnoMsg !== turnoActual) return false;
+                    if (esParaTodos) return true;
+                    if (turnoMsg && turnoMsg !== "todos" && turnoMsg !== "general") {
+                        if (turnoMsg !== turnoActual.toLowerCase()) return false;
                     }
                     return true;
                 });
 
                 if (novedadesFiltradas.length === 0) return;
 
+                // Comparamos con el último ID leído almacenado localmente de forma individual por supervisor
                 const ultimoIdLeido = localStorage.getItem(claveStoragePersonal);
                 let noLeidasCount = 0;
 
@@ -990,7 +988,7 @@
                     return;
                 }
 
-                const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim().toLowerCase();
+                const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim();
 
                 const novedadesFiltradas = data.filter(item => {
                     const idClave = (item.id_clave || "").toLowerCase();
@@ -1004,8 +1002,12 @@
                         return false;
                     }
 
-                    if (!esParaTodos && turnoMsg && turnoMsg !== "todos" && turnoMsg !== "general") {
-                        if (turnoMsg !== turnoActual) {
+                    if (esParaTodos) {
+                        return true;
+                    }
+
+                    if (turnoMsg && turnoMsg !== "todos" && turnoMsg !== "general") {
+                        if (turnoMsg !== turnoActual.toLowerCase()) {
                             return false;
                         }
                     }
@@ -1013,10 +1015,10 @@
                     return true;
                 });
 
-                // Al abrir la solapa Novedades, actualizamos el registro de lectura individual de este usuario/turno
+                // Al abrir la solapa Novedades, guardamos el ID más reciente individualmente para este supervisor y ocultamos el badge
                 if (novedadesFiltradas.length > 0) {
-                    const usuarioActual = (localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario') || "invitado").trim().toLowerCase();
-                    const claveStoragePersonal = `dsg_novedades_ultimo_id_${usuarioActual}_${turnoActual}`;
+                    const usuarioActual = (localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario') || "invitado").trim();
+                    const claveStoragePersonal = `dsg_novedades_ultimo_id_${usuarioActual}`;
                     
                     localStorage.setItem(claveStoragePersonal, novedadesFiltradas[0].id);
                     const badge = document.getElementById('badge-novedades');
@@ -1217,4 +1219,5 @@
     </script>
 </body>
 </html>
+
 
