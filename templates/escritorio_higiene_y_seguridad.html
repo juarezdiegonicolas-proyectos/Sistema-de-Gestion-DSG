@@ -485,7 +485,9 @@
                         contenido: dataContenido,
                         departamento_destino: destino,
                         turno_destino: turno,
-                        supervisor_destino: supervisor
+                        supervisor_destino: supervisor,
+                        departamento_origen: 'higiene-y-seguridad',
+                        remitente: usuarioRemitente
                     },
                     { onConflict: 'id_clave' }
                 );
@@ -533,7 +535,7 @@
                     const turnoDestino = (item.turno_destino || 'Todos').trim().toLowerCase();
                     const supervisorDestino = (item.supervisor_destino || 'Todos').trim().toLowerCase();
                     const contenidoObj = item.contenido || {};
-                    const remitenteDepto = (contenidoObj.departamento || '').trim().toLowerCase();
+                    const remitenteDepto = (item.departamento_origen || contenidoObj.departamento || '').trim().toLowerCase();
 
                     if (remitenteDepto === 'higiene-y-seguridad') return true;
 
@@ -555,7 +557,7 @@
 
                 const recibidosNoLeidos = filtrados.filter(item => {
                     const contenidoObj = item.contenido || {};
-                    const remitenteDepto = (contenidoObj.departamento || '').trim().toLowerCase();
+                    const remitenteDepto = (item.departamento_origen || contenidoObj.departamento || '').trim().toLowerCase();
                     return remitenteDepto !== 'higiene-y-seguridad';
                 });
 
@@ -572,7 +574,7 @@
                     const fecha = contenidoObj.fecha || 'Sin fecha';
                     const turnoMsg = contenidoObj.turno || 'General';
                     const supervisorMsg = item.supervisor_destino || contenidoObj.supervisor || 'Todos';
-                    const remitenteDepto = (contenidoObj.departamento || '').trim().toLowerCase();
+                    const remitenteDepto = (item.departamento_origen || contenidoObj.departamento || '').trim().toLowerCase();
 
                     const nombresDeptosLegibles = {
                         'higiene-y-seguridad': 'Higiene y Seguridad',
@@ -599,10 +601,9 @@
                         etiquetaEstado = '<span class="badge-estado-muro badge-estado-enviado">Mensaje Enviado</span>';
                         infoDetalleCabecera = `<b>Destino:</b> ${deptoDestinoLegible} (${supervisorMsg}) | <b>Turno Destino:</b> ${turnoMsg}`;
                     } else {
-                        // Corrección solicitada: Departamento que envió explícito y estructura sin solapamiento con la fecha
                         etiquetaEstado = '<span class="badge-estado-muro badge-estado-recibido">Mensaje Recibido</span>';
-                        let nombreRemitenteReal = contenidoObj.remitente && contenidoObj.remitente !== 'Higiene y Seguridad' ? contenidoObj.remitente : 'Supervisor';
-                        infoDetalleCabecera = `<b>Departamento Emisor:</b> <span style="color: #1a3a5f; font-weight: bold;">${deptoEmisorLegible}</span> (${nombreRemitenteReal}) | <b>Turno:</b> ${turnoMsg}`;
+                        let remitenteReal = item.remitente || contenidoObj.remitente || 'Supervisor';
+                        infoDetalleCabecera = `<b>Departamento Emisor:</b> <span style="color: #1a3a5f; font-weight: bold;">${deptoEmisorLegible}</span> (${remitenteReal}) | <b>Turno:</b> ${turnoMsg}`;
                     }
 
                     let archivosArr = [];
