@@ -911,7 +911,8 @@
         }
 
         // =========================================================================
-        // LÓGICA ACTUALIZADA CON LAS NUEVAS COLUMNAS DE SUPABASE
+        // LÓGICA ACTUALIZADA: RECONOCE SI ES DEPARTAMENTO INTENDENCIA, 
+        // Y PERMITE QUE TURNO O SUPERVISOR SEAN NULL/TODOS
         // =========================================================================
         async function verificarNovedadesNoLeidas() {
             try {
@@ -931,23 +932,23 @@
                     const turnoDestino = (item.turno_destino || "").trim().toLowerCase();
                     const supervisorDestino = (item.supervisor_destino || "").trim().toLowerCase();
 
-                    // 1. Si es para todos (enviado desde admin a todos)
-                    const esParaTodos = (deptoDestino === 'todos' || deptoDestino === '');
+                    // 1. Validar Departamento: debe ser 'intendencia' o 'todos' (o vacío)
+                    const deptoValido = (deptoDestino === 'intendencia' || deptoDestino === 'todos' || deptoDestino === '');
+                    if (!deptoValido) return false;
 
-                    // 2. Si es para intendencia
-                    const esParaIntendencia = (deptoDestino === 'intendencia');
-
-                    if (!esParaIntendencia && !esParaTodos) return false;
-
-                    // Si es específico para Intendencia, validar el supervisor o turno
-                    if (esParaIntendencia) {
-                        const coincideTurno = (!turnoDestino || turnoDestino === turnoActual);
-                        const coincideSupervisor = (!supervisorDestino || supervisorDestino === usuarioActual);
-
-                        // Debe coincidir turno y además (ser general del depto/turno o específico para este supervisor)
-                        if (!coincideTurno) return false;
-                        if (supervisorDestino !== "" && supervisorDestino !== usuarioActual) return false;
+                    // Si es general para todos los departamentos/turnos/supervisores
+                    if (deptoDestino === 'todos' || deptoDestino === '') {
+                        return true;
                     }
+
+                    // Si es específicamente para Intendencia:
+                    // 2. Validar Turno: pasa si es 'todos', viene vacío/null, o coincide con el turno actual
+                    const turnoValido = (!turnoDestino || turnoDestino === 'todos' || turnoDestino === turnoActual);
+                    if (!turnoValido) return false;
+
+                    // 3. Validar Supervisor: pasa si viene vacío/null, dice 'todos', o coincide exactamente con el usuario logueado
+                    const supervisorValido = (!supervisorDestino || supervisorDestino === 'todos' || supervisorDestino === usuarioActual);
+                    if (!supervisorValido) return false;
 
                     return true;
                 });
@@ -1007,25 +1008,21 @@
                     const turnoDestino = (item.turno_destino || "").trim().toLowerCase();
                     const supervisorDestino = (item.supervisor_destino || "").trim().toLowerCase();
 
-                    // 1. Si es global para todos
-                    const esParaTodos = (deptoDestino === 'todos' || deptoDestino === '');
+                    // 1. Validar Departamento: debe ser 'intendencia' o 'todos' (o vacío)
+                    const deptoValido = (deptoDestino === 'intendencia' || deptoDestino === 'todos' || deptoDestino === '');
+                    if (!deptoValido) return false;
 
-                    // 2. Si es para el departamento de intendencia
-                    const esParaIntendencia = (deptoDestino === 'intendencia');
-
-                    if (!esParaIntendencia && !esParaTodos) {
-                        return false;
+                    if (deptoDestino === 'todos' || deptoDestino === '') {
+                        return true;
                     }
 
-                    if (esParaIntendencia) {
-                        const coincideTurno = (!turnoDestino || turnoDestino === turnoActual);
-                        if (!coincideTurno) return false;
+                    // 2. Validar Turno: pasa si es 'todos', viene vacío/null, o coincide con el turno actual
+                    const turnoValido = (!turnoDestino || turnoDestino === 'todos' || turnoDestino === turnoActual);
+                    if (!turnoValido) return false;
 
-                        // Si hay un supervisor asignado, debe ser exactamente este usuario (o venir en NULL para todo el depto/turno)
-                        if (supervisorDestino !== "" && supervisorDestino !== usuarioActual) {
-                            return false;
-                        }
-                    }
+                    // 3. Validar Supervisor: pasa si viene vacío/null, dice 'todos', o coincide exactamente con el usuario logueado
+                    const supervisorValido = (!supervisorDestino || supervisorDestino === 'todos' || supervisorDestino === usuarioActual);
+                    if (!supervisorValido) return false;
 
                     return true;
                 });
@@ -1232,4 +1229,3 @@
     </script>
 </body>
 </html>
-
