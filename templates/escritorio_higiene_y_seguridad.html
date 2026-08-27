@@ -193,7 +193,7 @@
             </div>
 
             <div class="historial-muro-container">
-                <div class="historial-muro-titulo">📌 Historial de Envíos y Comunicados (Novedades)</div>
+                <div class="historial-muro-titulo">📌 Historial de Envíos en Muro (Novedades)</div>
                 <div id="contenedor-novedades">Cargando registros históricos...</div>
             </div>
         </div>
@@ -371,6 +371,7 @@
                 const { data, error } = await supabaseClient
                     .from('comunicados_memos')
                     .select('*')
+                    .ilike('id_clave', 'comunicado_novedades_%')
                     .order('created_at', { ascending: false });
 
                 if (error || !data) return;
@@ -378,11 +379,7 @@
                 const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim().toLowerCase();
                 const usuarioActual = (localStorage.getItem('usuario_nombre') || "invitado").trim().toLowerCase();
 
-                const novedadesRecibidas = data.filter(item => {
-                    const contenidoObj = item.contenido || {};
-                    const remitenteDepto = (contenidoObj.departamento || '').toLowerCase();
-                    if (remitenteDepto === 'higiene y seguridad' || remitenteDepto === 'higiene-y-seguridad') return false;
-
+                const novedadesFiltradas = data.filter(item => {
                     const deptoDestino = item.departamento_destino || 'Todos';
                     const turnoDestino = item.turno_destino || 'Todos';
                     const supervisorDestino = item.supervisor_destino || 'Todos';
@@ -396,16 +393,16 @@
                     return true;
                 });
 
-                if (novedadesRecibidas.length === 0) return;
+                if (novedadesFiltradas.length === 0) return;
 
                 const claveStorage = `dsg_hyc_ultimo_novedad_leida_${usuarioActual}`;
                 const ultimoIdLeido = localStorage.getItem(claveStorage);
                 let noLeidasCount = 0;
 
                 if (!ultimoIdLeido) {
-                    noLeidasCount = novedadesRecibidas.length;
+                    noLeidasCount = novedadesFiltradas.length;
                 } else {
-                    for (let item of novedadesRecibidas) {
+                    for (let item of novedadesFiltradas) {
                         if (String(item.id) === String(ultimoIdLeido)) break;
                         noLeidasCount++;
                     }
@@ -502,6 +499,7 @@
                 const { data, error } = await supabaseClient
                     .from('comunicados_memos')
                     .select('*')
+                    .ilike('id_clave', 'comunicado_novedades_%')
                     .order('created_at', { ascending: false });
 
                 if (error) throw error;
@@ -519,38 +517,28 @@
                     const turnoDestino = item.turno_destino || 'Todos';
                     const supervisorDestino = item.supervisor_destino || 'Todos';
 
-                    // Si fue enviado por este mismo departamento (para verlo en el muro de envíos)
-                    const contenidoObj = item.contenido || {};
-                    const remitenteDepto = (contenidoObj.departamento || '').toLowerCase();
-                    if (remitenteDepto === 'higiene y seguridad' || remitenteDepto === 'higiene-y-seguridad') return true;
-
-                    // Si es global (para todos)
                     if (deptoDestino === 'Todos') return true;
 
-                    // Si está dirigido a este departamento
                     if (deptoDestino === 'higiene-y-seguridad') {
                         if (turnoDestino !== 'Todos' && turnoDestino.toLowerCase() !== turnoActual) return false;
                         if (supervisorDestino !== 'Todos' && supervisorDestino.toLowerCase() !== usuarioActual) return false;
                         return true;
                     }
 
+                    const contenidoObj = item.contenido || {};
+                    const remitenteDepto = contenidoObj.departamento || '';
+                    if (remitenteDepto === 'higiene-y-seguridad') return true;
+
                     return false;
                 });
 
                 if (filtrados.length === 0) {
-                    contenedorNov.innerHTML = '<p style="color: #666; font-style: italic;">No hay comunicaciones dirigidas o enviadas por este sector.</p>';
+                    contenedorNov.innerHTML = '<p style="color: #666; font-style: italic;">No hay comunicaciones dirigidas a este sector.</p>';
                     return;
                 }
 
-                // Filtrar solo las recibidas para actualizar el marcador de no leídas
-                const recibidasFiltradas = filtrados.filter(item => {
-                    const contenidoObj = item.contenido || {};
-                    const remitenteDepto = (contenidoObj.departamento || '').toLowerCase();
-                    return !(remitenteDepto === 'higiene y seguridad' || remitenteDepto === 'higiene-y-seguridad');
-                });
-
-                if (recibidasFiltradas.length > 0) {
-                    localStorage.setItem(`dsg_hyc_ultimo_novedad_leida_${usuarioActual}`, recibidasFiltradas[0].id);
+                if (filtrados.length > 0) {
+                    localStorage.setItem(`dsg_hyc_ultimo_novedad_leida_${usuarioActual}`, filtrados[0].id);
                     const badge = document.getElementById('badge-novedades');
                     if (badge) badge.style.display = 'none';
                 }
