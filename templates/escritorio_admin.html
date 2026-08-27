@@ -582,10 +582,9 @@
                     const contenido = row.contenido || {};
                     const texto = contenido.texto || 'Sin texto';
                     const fecha = contenido.fecha || row.created_at || 'Fecha desconocida';
-                    const depto = contenido.departamento || row.departamento_destino || 'Todos';
-                    const turno = contenido.turno || row.turno_destino || 'Todos';
-                    const supervisorVal = contenido.supervisor || row.supervisor_destino;
-                    const supervisor = supervisorVal ? ` | <b>Supervisor:</b> ${supervisorVal}` : '';
+                    const depto = contenido.departamento || 'Todos';
+                    const turno = contenido.turno || 'Todos';
+                    const supervisor = contenido.supervisor ? ` | <b>Supervisor:</b> ${contenido.supervisor}` : '';
 
                     let adjuntosHtml = '';
                     if (contenido.archivos && Array.isArray(contenido.archivos) && contenido.archivos.length > 0) {
@@ -822,17 +821,10 @@
             let sufijoSupervisor = supervisor ? `_${supervisor.replace(/\s+/g, '_')}` : '';
             const claveUnica = `comunicado_novedades_${nombreDeptoClave}_${turno}${sufijoSupervisor}_${Date.now()}`;
             
-            // MODIFICACIÓN: Guardando explícitamente en las columnas independientes de Supabase
             const { error } = await db
                 .from('comunicados_memos')
                 .upsert(
-                    { 
-                        id_clave: claveUnica, 
-                        contenido: data,
-                        departamento_destino: destino,
-                        turno_destino: turno,
-                        supervisor_destino: supervisor || null
-                    },
+                    { id_clave: claveUnica, contenido: data },
                     { onConflict: 'id_clave' }
                 );
 
