@@ -383,23 +383,30 @@
 
                 const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim().toLowerCase();
                 const usuarioActual = (localStorage.getItem('usuario_nombre') || "invitado").trim().toLowerCase();
-                const deptoActual = "higiene-y-seguridad";
 
                 const novedadesFiltradas = data.filter(item => {
-                    const deptoDestino = (item.departamento_destino || 'Todos').trim().toLowerCase();
-                    const turnoDestino = (item.turno_destino || 'Todos').trim().toLowerCase();
-                    const supervisorDestino = (item.supervisor_destino || 'Todos').trim().toLowerCase();
+                    const deptoDestino = item.departamento_destino || 'Todos';
+                    const turnoDestino = item.turno_destino || 'Todos';
+                    const supervisorDestino = item.supervisor_destino || 'Todos';
                     const contenidoObj = item.contenido || {};
                     const remitenteDepto = (contenidoObj.departamento || '').trim().toLowerCase();
+                    const idClaveStr = (item.id_clave || '').toLowerCase();
+
+                    const esEnviado = (
+                        remitenteDepto === 'higiene y seguridad' || 
+                        remitenteDepto === 'higiene-y-seguridad' || 
+                        idClaveStr.includes('higiene_seguridad') ||
+                        idClaveStr.includes('higiene-y-seguridad')
+                    );
 
                     // No contar los mensajes propios como no leídos
-                    if (remitenteDepto === deptoActual) return false;
+                    if (esEnviado) return false;
 
-                    if (deptoDestino === 'todos') return true;
-                    if (deptoDestino !== deptoActual && deptoDestino !== 'higiene y seguridad') return false;
+                    if (deptoDestino === 'Todos') return true;
+                    if (deptoDestino !== 'higiene-y-seguridad') return false;
 
-                    if (turnoDestino !== 'todos' && turnoDestino !== turnoActual) return false;
-                    if (supervisorDestino !== 'todos' && supervisorDestino !== usuarioActual) return false;
+                    if (turnoDestino !== 'Todos' && turnoDestino.toLowerCase() !== turnoActual) return false;
+                    if (supervisorDestino !== 'Todos' && supervisorDestino.toLowerCase() !== usuarioActual) return false;
 
                     return true;
                 });
@@ -525,25 +532,32 @@
 
                 const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim().toLowerCase();
                 const usuarioActual = (localStorage.getItem('usuario_nombre') || "invitado").trim().toLowerCase();
-                const deptoActual = "higiene-y-seguridad";
 
                 const filtrados = data.filter(item => {
-                    const deptoDestino = (item.departamento_destino || 'Todos').trim().toLowerCase();
-                    const turnoDestino = (item.turno_destino || 'Todos').trim().toLowerCase();
-                    const supervisorDestino = (item.supervisor_destino || 'Todos').trim().toLowerCase();
+                    const deptoDestino = item.departamento_destino || 'Todos';
+                    const turnoDestino = item.turno_destino || 'Todos';
+                    const supervisorDestino = item.supervisor_destino || 'Todos';
                     const contenidoObj = item.contenido || {};
                     const remitenteDepto = (contenidoObj.departamento || '').trim().toLowerCase();
+                    const idClaveStr = (item.id_clave || '').toLowerCase();
 
-                    // Si nosotros lo emitimos, se muestra en el muro como mensaje propio (enviado)
-                    if (remitenteDepto === deptoActual) return true;
+                    const esEnviado = (
+                        remitenteDepto === 'higiene y seguridad' || 
+                        remitenteDepto === 'higiene-y-seguridad' || 
+                        idClaveStr.includes('higiene_seguridad') ||
+                        idClaveStr.includes('higiene-y-seguridad')
+                    );
+
+                    // Mostrar si fuimos nosotros los remitentes (enviados)
+                    if (esEnviado) return true;
 
                     // Si está dirigido a todos los departamentos
-                    if (deptoDestino === 'todos') return true;
+                    if (deptoDestino === 'Todos') return true;
 
-                    // Si está dirigido específicamente a nuestro departamento
-                    if (deptoDestino === deptoActual || deptoDestino === 'higiene y seguridad') {
-                        if (turnoDestino !== 'todos' && turnoDestino !== turnoActual) return false;
-                        if (supervisorDestino !== 'todos' && supervisorDestino !== usuarioActual) return false;
+                    // Si está dirigido específicamente a Higiene y Seguridad
+                    if (deptoDestino === 'higiene-y-seguridad') {
+                        if (turnoDestino !== 'Todos' && turnoDestino.toLowerCase() !== turnoActual) return false;
+                        if (supervisorDestino !== 'Todos' && supervisorDestino.toLowerCase() !== usuarioActual) return false;
                         return true;
                     }
 
@@ -559,7 +573,14 @@
                 const recibidosNoLeidos = filtrados.filter(item => {
                     const contenidoObj = item.contenido || {};
                     const remitenteDepto = (contenidoObj.departamento || '').trim().toLowerCase();
-                    return remitenteDepto !== deptoActual;
+                    const idClaveStr = (item.id_clave || '').toLowerCase();
+                    const esEnviado = (
+                        remitenteDepto === 'higiene y seguridad' || 
+                        remitenteDepto === 'higiene-y-seguridad' || 
+                        idClaveStr.includes('higiene_seguridad') ||
+                        idClaveStr.includes('higiene-y-seguridad')
+                    );
+                    return !esEnviado;
                 });
 
                 if (recibidosNoLeidos.length > 0) {
@@ -577,9 +598,15 @@
                     const deptoDestino = item.departamento_destino || contenidoObj.departamento || 'Todos';
                     const supervisorMsg = item.supervisor_destino || contenidoObj.supervisor || 'Todos';
                     const remitenteDepto = (contenidoObj.departamento || '').trim().toLowerCase();
+                    const idClaveStr = (item.id_clave || '').toLowerCase();
 
-                    // Identificación estricta: Si el emisor es este departamento, es Enviado; de lo contrario, es Recibido.
-                    const esEnviado = (remitenteDepto === deptoActual);
+                    // Etiqueta clara al lado de la fecha/hora indicando si es Mensaje Enviado o Recibido
+                    const esEnviado = (
+                        remitenteDepto === 'higiene y seguridad' || 
+                        remitenteDepto === 'higiene-y-seguridad' || 
+                        idClaveStr.includes('higiene_seguridad') ||
+                        idClaveStr.includes('higiene-y-seguridad')
+                    );
                     const etiquetaEstado = esEnviado 
                         ? '<span class="badge-estado-muro badge-estado-enviado">Mensaje Enviado</span>' 
                         : '<span class="badge-estado-muro badge-estado-recibido">Mensaje Recibido</span>';
