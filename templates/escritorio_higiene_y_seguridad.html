@@ -395,8 +395,8 @@
                     const esEnviado = (
                         remitenteDepto === 'higiene y seguridad' || 
                         remitenteDepto === 'higiene-y-seguridad' || 
-                        idClaveStr.includes('higiene_seguridad') ||
-                        idClaveStr.includes('higiene-y-seguridad')
+                        idClaveStr.includes('comunicado_novedades_higiene_seguridad_') ||
+                        idClaveStr.includes('comunicado_novedades_higiene-y-seguridad_')
                     );
 
                     // No contar los mensajes propios como no leídos
@@ -541,20 +541,18 @@
                     const remitenteDepto = (contenidoObj.departamento || '').trim().toLowerCase();
                     const idClaveStr = (item.id_clave || '').toLowerCase();
 
+                    // Es enviado EXCLUSIVAMENTE si el id_clave comienza indicando que salió de Higiene y Seguridad
                     const esEnviado = (
-                        remitenteDepto === 'higiene y seguridad' || 
-                        remitenteDepto === 'higiene-y-seguridad' || 
-                        idClaveStr.includes('higiene_seguridad') ||
-                        idClaveStr.includes('higiene-y-seguridad')
+                        idClaveStr.includes('comunicado_novedades_higiene_seguridad_') ||
+                        idClaveStr.includes('comunicado_novedades_higiene-y-seguridad_')
                     );
 
-                    // Mostrar si fuimos nosotros los remitentes (enviados)
+                    // Si nosotros lo enviamos, se muestra siempre en nuestro muro
                     if (esEnviado) return true;
 
-                    // Si está dirigido a todos los departamentos
+                    // Si es un mensaje recibido de otro sector, evaluamos si va dirigido a nosotros
                     if (deptoDestino === 'Todos') return true;
 
-                    // Si está dirigido específicamente a Higiene y Seguridad
                     if (deptoDestino === 'higiene-y-seguridad') {
                         if (turnoDestino !== 'Todos' && turnoDestino.toLowerCase() !== turnoActual) return false;
                         if (supervisorDestino !== 'Todos' && supervisorDestino.toLowerCase() !== usuarioActual) return false;
@@ -571,14 +569,10 @@
 
                 // Filtrar solo los recibidos de otros sectores para actualizar el marcador de no leídos
                 const recibidosNoLeidos = filtrados.filter(item => {
-                    const contenidoObj = item.contenido || {};
-                    const remitenteDepto = (contenidoObj.departamento || '').trim().toLowerCase();
                     const idClaveStr = (item.id_clave || '').toLowerCase();
                     const esEnviado = (
-                        remitenteDepto === 'higiene y seguridad' || 
-                        remitenteDepto === 'higiene-y-seguridad' || 
-                        idClaveStr.includes('higiene_seguridad') ||
-                        idClaveStr.includes('higiene-y-seguridad')
+                        idClaveStr.includes('comunicado_novedades_higiene_seguridad_') ||
+                        idClaveStr.includes('comunicado_novedades_higiene-y-seguridad_')
                     );
                     return !esEnviado;
                 });
@@ -597,15 +591,12 @@
                     const turnoMsg = contenidoObj.turno || 'General';
                     const deptoDestino = item.departamento_destino || contenidoObj.departamento || 'Todos';
                     const supervisorMsg = item.supervisor_destino || contenidoObj.supervisor || 'Todos';
-                    const remitenteDepto = (contenidoObj.departamento || '').trim().toLowerCase();
                     const idClaveStr = (item.id_clave || '').toLowerCase();
 
-                    // Etiqueta clara al lado de la fecha/hora indicando si es Mensaje Enviado o Recibido
+                    // Etiqueta estricta basada únicamente en el prefijo del id_clave generado al enviar
                     const esEnviado = (
-                        remitenteDepto === 'higiene y seguridad' || 
-                        remitenteDepto === 'higiene-y-seguridad' || 
-                        idClaveStr.includes('higiene_seguridad') ||
-                        idClaveStr.includes('higiene-y-seguridad')
+                        idClaveStr.includes('comunicado_novedades_higiene_seguridad_') ||
+                        idClaveStr.includes('comunicado_novedades_higiene-y-seguridad_')
                     );
                     const etiquetaEstado = esEnviado 
                         ? '<span class="badge-estado-muro badge-estado-enviado">Mensaje Enviado</span>' 
@@ -713,7 +704,7 @@
                     }
                     let legajoItem = item.legajo_operador;
                     if (legajoItem && !legajoOperador) {
-                        legajoOperador = String(legajoItem).trim();
+                        legajoItem = String(legajoItem).trim();
                     }
                 });
 
