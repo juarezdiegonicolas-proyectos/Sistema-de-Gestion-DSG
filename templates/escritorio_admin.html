@@ -325,16 +325,31 @@
                                 <img src="{{ url_for('static', filename='logo_dsg.png') }}" alt="Logo DSG" style="height: 135px;">
                             </div>
                             <div class="filtros-historicos">
-                                <select id="depto-destino-novedades" class="input-select" onchange="manejarCambioDepto('destino-novedades')">
-                                    <option value="Todos">Todos los departamentos</option>
-                                    <option value="direccion-servicios-generales">Dirección Servicios Generales</option>
-                                    <option value="intendencia">Intendencia</option>
-                                    <option value="division-ascensores">Ascensores</option>
-                                    <option value="lavadero-central">Lavadero Central</option>
-                                    <option value="camilleros-central">Camilleros</option>
-                                    <option value="higiene-y-seguridad">Higiene y Seguridad</option>
-                                    <option value="dalo">DALO</option>
-                                </select>
+                                <div style="display: flex; flex-direction: column; gap: 4px;">
+                                    <label style="font-size: 11px; font-weight: bold; color: #1a3a5f;">Departamento Emisor (Origen):</label>
+                                    <select id="depto-origen-novedades" class="input-select">
+                                        <option value="direccion-servicios-generales">Dirección Servicios Generales</option>
+                                        <option value="intendencia">Intendencia</option>
+                                        <option value="division-ascensores">Ascensores</option>
+                                        <option value="lavadero-central">Lavadero Central</option>
+                                        <option value="camilleros-central">Camilleros</option>
+                                        <option value="higiene-y-seguridad">Higiene y Seguridad</option>
+                                        <option value="dalo">DALO</option>
+                                    </select>
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 4px;">
+                                    <label style="font-size: 11px; font-weight: bold; color: #1a3a5f;">Dirigido a (Destino):</label>
+                                    <select id="depto-destino-novedades" class="input-select" onchange="manejarCambioDepto('destino-novedades')">
+                                        <option value="Todos">Todos los departamentos</option>
+                                        <option value="direccion-servicios-generales">Dirección Servicios Generales</option>
+                                        <option value="intendencia">Intendencia</option>
+                                        <option value="division-ascensores">Ascensores</option>
+                                        <option value="lavadero-central">Lavadero Central</option>
+                                        <option value="camilleros-central">Camilleros</option>
+                                        <option value="higiene-y-seguridad">Higiene y Seguridad</option>
+                                        <option value="dalo">DALO</option>
+                                    </select>
+                                </div>
                                 <select id="turno-destino-novedades" class="input-select" onchange="actualizarPrint('novedades')">
                                     <option value="Todos">Todos los turnos</option>
                                     <option value="Mañana">Mañana</option>
@@ -353,7 +368,7 @@
                                 <button class="btn-gestion" style="background: #28a745; color: white;" onclick="guardarRedaccion('novedades')">Guardar y Enviar</button>
                             </div>
                             
-                            <div id="print-header-novedades" class="print-header">Dirigido a: Todos los departamentos | Turno: Todos los turnos</div>
+                            <div id="print-header-novedades" class="print-header">Origen: Dirección Servicios Generales | Dirigido a: Todos los departamentos | Turno: Todos los turnos</div>
                             <textarea id="txt-novedades" oninput="document.getElementById('print-novedades').innerText = this.value" placeholder="Escriba aquí el contenido..."></textarea>
                             <div id="print-novedades" class="print-only"></div>
                             <div id="preview-novedades" class="preview-adjunto"></div>
@@ -406,16 +421,31 @@
                                     <span style="font-weight: bold; color: #1a3a5f;">Estado en tiempo real de la tabla estado_actual_ascensores</span>
                                     <button class="btn-gestion" style="background: #1a3a5f; color: white; margin-left: auto;" onclick="cargarEstadoAscensoresVivo()">Actualizar Datos</button>
                                 ` : `
-                                    <select id="depto-destino-${id}" class="input-select" onchange="actualizarPrint('${id}')">
-                                        <option value="Todos">Todos los departamentos</option>
-                                        <option value="direccion-servicios-generales">Dirección Servicios Generales</option>
-                                        <option value="intendencia">Intendencia</option>
-                                        <option value="division-ascensores">Ascensores</option>
-                                        <option value="lavadero-central">Lavadero Central</option>
-                                        <option value="camilleros-central">Camilleros</option>
-                                        <option value="higiene-y-seguridad">Higiene y Seguridad</option>
-                                        <option value="dalo">DALO</option>
-                                    </select>
+                                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                                        <label style="font-size: 11px; font-weight: bold; color: #1a3a5f;">Departamento Emisor (Origen):</label>
+                                        <select id="depto-origen-${id}" class="input-select">
+                                            <option value="direccion-servicios-generales">Dirección Servicios Generales</option>
+                                            <option value="intendencia">Intendencia</option>
+                                            <option value="division-ascensores">Ascensores</option>
+                                            <option value="lavadero-central">Lavadero Central</option>
+                                            <option value="camilleros-central">Camilleros</option>
+                                            <option value="higiene-y-seguridad">Higiene y Seguridad</option>
+                                            <option value="dalo">DALO</option>
+                                        </select>
+                                    </div>
+                                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                                        <label style="font-size: 11px; font-weight: bold; color: #1a3a5f;">Dirigido a (Destino):</label>
+                                        <select id="depto-destino-${id}" class="input-select" onchange="actualizarPrint('${id}')">
+                                            <option value="Todos">Todos los departamentos</option>
+                                            <option value="direccion-servicios-generales">Dirección Servicios Generales</option>
+                                            <option value="intendencia">Intendencia</option>
+                                            <option value="division-ascensores">Ascensores</option>
+                                            <option value="lavadero-central">Lavadero Central</option>
+                                            <option value="camilleros-central">Camilleros</option>
+                                            <option value="higiene-y-seguridad">Higiene y Seguridad</option>
+                                            <option value="dalo">DALO</option>
+                                        </select>
+                                    </div>
                                     <select id="turno-destino-${id}" class="input-select" onchange="actualizarPrint('${id}')">
                                         <option value="Todos">Todos los turnos</option>
                                         <option value="Mañana">Mañana</option>
@@ -432,7 +462,7 @@
                             
                             ${tipoContenido === 'auditoria' ? `<div id="visor-${id}" style="border: 1px solid #ccc; padding: 20px; min-height: 200px;">Seleccione filtros para auditar.</div>` : 
                               tipoContenido === 'estado-ascensores-vivo' ? `<div id="visor-${id}" style="border: 1px solid #ccc; padding: 20px; min-height: 200px; background: #fff;">Cargando datos actuales...</div>` :
-                              `<div id="print-header-${id}" class="print-header">Dirigido a: Todos los departamentos | Turno: Todos los turnos</div><textarea id="txt-${id}" oninput="document.getElementById('print-${id}').innerText = this.value" placeholder="Escriba aquí el contenido..."></textarea><div id="print-${id}" class="print-only"></div><div id="preview-${id}" class="preview-adjunto"></div>`}
+                              `<div id="print-header-${id}" class="print-header">Origen: Dirección Servicios Generales | Dirigido a: Todos los departamentos | Turno: Todos los turnos</div><textarea id="txt-${id}" oninput="document.getElementById('print-${id}').innerText = this.value" placeholder="Escriba aquí el contenido..."></textarea><div id="print-${id}" class="print-only"></div><div id="preview-${id}" class="preview-adjunto"></div>`}
                             
                             <div class="area-acciones">
                                 <button id="btn-print-${id}" class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
@@ -517,6 +547,7 @@
             document.getElementById('print-' + id).innerText = '';
             document.getElementById('preview-' + id).style.display = 'none';
             document.getElementById('preview-' + id).innerHTML = '';
+            document.getElementById('depto-origen-' + id).value = 'direccion-servicios-generales';
             document.getElementById('depto-destino-' + id).value = 'Todos';
             document.getElementById('turno-destino-' + id).value = 'Todos';
             if (id === 'novedades') {
@@ -584,6 +615,7 @@
                     const texto = contenido.texto || 'Sin texto';
                     const fecha = contenido.fecha || row.created_at || 'Fecha desconocida';
                     
+                    const origen = contenido.departamento_origen || row.departamento_origen || 'Dirección Servicios Generales';
                     const depto = row.departamento_destino || contenido.departamento || 'Todos';
                     const turno = row.turno_destino || contenido.turno || 'Todos';
                     const supervisor = (row.supervisor_destino || contenido.supervisor) ? ` | <b>Supervisor:</b> ${row.supervisor_destino || contenido.supervisor}` : '';
@@ -602,7 +634,7 @@
                     html += `
                         <div class="muro-item">
                             <div class="muro-header">
-                                <span><b>Destino:</b> ${depto} | <b>Turno:</b> ${turno}${supervisor}</span>
+                                <span><b>Origen:</b> ${origen} | <b>Destino:</b> ${depto} | <b>Turno:</b> ${turno}${supervisor}</span>
                                 <span>${fecha}</span>
                             </div>
                             <div class="muro-body">${texto}</div>
@@ -761,13 +793,15 @@
         }
 
         function actualizarPrint(id) {
+            const origenSelect = document.getElementById('depto-origen-' + id);
+            const origen = origenSelect ? origenSelect.options[origenSelect.selectedIndex].text : 'Dirección Servicios Generales';
             const depto = document.getElementById('depto-destino-' + id).value;
             const turno = document.getElementById('turno-destino-' + id).value;
             const supElem = document.getElementById('supervisor-destino-' + id);
             const supVal = supElem ? supElem.value : '';
             
             let textoSup = supVal ? ` | Supervisor: ${supVal}` : '';
-            document.getElementById('print-header-' + id).innerText = `Dirigido a: ${depto} | Turno: ${turno}${textoSup}`;
+            document.getElementById('print-header-' + id).innerText = `Origen: ${origen} | Dirigido a: ${depto} | Turno: ${turno}${textoSup}`;
         }
 
         function previsualizar(input, id) {
@@ -783,6 +817,10 @@
         }
 
         async function guardarRedaccion(id) {
+            const origenSelect = document.getElementById('depto-origen-' + id);
+            const origenVal = origenSelect ? origenSelect.value : 'direccion-servicios-generales';
+            const origenTexto = origenSelect ? origenSelect.options[origenSelect.selectedIndex].text : 'Dirección Servicios Generales';
+            
             const destino = document.getElementById('depto-destino-' + id).value;
             const turno = document.getElementById('turno-destino-' + id).value;
             const supervisorElem = document.getElementById('supervisor-destino-' + id);
@@ -805,6 +843,8 @@
                 archivos: listaArchivos,
                 archivo: primerArchivo,
                 fecha: new Date().toLocaleString(),
+                departamento_origen: origenTexto,
+                departamento_origen_val: origenVal,
                 departamento: destino,
                 turno: turno,
                 supervisor: supervisor
@@ -821,16 +861,15 @@
             if (destino === 'Todos') nombreDeptoClave = 'Todos';
 
             let sufijoSupervisor = supervisor ? `_${supervisor.replace(/\s+/g, '_')}` : '_todos';
-            const claveUnica = `comunicado_novedades_${nombreDeptoClave}_${turno}${sufijoSupervisor}_${Date.now()}`;
+            const claveUnica = `comunicado_novedades_${origenVal}_${nombreDeptoClave}_${turno}${sufijoSupervisor}_${Date.now()}`;
             
-            // CORRECCIÓN: Inserción con el nombre de departamento correspondiente para que se inserte correctamente en la tabla
             const { error } = await db
                 .from('comunicados_memos')
                 .upsert(
                     { 
                         id_clave: claveUnica, 
                         contenido: data,
-                        departamento_destino: nombreDeptoClave,
+                        departamento_destino: destino === 'Todos' ? null : nombreDeptoClave,
                         turno_destino: turno === 'Todos' ? null : turno,
                         supervisor_destino: supervisor || null
                     },
@@ -841,7 +880,7 @@
                 console.error("Error al guardar en Supabase:", error);
                 alert("Error al enviar a la base de datos: " + error.message);
             } else {
-                alert("Novedad enviada correctamente. Si seleccionaste intendencia, turno mañana y todos los supervisores, esto quedará disponible para que todos lo visualicen.");
+                alert("Novedad enviada correctamente. Quedará registrada con su departamento de origen para que Higiene y Seguridad u otros destinos puedan tomar el dato correctamente.");
                 if (id === 'novedades') {
                     cargarHistorialMuroNovedades();
                     archivosMultiplesNovedades = [];
