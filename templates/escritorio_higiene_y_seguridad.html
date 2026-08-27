@@ -151,14 +151,12 @@
         <div id="novedades" class="seccion">
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo Hospital" onerror="this.src='https://via.placeholder.com/150?text=Hospital'">
-                <h1 style="margin: 0; text-align: center; flex: 1;">Novedades y Comunicados</h1>
+                <h1 style="margin: 0; text-align: center; flex: 1;">Novedades</h1>
                 <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
             </div>
-            
-            <!-- Bloque de Redacción idéntico al Administrador -->
             <div class="filtros-historicos">
-                <select id="depto-destino-novedades" class="input-select" onchange="actualizarPrint('novedades')">
-                    <option value="todos">Todos los departamentos</option>
+                <select id="depto-destino-novedades" class="input-select" onchange="manejarCambioDepto('novedades')">
+                    <option value="Todos">Todos los departamentos</option>
                     <option value="direccion-servicios-generales">Dirección Servicios Generales</option>
                     <option value="intendencia">Intendencia</option>
                     <option value="division-ascensores">Ascensores</option>
@@ -169,23 +167,21 @@
                     <option value="higiene-y-seguridad">Higiene y Seguridad</option>
                 </select>
                 <select id="turno-destino-novedades" class="input-select" onchange="actualizarPrint('novedades')">
-                    <option value="todos">Todos los turnos</option>
+                    <option value="Todos">Todos los turnos</option>
                     <option value="Mañana">Mañana</option>
                     <option value="Tarde">Tarde</option>
                     <option value="Noche A">Noche A</option>
                     <option value="Noche B">Noche B</option>
                     <option value="Sadofe">Sadofe</option>
                 </select>
-                <select id="supervisor-destino-novedades" class="input-select">
-                    <option value="todos">Todos los supervisores</option>
-                </select>
+                <div id="contenedor-supervisor-novedades" style="display:inline-block;"></div>
                 <button class="btn-gestion btn-adjuntar" onclick="document.getElementById('file-novedades').click()">📎 Adjuntar Archivos</button>
                 <input type="file" id="file-novedades" style="display:none" multiple onchange="previsualizarMultiples(this, 'novedades')">
                 <button class="btn-gestion" style="background: #28a745; color: white;" onclick="guardarRedaccion('novedades')">Guardar y Enviar</button>
             </div>
             
             <div id="print-header-novedades" class="print-header">Dirigido a: Todos los departamentos | Turno: Todos los turnos</div>
-            <textarea id="txt-novedades" oninput="document.getElementById('print-novedades').innerText = this.value" placeholder="Escriba aquí el comunicado..."></textarea>
+            <textarea id="txt-novedades" oninput="document.getElementById('print-novedades').innerText = this.value" placeholder="Escriba aquí el contenido..."></textarea>
             <div id="print-novedades" class="print-only"></div>
             <div id="preview-novedades" class="preview-adjunto"></div>
             
@@ -195,7 +191,7 @@
             </div>
 
             <div class="historial-muro-container">
-                <div class="historial-muro-titulo">📌 Historial de Envíos y Comunicados (Muro)</div>
+                <div class="historial-muro-titulo">📌 Historial de Envíos y Comunicados (Novedades)</div>
                 <div id="contenedor-novedades">Cargando registros históricos...</div>
             </div>
         </div>
@@ -206,7 +202,7 @@
         const SUPABASE_URL = 'https://ydcbdvosxbwcutddxaze.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_EvvZ8n7Ve2cF9FB4SXA0Ug_7q6qWh9f';
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        const db = supabaseClient;
+        const db = supabaseClient; // Alias unificado para compatibilidad
 
         const editorReporte = document.getElementById('editor-reporte');
         const spanHoja = document.getElementById('numero-hoja');
@@ -244,6 +240,7 @@
             }
 
             try {
+                // Inserción adaptada a la tabla existente 'cierres_jornada' con columnas corregidas
                 const { error } = await db
                     .from('cierres_jornada')
                     .insert([
@@ -258,25 +255,84 @@
                     ]);
 
                 if (error) {
-                    alert("Hubo un error al guardar el reporte: " + error.message);
+                    console.error("Error al registrar el cierre en Supabase:", error);
+                    alert("Hubo un error al guardar el reporte en la base de datos: " + error.message);
                     return;
                 }
 
                 localStorage.removeItem('hyc_reporte');
-                alert("Jornada cerrada y reporte guardado con éxito.");
+                alert("Jornada cerrada y reporte guardado con éxito en la base de datos.");
                 location.reload();
 
             } catch (err) {
+                console.error("Excepción al cerrar jornada:", err);
                 alert("Error de conexión al intentar guardar la jornada.");
+            }
+        }
+
+        async function manejarCambioDepto(id) {
+            actualizarPrint(id);
+            const deptoSelect = document.getElementById('depto-destino-' + id);
+            const contenedorSup = document.getElementById('contenedor-supervisor-' + id);
+            if (!deptoSelect || !contenedorSup) return;
+
+            const deptoValor = deptoSelect.value;
+            if (deptoValor === 'Todos') {
+                contenedorSup.innerHTML = '';
+                return;
+            }
+
+            let nombreDeptoFiltro = deptoValor;
+            if (deptoValor === 'division-ascensores') nombreDeptoFiltro = 'Ascensores';
+            if (deptoValor === 'camilleros-central') nombreDeptoFiltro = 'Camilleros';
+            if (deptoValor === 'intendencia') nombreDeptoFiltro = 'Intendencia';
+            if (deptoValor === 'lavadero-central') nombreDeptoFiltro = 'Lavadero Central';
+            if (deptoValor === 'conmutador') nombreDeptoFiltro = 'Conmutador';
+            if (deptoValor === 'dalo') nombreDeptoFiltro = 'DALO';
+            if (deptoValor === 'direccion-servicios-generales') nombreDeptoFiltro = 'Dirección Servicios Generales';
+            if (deptoValor === 'higiene-y-seguridad') nombreDeptoFiltro = 'Higiene y Seguridad';
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('cierres_jornada')
+                    .select('supervisor')
+                    .eq('departamento', nombreDeptoFiltro);
+
+                if (error) throw error;
+
+                const supervisoresUnicos = [...new Set((data || []).map(item => item.supervisor).filter(Boolean))];
+
+                if (supervisoresUnicos.length === 0) {
+                    contenedorSup.innerHTML = '';
+                    return;
+                }
+
+                let selectHtml = `<select id="supervisor-destino-${id}" class="input-select" onchange="actualizarPrint('${id}')">
+                    <option value="Todos">Todos los supervisores</option>`;
+                supervisoresUnicos.forEach(sup => {
+                    selectHtml += `<option value="${sup}">${sup}</option>`;
+                });
+                selectHtml += `</select>`;
+
+                contenedorSup.innerHTML = selectHtml;
+                actualizarPrint(id);
+            } catch (err) {
+                console.error("Error al cargar supervisores por departamento:", err);
+                contenedorSup.innerHTML = '';
             }
         }
 
         function actualizarPrint(id) {
             const deptoSelect = document.getElementById('depto-destino-' + id);
             const turnoSelect = document.getElementById('turno-destino-' + id);
+            const supervisorSelect = document.getElementById('supervisor-destino-' + id);
             const printHeader = document.getElementById('print-header-' + id);
+            
             if (deptoSelect && turnoSelect && printHeader) {
-                printHeader.innerText = `Dirigido a: ${deptoSelect.options[deptoSelect.selectedIndex].text} | Turno: ${turnoSelect.value}`;
+                let textoDepto = deptoSelect.options[deptoSelect.selectedIndex].text;
+                let textoTurno = turnoSelect.value;
+                let textoSupervisor = supervisorSelect && supervisorSelect.value !== 'Todos' ? ` | Supervisor: ${supervisorSelect.value}` : '';
+                printHeader.innerText = `Dirigido a: ${textoDepto} | Turno: ${textoTurno}${textoSupervisor}`;
             }
         }
 
@@ -316,6 +372,14 @@
                 prev.innerHTML = '';
                 prev.style.display = 'none';
             }
+            const contenedorSup = document.getElementById('contenedor-supervisor-' + id);
+            if (contenedorSup) contenedorSup.innerHTML = '';
+            const deptoSelect = document.getElementById('depto-destino-' + id);
+            if (deptoSelect) deptoSelect.value = 'Todos';
+            const turnoSelect = document.getElementById('turno-destino-' + id);
+            if (turnoSelect) turnoSelect.value = 'Todos';
+            actualizarPrint(id);
+
             if (id === 'novedades') {
                 archivosMultiplesNovedades = [];
                 const fileInput = document.getElementById('file-novedades');
@@ -323,7 +387,6 @@
             }
         }
 
-        // Lógica unificada exacta de verificación de no leídas
         async function verificarNovedadesNoLeidas() {
             try {
                 const { data, error } = await supabaseClient
@@ -333,26 +396,27 @@
 
                 if (error || !data) return;
 
-                const turnoActual = (localStorage.getItem('usuario_turno') || "").trim().toLowerCase();
+                const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim();
                 const usuarioActual = (localStorage.getItem('usuario_nombre') || "invitado").trim().toLowerCase();
-                const deptoActual = "higiene y seguridad";
 
                 const novedadesFiltradas = data.filter(item => {
-                    const contenido = item.contenido || {};
-                    const deptoDestino = (contenido.departamento_destino || contenido.departamento || "todos").toLowerCase();
-                    const turnoDestino = (contenido.turno_destino || contenido.turno || "todos").toLowerCase();
-                    const supervisorDestino = (contenido.supervisor_destino || "todos").toLowerCase();
+                    const clave = (item.id_clave || '').toLowerCase();
+                    const contenidoObj = item.contenido || {};
+                    const turnoMsg = (contenidoObj.turno || "").toLowerCase();
+                    const deptoMsg = (contenidoObj.departamento || "").toLowerCase();
+                    const supervisorMsg = (contenidoObj.supervisor || "todos").toLowerCase();
 
-                    const esDeptoGlobal = deptoDestino === 'todos' || deptoDestino === '';
-                    const esDeptoPropio = deptoDestino.includes('higiene') || deptoDestino.includes('seguridad');
-                    if (!esDeptoGlobal && !esDeptoPropio) return false;
+                    const esParaTodos = clave.includes('todos') || clave.includes('general') || turnoMsg === 'todos' || turnoMsg === 'general' || deptoMsg === 'todos';
+                    const esParaDepto = clave.includes('higiene') || clave.includes('seguridad') || deptoMsg.includes('higiene') || deptoMsg.includes('seguridad');
 
-                    const esTurnoGlobal = turnoDestino === 'todos' || turnoDestino === '';
-                    if (!esTurnoGlobal && turnoActual && turnoDestino !== turnoActual) return false;
-
-                    const esSupervisorGlobal = supervisorDestino === 'todos' || supervisorDestino === '';
-                    if (!esSupervisorGlobal && usuarioActual && supervisorDestino !== usuarioActual) return false;
-
+                    if (!esParaDepto && !esParaTodos) return false;
+                    if (esParaTodos) return true;
+                    if (turnoMsg && turnoMsg !== "todos" && turnoMsg !== "general") {
+                        if (turnoMsg !== turnoActual.toLowerCase()) return false;
+                    }
+                    if (supervisorMsg && supervisorMsg !== "todos") {
+                        if (supervisorMsg !== usuarioActual) return false;
+                    }
                     return true;
                 });
 
@@ -381,15 +445,15 @@
                     }
                 }
             } catch (err) {
-                console.error("Error al verificar novedades:", err);
+                console.error("Error al verificar novedades no leídas:", err);
             }
         }
 
-        // Lógica unificada exacta de Guardar Redacción
         async function guardarRedaccion(id) {
-            const deptoDestino = document.getElementById('depto-destino-' + id).value;
-            const turnoDestino = document.getElementById('turno-destino-' + id).value;
-            const supervisorDestino = document.getElementById('supervisor-destino-' + id).value;
+            const destino = document.getElementById('depto-destino-' + id).value;
+            const turno = document.getElementById('turno-destino-' + id).value;
+            const supervisorSelect = document.getElementById('supervisor-destino-' + id);
+            const supervisor = supervisorSelect ? supervisorSelect.value : 'Todos';
             const textoEscrito = document.getElementById('txt-' + id).value;
 
             if (!textoEscrito.trim() && archivosMultiplesNovedades.length === 0) {
@@ -397,18 +461,32 @@
                 return;
             }
 
+            let listaArchivos = archivosMultiplesNovedades;
+            let primerArchivo = archivosMultiplesNovedades.length > 0 ? archivosMultiplesNovedades[0] : null;
+
             const dataContenido = {
                 texto: textoEscrito,
-                archivos: archivosMultiplesNovedades,
-                archivo: archivosMultiplesNovedades.length > 0 ? archivosMultiplesNovedades[0] : null,
+                archivos: listaArchivos,
+                archivo: primerArchivo,
                 fecha: new Date().toLocaleString(),
-                departamento_destino: deptoDestino,
-                turno_destino: turnoDestino,
-                supervisor_destino: supervisorDestino,
-                remitente: localStorage.getItem('usuario_nombre') || "Higiene y Seguridad"
+                departamento: destino,
+                turno: turno,
+                supervisor: supervisor
             };
+            
+            let nombreDeptoClave = destino;
+            if (destino === 'division-ascensores') nombreDeptoClave = 'Ascensores';
+            if (destino === 'camilleros-central') nombreDeptoClave = 'Camilleros';
+            if (destino === 'intendencia') nombreDeptoClave = 'Intendencia';
+            if (destino === 'lavadero-central') nombreDeptoClave = 'Lavadero';
+            if (destino === 'conmutador') nombreDeptoClave = 'Conmutador';
+            if (destino === 'dalo') nombreDeptoClave = 'DALO';
+            if (destino === 'direccion-servicios-generales') nombreDeptoClave = 'DSG';
+            if (destino === 'higiene-y-seguridad') nombreDeptoClave = 'Higiene_Seguridad';
+            if (destino === 'Todos') nombreDeptoClave = 'Todos';
 
-            const claveUnica = `comunicado_${deptoDestino}_${turnoDestino}_${Date.now()}`;
+            let sufijoSupervisor = supervisor !== 'Todos' ? `_${supervisor.replace(/\s+/g, '_')}` : '_Todos';
+            const claveUnica = `comunicado_novedades_${nombreDeptoClave}_${turno}${sufijoSupervisor}_${Date.now()}`;
             
             const { error } = await db
                 .from('comunicados_memos')
@@ -418,22 +496,27 @@
                 );
 
             if (error) {
+                console.error("Error al guardar en Supabase:", error);
                 alert("Error al enviar a la base de datos: " + error.message);
             } else {
-                alert("Comunicado enviado y guardado correctamente.");
+                alert("Novedad enviada y guardada correctamente.");
                 limpiarPantalla(id);
                 cargarNovedades();
             }
         }
 
-        // Lógica unificada exacta de Cargar Novedades (Muro)
         async function cargarNovedades() {
             const contenedorNov = document.getElementById('contenedor-novedades');
             if (!contenedorNov) return;
             
-            contenedorNov.innerHTML = "<p>Buscando comunicados en Supabase...</p>";
+            contenedorNov.innerHTML = "<p>Buscando comunicados y novedades en Supabase...</p>";
 
             try {
+                if (!supabaseClient) {
+                    contenedorNov.innerHTML = '<p style="color: #666;">No hay conexión a Supabase.</p>';
+                    return;
+                }
+
                 const { data, error } = await supabaseClient
                     .from('comunicados_memos')
                     .select('*')
@@ -446,25 +529,26 @@
                     return;
                 }
 
-                const turnoActual = (localStorage.getItem('usuario_turno') || "").trim().toLowerCase();
-                const usuarioActual = (localStorage.getItem('usuario_nombre') || "invitado").trim().toLowerCase();
-
                 const filtrados = data.filter(item => {
-                    const contenido = item.contenido || {};
-                    const deptoDestino = (contenido.departamento_destino || contenido.departamento || "todos").toLowerCase();
-                    const turnoDestino = (contenido.turno_destino || contenido.turno || "todos").toLowerCase();
-                    const supervisorDestino = (contenido.supervisor_destino || "todos").toLowerCase();
+                    const clave = (item.id_clave || '').toLowerCase();
+                    const contenidoObj = item.contenido || {};
+                    const turnoMsg = (contenidoObj.turno || "").toLowerCase();
+                    const deptoMsg = (contenidoObj.departamento || "").toLowerCase();
+                    const supervisorMsg = (contenidoObj.supervisor || "todos").toLowerCase();
+                    const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim();
+                    const usuarioActual = (localStorage.getItem('usuario_nombre') || "invitado").trim().toLowerCase();
 
-                    const esDeptoGlobal = deptoDestino === 'todos' || deptoDestino === '';
-                    const esDeptoPropio = deptoDestino.includes('higiene') || deptoDestino.includes('seguridad');
-                    if (!esDeptoGlobal && !esDeptoPropio) return false;
+                    const esParaTodos = clave.includes('todos') || clave.includes('general') || turnoMsg === 'todos' || turnoMsg === 'general' || deptoMsg === 'todos';
+                    const esParaDepto = clave.includes('higiene') || clave.includes('seguridad') || deptoMsg.includes('higiene') || deptoMsg.includes('seguridad');
 
-                    const esTurnoGlobal = turnoDestino === 'todos' || turnoDestino === '';
-                    if (!esTurnoGlobal && turnoActual && turnoDestino !== turnoActual) return false;
-
-                    const esSupervisorGlobal = supervisorDestino === 'todos' || supervisorDestino === '';
-                    if (!esSupervisorGlobal && usuarioActual && supervisorDestino !== usuarioActual) return false;
-
+                    if (!esParaDepto && !esParaTodos) return false;
+                    if (esParaTodos) return true;
+                    if (turnoMsg && turnoMsg !== "todos" && turnoMsg !== "general") {
+                        if (turnoMsg !== turnoActual.toLowerCase()) return false;
+                    }
+                    if (supervisorMsg && supervisorMsg !== "todos") {
+                        if (supervisorMsg !== usuarioActual) return false;
+                    }
                     return true;
                 });
 
@@ -474,6 +558,7 @@
                 }
 
                 if (filtrados.length > 0) {
+                    const usuarioActual = (localStorage.getItem('usuario_nombre') || "invitado").trim().toLowerCase();
                     localStorage.setItem(`dsg_hyc_ultimo_novedad_leida_${usuarioActual}`, filtrados[0].id);
                     const badge = document.getElementById('badge-novedades');
                     if (badge) badge.style.display = 'none';
@@ -481,17 +566,18 @@
 
                 let html = '';
                 filtrados.forEach(item => {
-                    const c = item.contenido || {};
-                    const texto = c.texto || 'Sin contenido';
-                    const fecha = c.fecha || 'Sin fecha';
-                    const turnoMsg = c.turno_destino || c.turno || 'Todos';
-                    const deptoDestino = c.departamento_destino || c.departamento || 'Todos';
+                    const contenidoObj = item.contenido || {};
+                    const texto = contenidoObj.texto || 'Sin contenido';
+                    const fecha = contenidoObj.fecha || 'Sin fecha';
+                    const turnoMsg = contenidoObj.turno || 'General';
+                    const deptoDestino = contenidoObj.departamento || 'Todos';
+                    const supervisorDestino = contenidoObj.supervisor || 'Todos';
 
                     let archivosArr = [];
-                    if (Array.isArray(c.archivos)) {
-                        archivosArr = c.archivos;
-                    } else if (c.archivo && c.archivo.data) {
-                        archivosArr = [c.archivo];
+                    if (Array.isArray(contenidoObj.archivos)) {
+                        archivosArr = contenidoObj.archivos;
+                    } else if (contenidoObj.archivo && contenidoObj.archivo.data) {
+                        archivosArr = [contenidoObj.archivo];
                     }
 
                     let archivosHtml = "";
@@ -509,8 +595,11 @@
                                         <div style="margin-bottom: 8px;">
                                             <img src="${base64Data}" alt="Archivo adjunto" style="max-width: 100%; max-height: 350px; border-radius: 4px; border: 1px solid #ddd; object-fit: contain;" />
                                         </div>
-                                        <a href="${base64Data}" download="${nombreArchivo}">📥 Descargar Imagen (${nombreArchivo})</a>
-                                    </div>`;
+                                        <a href="${base64Data}" download="${nombreArchivo}">
+                                            📥 Descargar Imagen (${nombreArchivo})
+                                        </a>
+                                    </div>
+                                `;
                             } else {
                                 archivosHtml += `
                                     <div style="background: #f8f9fa; border: 1px solid #ddd; padding: 10px 14px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
@@ -521,17 +610,22 @@
                                                 <span style="font-size: 11px; color: #666; display: block;">Documento adjunto</span>
                                             </div>
                                         </div>
-                                        <a href="${base64Data}" download="${nombreArchivo}">📥 Descargar Archivo</a>
-                                    </div>`;
+                                        <a href="${base64Data}" download="${nombreArchivo}">
+                                            📥 Descargar Archivo
+                                        </a>
+                                    </div>
+                                `;
                             }
                         });
                         archivosHtml += '</div>';
                     }
 
+                    let infoSupervisorBadge = supervisorDestino !== 'Todos' ? ` | <b>Supervisor:</b> ${supervisorDestino}` : '';
+
                     html += `
                         <div class="muro-item">
                             <div class="muro-header">
-                                <span><b>Destino:</b> ${deptoDestino} | <b>Turno:</b> ${turnoMsg}</span>
+                                <span><b>Destino:</b> ${deptoDestino} | <b>Turno:</b> ${turnoMsg}${infoSupervisorBadge}</span>
                                 <span>${fecha}</span>
                             </div>
                             <div class="muro-body">${texto}</div>
@@ -542,6 +636,7 @@
                 contenedorNov.innerHTML = html;
 
             } catch (err) {
+                console.error("Error al cargar comunicados:", err);
                 contenedorNov.innerHTML = '<p style="color: red;">Error al sincronizar con la base de datos.</p>';
             }
         }
@@ -557,8 +652,14 @@
                     .from('estado_actual_ascensores')
                     .select('*');
 
-                if (error || !data || data.length === 0) {
-                    contenedorAsc.innerHTML = "<p>No hay registros de ascensores disponibles.</p>";
+                if (error) {
+                    console.error("Error al obtener ascensores:", error);
+                    contenedorAsc.innerHTML = "<p style='color:red;'>No se pudo cargar el estado de los ascensores desde Supabase.</p>";
+                    return;
+                }
+
+                if (!data || data.length === 0) {
+                    contenedorAsc.innerHTML = "<p>No hay registros de ascensores disponibles en este momento.</p>";
                     return;
                 }
 
@@ -567,32 +668,51 @@
                 let nombreSupervisor = '---';
 
                 data.forEach(item => {
-                    if (item.updated_at && (!ultimaFechaStr || new Date(item.updated_at) > new Date(ultimaFechaStr))) {
-                        ultimaFechaStr = item.updated_at;
+                    let fechaItem = item.updated_at; 
+                    if (fechaItem) {
+                        if (!ultimaFechaStr || new Date(fechaItem) > new Date(ultimaFechaStr)) {
+                            ultimaFechaStr = fechaItem;
+                        }
                     }
-                    if (item.legajo_operador && !legajoOperador) {
-                        legajoOperador = String(item.legajo_operador).trim();
+                    let legajoItem = item.legajo_operador;
+                    if (legajoItem && !legajoOperador) {
+                        legajoOperador = String(legajoItem).trim();
                     }
                 });
 
                 let fechaFormateada = '---';
                 if (ultimaFechaStr) {
                     try {
-                        fechaFormateada = new Date(ultimaFechaStr).toLocaleString('es-AR', { hour12: false });
-                    } catch(e) { fechaFormateada = ultimaFechaStr; }
+                        let fObj = new Date(ultimaFechaStr);
+                        fechaFormateada = fObj.toLocaleString('es-AR', {
+                            day: '2-digit', month: '2-digit', year: 'numeric',
+                            hour: '2-digit', minute: '2-digit', second: '2-digit',
+                            hour12: false
+                        });
+                    } catch(e) {
+                        fechaFormateada = ultimaFechaStr;
+                    }
                 }
 
                 if (legajoOperador) {
-                    const { data: userData } = await supabaseClient
+                    const { data: userData, error: userError } = await supabaseClient
                         .from('usuarios')
                         .select('nombre_completo')
                         .eq('legajo', legajoOperador)
                         .maybeSingle();
 
-                    if (userData && userData.nombre_completo) {
+                    if (!userError && userData && userData.nombre_completo) {
                         nombreSupervisor = userData.nombre_completo.toUpperCase();
+                    } else {
+                        nombreSupervisor = `LEGAJO: ${legajoOperador}`;
                     }
                 }
+
+                data.sort((a, b) => {
+                    let idA = a.id || 0;
+                    let idB = b.id || 0;
+                    return idA - idB;
+                });
 
                 let htmlCabeceraInfo = `
                     <div style="background: #f8f9fa; border: 1px solid #ddd; padding: 12px 15px; border-radius: 6px; margin-bottom: 20px; font-size: 15px; color: #333;">
@@ -606,25 +726,32 @@
                                 <th style="padding: 10px; border: 1px solid #ddd; text-align: center; width: 15%;">Dispositivo</th>
                                 <th style="padding: 10px; border: 1px solid #ddd; text-align: center; width: 25%;">Estado</th>
                                 <th style="padding: 10px; border: 1px solid #ddd; text-align: left; width: 30%;">Uso Asignado</th>
-                                <th style="padding: 10px; border: 1px solid #ddd; text-align: left; width: 30%;">Observaciones</th>
+                                <th style="padding: 10px; border: 1px solid #ddd; text-align: left; width: 30%;">Observaciones / Detalles</th>
                             </tr>
                         </thead>
                         <tbody>`;
 
                 data.forEach(asc => {
+                    let dispositivo = asc.identificador_dispositivo || `Dispositivo ${asc.id || ''}`;
+                    let estado = asc.estado || '-';
+                    let uso = asc.uso || '-';
+                    let observaciones = asc.observaciones && asc.observaciones !== 'EMPTY' ? asc.observaciones : '-';
+
                     htmlTabla += `
                         <tr>
-                            <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold; text-align: center;">${asc.identificador_dispositivo || '-'}</td>
-                            <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">${asc.estado || '-'}</td>
-                            <td style="padding: 10px; border: 1px solid #ddd; text-align: left;">${asc.uso || '-'}</td>
-                            <td style="padding: 10px; border: 1px solid #ddd; text-align: left;">${asc.observaciones && asc.observaciones !== 'EMPTY' ? asc.observaciones : '-'}</td>
+                            <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold; text-align: center;">${dispositivo}</td>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">${estado}</td>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: left;">${uso}</td>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: left;">${observaciones}</td>
                         </tr>`;
                 });
 
                 htmlTabla += `</tbody></table>`;
                 contenedorAsc.innerHTML = htmlCabeceraInfo + htmlTabla;
+
             } catch (err) {
-                contenedorAsc.innerHTML = "<p style='color:red;'>Ocurrió un error al cargar ascensores.</p>";
+                console.error("Excepción al cargar ascensores:", err);
+                contenedorAsc.innerHTML = "<p style='color:red;'>Ocurrió un error al intentar conectar con la tabla de ascensores.</p>";
             }
         }
 
@@ -655,13 +782,17 @@
             
             let numeroHojaReal = 1;
             try {
-                const { count } = await supabaseClient
+                const { count, error } = await supabaseClient
                     .from('cierres_jornada')
                     .select('*', { count: 'exact', head: true })
                     .eq('departamento', depto);
 
-                if (count !== null) numeroHojaReal = count + 1;
-            } catch (err) {}
+                if (!error && count !== null) {
+                    numeroHojaReal = count + 1;
+                }
+            } catch (err) {
+                console.warn("No se pudo obtener el conteo dinámico de Supabase.");
+            }
 
             spanHoja.innerText = String(numeroHojaReal).padStart(3, '0');
             editorReporte.innerHTML = localStorage.getItem('hyc_reporte') || "";
