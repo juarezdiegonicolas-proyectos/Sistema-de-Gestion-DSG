@@ -586,7 +586,7 @@
                     
                     const depto = row.departamento_destino || contenido.departamento || 'Todos';
                     const turno = row.turno_destino || contenido.turno || 'Todos';
-                    const supervisor = (row.supervisor_destino || contenido.supervisor) ? ` | <b>Supervisor:</b> ${row.supervisor_destino || contenido.supervisor}` : '';
+                    const supervisor = (row.supervisor_destino || contenido.supervisor) ? ` | <b>Supervisor:</b> ${row.row_supervisor_destino || row.supervisor_destino || contenido.supervisor}` : '';
 
                     let adjuntosHtml = '';
                     if (contenido.archivos && Array.isArray(contenido.archivos) && contenido.archivos.length > 0) {
@@ -823,14 +823,16 @@
             let sufijoSupervisor = supervisor ? `_${supervisor.replace(/\s+/g, '_')}` : '_todos';
             const claveUnica = `comunicado_novedades_${nombreDeptoClave}_${turno}${sufijoSupervisor}_${Date.now()}`;
             
-            // CORREGIDO: Usamos exactamente la sintaxis de nombres cortos/claves limpias para departamento_destino, respetando el formato original
+            // SINTAXIS HISTÓRICA CORRECTA PARA DEPARTAMENTO DE ORIGEN Y EMISOR
             const { error } = await db
                 .from('comunicados_memos')
                 .upsert(
                     { 
                         id_clave: claveUnica, 
                         contenido: data,
-                        departamento_destino: nombreDeptoClave,
+                        departamento_origen: 'Dirección Servicios Generales',
+                        emisor: 'Administración DSG',
+                        departamento_destino: destino === 'Todos' ? null : nombreDeptoClave,
                         turno_destino: turno === 'Todos' ? null : turno,
                         supervisor_destino: supervisor || null
                     },
@@ -841,7 +843,7 @@
                 console.error("Error al guardar en Supabase:", error);
                 alert("Error al enviar a la base de datos: " + error.message);
             } else {
-                alert("Novedad enviada correctamente. Si seleccionaste intendencia, turno mañana y todos los supervisores, esto quedará disponible para que todos lo visualicen.");
+                alert("Novedad enviada correctamente con emisor y departamento de origen histórico.");
                 if (id === 'novedades') {
                     cargarHistorialMuroNovedades();
                     archivosMultiplesNovedades = [];
