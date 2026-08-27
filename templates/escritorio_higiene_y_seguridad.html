@@ -393,7 +393,7 @@
                     const turnoDestino = (item.turno_destino || 'Todos').trim().toLowerCase();
                     const supervisorDestino = (item.supervisor_destino || 'Todos').trim().toLowerCase();
                     const contenidoObj = item.contenido || {};
-                    const remitenteDepto = (contenidoObj.departamento || '').trim().toLowerCase();
+                    const remitenteDepto = (item.departamento_origen || contenidoObj.departamento || '').trim().toLowerCase();
 
                     if (remitenteDepto === 'higiene-y-seguridad') return false;
 
@@ -537,8 +537,10 @@
                     const contenidoObj = item.contenido || {};
                     const remitenteDepto = (item.departamento_origen || contenidoObj.departamento || '').trim().toLowerCase();
 
+                    // Si nosotros lo enviamos, se muestra siempre en nuestro muro como enviado
                     if (remitenteDepto === 'higiene-y-seguridad') return true;
 
+                    // Si viene de otro depto, validamos que esté dirigido a Todos o específicamente a nosotros
                     if (deptoDestino === 'Todos') return true;
 
                     if (deptoDestino === 'higiene-y-seguridad') {
