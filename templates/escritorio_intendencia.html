@@ -293,14 +293,24 @@
             
             const nombreBusqueda = nombreEnPantalla.trim();
             
-            try {
-                if (!nombreBusqueda) return;
+            console.log("=== DEBUGGING FILTRO SECTORES Y PISOS ===");
+            console.log("Nombre en pantalla evaluado:", nombreBusqueda);
 
+            try {
+                if (!nombreBusqueda) {
+                    console.error("No se encontró ningún nombre de usuario en el localStorage.");
+                    return;
+                }
+
+                // 1. Consultar la tabla usuarios
                 const { data: todosLosUsuarios, error: errUsuario } = await db
                     .from('usuarios')
                     .select('*');
 
-                if (errUsuario) return;
+                if (errUsuario) {
+                    console.error("Error al consultar la tabla usuarios:", errUsuario);
+                    return;
+                }
 
                 let usuarioData = null;
                 if (todosLosUsuarios && todosLosUsuarios.length > 0) {
@@ -326,9 +336,13 @@
                     });
                     pisosSupervisor = Array.from(variantesPisos);
                 } else {
+                    console.warn("No se encontraron pisos asignados para este usuario.");
                     return;
                 }
 
+                console.log("Pisos estrictos para filtrar:", pisosSupervisor);
+
+                // 2. Consultar personal de intendencia
                 let queryPersonal = db
                     .from('intendencia_personal')
                     .select('*')
@@ -355,6 +369,7 @@
                     listaAgentes = ["- Seleccionar Agente -", ...agentesUnicos];
                 }
 
+                // 3. Consultar sectores de intendencia
                 let querySectores = db
                     .from('intendencia_sectores')
                     .select('*');
@@ -371,6 +386,9 @@
                     const sectoresUnicos = [...new Set(sectoresFiltrados.map(item => item.nombre_sector).filter(Boolean))];
                     listaSectores = ["- Seleccionar Sector -", ...sectoresUnicos];
                 }
+
+                console.log("Lista final de sectores generada:", listaSectores);
+                console.log("Lista final de agentes generada:", listaAgentes);
 
             } catch (err) {
                 console.error("Excepción al conectar con Supabase para filtrar por pisos:", err);
@@ -892,7 +910,7 @@
             }
         }
 
-        // Lógica corregida y robusta para filtrado de Novedades (Independiente por Supervisor y Restringida por Destinatario Específico)
+        // Lógica de verificación y conteo de Novedades No Leídas (Independiente por Supervisor y Filtrado estricto por Destinatario)
         async function verificarNovedadesNoLeidas() {
             try {
                 const { data, error } = await db
@@ -910,22 +928,21 @@
                     const idClave = (item.id_clave || "").toLowerCase();
                     const contenidoObj = item.contenido || {};
                     const turnoMsg = (contenidoObj.turno || "").toLowerCase();
-                    const destinatarioMsg = (contenidoObj.destinatario || contenidoObj.supervisor || item.destinatario || "").toLowerCase();
+                    const destinatarioMsg = (contenidoObj.destinatario || contenidoObj.supervisor || "").toLowerCase();
 
                     const esParaTodos = idClave.includes("todos") || idClave.includes("general") || turnoMsg === "todos" || turnoMsg === "general";
-                    const esParaIntendencia = idClave.includes("intendencia") || idClave.includes("intendente");
+                    const esParaIntendencia = idClave.includes("intendencia");
 
-                    // Si el comunicado tiene un destinatario específico (ej. "Ali Federico" o "Dani Torneiro")
-                    if (destinatarioMsg && destinatarioMsg !== "todos" && destinatarioMsg !== "general") {
-                        // Verificamos si el usuario actual coincide con el destinatario indicado
-                        const coincideUsuario = usuarioActual.includes(destinatarioMsg) || destinatarioMsg.includes(usuarioActual);
-                        if (!coincideUsuario) return false; // Si no es para este usuario, se descarta por completo
+                    // Validar si está dirigido a un supervisor específico de forma individual
+                    if (destinatarioMsg && destinatarioMsg !== "todos" && destinatarioMsg !== "general" && destinatarioMsg !== "intendencia") {
+                        if (!destinatarioMsg.includes(usuarioActual)) return false;
                     } else {
-                        // Filtro normal por área y turno si no es nominal
                         if (!esParaIntendencia && !esParaTodos) return false;
-                        if (!esParaTodos && turnoMsg && turnoMsg !== "todos" && turnoMsg !== "general") {
-                            if (turnoMsg !== turnoActual) return false;
-                        }
+                    }
+
+                    if (esParaTodos) return true;
+                    if (turnoMsg && turnoMsg !== "todos" && turnoMsg !== "general") {
+                        if (turnoMsg !== turnoActual) return false;
                     }
                     return true;
                 });
@@ -984,19 +1001,29 @@
                     const idClave = (item.id_clave || "").toLowerCase();
                     const contenidoObj = item.contenido || {};
                     const turnoMsg = (contenidoObj.turno || "").toLowerCase();
-                    const destinatarioMsg = (contenidoObj.destinatario || contenidoObj.supervisor || item.destinatario || "").toLowerCase();
+                    const destinatarioMsg = (contenidoObj.destinatario || contenidoObj.supervisor || "").toLowerCase();
 
                     const esParaTodos = idClave.includes("todos") || idClave.includes("general") || turnoMsg === "todos" || turnoMsg === "general";
-                    const esParaIntendencia = idClave.includes("intendencia") || idClave.includes("intendente");
+                    const esParaIntendencia = idClave.includes("intendencia");
 
-                    // Validación estricta para mensajes nominales/específicos por supervisor
-                    if (destinatarioMsg && destinatarioMsg !== "todos" && destinatarioMsg !== "general") {
-                        const coincideUsuario = usuarioActual.includes(destinatarioMsg) || destinatarioMsg.includes(usuarioActual);
-                        if (!coincideUsuario) return false;
+                    // Si el comunicado especifica un destinatario/supervisor particular, solo lo verá ese usuario
+                    if (destinatarioMsg && destinatarioMsg !== "todos" && destinatarioMsg !== "general" && destinatarioMsg !== "intendencia") {
+                        if (!destinatarioMsg.includes(usuarioActual)) {
+                            return false;
+                        }
                     } else {
-                        if (!esParaIntendencia && !esParaTodos) return false;
-                        if (!esParaTodos && turnoMsg && turnoMsg !== "todos" && turnoMsg !== "general") {
-                            if (turnoMsg !== turnoActual) return false;
+                        if (!esParaIntendencia && !esParaTodos) {
+                            return false;
+                        }
+                    }
+
+                    if (esParaTodos) {
+                        return true;
+                    }
+
+                    if (turnoMsg && turnoMsg !== "todos" && turnoMsg !== "general") {
+                        if (turnoMsg !== turnoActual) {
+                            return false;
                         }
                     }
 
@@ -1011,7 +1038,7 @@
                 }
 
                 if (novedadesFiltradas.length === 0) {
-                    visor.innerHTML = '<p style="text-align:center; color: #666;">No hay novedades disponibles para este usuario en este turno.</p>';
+                    visor.innerHTML = '<p style="text-align:center; color: #666;">No hay novedades disponibles para Intendencia en este turno.</p>';
                     return;
                 }
 
@@ -1117,6 +1144,8 @@
             if (elemDeptoHist) elemDeptoHist.innerText = depto;
             
             await cargarPersonalYSeccionesSupabase();
+            
+            // Verificamos notificaciones pendientes de novedades al iniciar
             await verificarNovedadesNoLeidas();
             
             try {
