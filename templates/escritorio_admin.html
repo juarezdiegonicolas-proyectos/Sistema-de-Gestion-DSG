@@ -587,7 +587,6 @@
                     const depto = row.departamento_destino || contenido.departamento || 'Todos';
                     const turno = row.turno_destino || contenido.turno || 'Todos';
                     const supervisor = (row.supervisor_destino || contenido.supervisor) ? ` | <b>Supervisor:</b> ${row.supervisor_destino || contenido.supervisor}` : '';
-                    const deptoOrigen = row.departamento_origen ? ` | <b>Origen:</b> ${row.departamento_origen}` : '';
 
                     let adjuntosHtml = '';
                     if (contenido.archivos && Array.isArray(contenido.archivos) && contenido.archivos.length > 0) {
@@ -603,7 +602,7 @@
                     html += `
                         <div class="muro-item">
                             <div class="muro-header">
-                                <span><b>Destino:</b> ${depto} | <b>Turno:</b> ${turno}${supervisor}${deptoOrigen}</span>
+                                <span><b>Destino:</b> ${depto} | <b>Turno:</b> ${turno}${supervisor}</span>
                                 <span>${fecha}</span>
                             </div>
                             <div class="muro-body">${texto}</div>
@@ -824,7 +823,7 @@
             let sufijoSupervisor = supervisor ? `_${supervisor.replace(/\s+/g, '_')}` : '_todos';
             const claveUnica = `comunicado_novedades_${nombreDeptoClave}_${turno}${sufijoSupervisor}_${Date.now()}`;
             
-            // Inserción en Supabase incluyendo departamento_origen en la tabla
+            // Inserción en Supabase con la nomenclatura exacta del sistema en departamento_origen[span_0](start_span)[span_0](end_span)
             const { error } = await db
                 .from('comunicados_memos')
                 .upsert(
@@ -834,7 +833,7 @@
                         departamento_destino: destino === 'Todos' ? null : nombreDeptoClave,
                         turno_destino: turno === 'Todos' ? null : turno,
                         supervisor_destino: supervisor || null,
-                        departamento_origen: 'Dirección de Servicios Generales'
+                        departamento_origen: 'direccion-servicios-generales'
                     },
                     { onConflict: 'id_clave' }
                 );
@@ -1269,3 +1268,4 @@
     </script>
 </body>
 </html>
+
