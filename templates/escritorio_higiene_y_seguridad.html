@@ -66,12 +66,17 @@
         
         .historial-muro-container { margin-top: 30px; border-top: 2px solid #dee2e6; padding-top: 20px; }
         .historial-muro-titulo { font-size: 16px; font-weight: bold; color: #1a3a5f; margin-bottom: 15px; }
-        .muro-item { background: #fff; border-left: 5px solid #1a3a5f; border: 1px solid #ddd; padding: 15px; border-radius: 6px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
+        .muro-item { background: #fff; border-left: 5px solid #1a3a5f; border: 1px solid #ddd; padding: 15px; border-radius: 6px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); position: relative; }
         .muro-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 8px; font-size: 12px; color: #666; }
         .muro-body { font-size: 15px; color: #333; white-space: pre-wrap; line-height: 1.5; }
         .muro-adjuntos { margin-top: 10px; font-size: 13px; }
         .muro-adjuntos a { display: inline-block; margin-right: 10px; color: #1a3a5f; text-decoration: none; font-weight: 500; }
         .muro-adjuntos a:hover { text-decoration: underline; }
+
+        /* Etiquetas indicador de tipo de mensaje en el muro */
+        .badge-estado-muro { position: absolute; top: 15px; right: 15px; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
+        .badge-estado-enviado { background-color: #e2f0d9; color: #385723; border: 1px solid #b7e1cd; }
+        .badge-estado-recibido { background-color: #d9e1f2; color: #1f3864; border: 1px solid #b4c6e7; }
 
         @media print {
             .sidebar, .btn-accion-global, .btn-cerrar, .menu-item, .no-imprimir, .btn-imprimir, .filtros-historicos, .area-acciones { display: none !important; }
@@ -383,6 +388,11 @@
                     const deptoDestino = item.departamento_destino || 'Todos';
                     const turnoDestino = item.turno_destino || 'Todos';
                     const supervisorDestino = item.supervisor_destino || 'Todos';
+                    const contenidoObj = item.contenido || {};
+                    const remitenteDepto = (contenidoObj.departamento || '').trim().toLowerCase();
+
+                    // No contar los mensajes propios como no leídos
+                    if (remitenteDepto === 'higiene-y-seguridad') return false;
 
                     if (deptoDestino === 'Todos') return true;
                     if (deptoDestino !== 'higiene-y-seguridad') return false;
@@ -437,14 +447,17 @@
             let listaArchivos = archivosMultiplesNovedades;
             let primerArchivo = archivosMultiplesNovedades.length > 0 ? archivosMultiplesNovedades[0] : null;
 
+            const usuarioRemitente = localStorage.getItem('usuario_nombre') || "Higiene y Seguridad";
+
             const dataContenido = {
                 texto: textoEscrito,
                 archivos: listaArchivos,
                 archivo: primerArchivo,
                 fecha: new Date().toLocaleString(),
-                departamento: destino,
+                departamento: 'higiene-y-seguridad',
                 turno: turno,
-                supervisor: supervisor
+                supervisor: supervisor,
+                remitente: usuarioRemitente
             };
             
             let nombreDeptoClave = destino;
@@ -516,18 +529,21 @@
                     const deptoDestino = item.departamento_destino || 'Todos';
                     const turnoDestino = item.turno_destino || 'Todos';
                     const supervisorDestino = item.supervisor_destino || 'Todos';
+                    const contenidoObj = item.contenido || {};
+                    const remitenteDepto = (contenidoObj.departamento || '').trim().toLowerCase();
 
+                    // Mostrar si fuimos nosotros los remitentes (enviados)
+                    if (remitenteDepto === 'higiene-y-seguridad') return true;
+
+                    // Si está dirigido a todos los departamentos
                     if (deptoDestino === 'Todos') return true;
 
+                    // Si está dirigido específicamente a Higiene y Seguridad
                     if (deptoDestino === 'higiene-y-seguridad') {
                         if (turnoDestino !== 'Todos' && turnoDestino.toLowerCase() !== turnoActual) return false;
                         if (supervisorDestino !== 'Todos' && supervisorDestino.toLowerCase() !== usuarioActual) return false;
                         return true;
                     }
-
-                    const contenidoObj = item.contenido || {};
-                    const remitenteDepto = contenidoObj.departamento || '';
-                    if (remitenteDepto === 'higiene-y-seguridad') return true;
 
                     return false;
                 });
@@ -537,8 +553,15 @@
                     return;
                 }
 
-                if (filtrados.length > 0) {
-                    localStorage.setItem(`dsg_hyc_ultimo_novedad_leida_${usuarioActual}`, filtrados[0].id);
+                // Filtrar solo los recibidos de otros sectores para actualizar el marcador de no leídos
+                const recibidosNoLeidos = filtrados.filter(item => {
+                    const contenidoObj = item.contenido || {};
+                    const remitenteDepto = (contenidoObj.departamento || '').trim().toLowerCase();
+                    return remitenteDepto !== 'higiene-y-seguridad';
+                });
+
+                if (recibidosNoLeidos.length > 0) {
+                    localStorage.setItem(`dsg_hyc_ultimo_novedad_leida_${usuarioActual}`, recibidosNoLeidos[0].id);
                     const badge = document.getElementById('badge-novedades');
                     if (badge) badge.style.display = 'none';
                 }
@@ -549,8 +572,15 @@
                     const texto = contenidoObj.texto || 'Sin contenido';
                     const fecha = contenidoObj.fecha || 'Sin fecha';
                     const turnoMsg = contenidoObj.turno || 'General';
-                    const deptoDestino = contenidoObj.departamento || 'Todos';
-                    const supervisorMsg = contenidoObj.supervisor || 'Todos';
+                    const deptoDestino = item.departamento_destino || contenidoObj.departamento || 'Todos';
+                    const supervisorMsg = item.supervisor_destino || contenidoObj.supervisor || 'Todos';
+                    const remitenteDepto = (contenidoObj.departamento || '').trim().toLowerCase();
+
+                    // Etiqueta clara al lado de la fecha/hora indicando si es Mensaje Enviado o Recibido
+                    const esEnviado = remitenteDepto === 'higiene-y-seguridad';
+                    const etiquetaEstado = esEnviado 
+                        ? '<span class="badge-estado-muro badge-estado-enviado">Mensaje Enviado</span>' 
+                        : '<span class="badge-estado-muro badge-estado-recibido">Mensaje Recibido</span>';
 
                     let archivosArr = [];
                     if (Array.isArray(contenidoObj.archivos)) {
@@ -601,6 +631,7 @@
 
                     html += `
                         <div class="muro-item">
+                            ${etiquetaEstado}
                             <div class="muro-header">
                                 <span><b>Destino:</b> ${deptoDestino} (${supervisorMsg}) | <b>Turno:</b> ${turnoMsg}</span>
                                 <span>${fecha}</span>
