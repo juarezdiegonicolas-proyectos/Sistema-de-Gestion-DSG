@@ -8,7 +8,6 @@
     <style>
         body { margin: 0; font-family: 'Roboto', sans-serif; display: flex; height: 100vh; background-color: #f4f1ea; box-sizing: border-box; overflow: hidden; }
         
-        /* Sidebar rediseñado */
         .sidebar { 
             width: 260px; 
             background-color: #1a3a5f; 
@@ -119,7 +118,6 @@
         .box-A { background-color: #dc3545; }
         .box-L { background-color: #ffc107; }
 
-        /* Estilos específicos para el muro de historial en novedades */
         .historial-muro-container { margin-top: 30px; border-top: 2px solid #1a3a5f; padding-top: 20px; }
         .historial-muro-titulo { font-size: 16px; font-weight: bold; color: #1a3a5f; margin-bottom: 15px; }
         .muro-item { background: #fdfdfd; border: 1px solid #ddd; border-left: 4px solid #1a3a5f; padding: 15px; border-radius: 6px; margin-bottom: 15px; }
@@ -129,69 +127,16 @@
         .muro-adjuntos a { color: #1a3a5f; text-decoration: underline; margin-right: 15px; }
 
         @media print {
-        .sidebar, .filtros-historicos, .btn-cerrar, .area-acciones, .btn-adjuntar, textarea, .btn-limpiar, .historial-muro-container { display: none !important; }
-        
-        .seccion { display: none !important; }
-        .seccion.activo { 
-            display: block !important; 
-            box-shadow: none !important; 
-            padding: 0 !important; 
-            background: white !important; 
-            margin: 0 !important;
-            width: 100% !important;
-            max-width: 100% !important;
-            border: none !important;
-            box-sizing: border-box !important;
+            .sidebar, .filtros-historicos, .btn-cerrar, .area-acciones, .btn-adjuntar, textarea, .btn-limpiar, .historial-muro-container { display: none !important; }
+            .seccion { display: none !important; }
+            .seccion.activo { display: block !important; box-shadow: none !important; padding: 0 !important; background: white !important; margin: 0 !important; width: 100% !important; max-width: 100% !important; border: none !important; box-sizing: border-box !important; }
+            html, body { background: white !important; height: auto !important; overflow: visible !important; margin: 0 !important; padding: 0 !important; width: 100% !important; }
+            .contenido { padding: 0 !important; overflow: visible !important; margin: 0 !important; width: 100% !important; max-width: 100% !important; box-sizing: border-box !important; }
+            .print-only { display: block !important; white-space: pre-wrap; font-family: 'Courier New', monospace; }
+            .print-header { display: block !important; }
+            .preview-adjunto { display: block !important; border: none !important; }
+            .box-estado { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         }
-
-        html, body {
-            background: white !important;
-            height: auto !important;
-            overflow: visible !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            width: 100% !important;
-        }
-
-        .contenido {
-            padding: 0 !important;
-            overflow: visible !important;
-            margin: 0 !important;
-            width: 100% !important;
-            max-width: 100% !important;
-            box-sizing: border-box !important;
-        }
-
-        .print-only { display: block !important; white-space: pre-wrap; font-family: 'Courier New', monospace; }
-        .print-header { display: block !important; }
-        .preview-adjunto { display: block !important; border: none !important; }
-        
-        .box-estado { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-        
-        div[id^="visor-"] {
-            border: none !important;
-            padding: 0 !important;
-            background: transparent !important;
-            width: 100% !important;
-            max-width: 100% !important;
-            box-sizing: border-box !important;
-            overflow: visible !important;
-        }
-
-        table {
-            width: 100% !important;
-            max-width: 100% !important;
-            table-layout: fixed !important;
-            border-collapse: collapse !important;
-            box-sizing: border-box !important;
-        }
-        th, td {
-            box-sizing: border-box !important;
-            word-wrap: break-word !important;
-            overflow-wrap: break-word !important;
-            white-space: normal !important;
-        }
-    }
     </style>
 </head>
 <body>
@@ -227,38 +172,7 @@
             const SUPABASE_KEY = 'sb_publishable_EvvZ8n7Ve2cF9FB4SXA0Ug_7q6qWh9f';
             const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-            function imprimirConOrientacion() {
-                const seleccion = prompt("¿Cómo deseas imprimir?\n\nEscribe 'V' para Vertical\nEscribe 'H' para Horizontal", "H");
-                
-                if (seleccion === null) return; 
-
-                const opcion = seleccion.trim().toUpperCase();
-                
-                const viejo = document.getElementById('estilo-forzado-impresion');
-                if (viejo) viejo.remove();
-
-                const nuevoEstilo = document.createElement('style');
-                nuevoEstilo.id = 'estilo-forzado-impresion';
-
-                if (opcion === 'V') {
-                    nuevoEstilo.innerHTML = '@media print { @page { size: A4 portrait !important; margin: 10mm !important; } }';
-                } else {
-                    nuevoEstilo.innerHTML = '@media print { @page { size: A4 landscape !important; margin: 10mm !important; } }';
-                }
-
-                document.head.appendChild(nuevoEstilo);
-
-                setTimeout(() => {
-                    window.print();
-                }, 100);
-            }
-
             const agentesGlobal = [{"legajo":"120369", "nombre":"VEGA JUAN CARLOS"},{"legajo":"122011", "nombre":"GONZALEZ CARLOS HECTOR"},{"legajo":"128217", "nombre":"CARLOTTO GABRIEL HORACIO"},{"legajo":"130087", "nombre":"GARAY LEONARDO EMILIO"},{"legajo":"130187", "nombre":"CISNEROS NESTOR EDUARDO"},{"legajo":"131954", "nombre":"GORENA JORGE RICARDO"},{"legajo":"132059", "nombre":"BUSTO JUAN MANUEL"},{"legajo":"132831", "nombre":"GORT PEDRO ALBERTO"},{"legajo":"144694", "nombre":"LEDESMA HECTOR CARLOS"},{"legajo":"145765", "nombre":"BARRAZA CRISTIAN JAVIER"},{"legajo":"147812", "nombre":"RODRIGUEZ GONZALO LEANDRO"},{"legajo":"147944", "nombre":"MORENO FERNANDO DANIEL"},{"legajo":"147946", "nombre":"ALVAREZ ANTONIO OSCAR"},{"legajo":"151978", "nombre":"LUZI CHRISTIAN DARIO"},{"legajo":"151979", "nombre":"ALMEIDA CARLOS ALBERTO"},{"legajo":"151980", "nombre":"GONZALEZ PATRICIO ALBERTO"},{"legajo":"151982", "nombre":"VARELA EDUARDO JOSE"},{"legajo":"151983", "nombre":"MARCIANO MARCELO DANIEL"},{"legajo":"151996", "nombre":"FIDEL RUBEN DARIO"},{"legajo":"152016", "nombre":"PAPINI JUAN JOSE"},{"legajo":"152301", "nombre":"CISNEROS LEONARDO SEBASTIAN"},{"legajo":"152302", "nombre":"BAZAN DIEGO ANTONIO"},{"legajo":"153090", "nombre":"OLIVA CRISTIAN RUBEN"},{"legajo":"153572", "nombre":"CANABIDEZ CRISTIAN ALBERTO"},{"legajo":"154334", "nombre":"VAZQUEZ JORGE OSVALDO"},{"legajo":"154335", "nombre":"SANTORO CHRISTIAN RODRIGO"},{"legajo":"154973", "nombre":"HIDALGO SEBASTIAN ARIEL"},{"legajo":"164370", "nombre":"VASCONCELLO SERGIO EDUARDO"},{"legajo":"164669", "nombre":"DIAZ BELFOR ALBERTO"},{"legajo":"166919", "nombre":"BARRAGAN MARIANO JAVIER"},{"legajo":"167190", "nombre":"MORALES EREZUMA LEONARDO AND"},{"legajo":"168007", "nombre":"ICAÑO MARTIN FABIAN"},{"legajo":"169981", "nombre":"KAMINOVICH LEONARDO MARTIN"},{"legajo":"176828", "nombre":"REYNA SANCHEZ EDUARDO GASTON"},{"legajo":"195446", "nombre":"VASQUEZ JORGE ALFREDO"},{"legajo":"195452", "nombre":"FLORES RODRIGO NICOLAS"},{"legajo":"216727", "nombre":"MIRANDA NORBERTO MATIAS"},{"legajo":"235008", "nombre":"BARROCA GERARDO EZEQUIEL"},{"legajo":"243734", "nombre":"VARGAS AXEL BRIAN"},{"legajo":"249665", "nombre":"SANSOGNE MATIAS MAURICIO"},{"legajo":"250625", "nombre":"SOTO NAHUEL MARCELO"},{"legajo":"251466", "nombre":"DOMINGUEZ HECTOR OMAR CIRO"},{"legajo":"261471", "nombre":"VERON NORBERTO MARIO MANUEL"},{"legajo":"259586", "nombre":"LOPEZ VICTOR HUGO"},{"legajo":"244105", "nombre":"REA JUAN GABRIEL"},{"legajo":"242264", "nombre":"ELIAS GUSTAVO DANIEL"},{"legajo":"195453", "nombre":"BARROCA FRANCO DANIEL"}];
-
-            async function apiGuardar(key, data) {
-                const { error } = await db.from('comunicados_memos').upsert({ id_clave: key, contenido: data });
-                if (error) console.error("Error al guardar en Supabase:", error);
-            }
 
             function obtenerNombreDepartamentoLargo(val) {
                 switch(val) {
@@ -451,7 +365,6 @@
             crearSeccion('memos', 'Memos y Resoluciones', 'redaccion');
         </script>
 
-        <!-- SECCIÓN ESTADÍSTICAS -->
         <div id="estadisticas" class="seccion">
             <div class="header-logos">
                 <img src="{{ url_for('static', filename='logo_hospi.png') }}" alt="Logo">
@@ -567,7 +480,6 @@
                 const { data, error } = await db
                     .from('comunicados_memos')
                     .select('*')
-                    .ilike('id_clave', 'comunicado_novedades_%')
                     .order('created_at', { ascending: false });
 
                 if (error) throw error;
@@ -580,21 +492,23 @@
                 let html = '';
                 data.forEach(row => {
                     const contenido = row.contenido || {};
-                    const texto = contenido.texto || 'Sin texto';
+                    const texto = contenido.texto || row.texto || 'Sin texto';
                     const fecha = contenido.fecha || row.created_at || 'Fecha desconocida';
-                    const depto = contenido.departamento || 'Todos';
-                    const turno = contenido.turno || 'Todos';
-                    const supervisor = contenido.supervisor ? ` | <b>Supervisor:</b> ${contenido.supervisor}` : '';
+                    const depto = row.departamento_destino || contenido.departamento || 'Todos';
+                    const turno = row.turno_destino || contenido.turno || 'Todos';
+                    const supervisorVal = row.supervisor_destino || contenido.supervisor;
+                    const supervisor = supervisorVal ? ` | <b>Supervisor:</b> ${supervisorVal}` : '';
 
                     let adjuntosHtml = '';
-                    if (contenido.archivos && Array.isArray(contenido.archivos) && contenido.archivos.length > 0) {
+                    let archivosList = contenido.archivos || (contenido.archivo ? [contenido.archivo] : []);
+                    if (archivosList.length > 0) {
                         adjuntosHtml = '<div class="muro-adjuntos"><b>Archivos:</b> ';
-                        contenido.archivos.forEach(adj => {
-                            adjuntosHtml += `<a href="${adj.data}" download="${adj.name}" target="_blank">📥 ${adj.name}</a>`;
+                        archivosList.forEach(adj => {
+                            if (adj && adj.name && adj.data) {
+                                adjuntosHtml += `<a href="${adj.data}" download="${adj.name}" target="_blank">📥 ${adj.name}</a>`;
+                            }
                         });
                         adjuntosHtml += '</div>';
-                    } else if (contenido.archivo && contenido.archivo.name) {
-                        adjuntosHtml = `<div class="muro-adjuntos"><b>Archivo:</b> <a href="${contenido.archivo.data}" download="${contenido.archivo.name}" target="_blank">📥 ${contenido.archivo.name}</a></div>`;
                     }
 
                     html += `
@@ -798,14 +712,11 @@
                 listaArchivos = primerArchivo ? [primerArchivo] : [];
             }
 
-            const data = {
+            const contenidoJson = {
                 texto: textoEscrito,
                 archivos: listaArchivos,
                 archivo: primerArchivo,
-                fecha: new Date().toLocaleString(),
-                departamento: destino,
-                turno: turno,
-                supervisor: supervisor
+                fecha: new Date().toLocaleString()
             };
             
             let nombreDeptoClave = destino;
@@ -821,12 +732,18 @@
             let sufijoSupervisor = supervisor ? `_${supervisor.replace(/\s+/g, '_')}` : '';
             const claveUnica = `comunicado_novedades_${nombreDeptoClave}_${turno}${sufijoSupervisor}_${Date.now()}`;
             
+            // Mapeo adaptado exactamente a las columnas que se observan en tu tabla de Supabase:
+            const payload = {
+                id_clave: claveUnica,
+                contenido: contenidoJson,
+                departamento_destino: destino,
+                turno_destino: turno,
+                supervisor_destino: supervisor || null
+            };
+
             const { error } = await db
                 .from('comunicados_memos')
-                .upsert(
-                    { id_clave: claveUnica, contenido: data },
-                    { onConflict: 'id_clave' }
-                );
+                .upsert(payload, { onConflict: 'id_clave' });
 
             if (error) {
                 console.error("Error al guardar en Supabase:", error);
