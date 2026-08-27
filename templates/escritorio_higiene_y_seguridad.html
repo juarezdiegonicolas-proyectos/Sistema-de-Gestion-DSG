@@ -66,15 +66,19 @@
         
         .historial-muro-container { margin-top: 30px; border-top: 2px solid #dee2e6; padding-top: 20px; }
         .historial-muro-titulo { font-size: 16px; font-weight: bold; color: #1a3a5f; margin-bottom: 15px; }
-        .muro-item { background: #fff; border-left: 5px solid #1a3a5f; border: 1px solid #ddd; padding: 15px; border-radius: 6px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); position: relative; }
-        .muro-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 8px; font-size: 12px; color: #666; }
+        
+        /* Estilos optimizados para las tarjetas del Muro sin superposiciones */
+        .muro-item { background: #fff; border-left: 5px solid #1a3a5f; border: 1px solid #ddd; padding: 15px; border-radius: 6px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
+        .muro-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 8px; font-size: 12px; color: #666; flex-wrap: wrap; }
+        .muro-header-info { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 200px; }
+        .muro-header-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
         .muro-body { font-size: 15px; color: #333; white-space: pre-wrap; line-height: 1.5; }
         .muro-adjuntos { margin-top: 10px; font-size: 13px; }
         .muro-adjuntos a { display: inline-block; margin-right: 10px; color: #1a3a5f; text-decoration: none; font-weight: 500; }
         .muro-adjuntos a:hover { text-decoration: underline; }
 
-        /* Etiquetas indicador de tipo de mensaje en el muro */
-        .badge-estado-muro { position: absolute; top: 15px; right: 15px; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
+        /* Etiquetas indicador de tipo de mensaje en el muro (Posicionamiento estático en flexbox para evitar solapamientos) */
+        .badge-estado-muro { padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
         .badge-estado-enviado { background-color: #e2f0d9; color: #385723; border: 1px solid #b7e1cd; }
         .badge-estado-recibido { background-color: #d9e1f2; color: #1f3864; border: 1px solid #b4c6e7; }
 
@@ -391,7 +395,6 @@
                     const contenidoObj = item.contenido || {};
                     const remitenteDepto = (contenidoObj.departamento || '').trim().toLowerCase();
 
-                    // No contar los mensajes propios como no leídos
                     if (remitenteDepto === 'higiene-y-seguridad') return false;
 
                     if (deptoDestino === 'Todos') return true;
@@ -532,13 +535,10 @@
                     const contenidoObj = item.contenido || {};
                     const remitenteDepto = (contenidoObj.departamento || '').trim().toLowerCase();
 
-                    // Mostrar si fuimos nosotros los remitentes (enviados por Higiene y Seguridad)
                     if (remitenteDepto === 'higiene-y-seguridad') return true;
 
-                    // Si está dirigido a todos los departamentos
                     if (deptoDestino === 'Todos') return true;
 
-                    // Si está dirigido específicamente a Higiene y Seguridad
                     if (deptoDestino === 'higiene-y-seguridad') {
                         if (turnoDestino !== 'todos' && turnoDestino !== turnoActual) return false;
                         if (supervisorDestino !== 'todos' && supervisorDestino !== usuarioActual) return false;
@@ -553,7 +553,6 @@
                     return;
                 }
 
-                // Filtrar solo los recibidos de otros sectores para actualizar el marcador de no leídos
                 const recibidosNoLeidos = filtrados.filter(item => {
                     const contenidoObj = item.contenido || {};
                     const remitenteDepto = (contenidoObj.departamento || '').trim().toLowerCase();
@@ -575,7 +574,6 @@
                     const supervisorMsg = item.supervisor_destino || contenidoObj.supervisor || 'Todos';
                     const remitenteDepto = (contenidoObj.departamento || '').trim().toLowerCase();
 
-                    // Mapeo amigable de departamentos para mostrar en pantalla
                     const nombresDeptosLegibles = {
                         'higiene-y-seguridad': 'Higiene y Seguridad',
                         'intendencia': 'Intendencia',
@@ -592,7 +590,6 @@
                     const deptoDestinoValor = item.departamento_destino || 'Todos';
                     const deptoDestinoLegible = nombresDeptosLegibles[deptoDestinoValor] || deptoDestinoValor;
 
-                    // Determinamos si es enviado o recibido usando las columnas fijas y el remitente
                     const esEnviado = remitenteDepto === 'higiene-y-seguridad';
                     
                     let etiquetaEstado = '';
@@ -602,8 +599,10 @@
                         etiquetaEstado = '<span class="badge-estado-muro badge-estado-enviado">Mensaje Enviado</span>';
                         infoDetalleCabecera = `<b>Destino:</b> ${deptoDestinoLegible} (${supervisorMsg}) | <b>Turno Destino:</b> ${turnoMsg}`;
                     } else {
+                        // Corrección solicitada: Departamento que envió explícito y estructura sin solapamiento con la fecha
                         etiquetaEstado = '<span class="badge-estado-muro badge-estado-recibido">Mensaje Recibido</span>';
-                        infoDetalleCabecera = `<b>Enviado por:</b> <span style="color: #1a3a5f; font-weight: bold;">${deptoEmisorLegible}</span> (${contenidoObj.remitente || 'Supervisor'}) | <b>Turno:</b> ${turnoMsg}`;
+                        let nombreRemitenteReal = contenidoObj.remitente && contenidoObj.remitente !== 'Higiene y Seguridad' ? contenidoObj.remitente : 'Supervisor';
+                        infoDetalleCabecera = `<b>Departamento Emisor:</b> <span style="color: #1a3a5f; font-weight: bold;">${deptoEmisorLegible}</span> (${nombreRemitenteReal}) | <b>Turno:</b> ${turnoMsg}`;
                     }
 
                     let archivosArr = [];
@@ -655,10 +654,14 @@
 
                     html += `
                         <div class="muro-item">
-                            ${etiquetaEstado}
                             <div class="muro-header">
-                                <span>${infoDetalleCabecera}</span>
-                                <span>${fecha}</span>
+                                <div class="muro-header-info">
+                                    <div>${infoDetalleCabecera}</div>
+                                </div>
+                                <div class="muro-header-meta">
+                                    <span style="white-space: nowrap;">📅 ${fecha}</span>
+                                    ${etiquetaEstado}
+                                </div>
                             </div>
                             <div class="muro-body">${texto}</div>
                             ${archivosHtml}
@@ -752,13 +755,25 @@
                     </div>`;
 
                 let htmlTabla = `
-                    <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                    <style>
+                        .tabla-ascensores { width: 100%; border-collapse: collapse; text-align: left; }
+                        .tabla-ascensores th, .tabla-ascensores td { padding: 10px; border: 1px solid #ddd; }
+                        .tabla-ascensores th { background: #1a3a5f; color: white; }
+                        @media (max-width: 768px) {
+                            .tabla-ascensores, .tabla-ascensores tbody, .tabla-ascensores tr, .tabla-ascensores td, .tabla-ascensores th { display: block; width: 100%; box-sizing: border-box; }
+                            .tabla-ascensores tr { margin-bottom: 15px; border: 1px solid #ccc; background: white; border-radius: 6px; padding: 8px; }
+                            .tabla-ascensores th { display: none; }
+                            .tabla-ascensores td { border: none; padding: 6px 4px; text-align: left !important; position: relative; padding-left: 45%; }
+                            .tabla-ascensores td::before { content: attr(data-label); position: absolute; left: 6px; width: 40%; font-weight: bold; color: #1a3a5f; }
+                        }
+                    </style>
+                    <table class="tabla-ascensores">
                         <thead>
-                            <tr style="background: #1a3a5f; color: white;">
-                                <th style="padding: 10px; border: 1px solid #ddd; text-align: center; width: 15%;">Dispositivo</th>
-                                <th style="padding: 10px; border: 1px solid #ddd; text-align: center; width: 25%;">Estado</th>
-                                <th style="padding: 10px; border: 1px solid #ddd; text-align: left; width: 30%;">Uso Asignado</th>
-                                <th style="padding: 10px; border: 1px solid #ddd; text-align: left; width: 30%;">Observaciones / Detalles</th>
+                            <tr>
+                                <th style="text-align: center; width: 15%;">Dispositivo</th>
+                                <th style="text-align: center; width: 25%;">Estado</th>
+                                <th style="width: 30%;">Uso Asignado</th>
+                                <th style="width: 30%;">Observaciones / Detalles</th>
                             </tr>
                         </thead>
                         <tbody>`;
@@ -771,10 +786,10 @@
 
                     htmlTabla += `
                         <tr>
-                            <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold; text-align: center;">${dispositivo}</td>
-                            <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">${estado}</td>
-                            <td style="padding: 10px; border: 1px solid #ddd; text-align: left;">${uso}</td>
-                            <td style="padding: 10px; border: 1px solid #ddd; text-align: left;">${observaciones}</td>
+                            <td data-label="Dispositivo" style="text-align: center; font-weight: bold;">${dispositivo}</td>
+                            <td data-label="Estado" style="text-align: center;">${estado}</td>
+                            <td data-label="Uso Asignado">${uso}</td>
+                            <td data-label="Observaciones">${observaciones}</td>
                         </tr>`;
                 });
 
