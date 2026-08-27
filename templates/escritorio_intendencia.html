@@ -910,7 +910,9 @@
             }
         }
 
-        // Lógica de verificación y conteo de Novedades No Leídas (Independiente por Supervisor y Filtrado estricto por Destinatario)
+        // =========================================================================
+        // LÓGICA ACTUALIZADA CON LAS NUEVAS COLUMNAS DE SUPABASE
+        // =========================================================================
         async function verificarNovedadesNoLeidas() {
             try {
                 const { data, error } = await db
@@ -921,29 +923,32 @@
                 if (error || !data) return;
 
                 const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim().toLowerCase();
-                const usuarioActual = (localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario') || "").trim().toLowerCase();
+                const usuarioActual = (localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario') || "invitado").trim().toLowerCase();
                 const claveStoragePersonal = `dsg_novedades_ultimo_id_${usuarioActual}`;
 
                 const novedadesFiltradas = data.filter(item => {
-                    const idClave = (item.id_clave || "").toLowerCase();
-                    const contenidoObj = item.contenido || {};
-                    const turnoMsg = (contenidoObj.turno || "").toLowerCase();
-                    const destinatarioMsg = (contenidoObj.destinatario || contenidoObj.supervisor || "").toLowerCase();
+                    const deptoDestino = (item.departamento_destino || "").trim().toLowerCase();
+                    const turnoDestino = (item.turno_destino || "").trim().toLowerCase();
+                    const supervisorDestino = (item.supervisor_destino || "").trim().toLowerCase();
 
-                    const esParaTodos = idClave.includes("todos") || idClave.includes("general") || turnoMsg === "todos" || turnoMsg === "general";
-                    const esParaIntendencia = idClave.includes("intendencia");
+                    // 1. Si es para todos (enviado desde admin a todos)
+                    const esParaTodos = (deptoDestino === 'todos' || deptoDestino === '');
 
-                    // Validar si está dirigido a un supervisor específico de forma individual
-                    if (destinatarioMsg && destinatarioMsg !== "todos" && destinatarioMsg !== "general" && destinatarioMsg !== "intendencia") {
-                        if (!destinatarioMsg.includes(usuarioActual)) return false;
-                    } else {
-                        if (!esParaIntendencia && !esParaTodos) return false;
+                    // 2. Si es para intendencia
+                    const esParaIntendencia = (deptoDestino === 'intendencia');
+
+                    if (!esParaIntendencia && !esParaTodos) return false;
+
+                    // Si es específico para Intendencia, validar el supervisor o turno
+                    if (esParaIntendencia) {
+                        const coincideTurno = (!turnoDestino || turnoDestino === turnoActual);
+                        const coincideSupervisor = (!supervisorDestino || supervisorDestino === usuarioActual);
+
+                        // Debe coincidir turno y además (ser general del depto/turno o específico para este supervisor)
+                        if (!coincideTurno) return false;
+                        if (supervisorDestino !== "" && supervisorDestino !== usuarioActual) return false;
                     }
 
-                    if (esParaTodos) return true;
-                    if (turnoMsg && turnoMsg !== "todos" && turnoMsg !== "general") {
-                        if (turnoMsg !== turnoActual) return false;
-                    }
                     return true;
                 });
 
@@ -995,34 +1000,29 @@
                 }
 
                 const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim().toLowerCase();
-                const usuarioActual = (localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario') || "").trim().toLowerCase();
+                const usuarioActual = (localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario') || "invitado").trim().toLowerCase();
 
                 const novedadesFiltradas = data.filter(item => {
-                    const idClave = (item.id_clave || "").toLowerCase();
-                    const contenidoObj = item.contenido || {};
-                    const turnoMsg = (contenidoObj.turno || "").toLowerCase();
-                    const destinatarioMsg = (contenidoObj.destinatario || contenidoObj.supervisor || "").toLowerCase();
+                    const deptoDestino = (item.departamento_destino || "").trim().toLowerCase();
+                    const turnoDestino = (item.turno_destino || "").trim().toLowerCase();
+                    const supervisorDestino = (item.supervisor_destino || "").trim().toLowerCase();
 
-                    const esParaTodos = idClave.includes("todos") || idClave.includes("general") || turnoMsg === "todos" || turnoMsg === "general";
-                    const esParaIntendencia = idClave.includes("intendencia");
+                    // 1. Si es global para todos
+                    const esParaTodos = (deptoDestino === 'todos' || deptoDestino === '');
 
-                    // Si el comunicado especifica un destinatario/supervisor particular, solo lo verá ese usuario
-                    if (destinatarioMsg && destinatarioMsg !== "todos" && destinatarioMsg !== "general" && destinatarioMsg !== "intendencia") {
-                        if (!destinatarioMsg.includes(usuarioActual)) {
-                            return false;
-                        }
-                    } else {
-                        if (!esParaIntendencia && !esParaTodos) {
-                            return false;
-                        }
+                    // 2. Si es para el departamento de intendencia
+                    const esParaIntendencia = (deptoDestino === 'intendencia');
+
+                    if (!esParaIntendencia && !esParaTodos) {
+                        return false;
                     }
 
-                    if (esParaTodos) {
-                        return true;
-                    }
+                    if (esParaIntendencia) {
+                        const coincideTurno = (!turnoDestino || turnoDestino === turnoActual);
+                        if (!coincideTurno) return false;
 
-                    if (turnoMsg && turnoMsg !== "todos" && turnoMsg !== "general") {
-                        if (turnoMsg !== turnoActual) {
+                        // Si hay un supervisor asignado, debe ser exactamente este usuario (o venir en NULL para todo el depto/turno)
+                        if (supervisorDestino !== "" && supervisorDestino !== usuarioActual) {
                             return false;
                         }
                     }
@@ -1047,7 +1047,8 @@
                     const contenidoObj = item.contenido || {};
                     const texto = contenidoObj.texto || 'Sin contenido';
                     const fecha = contenidoObj.fecha || 'Sin fecha';
-                    const turnoMsg = contenidoObj.turno || 'General';
+                    const turnoMsg = item.turno_destino || contenidoObj.turno || 'General';
+                    const supervisorDestino = item.supervisor_destino ? ` | <b>Destino Directo:</b> ${item.supervisor_destino}` : '';
 
                     let archivosArray = [];
                     if (Array.isArray(contenidoObj.archivos)) {
@@ -1099,7 +1100,7 @@
                         <div style="background: #fff; border-left: 5px solid #1a3a5f; border-top: 1px solid #ddd; border-right: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 20px; border-radius: 6px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 8px; flex-wrap: wrap; gap: 8px;">
                                 <strong style="color: #1a3a5f; font-size: 16px;">📢 Comunicado Oficial</strong>
-                                <span style="font-size: 12px; color: #666; background: #f1f1f1; padding: 4px 10px; border-radius: 4px;">Turno: ${turnoMsg} | Fecha: ${fecha} | <strong>Enviado por:</strong> Dirección de Servicios Generales</span>
+                                <span style="font-size: 12px; color: #666; background: #f1f1f1; padding: 4px 10px; border-radius: 4px;">Turno: ${turnoMsg} | Fecha: ${fecha}${supervisorDestino} | <strong>Enviado por:</strong> Dirección de Servicios Generales</span>
                             </div>
                             <div style="font-size: 15px; color: #333; white-space: pre-wrap; line-height: 1.5; font-family: inherit;">${texto}</div>
                             ${archivosHtml}
