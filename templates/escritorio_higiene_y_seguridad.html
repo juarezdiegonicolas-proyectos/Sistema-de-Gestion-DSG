@@ -383,20 +383,19 @@
 
                 const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim().toLowerCase();
                 const usuarioActual = (localStorage.getItem('usuario_nombre') || "invitado").trim().toLowerCase();
-                const deptoActual = "higiene-y-seguridad";
 
                 const novedadesFiltradas = data.filter(item => {
-                    const deptoDestino = (item.departamento_destino || 'Todos').trim().toLowerCase();
+                    const deptoDestino = (item.departamento_destino || '').trim();
                     const turnoDestino = (item.turno_destino || 'Todos').trim().toLowerCase();
                     const supervisorDestino = (item.supervisor_destino || 'Todos').trim().toLowerCase();
                     const contenidoObj = item.contenido || {};
                     const remitenteDepto = (contenidoObj.departamento || '').trim().toLowerCase();
 
                     // No contar los mensajes propios como no leídos
-                    if (remitenteDepto === deptoActual) return false;
+                    if (remitenteDepto === 'higiene-y-seguridad') return false;
 
-                    if (deptoDestino === 'todos') return true;
-                    if (deptoDestino !== deptoActual && deptoDestino !== 'higiene y seguridad') return false;
+                    if (deptoDestino === 'Todos') return true;
+                    if (deptoDestino !== 'higiene-y-seguridad') return false;
 
                     if (turnoDestino !== 'todos' && turnoDestino !== turnoActual) return false;
                     if (supervisorDestino !== 'todos' && supervisorDestino !== usuarioActual) return false;
@@ -525,23 +524,22 @@
 
                 const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim().toLowerCase();
                 const usuarioActual = (localStorage.getItem('usuario_nombre') || "invitado").trim().toLowerCase();
-                const deptoActual = "higiene-y-seguridad";
 
                 const filtrados = data.filter(item => {
-                    const deptoDestino = (item.departamento_destino || 'Todos').trim().toLowerCase();
+                    const deptoDestino = (item.departamento_destino || '').trim();
                     const turnoDestino = (item.turno_destino || 'Todos').trim().toLowerCase();
                     const supervisorDestino = (item.supervisor_destino || 'Todos').trim().toLowerCase();
                     const contenidoObj = item.contenido || {};
                     const remitenteDepto = (contenidoObj.departamento || '').trim().toLowerCase();
 
-                    // Si nosotros lo emitimos, se muestra en el muro como mensaje propio (enviado)
-                    if (remitenteDepto === deptoActual) return true;
+                    // Mostrar si fuimos nosotros los remitentes (enviados por Higiene y Seguridad)
+                    if (remitenteDepto === 'higiene-y-seguridad') return true;
 
                     // Si está dirigido a todos los departamentos
-                    if (deptoDestino === 'todos') return true;
+                    if (deptoDestino === 'Todos') return true;
 
-                    // Si está dirigido específicamente a nuestro departamento
-                    if (deptoDestino === deptoActual || deptoDestino === 'higiene y seguridad') {
+                    // Si está dirigido específicamente a Higiene y Seguridad
+                    if (deptoDestino === 'higiene-y-seguridad') {
                         if (turnoDestino !== 'todos' && turnoDestino !== turnoActual) return false;
                         if (supervisorDestino !== 'todos' && supervisorDestino !== usuarioActual) return false;
                         return true;
@@ -559,7 +557,7 @@
                 const recibidosNoLeidos = filtrados.filter(item => {
                     const contenidoObj = item.contenido || {};
                     const remitenteDepto = (contenidoObj.departamento || '').trim().toLowerCase();
-                    return remitenteDepto !== deptoActual;
+                    return remitenteDepto !== 'higiene-y-seguridad';
                 });
 
                 if (recibidosNoLeidos.length > 0) {
@@ -574,15 +572,39 @@
                     const texto = contenidoObj.texto || 'Sin contenido';
                     const fecha = contenidoObj.fecha || 'Sin fecha';
                     const turnoMsg = contenidoObj.turno || 'General';
-                    const deptoDestino = item.departamento_destino || contenidoObj.departamento || 'Todos';
                     const supervisorMsg = item.supervisor_destino || contenidoObj.supervisor || 'Todos';
                     const remitenteDepto = (contenidoObj.departamento || '').trim().toLowerCase();
 
-                    // Identificación estricta: Si el emisor es este departamento, es Enviado; de lo contrario, es Recibido.
-                    const esEnviado = (remitenteDepto === deptoActual);
-                    const etiquetaEstado = esEnviado 
-                        ? '<span class="badge-estado-muro badge-estado-enviado">Mensaje Enviado</span>' 
-                        : '<span class="badge-estado-muro badge-estado-recibido">Mensaje Recibido</span>';
+                    // Mapeo amigable de departamentos para mostrar en pantalla
+                    const nombresDeptosLegibles = {
+                        'higiene-y-seguridad': 'Higiene y Seguridad',
+                        'intendencia': 'Intendencia',
+                        'division-ascensores': 'Ascensores',
+                        'lavadero-central': 'Lavadero Central',
+                        'camilleros-central': 'Camilleros',
+                        'conmutador': 'Conmutador',
+                        'dalo': 'DALO',
+                        'direccion-servicios-generales': 'Dirección Servicios Generales',
+                        'todos': 'Todos los departamentos'
+                    };
+
+                    const deptoEmisorLegible = nombresDeptosLegibles[remitenteDepto] || remitenteDepto || 'Desconocido';
+                    const deptoDestinoValor = item.departamento_destino || 'Todos';
+                    const deptoDestinoLegible = nombresDeptosLegibles[deptoDestinoValor] || deptoDestinoValor;
+
+                    // Determinamos si es enviado o recibido usando las columnas fijas y el remitente
+                    const esEnviado = remitenteDepto === 'higiene-y-seguridad';
+                    
+                    let etiquetaEstado = '';
+                    let infoDetalleCabecera = '';
+
+                    if (esEnviado) {
+                        etiquetaEstado = '<span class="badge-estado-muro badge-estado-enviado">Mensaje Enviado</span>';
+                        infoDetalleCabecera = `<b>Destino:</b> ${deptoDestinoLegible} (${supervisorMsg}) | <b>Turno Destino:</b> ${turnoMsg}`;
+                    } else {
+                        etiquetaEstado = '<span class="badge-estado-muro badge-estado-recibido">Mensaje Recibido</span>';
+                        infoDetalleCabecera = `<b>Enviado por:</b> <span style="color: #1a3a5f; font-weight: bold;">${deptoEmisorLegible}</span> (${contenidoObj.remitente || 'Supervisor'}) | <b>Turno:</b> ${turnoMsg}`;
+                    }
 
                     let archivosArr = [];
                     if (Array.isArray(contenidoObj.archivos)) {
@@ -635,7 +657,7 @@
                         <div class="muro-item">
                             ${etiquetaEstado}
                             <div class="muro-header">
-                                <span><b>Destino:</b> ${deptoDestino} (${supervisorMsg}) | <b>Turno:</b> ${turnoMsg}</span>
+                                <span>${infoDetalleCabecera}</span>
                                 <span>${fecha}</span>
                             </div>
                             <div class="muro-body">${texto}</div>
