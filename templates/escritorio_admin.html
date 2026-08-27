@@ -823,17 +823,16 @@
             let sufijoSupervisor = supervisor ? `_${supervisor.replace(/\s+/g, '_')}` : '_todos';
             const claveUnica = `comunicado_novedades_${nombreDeptoClave}_${turno}${sufijoSupervisor}_${Date.now()}`;
             
-            // Inserción en Supabase con la nomenclatura exacta del sistema en departamento_origen[span_0](start_span)[span_0](end_span)
+            // CORREGIDO: Usamos exactamente la sintaxis de nombres cortos/claves limpias para departamento_destino, respetando el formato original
             const { error } = await db
                 .from('comunicados_memos')
                 .upsert(
                     { 
                         id_clave: claveUnica, 
                         contenido: data,
-                        departamento_destino: destino === 'Todos' ? null : nombreDeptoClave,
+                        departamento_destino: nombreDeptoClave,
                         turno_destino: turno === 'Todos' ? null : turno,
-                        supervisor_destino: supervisor || null,
-                        departamento_origen: 'direccion-servicios-generales'
+                        supervisor_destino: supervisor || null
                     },
                     { onConflict: 'id_clave' }
                 );
@@ -1268,4 +1267,3 @@
     </script>
 </body>
 </html>
-
