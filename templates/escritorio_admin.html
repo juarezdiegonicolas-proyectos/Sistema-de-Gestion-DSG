@@ -584,7 +584,9 @@
                     const texto = contenido.texto || 'Sin texto';
                     const fecha = contenido.fecha || row.created_at || 'Fecha desconocida';
                     
-                    const depto = row.departamento_destino || contenido.departamento || 'Todos';
+                    // Usando también columnas directas si existen o contenido JSON
+                    const deptoDestino = row.departamento_destino || contenido.departamento || 'Todos';
+                    const deptoOrigen = row.departamento_origen || contenido.origen || 'Administración - DSG';
                     const turno = row.turno_destino || contenido.turno || 'Todos';
                     const supervisor = (row.supervisor_destino || contenido.supervisor) ? ` | <b>Supervisor:</b> ${row.supervisor_destino || contenido.supervisor}` : '';
 
@@ -602,7 +604,7 @@
                     html += `
                         <div class="muro-item">
                             <div class="muro-header">
-                                <span><b>Destino:</b> ${depto} | <b>Turno:</b> ${turno}${supervisor}</span>
+                                <span><b>Origen:</b> ${deptoOrigen} | <b>Destino:</b> ${deptoDestino} | <b>Turno:</b> ${turno}${supervisor}</span>
                                 <span>${fecha}</span>
                             </div>
                             <div class="muro-body">${texto}</div>
@@ -806,6 +808,7 @@
                 archivo: primerArchivo,
                 fecha: new Date().toLocaleString(),
                 departamento: destino,
+                origen: 'Administración - DSG', // Origen agregado explícitamente
                 turno: turno,
                 supervisor: supervisor
             };
@@ -823,6 +826,7 @@
             let sufijoSupervisor = supervisor ? `_${supervisor.replace(/\s+/g, '_')}` : '_todos';
             const claveUnica = `comunicado_novedades_${nombreDeptoClave}_${turno}${sufijoSupervisor}_${Date.now()}`;
             
+            // Inserción en Supabase mapeando las columnas de la tabla (incluyendo las condicionales y el origen)
             const { error } = await db
                 .from('comunicados_memos')
                 .upsert(
@@ -830,6 +834,7 @@
                         id_clave: claveUnica, 
                         contenido: data,
                         departamento_destino: destino === 'Todos' ? null : nombreDeptoClave,
+                        departamento_origen: 'Administración - DSG', // Origen agregado como columna
                         turno_destino: turno === 'Todos' ? null : turno,
                         supervisor_destino: supervisor || null
                     },
@@ -1266,3 +1271,4 @@
     </script>
 </body>
 </html>
+
