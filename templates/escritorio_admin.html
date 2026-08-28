@@ -823,18 +823,14 @@
             let sufijoSupervisor = supervisor ? `_${supervisor.replace(/\s+/g, '_')}` : '_todos';
             const claveUnica = `comunicado_novedades_${nombreDeptoClave}_${turno}${sufijoSupervisor}_${Date.now()}`;
             
-            // Lógica con guiones para los campos de destino en la tabla comunidados_memos
-            const deptoDestinoValor = destino === 'Todos' ? null : (destino.includes('-') ? destino : destino.toLowerCase().replace(/\s+/g, '-'));
-            const turnoDestinoValor = turno === 'Todos' ? null : (turno.includes('-') ? turno : turno.toLowerCase().replace(/\s+/g, '-'));
-
             const { error } = await db
                 .from('comunicados_memos')
                 .upsert(
                     { 
                         id_clave: claveUnica, 
                         contenido: data,
-                        departamento_destino: deptoDestinoValor,
-                        turno_destino: turnoDestinoValor,
+                        departamento_destino: destino === 'Todos' ? null : nombreDeptoClave,
+                        turno_destino: turno === 'Todos' ? null : turno,
                         supervisor_destino: supervisor || null
                     },
                     { onConflict: 'id_clave' }
@@ -844,7 +840,7 @@
                 console.error("Error al guardar en Supabase:", error);
                 alert("Error al enviar a la base de datos: " + error.message);
             } else {
-                alert("Novedad enviada correctamente.");
+                alert("Novedad enviada correctamente. Si seleccionaste intendencia, turno mañana y todos los supervisores, esto quedará disponible para que todos lo visualicen.");
                 if (id === 'novedades') {
                     cargarHistorialMuroNovedades();
                     archivosMultiplesNovedades = [];
