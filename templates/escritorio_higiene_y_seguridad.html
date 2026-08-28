@@ -67,7 +67,6 @@
         .historial-muro-container { margin-top: 30px; border-top: 2px solid #dee2e6; padding-top: 20px; }
         .historial-muro-titulo { font-size: 16px; font-weight: bold; color: #1a3a5f; margin-bottom: 15px; }
         
-        /* Estilos optimizados para las tarjetas del Muro sin superposiciones */
         .muro-item { background: #fff; border-left: 5px solid #1a3a5f; border: 1px solid #ddd; padding: 15px; border-radius: 6px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
         .muro-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 8px; font-size: 12px; color: #666; flex-wrap: wrap; }
         .muro-header-info { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 200px; }
@@ -77,7 +76,6 @@
         .muro-adjuntos a { display: inline-block; margin-right: 10px; color: #1a3a5f; text-decoration: none; font-weight: 500; }
         .muro-adjuntos a:hover { text-decoration: underline; }
 
-        /* Etiquetas indicador de tipo de mensaje en el muro (Posicionamiento estático en flexbox para evitar solapamientos) */
         .badge-estado-muro { padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
         .badge-estado-enviado { background-color: #e2f0d9; color: #385723; border: 1px solid #b7e1cd; }
         .badge-estado-recibido { background-color: #d9e1f2; color: #1f3864; border: 1px solid #b4c6e7; }
@@ -215,7 +213,7 @@
         const SUPABASE_URL = 'https://ydcbdvosxbwcutddxaze.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_EvvZ8n7Ve2cF9FB4SXA0Ug_7q6qWh9f';
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        const db = supabaseClient; // Alias unificado para compatibilidad
+        const db = supabaseClient;
 
         const editorReporte = document.getElementById('editor-reporte');
         const spanHoja = document.getElementById('numero-hoja');
@@ -412,8 +410,7 @@
                     const deptoDestino = (item.departamento_destino || '').trim();
                     const turnoDestino = (item.turno_destino || 'Todos').trim().toLowerCase();
                     const supervisorDestino = (item.supervisor_destino || '').trim().toLowerCase();
-                    const contenidoObj = item.contenido || {};
-                    const remitenteDepto = (item.departamento_origen || contenidoObj.departamento || '').trim().toLowerCase();
+                    const remitenteDepto = (item.departamento_origen || '').trim().toLowerCase();
 
                     if (remitenteDepto === 'higiene-y-seguridad') return false;
 
@@ -470,10 +467,10 @@
             let listaArchivos = archivosMultiplesNovedades;
             let primerArchivo = archivosMultiplesNovedades.length > 0 ? archivosMultiplesNovedades[0] : null;
 
-            const usuarioRemitente = localStorage.getItem('usuario_nombre') || "Higiene y Seguridad";
             const deptoOrigenNormalizado = 'higiene-y-seguridad';
             const deptoDestinoNormalizado = toKebabCase(destinoVisual);
 
+            // Objeto jsonb idéntico a la estructura de tus capturas
             const dataContenido = {
                 texto: textoEscrito,
                 archivos: listaArchivos,
@@ -482,8 +479,7 @@
                 departamento: deptoDestinoNormalizado,
                 origen: deptoOrigenNormalizado,
                 turno: turno,
-                supervisor: supervisor,
-                remitente: usuarioRemitente
+                supervisor: supervisor
             };
             
             let sufijoSupervisor = supervisor ? `_${supervisor.replace(/\s+/g, '_')}` : '_todos';
@@ -497,9 +493,8 @@
                         contenido: dataContenido,
                         departamento_destino: deptoDestinoNormalizado,
                         departamento_origen: deptoOrigenNormalizado,
-                        turno_destino: turno === 'Todos' ? null : turno,
-                        supervisor_destino: supervisor || null,
-                        remitente: usuarioRemitente
+                        turno_destino: turno === 'Todos' ? 'Todos' : turno,
+                        supervisor_destino: supervisor || 'Todos'
                     },
                     { onConflict: 'id_clave' }
                 );
@@ -546,18 +541,15 @@
                     const deptoDestino = (item.departamento_destino || '').trim();
                     const turnoDestino = (item.turno_destino || 'Todos').trim().toLowerCase();
                     const supervisorDestino = (item.supervisor_destino || '').trim().toLowerCase();
-                    const contenidoObj = item.contenido || {};
-                    const remitenteDepto = (item.departamento_origen || contenidoObj.departamento || '').trim().toLowerCase();
+                    const remitenteDepto = (item.departamento_origen || '').trim().toLowerCase();
 
-                    // Si nosotros lo enviamos, se muestra siempre en nuestro muro como enviado
                     if (remitenteDepto === 'higiene-y-seguridad') return true;
 
-                    // Si viene de otro depto, validamos que esté dirigido a Todos o específicamente a nosotros
                     if (deptoDestino === 'Todos' || deptoDestino === 'todos') return true;
 
                     if (deptoDestino === 'higiene-y-seguridad') {
                         if (turnoDestino !== 'todos' && turnoDestino !== turnoActual) return false;
-                        if (supervisorDestino && supervisorDestino !== usuarioActual) return false;
+                        if (supervisorDestino && supervisorDestino !== 'todos' && supervisorDestino !== usuarioActual) return false;
                         return true;
                     }
 
@@ -570,8 +562,7 @@
                 }
 
                 const recibidosNoLeidos = filtrados.filter(item => {
-                    const contenidoObj = item.contenido || {};
-                    const remitenteDepto = (item.departamento_origen || contenidoObj.departamento || '').trim().toLowerCase();
+                    const remitenteDepto = (item.departamento_origen || '').trim().toLowerCase();
                     return remitenteDepto !== 'higiene-y-seguridad';
                 });
 
@@ -588,7 +579,7 @@
                     const fecha = contenidoObj.fecha || item.created_at || 'Sin fecha';
                     const turnoMsg = item.turno_destino || contenidoObj.turno || 'General';
                     const supervisorMsg = item.supervisor_destino || contenidoObj.supervisor || 'Todos';
-                    const remitenteDepto = (item.departamento_origen || contenidoObj.departamento || '').trim().toLowerCase();
+                    const remitenteDepto = (item.departamento_origen || '').trim().toLowerCase();
 
                     const nombresDeptosLegibles = {
                         'higiene-y-seguridad': 'Higiene y Seguridad',
@@ -613,12 +604,11 @@
 
                     if (esEnviado) {
                         etiquetaEstado = '<span class="badge-estado-muro badge-estado-enviado">Mensaje Enviado</span>';
-                        let supInfoDestino = supervisorMsg ? ` (${supervisorMsg})` : '';
+                        let supInfoDestino = supervisorMsg && supervisorMsg !== 'Todos' ? ` (${supervisorMsg})` : '';
                         infoDetalleCabecera = `<b>Destino:</b> ${deptoDestinoLegible}${supInfoDestino} | <b>Turno Destino:</b> ${turnoMsg}`;
                     } else {
                         etiquetaEstado = '<span class="badge-estado-muro badge-estado-recibido">Mensaje Recibido</span>';
-                        let remitenteReal = item.remitente || contenidoObj.remitente || 'Supervisor';
-                        infoDetalleCabecera = `<b>Departamento Emisor:</b> <span style="color: #1a3a5f; font-weight: bold;">${deptoEmisorLegible}</span> (${remitenteReal}) | <b>Turno:</b> ${turnoMsg}`;
+                        infoDetalleCabecera = `<b>Departamento Emisor:</b> <span style="color: #1a3a5f; font-weight: bold;">${deptoEmisorLegible}</span> | <b>Turno:</b> ${turnoMsg}`;
                     }
 
                     let archivosArr = [];
