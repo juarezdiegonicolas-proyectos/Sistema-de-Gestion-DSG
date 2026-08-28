@@ -77,7 +77,7 @@
         .muro-adjuntos a { display: inline-block; margin-right: 10px; color: #1a3a5f; text-decoration: none; font-weight: 500; }
         .muro-adjuntos a:hover { text-decoration: underline; }
 
-        /* Etiquetas indicador de tipo de mensaje en el muro */
+        /* Etiquetas indicador de tipo de mensaje en el muro (Posicionamiento estático en flexbox para evitar solapamientos) */
         .badge-estado-muro { padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
         .badge-estado-enviado { background-color: #e2f0d9; color: #385723; border: 1px solid #b7e1cd; }
         .badge-estado-recibido { background-color: #d9e1f2; color: #1f3864; border: 1px solid #b4c6e7; }
@@ -164,7 +164,7 @@
                 <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
             </div>
             <div class="filtros-historicos">
-                <select id="depto-destino-novedades" class="input-select" onchange="actualizarSelectSupervisores('novedades'); actualizarPrint('novedades'); cargarNovedades();">
+                <select id="depto-destino-novedades" class="input-select" onchange="manejarCambioDepto('destino-novedades'); actualizarPrint('novedades');">
                     <option value="Todos">Todos los departamentos</option>
                     <option value="direccion-servicios-generales">Dirección Servicios Generales</option>
                     <option value="intendencia">Intendencia</option>
@@ -175,10 +175,12 @@
                     <option value="dalo">DALO</option>
                     <option value="higiene-y-seguridad">Higiene y Seguridad</option>
                 </select>
-                <select id="supervisor-destino-novedades" class="input-select" onchange="actualizarPrint('novedades'); cargarNovedades();">
-                    <option value="Todos">Todos los supervisores</option>
-                </select>
-                <select id="turno-destino-novedades" class="input-select" onchange="actualizarPrint('novedades'); cargarNovedades();">
+                <div id="contenedor-supervisor-destino-novedades" style="display: none;">
+                    <select id="supervisor-destino-novedades" class="input-select" onchange="actualizarPrint('novedades')">
+                        <option value="">-- Todos los supervisores --</option>
+                    </select>
+                </div>
+                <select id="turno-destino-novedades" class="input-select" onchange="actualizarPrint('novedades')">
                     <option value="Todos">Todos los turnos</option>
                     <option value="Mañana">Mañana</option>
                     <option value="Tarde">Tarde</option>
@@ -280,54 +282,72 @@
             }
         }
 
-        async function actualizarSelectSupervisores(id) {
-            const deptoSelect = document.getElementById('depto-destino-' + id);
-            const supervisorSelect = document.getElementById('supervisor-destino-' + id);
-            if (!deptoSelect || !supervisorSelect) return;
+        function toKebabCase(str) {
+            if (!str) return '';
+            return str.toLowerCase()
+                .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+                .replace(/\s+/g, '-');
+        }
 
+        async function manejarCambioDepto(sufijoId) {
+            const deptoSelect = document.getElementById('depto-' + sufijoId);
+            const contenedorSup = document.getElementById('contenedor-supervisor-' + sufijoId);
+            const supervisorSelect = document.getElementById('supervisor-' + sufijoId);
+            
+            if (!deptoSelect) return;
             const deptoValor = deptoSelect.value;
-            supervisorSelect.innerHTML = '<option value="Todos">Todos los supervisores</option>';
 
-            if (deptoValor === 'Todos') return;
+            if (deptoValor === 'Todos' || !deptoValor) {
+                if (contenedorSup) contenedorSup.style.display = 'none';
+                if (supervisorSelect) supervisorSelect.value = '';
+                return;
+            }
 
-            try {
-                let nombreDeptoFiltro = '';
-                if (deptoValor === 'division-ascensores') nombreDeptoFiltro = 'Ascensores';
-                if (deptoValor === 'camilleros-central') nombreDeptoFiltro = 'Camilleros';
-                if (deptoValor === 'intendencia') nombreDeptoFiltro = 'Intendencia';
-                if (deptoValor === 'lavadero-central') nombreDeptoFiltro = 'Lavadero';
-                if (deptoValor === 'conmutador') nombreDeptoFiltro = 'Conmutador';
-                if (deptoValor === 'dalo') nombreDeptoFiltro = 'DALO';
-                if (deptoValor === 'direccion-servicios-generales') nombreDeptoFiltro = 'Dirección de Servicios Generales';
-                if (deptoValor === 'higiene-y-seguridad') nombreDeptoFiltro = 'Higiene y Seguridad';
+            if (contenedorSup) contenedorSup.style.display = 'block';
+            if (supervisorSelect) {
+                supervisorSelect.innerHTML = '<option value="">-- Todos los supervisores --</option>';
+                
+                try {
+                    let nombreDeptoFiltro = '';
+                    if (deptoValor === 'division-ascensores') nombreDeptoFiltro = 'Ascensores';
+                    else if (deptoValor === 'camilleros-central') nombreDeptoFiltro = 'Camilleros';
+                    else if (deptoValor === 'intendencia') nombreDeptoFiltro = 'Intendencia';
+                    else if (deptoValor === 'lavadero-central') nombreDeptoFiltro = 'Lavadero';
+                    else if (deptoValor === 'conmutador') nombreDeptoFiltro = 'Conmutador';
+                    else if (deptoValor === 'dalo') nombreDeptoFiltro = 'DALO';
+                    else if (deptoValor === 'direccion-servicios-generales') nombreDeptoFiltro = 'Dirección de Servicios Generales';
+                    else if (deptoValor === 'higiene-y-seguridad') nombreDeptoFiltro = 'Higiene y Seguridad';
+                    else nombreDeptoFiltro = deptoValor;
 
-                const { data, error } = await supabaseClient
-                    .from('usuarios')
-                    .select('nombre_completo')
-                    .ilike('departamento', `%${nombreDeptoFiltro}%`);
+                    const { data, error } = await supabaseClient
+                        .from('usuarios')
+                        .select('nombre_completo')
+                        .ilike('departamento', `%${nombreDeptoFiltro}%`);
 
-                if (!error && data) {
-                    data.forEach(user => {
-                        if (user.nombre_completo) {
-                            const opt = document.createElement('option');
-                            opt.value = user.nombre_completo;
-                            opt.textContent = user.nombre_completo;
-                            supervisorSelect.appendChild(opt);
-                        }
-                    });
+                    if (!error && data) {
+                        data.forEach(user => {
+                            if (user.nombre_completo) {
+                                const opt = document.createElement('option');
+                                opt.value = user.nombre_completo;
+                                opt.textContent = user.nombre_completo;
+                                supervisorSelect.appendChild(opt);
+                            }
+                        });
+                    }
+                } catch (err) {
+                    console.error("Error al cargar supervisores para el select:", err);
                 }
-            } catch (err) {
-                console.error("Error al cargar supervisores para el select:", err);
             }
         }
 
         function actualizarPrint(id) {
             const deptoSelect = document.getElementById('depto-destino-' + id);
             const turnoSelect = document.getElementById('turno-destino-' + id);
-            const supervisorSelect = document.getElementById('supervisor-destino-' + id);
+            const supervisorElem = document.getElementById('supervisor-destino-' + id);
             const printHeader = document.getElementById('print-header-' + id);
+            
             if (deptoSelect && turnoSelect && printHeader) {
-                const supText = supervisorSelect ? supervisorSelect.value : 'Todos';
+                const supText = (supervisorElem && supervisorElem.value) ? supervisorElem.value : 'Todos';
                 printHeader.innerText = `Dirigido a: ${deptoSelect.options[deptoSelect.selectedIndex].text} (${supText}) | Turno: ${turnoSelect.value}`;
             }
         }
@@ -385,15 +405,37 @@
 
                 if (error || !data) return;
 
+                const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim().toLowerCase();
                 const usuarioActual = (localStorage.getItem('usuario_nombre') || "invitado").trim().toLowerCase();
+
+                const novedadesFiltradas = data.filter(item => {
+                    const deptoDestino = (item.departamento_destino || '').trim();
+                    const turnoDestino = (item.turno_destino || 'Todos').trim().toLowerCase();
+                    const supervisorDestino = (item.supervisor_destino || '').trim().toLowerCase();
+                    const contenidoObj = item.contenido || {};
+                    const remitenteDepto = (item.departamento_origen || contenidoObj.departamento || '').trim().toLowerCase();
+
+                    if (remitenteDepto === 'higiene-y-seguridad') return false;
+
+                    if (deptoDestino === 'Todos' || deptoDestino === 'todos') return true;
+                    if (deptoDestino !== 'higiene-y-seguridad') return false;
+
+                    if (turnoDestino !== 'todos' && turnoDestino !== turnoActual) return false;
+                    if (supervisorDestino && supervisorDestino !== usuarioActual) return false;
+
+                    return true;
+                });
+
+                if (novedadesFiltradas.length === 0) return;
+
                 const claveStorage = `dsg_hyc_ultimo_novedad_leida_${usuarioActual}`;
                 const ultimoIdLeido = localStorage.getItem(claveStorage);
-                
                 let noLeidasCount = 0;
+
                 if (!ultimoIdLeido) {
-                    noLeidasCount = data.length;
+                    noLeidasCount = novedadesFiltradas.length;
                 } else {
-                    for (let item of data) {
+                    for (let item of novedadesFiltradas) {
                         if (String(item.id) === String(ultimoIdLeido)) break;
                         noLeidasCount++;
                     }
@@ -414,10 +456,10 @@
         }
 
         async function guardarRedaccion(id) {
-            const destino = document.getElementById('depto-destino-' + id).value;
+            const destinoVisual = document.getElementById('depto-destino-' + id).value;
             const turno = document.getElementById('turno-destino-' + id).value;
-            const supervisorSelect = document.getElementById('supervisor-destino-' + id);
-            const supervisor = supervisorSelect ? supervisorSelect.value : 'Todos';
+            const supervisorElem = document.getElementById('supervisor-destino-' + id);
+            const supervisor = supervisorElem ? supervisorElem.value : '';
             const textoEscrito = document.getElementById('txt-' + id).value;
 
             if (!textoEscrito.trim() && archivosMultiplesNovedades.length === 0) {
@@ -429,31 +471,23 @@
             let primerArchivo = archivosMultiplesNovedades.length > 0 ? archivosMultiplesNovedades[0] : null;
 
             const usuarioRemitente = localStorage.getItem('usuario_nombre') || "Higiene y Seguridad";
+            const deptoOrigenNormalizado = 'higiene-y-seguridad';
+            const deptoDestinoNormalizado = toKebabCase(destinoVisual);
 
             const dataContenido = {
                 texto: textoEscrito,
                 archivos: listaArchivos,
                 archivo: primerArchivo,
                 fecha: new Date().toLocaleString(),
-                departamento: 'higiene-y-seguridad',
+                departamento: deptoDestinoNormalizado,
+                origen: deptoOrigenNormalizado,
                 turno: turno,
                 supervisor: supervisor,
                 remitente: usuarioRemitente
             };
             
-            let nombreDeptoClave = destino;
-            if (destino === 'division-ascensores') nombreDeptoClave = 'Ascensores';
-            if (destino === 'camilleros-central') nombreDeptoClave = 'Camilleros';
-            if (destino === 'intendencia') nombreDeptoClave = 'Intendencia';
-            if (destino === 'lavadero-central') nombreDeptoClave = 'Lavadero';
-            if (destino === 'conmutador') nombreDeptoClave = 'Conmutador';
-            if (destino === 'dalo') nombreDeptoClave = 'DALO';
-            if (destino === 'direccion-servicios-generales') nombreDeptoClave = 'DSG';
-            if (destino === 'higiene-y-seguridad') nombreDeptoClave = 'Higiene_Seguridad';
-            if (destino === 'Todos') nombreDeptoClave = 'Todos';
-
-            let sufijoSupervisor = supervisor !== 'Todos' ? `_${supervisor.replace(/\s+/g, '_')}` : '_Todos';
-            const claveUnica = `comunicado_novedades_${nombreDeptoClave}_${turno}${sufijoSupervisor}_${Date.now()}`;
+            let sufijoSupervisor = supervisor ? `_${supervisor.replace(/\s+/g, '_')}` : '_todos';
+            const claveUnica = `comunicado_novedades_${deptoDestinoNormalizado}_${turno}${sufijoSupervisor}_${Date.now()}`;
             
             const { error } = await db
                 .from('comunicados_memos')
@@ -461,10 +495,10 @@
                     { 
                         id_clave: claveUnica, 
                         contenido: dataContenido,
-                        departamento_destino: destino,
-                        turno_destino: turno,
-                        supervisor_destino: supervisor,
-                        departamento_origen: 'higiene-y-seguridad',
+                        departamento_destino: deptoDestinoNormalizado,
+                        departamento_origen: deptoOrigenNormalizado,
+                        turno_destino: turno === 'Todos' ? null : turno,
+                        supervisor_destino: supervisor || null,
                         remitente: usuarioRemitente
                     },
                     { onConflict: 'id_clave' }
@@ -492,7 +526,6 @@
                     return;
                 }
 
-                // Lógica de Admin replicada: carga global sin filtros estrictos por defecto en el query, filtrando dinámicamente según selects superiores
                 const { data, error } = await supabaseClient
                     .from('comunicados_memos')
                     .select('*')
@@ -506,41 +539,56 @@
                     return;
                 }
 
-                const filtroDeptoVal = document.getElementById('depto-destino-novedades').value;
-                const filtroSupervisorVal = document.getElementById('supervisor-destino-novedades').value;
-                const filtroTurnoVal = document.getElementById('turno-destino-novedades').value;
+                const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim().toLowerCase();
+                const usuarioActual = (localStorage.getItem('usuario_nombre') || "invitado").trim().toLowerCase();
 
                 const filtrados = data.filter(item => {
                     const deptoDestino = (item.departamento_destino || '').trim();
-                    const turnoDestino = (item.turno_destino || 'Todos').trim();
-                    const supervisorDestino = (item.supervisor_destino || 'Todos').trim();
+                    const turnoDestino = (item.turno_destino || 'Todos').trim().toLowerCase();
+                    const supervisorDestino = (item.supervisor_destino || '').trim().toLowerCase();
+                    const contenidoObj = item.contenido || {};
+                    const remitenteDepto = (item.departamento_origen || contenidoObj.departamento || '').trim().toLowerCase();
 
-                    if (filtroDeptoVal !== 'Todos' && deptoDestino !== filtroDeptoVal && deptoDestino !== 'Todos') return false;
-                    if (filtroSupervisorVal !== 'Todos' && supervisorDestino !== filtroSupervisorVal && supervisorDestino !== 'Todos') return false;
-                    if (filtroTurnoVal !== 'Todos' && turnoDestino !== filtroTurnoVal && turnoDestino !== 'Todos') return false;
+                    // Si nosotros lo enviamos, se muestra siempre en nuestro muro como enviado
+                    if (remitenteDepto === 'higiene-y-seguridad') return true;
 
-                    return true;
+                    // Si viene de otro depto, validamos que esté dirigido a Todos o específicamente a nosotros
+                    if (deptoDestino === 'Todos' || deptoDestino === 'todos') return true;
+
+                    if (deptoDestino === 'higiene-y-seguridad') {
+                        if (turnoDestino !== 'todos' && turnoDestino !== turnoActual) return false;
+                        if (supervisorDestino && supervisorDestino !== usuarioActual) return false;
+                        return true;
+                    }
+
+                    return false;
                 });
 
                 if (filtrados.length === 0) {
-                    contenedorNov.innerHTML = '<p style="color: #666; font-style: italic;">No hay registros que coincidan con los filtros seleccionados.</p>';
+                    contenedorNov.innerHTML = '<p style="color: #666; font-style: italic;">No hay comunicaciones dirigidas a este sector.</p>';
                     return;
                 }
 
-                // Marcar como leído el último elemento listado de forma global (comportamiento admin)
-                const usuarioActual = (localStorage.getItem('usuario_nombre') || "invitado").trim().toLowerCase();
-                localStorage.setItem(`dsg_hyc_ultimo_novedad_leida_${usuarioActual}`, data[0].id);
-                const badge = document.getElementById('badge-novedades');
-                if (badge) badge.style.display = 'none';
+                const recibidosNoLeidos = filtrados.filter(item => {
+                    const contenidoObj = item.contenido || {};
+                    const remitenteDepto = (item.departamento_origen || contenidoObj.departamento || '').trim().toLowerCase();
+                    return remitenteDepto !== 'higiene-y-seguridad';
+                });
+
+                if (recibidosNoLeidos.length > 0) {
+                    localStorage.setItem(`dsg_hyc_ultimo_novedad_leida_${usuarioActual}`, recibidosNoLeidos[0].id);
+                    const badge = document.getElementById('badge-novedades');
+                    if (badge) badge.style.display = 'none';
+                }
 
                 let html = '';
                 filtrados.forEach(item => {
                     const contenidoObj = item.contenido || {};
                     const texto = contenidoObj.texto || 'Sin contenido';
-                    const fecha = contenidoObj.fecha || 'Sin fecha';
-                    const turnoMsg = contenidoObj.turno || item.turno_destino || 'General';
+                    const fecha = contenidoObj.fecha || item.created_at || 'Sin fecha';
+                    const turnoMsg = item.turno_destino || contenidoObj.turno || 'General';
                     const supervisorMsg = item.supervisor_destino || contenidoObj.supervisor || 'Todos';
-                    const remitenteDepto = (item.departamento_origen || contenidoObj.departamento || 'higiene-y-seguridad').trim().toLowerCase();
+                    const remitenteDepto = (item.departamento_origen || contenidoObj.departamento || '').trim().toLowerCase();
 
                     const nombresDeptosLegibles = {
                         'higiene-y-seguridad': 'Higiene y Seguridad',
@@ -554,7 +602,7 @@
                         'todos': 'Todos los departamentos'
                     };
 
-                    const deptoEmisorLegible = nombresDeptosLegibles[remitenteDepto] || remitenteDepto;
+                    const deptoEmisorLegible = nombresDeptosLegibles[remitenteDepto] || remitenteDepto || 'Desconocido';
                     const deptoDestinoValor = item.departamento_destino || 'Todos';
                     const deptoDestinoLegible = nombresDeptosLegibles[deptoDestinoValor] || deptoDestinoValor;
 
@@ -565,7 +613,8 @@
 
                     if (esEnviado) {
                         etiquetaEstado = '<span class="badge-estado-muro badge-estado-enviado">Mensaje Enviado</span>';
-                        infoDetalleCabecera = `<b>Destino:</b> ${deptoDestinoLegible} (${supervisorMsg}) | <b>Turno Destino:</b> ${turnoMsg}`;
+                        let supInfoDestino = supervisorMsg ? ` (${supervisorMsg})` : '';
+                        infoDetalleCabecera = `<b>Destino:</b> ${deptoDestinoLegible}${supInfoDestino} | <b>Turno Destino:</b> ${turnoMsg}`;
                     } else {
                         etiquetaEstado = '<span class="badge-estado-muro badge-estado-recibido">Mensaje Recibido</span>';
                         let remitenteReal = item.remitente || contenidoObj.remitente || 'Supervisor';
