@@ -119,7 +119,7 @@
         .box-A { background-color: #dc3545; }
         .box-L { background-color: #ffc107; }
 
-        /* Estilos específicos para el muro de historial en novedades */
+        /* Estilos específicos integrados para el muro de historial en novedades (limpios y optimizados) */
         .historial-muro-container { margin-top: 30px; border-top: 2px solid #1a3a5f; padding-top: 20px; }
         .historial-muro-titulo { font-size: 16px; font-weight: bold; color: #1a3a5f; margin-bottom: 15px; }
         .muro-item { background: #fdfdfd; border: 1px solid #ddd; border-left: 4px solid #1a3a5f; padding: 15px; border-radius: 6px; margin-bottom: 15px; }
@@ -336,16 +336,22 @@
                                 <img src="{{ url_for('static', filename='logo_dsg.png') }}" alt="Logo DSG" style="height: 135px;">
                             </div>
                             <div class="filtros-historicos">
-                                <select id="depto-destino-novedades" class="input-select" onchange="manejarCambioDepto('destino-novedades')">
+                                <select id="depto-destino-novedades" class="input-select" onchange="manejarCambioDepto('destino-novedades'); actualizarPrint('novedades');">
                                     <option value="Todos">Todos los departamentos</option>
                                     <option value="direccion-servicios-generales">Dirección Servicios Generales</option>
                                     <option value="intendencia">Intendencia</option>
                                     <option value="division-ascensores">Ascensores</option>
                                     <option value="lavadero-central">Lavadero Central</option>
                                     <option value="camilleros-central">Camilleros</option>
-                                    <option value="higiene-y-seguridad">Higiene y Seguridad</option>
+                                    <option value="conmutador">Conmutador</option>
                                     <option value="dalo">DALO</option>
+                                    <option value="higiene-y-seguridad">Higiene y Seguridad</option>
                                 </select>
+                                <div id="contenedor-supervisor-destino-novedades" style="display: none;">
+                                    <select id="supervisor-destino-novedades" class="input-select" onchange="actualizarPrint('novedades')">
+                                        <option value="">-- Todos los supervisores --</option>
+                                    </select>
+                                </div>
                                 <select id="turno-destino-novedades" class="input-select" onchange="actualizarPrint('novedades')">
                                     <option value="Todos">Todos los turnos</option>
                                     <option value="Mañana">Mañana</option>
@@ -354,11 +360,6 @@
                                     <option value="Noche B">Noche B</option>
                                     <option value="Sadofe">Sadofe</option>
                                 </select>
-                                <div id="contenedor-supervisor-destino-novedades" style="display: none;">
-                                    <select id="supervisor-destino-novedades" class="input-select" onchange="actualizarPrint('novedades')">
-                                        <option value="">-- Todos los supervisores --</option>
-                                    </select>
-                                </div>
                                 <button class="btn-gestion btn-adjuntar" onclick="document.getElementById('file-novedades').click()">📎 Adjuntar Archivos</button>
                                 <input type="file" id="file-novedades" style="display:none" multiple onchange="previsualizarMultiples(this, 'novedades')">
                                 <button class="btn-gestion" style="background: #28a745; color: white;" onclick="guardarRedaccion('novedades')">Guardar y Enviar</button>
@@ -371,22 +372,12 @@
                             
                             <div class="area-acciones">
                                 <button id="btn-print-novedades" class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
-                                <button class="btn-gestion btn-limpiar" onclick="limpiarPantalla('novedades')">🧹 Limpiar Pantalla</button>
+                                <button class="btn-gestion btn-imprimir" style="background: #dc3545;" onclick="limpiarPantalla('novedades')">🧹 Limpiar Pantalla</button>
                             </div>
 
                             <div class="historial-muro-container">
-                                <div class="historial-muro-titulo" style="display: flex; justify-content: space-between; align-items: center;">
-                                    <span>📌 Historial de Envíos y Recepción en Muro (Novedades)</span>
-                                    <div style="display: flex; gap: 10px;">
-                                        <select id="filtro-muro-tipo" class="input-select" style="padding: 5px 10px; font-size: 12px;" onchange="renderizarMuroNovedades()">
-                                            <option value="todos">Todos (Enviados y Recibidos)</option>
-                                            <option value="enviados">Mensajes Enviados</option>
-                                            <option value="recibidos">Mensajes Recibidos</option>
-                                        </select>
-                                        <button class="btn-gestion" style="background: #1a3a5f; color: white; padding: 5px 10px; font-size: 12px;" onclick="cargarHistorialMuroNovedades()">🔄 Actualizar</button>
-                                    </div>
-                                </div>
-                                <div id="historial-muro-novedades">Cargando registros históricos...</div>
+                                <div class="historial-muro-titulo">📌 Historial de Envíos en Muro (Novedades)</div>
+                                <div id="contenedor-novedades">Cargando registros históricos...</div>
                             </div>
                         </div>
                     `);
@@ -520,7 +511,6 @@
     <script>
         let archivoData = {};
         let archivosMultiplesNovedades = [];
-        let cacheHistorialNovedades = [];
 
         function mostrar(id, titulo) { 
             document.querySelectorAll('.seccion').forEach(s => s.classList.remove('activo')); 
@@ -583,7 +573,8 @@
         }
 
         async function cargarHistorialMuroNovedades() {
-            const contenedorMuro = document.getElementById('historial-muro-novedades');
+            const contenedorMuro = document.getElementById('contenedor-novedades');
+            if (!contenedorMuro) return;
             contenedorMuro.innerHTML = 'Cargando registros históricos...';
 
             try {
@@ -595,82 +586,50 @@
 
                 if (error) throw error;
 
-                cacheHistorialNovedades = data || [];
-                renderizarMuroNovedades();
+                if (!data || data.length === 0) {
+                    contenedorMuro.innerHTML = '<p style="color: #666; font-style: italic;">No hay envíos registrados en el muro de novedades.</p>';
+                    return;
+                }
+
+                let html = '';
+                data.forEach(row => {
+                    const contenido = row.contenido || {};
+                    const texto = contenido.texto || 'Sin texto';
+                    const fecha = contenido.fecha || row.created_at || 'Fecha desconocida';
+                    
+                    const deptoDestino = row.departamento_destino || contenido.departamento || 'Todos';
+                    const deptoOrigen = row.departamento_origen || contenido.origen || 'direccion-servicios-generales';
+                    const turno = row.turno_destino || contenido.turno || 'Todos';
+                    const supervisor = (row.supervisor_destino || contenido.supervisor) ? ` | <b>Supervisor:</b> ${row.supervisor_destino || contenido.supervisor}` : '';
+
+                    let adjuntosHtml = '';
+                    if (contenido.archivos && Array.isArray(contenido.archivos) && contenido.archivos.length > 0) {
+                        adjuntosHtml = '<div class="muro-adjuntos"><b>Archivos:</b> ';
+                        contenido.archivos.forEach(adj => {
+                            adjuntosHtml += `<a href="${adj.data}" download="${adj.name}" target="_blank">📥 ${adj.name}</a>`;
+                        });
+                        adjuntosHtml += '</div>';
+                    } else if (contenido.archivo && contenido.archivo.name) {
+                        adjuntosHtml = `<div class="muro-adjuntos"><b>Archivo:</b> <a href="${contenido.archivo.data}" download="${contenido.archivo.name}" target="_blank">📥 ${contenido.archivo.name}</a></div>`;
+                    }
+
+                    html += `
+                        <div class="muro-item">
+                            <div class="muro-header">
+                                <span><b>Origen:</b> ${deptoOrigen} | <b>Destino:</b> ${deptoDestino} | <b>Turno:</b> ${turno}${supervisor}</span>
+                                <span>${fecha}</span>
+                            </div>
+                            <div class="muro-body">${texto}</div>
+                            ${adjuntosHtml}
+                        </div>
+                    `;
+                });
+
+                contenedorMuro.innerHTML = html;
             } catch (err) {
                 console.error("Error al cargar historial del muro de novedades:", err);
                 contenedorMuro.innerHTML = '<p style="color: red;">Error al cargar el historial del muro.</p>';
             }
-        }
-
-        function renderizarMuroNovedades() {
-            const contenedorMuro = document.getElementById('historial-muro-novedades');
-            const filtroTipo = document.getElementById('filtro-muro-tipo')?.value || 'todos';
-
-            if (!cacheHistorialNovedades || cacheHistorialNovedades.length === 0) {
-                contenedorMuro.innerHTML = '<p style="color: #666; font-style: italic;">No hay envíos registrados en el muro de novedades.</p>';
-                return;
-            }
-
-            const deptoActual = 'direccion-servicios-generales';
-            const filtrados = cacheHistorialNovedades.filter(row => {
-                const contenido = row.contenido || {};
-                const deptoOrigen = row.departamento_origen || contenido.origen || '';
-                const deptoDestino = row.departamento_destino || contenido.departamento || '';
-
-                const esEnviado = (deptoOrigen === deptoActual);
-                const esRecibido = (deptoDestino === deptoActual || deptoDestino === 'Todos');
-
-                if (filtroTipo === 'enviados') return esEnviado;
-                if (filtroTipo === 'recibidos') return esRecibido;
-                return true;
-            });
-
-            if (filtrados.length === 0) {
-                contenedorMuro.innerHTML = '<p style="color: #666; font-style: italic;">No hay registros para el filtro seleccionado.</p>';
-                return;
-            }
-
-            let html = '';
-            filtrados.forEach(row => {
-                const contenido = row.contenido || {};
-                const texto = contenido.texto || 'Sin texto';
-                const fecha = contenido.fecha || row.created_at || 'Fecha desconocida';
-                
-                const deptoDestino = row.departamento_destino || contenido.departamento || 'Todos';
-                const deptoOrigen = row.departamento_origen || contenido.origen || 'direccion-servicios-generales';
-                const turno = row.turno_destino || contenido.turno || 'Todos';
-                const supervisor = (row.supervisor_destino || contenido.supervisor) ? ` | <b>Supervisor:</b> ${row.supervisor_destino || contenido.supervisor}` : '';
-
-                const esEnviado = (deptoOrigen === deptoActual);
-                const etiquetaTipo = esEnviado 
-                    ? '<span style="background: #1a3a5f; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; margin-right: 5px;">ENVIADO</span>' 
-                    : '<span style="background: #28a745; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; margin-right: 5px;">RECIBIDO</span>';
-
-                let adjuntosHtml = '';
-                if (contenido.archivos && Array.isArray(contenido.archivos) && contenido.archivos.length > 0) {
-                    adjuntosHtml = '<div class="muro-adjuntos"><b>Archivos:</b> ';
-                    contenido.archivos.forEach(adj => {
-                        adjuntosHtml += `<a href="${adj.data}" download="${adj.name}" target="_blank">📥 ${adj.name}</a>`;
-                    });
-                    adjuntosHtml += '</div>';
-                } else if (contenido.archivo && contenido.archivo.name) {
-                    adjuntosHtml = `<div class="muro-adjuntos"><b>Archivo:</b> <a href="${contenido.archivo.data}" download="${contenido.archivo.name}" target="_blank">📥 ${contenido.archivo.name}</a></div>`;
-                }
-
-                html += `
-                    <div class="muro-item" style="${!esEnviado ? 'border-left-color: #28a745; background: #f4faf4;' : ''}">
-                        <div class="muro-header">
-                            <span>${etiquetaTipo}<b>Origen:</b> ${deptoOrigen} | <b>Destino:</b> ${deptoDestino} | <b>Turno:</b> ${turno}${supervisor}</span>
-                            <span>${fecha}</span>
-                        </div>
-                        <div class="muro-body">${texto}</div>
-                        ${adjuntosHtml}
-                    </div>
-                `;
-            });
-
-            contenedorMuro.innerHTML = html;
         }
 
         async function cargarEstadoAscensoresVivo() {
