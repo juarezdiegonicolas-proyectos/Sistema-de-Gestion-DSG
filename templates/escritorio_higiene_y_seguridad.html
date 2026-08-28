@@ -224,6 +224,19 @@
         function obtenerFechaHoyISO() { return new Date().toISOString().split('T')[0]; }
         inputFecha.value = localStorage.getItem('hyc_fecha') || obtenerFechaHoyISO();
 
+        function toKebabCase(str) {
+            if (!str) return '';
+            return str
+                .toString()
+                .trim()
+                .toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/\s+/g, '-')
+                .replace(/[^\w\-]+/g, '')
+                .replace(/\-\-+/g, '-');
+        }
+
         function cerrarSesion() {
             localStorage.removeItem('usuario_nombre');
             localStorage.removeItem('usuario_turno');
@@ -436,7 +449,7 @@
         }
 
         async function guardarRedaccion(id) {
-            const destino = document.getElementById('depto-destino-' + id).value;
+            const destinoVisual = document.getElementById('depto-destino-' + id).value;
             const turno = document.getElementById('turno-destino-' + id).value;
             const supervisorSelect = document.getElementById('supervisor-destino-' + id);
             const supervisor = supervisorSelect ? supervisorSelect.value : 'Todos';
@@ -452,30 +465,23 @@
 
             const usuarioRemitente = localStorage.getItem('usuario_nombre') || "Higiene y Seguridad";
 
+            // Normalización estricta idéntica para origen y destino
+            const deptoOrigenNormalizado = 'higiene-y-seguridad';
+            const deptoDestinoNormalizado = toKebabCase(destinoVisual);
+
             const dataContenido = {
                 texto: textoEscrito,
                 archivos: listaArchivos,
                 archivo: primerArchivo,
                 fecha: new Date().toLocaleString(),
-                departamento: 'higiene-y-seguridad',
+                departamento: deptoOrigenNormalizado,
                 turno: turno,
                 supervisor: supervisor,
                 remitente: usuarioRemitente
             };
             
-            let nombreDeptoClave = destino;
-            if (destino === 'division-ascensores') nombreDeptoClave = 'Ascensores';
-            if (destino === 'camilleros-central') nombreDeptoClave = 'Camilleros';
-            if (destino === 'intendencia') nombreDeptoClave = 'Intendencia';
-            if (destino === 'lavadero-central') nombreDeptoClave = 'Lavadero';
-            if (destino === 'conmutador') nombreDeptoClave = 'Conmutador';
-            if (destino === 'dalo') nombreDeptoClave = 'DALO';
-            if (destino === 'direccion-servicios-generales') nombreDeptoClave = 'DSG';
-            if (destino === 'higiene-y-seguridad') nombreDeptoClave = 'Higiene_Seguridad';
-            if (destino === 'Todos') nombreDeptoClave = 'Todos';
-
-            let sufijoSupervisor = supervisor !== 'Todos' ? `_${supervisor.replace(/\s+/g, '_')}` : '_Todos';
-            const claveUnica = `comunicado_novedades_${nombreDeptoClave}_${turno}${sufijoSupervisor}_${Date.now()}`;
+            let sufijoSupervisor = supervisor !== 'Todos' ? `_${supervisor.replace(/\s+/g, '_')}` : '_todos';
+            const claveUnica = `comunicado_novedades_${deptoDestinoNormalizado}_${turno}${sufijoSupervisor}_${Date.now()}`;
             
             const { error } = await db
                 .from('comunicados_memos')
@@ -483,10 +489,10 @@
                     { 
                         id_clave: claveUnica, 
                         contenido: dataContenido,
-                        departamento_destino: destino,
-                        turno_destino: turno,
-                        supervisor_destino: supervisor,
-                        departamento_origen: 'higiene-y-seguridad',
+                        departamento_destino: deptoDestinoNormalizado,
+                        departamento_origen: deptoOrigenNormalizado,
+                        turno_destino: turno === 'Todos' ? null : turno,
+                        supervisor_destino: supervisor === 'Todos' ? null : supervisor,
                         remitente: usuarioRemitente
                     },
                     { onConflict: 'id_clave' }
