@@ -67,6 +67,18 @@
         }
         .menu-item:hover { background-color: #5d8dbb; color: white; }
 
+        /* Estilo para los badges de no leídos en el menú */
+        .badge-no-leidos {
+            background-color: #dc3545;
+            color: white;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 10px;
+            display: inline-block;
+            margin-left: 5px;
+        }
+
         .sidebar-footer { 
             display: flex; 
             flex-direction: column; 
@@ -211,8 +223,8 @@
             <div class="menu-item" onclick="mostrar('rrhh', 'Auditoría RRHH')"><span>👥 RRHH</span></div>
             <div class="menu-item" onclick="mostrar('insumos', 'Auditoría Insumos')"><span>📦 Insumos</span></div>
             <div class="menu-item" onclick="mostrar('estado-ascensores', 'Estado Actual de Ascensores')"><span>🛗 Estado Ascensores</span></div>
-            <div class="menu-item" onclick="mostrar('novedades', 'Novedades')"><span>📝 Novedades</span></div>
-            <div class="menu-item" onclick="mostrar('memos', 'Memos y Resoluciones')"><span>📜 Memos y Resoluciones</span></div>
+            <div class="menu-item" onclick="mostrar('novedades', 'Novedades')"><span>📝 Novedades <span id="badge-novedades" class="badge-no-leidos" style="display:none;">0</span></span></div>
+            <div class="menu-item" onclick="mostrar('memos', 'Memos y Resoluciones')"><span>📜 Memos y Resoluciones <span id="badge-memos" class="badge-no-leidos" style="display:none;">0</span></span></div>
             <div class="menu-item" onclick="mostrar('estadisticas', 'Estadísticas Mensuales')"><span>📈 Estadísticas Mensuales</span></div>
         </div>
 
@@ -521,6 +533,10 @@
             if (id === 'novedades') {
                 cargarHistorialMuroNovedades();
                 manejarCambioDepto('destino-novedades');
+                marcarLeidosSeccion('novedades');
+            }
+            if (id === 'memos') {
+                marcarLeidosSeccion('memos');
             }
         }
         function limpiarPantalla(id) {
@@ -828,7 +844,8 @@
             };
 
             let sufijoSupervisor = supervisor ? `_${supervisor.replace(/\s+/g, '_')}` : '_todos';
-            const claveUnica = `comunicado_novedades_${deptoDestinoNormalizado}_${turno}${sufijoSupervisor}_${Date.now()}`;
+            const prefijoClave = id === 'memos' ? 'comunicado_memos_' : 'comunicado_novedades_';
+            const claveUnica = `${prefijoClave}${deptoDestinoNormalizado}_${turno}${sufijoSupervisor}_${Date.now()}`;
             
             // Inserción en Supabase garantizando el uso estricto de kebab-case en ambas columnas
             const { error } = await db
@@ -849,11 +866,91 @@
                 console.error("Error al guardar en Supabase:", error);
                 alert("Error al enviar a la base de datos: " + error.message);
             } else {
-                alert("Novedad enviada correctamente con la sintaxis estricta configurada.");
+                alert((id === 'memos' ? "Memo o Resolución" : "Novedad") + " enviado correctamente con la sintaxis estricta configurada.");
                 if (id === 'novedades') {
                     cargarHistorialMuroNovedades();
                     archivosMultiplesNovedades = [];
                 }
+            }
+        }
+
+        // Lógica para el sistema de Badges de No Leídos
+        async function verificarBadgesNoLeidos() {
+            try {
+                const { data, error } = await db
+                    .from('comunicados_memos')
+                    .select('id_clave');
+
+                if (error) throw error;
+                if (!data) return;
+
+                let noLeidosNovedades = 0;
+                let noLeidosMemos = 0;
+
+                const leidosNovedades = JSON.parse(localStorage.getItem('admin_leidos_novedades') || '[]');
+                const leidosMemos = JSON.parse(localStorage.getItem('admin_leidos_memos') || '[]');
+
+                data.forEach(row => {
+                    const idClave = row.id_clave;
+                    if (idClave.startsWith('comunicado_novedades_')) {
+                        if (!leidosNovedades.includes(idClave)) {
+                            noLeidosNovedades++;
+                        }
+                    } else if (idClave.startsWith('comunicado_memos_')) {
+                        if (!leidosMemos.includes(idClave)) {
+                            noLeidosMemos++;
+                        }
+                    }
+                });
+
+                const badgeNovedades = document.getElementById('badge-novedades');
+                if (badgeNovedades) {
+                    if (noLeidosNovedades > 0) {
+                        badgeNovedades.innerText = noLeidosNovedades;
+                        badgeNovedades.style.display = 'inline-block';
+                    } else {
+                        badgeNovedades.style.display = 'none';
+                    }
+                }
+
+                const badgeMemos = document.getElementById('badge-memos');
+                if (badgeMemos) {
+                    if (noLeidosMemos > 0) {
+                        badgeMemos.innerText = noLeidosMemos;
+                        badgeMemos.style.display = 'inline-block';
+                    } else {
+                        badgeMemos.style.display = 'none';
+                    }
+                }
+            } catch (err) {
+                console.error("Error al verificar badges no leídos:", err);
+            }
+        }
+
+        async function marcarLeidosSeccion(id) {
+            try {
+                const prefijo = id === 'memos' ? 'comunicado_memos_' : 'comunicado_novedades_';
+                const storageKey = id === 'memos' ? 'admin_leidos_memos' : 'admin_leidos_novedades';
+
+                const { data, error } = await db
+                    .from('comunicados_memos')
+                    .select('id_clave')
+                    .ilike('id_clave', prefijo + '%');
+
+                if (error) throw error;
+                if (!data) return;
+
+                let leidos = JSON.parse(localStorage.getItem(storageKey) || '[]');
+                data.forEach(row => {
+                    if (!leidos.includes(row.id_clave)) {
+                        leidos.push(row.id_clave);
+                    }
+                });
+
+                localStorage.setItem(storageKey, JSON.stringify(leidos));
+                verificarBadgesNoLeidos();
+            } catch (err) {
+                console.error("Error al marcar como leídos:", err);
             }
         }
 
@@ -1272,6 +1369,8 @@
         }
         document.getElementById('reportes').classList.add('activo');
         cargarHistorialMuroNovedades();
+        verificarBadgesNoLeidos();
+        setInterval(verificarBadgesNoLeidos, 15000); // Actualiza cada 15s
     </script>
 </body>
 </html>
