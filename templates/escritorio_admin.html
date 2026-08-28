@@ -586,7 +586,7 @@
                     
                     const depto = row.departamento_destino || contenido.departamento || 'Todos';
                     const turno = row.turno_destino || contenido.turno || 'Todos';
-                    const supervisor = row.supervisor_destino ? ` | <b>Supervisor:</b> ${row.supervisor_destino}` : (contenido.supervisor ? ` | <b>Supervisor:</b> ${contenido.supervisor}` : '');
+                    const supervisor = (row.supervisor_destino || contenido.supervisor) ? ` | <b>Supervisor:</b> ${row.supervisor_destino || contenido.supervisor}` : '';
 
                     let adjuntosHtml = '';
                     if (contenido.archivos && Array.isArray(contenido.archivos) && contenido.archivos.length > 0) {
@@ -823,16 +823,19 @@
             let sufijoSupervisor = supervisor ? `_${supervisor.replace(/\s+/g, '_')}` : '_todos';
             const claveUnica = `comunicado_novedades_${nombreDeptoClave}_${turno}${sufijoSupervisor}_${Date.now()}`;
             
+            // Conversión estricta a minúsculas y uso de guiones en los campos de destino y turno
+            const deptoMinusculaGuiones = destino === 'Todos' ? 'todos' : destino.toLowerCase().replace(/\s+/g, '-');
+            const turnoMinusculaGuiones = turno === 'Todos' ? 'todos' : turno.toLowerCase().replace(/\s+/g, '-');
+
             const { error } = await db
                 .from('comunicados_memos')
                 .upsert(
                     { 
                         id_clave: claveUnica, 
                         contenido: data,
-                        departamento_destino: destino === 'Todos' ? null : nombreDeptoClave,
-                        turno_destino: turno === 'Todos' ? null : turno,
-                        supervisor_destino: supervisor || null,
-                        departamento_origen: 'direccion-servicios-generales'
+                        departamento_destino: deptoMinusculaGuiones,
+                        turno_destino: turnoMinusculaGuiones,
+                        supervisor_destino: supervisor || null
                     },
                     { onConflict: 'id_clave' }
                 );
