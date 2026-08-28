@@ -586,7 +586,7 @@
                     
                     const depto = row.departamento_destino || contenido.departamento || 'Todos';
                     const turno = row.turno_destino || contenido.turno || 'Todos';
-                    const supervisor = (row.supervisor_destino || contenido.supervisor) ? ` | <b>Supervisor:</b> ${row.supervisor_destino || contenido.supervisor}` : '';
+                    const supervisor = row.supervisor_destino ? ` | <b>Supervisor:</b> ${row.supervisor_destino}` : (contenido.supervisor ? ` | <b>Supervisor:</b> ${contenido.supervisor}` : '');
 
                     let adjuntosHtml = '';
                     if (contenido.archivos && Array.isArray(contenido.archivos) && contenido.archivos.length > 0) {
@@ -831,7 +831,8 @@
                         contenido: data,
                         departamento_destino: destino === 'Todos' ? null : nombreDeptoClave,
                         turno_destino: turno === 'Todos' ? null : turno,
-                        supervisor_destino: supervisor || null
+                        supervisor_destino: supervisor || null,
+                        departamento_origen: 'direccion-servicios-generales'
                     },
                     { onConflict: 'id_clave' }
                 );
