@@ -325,31 +325,16 @@
                                 <img src="{{ url_for('static', filename='logo_dsg.png') }}" alt="Logo DSG" style="height: 135px;">
                             </div>
                             <div class="filtros-historicos">
-                                <div style="display: flex; flex-direction: column; gap: 4px;">
-                                    <label style="font-size: 11px; font-weight: bold; color: #1a3a5f;">Dpto Origen:</label>
-                                    <select id="depto-origen-novedades" class="input-select">
-                                        <option value="Dirección Servicios Generales">Dirección Servicios Generales</option>
-                                        <option value="Intendencia">Intendencia</option>
-                                        <option value="Ascensores">Ascensores</option>
-                                        <option value="Lavadero Central">Lavadero Central</option>
-                                        <option value="Camilleros">Camilleros</option>
-                                        <option value="Higiene y Seguridad">Higiene y Seguridad</option>
-                                        <option value="DALO">DALO</option>
-                                    </select>
-                                </div>
-                                <div style="display: flex; flex-direction: column; gap: 4px;">
-                                    <label style="font-size: 11px; font-weight: bold; color: #1a3a5f;">Dpto Destino:</label>
-                                    <select id="depto-destino-novedades" class="input-select" onchange="manejarCambioDepto('destino-novedades')">
-                                        <option value="Todos">Todos los departamentos</option>
-                                        <option value="direccion-servicios-generales">Dirección Servicios Generales</option>
-                                        <option value="intendencia">Intendencia</option>
-                                        <option value="division-ascensores">Ascensores</option>
-                                        <option value="lavadero-central">Lavadero Central</option>
-                                        <option value="camilleros-central">Camilleros</option>
-                                        <option value="higiene-y-seguridad">Higiene y Seguridad</option>
-                                        <option value="dalo">DALO</option>
-                                    </select>
-                                </div>
+                                <select id="depto-destino-novedades" class="input-select" onchange="manejarCambioDepto('destino-novedades')">
+                                    <option value="Todos">Todos los departamentos</option>
+                                    <option value="direccion-servicios-generales">Dirección Servicios Generales</option>
+                                    <option value="intendencia">Intendencia</option>
+                                    <option value="division-ascensores">Ascensores</option>
+                                    <option value="lavadero-central">Lavadero Central</option>
+                                    <option value="camilleros-central">Camilleros</option>
+                                    <option value="higiene-y-seguridad">Higiene y Seguridad</option>
+                                    <option value="dalo">DALO</option>
+                                </select>
                                 <select id="turno-destino-novedades" class="input-select" onchange="actualizarPrint('novedades')">
                                     <option value="Todos">Todos los turnos</option>
                                     <option value="Mañana">Mañana</option>
@@ -368,7 +353,7 @@
                                 <button class="btn-gestion" style="background: #28a745; color: white;" onclick="guardarRedaccion('novedades')">Guardar y Enviar</button>
                             </div>
                             
-                            <div id="print-header-novedades" class="print-header">De: Dirección Servicios Generales | Dirigido a: Todos los departamentos | Turno: Todos los turnos</div>
+                            <div id="print-header-novedades" class="print-header">Dirigido a: Todos los departamentos | Turno: Todos los turnos</div>
                             <textarea id="txt-novedades" oninput="document.getElementById('print-novedades').innerText = this.value" placeholder="Escriba aquí el contenido..."></textarea>
                             <div id="print-novedades" class="print-only"></div>
                             <div id="preview-novedades" class="preview-adjunto"></div>
@@ -381,64 +366,6 @@
                             <div class="historial-muro-container">
                                 <div class="historial-muro-titulo">📌 Historial de Envíos en Muro (Novedades)</div>
                                 <div id="historial-muro-novedades">Cargando registros históricos...</div>
-                            </div>
-                        </div>
-                    `);
-                } else if (id === 'memos') {
-                    document.write(`
-                        <div id="memos" class="seccion">
-                            <div class="header-logos">
-                                <img src="{{ url_for('static', filename='logo_hospi.png') }}" alt="Logo">
-                                <h1 style="margin: 0; text-align: center; flex: 1;">${titulo}</h1>
-                                <img src="{{ url_for('static', filename='logo_dsg.png') }}" alt="Logo DSG" style="height: 135px;">
-                            </div>
-                            <div class="filtros-historicos">
-                                <div style="display: flex; flex-direction: column; gap: 4px;">
-                                    <label style="font-size: 11px; font-weight: bold; color: #1a3a5f;">Dpto Origen:</label>
-                                    <select id="depto-origen-${id}" class="input-select">
-                                        <option value="Dirección Servicios Generales">Dirección Servicios Generales</option>
-                                        <option value="Intendencia">Intendencia</option>
-                                        <option value="Ascensores">Ascensores</option>
-                                        <option value="Lavadero Central">Lavadero Central</option>
-                                        <option value="Camilleros">Camilleros</option>
-                                        <option value="Higiene y Seguridad">Higiene y Seguridad</option>
-                                        <option value="DALO">DALO</option>
-                                    </select>
-                                </div>
-                                <div style="display: flex; flex-direction: column; gap: 4px;">
-                                    <label style="font-size: 11px; font-weight: bold; color: #1a3a5f;">Dpto Destino:</label>
-                                    <select id="depto-destino-${id}" class="input-select" onchange="actualizarPrint('${id}')">
-                                        <option value="Todos">Todos los departamentos</option>
-                                        <option value="direccion-servicios-generales">Dirección Servicios Generales</option>
-                                        <option value="intendencia">Intendencia</option>
-                                        <option value="division-ascensores">Ascensores</option>
-                                        <option value="lavadero-central">Lavadero Central</option>
-                                        <option value="camilleros-central">Camilleros</option>
-                                        <option value="higiene-y-seguridad">Higiene y Seguridad</option>
-                                        <option value="dalo">DALO</option>
-                                    </select>
-                                </div>
-                                <select id="turno-destino-${id}" class="input-select" onchange="actualizarPrint('${id}')">
-                                    <option value="Todos">Todos los turnos</option>
-                                    <option value="Mañana">Mañana</option>
-                                    <option value="Tarde">Tarde</option>
-                                    <option value="Noche A">Noche A</option>
-                                    <option value="Noche B">Noche B</option>
-                                    <option value="Sadofe">Sadofe</option>
-                                </select>
-                                <button class="btn-gestion btn-adjuntar" onclick="document.getElementById('file-${id}').click()">📎 Adjuntar</button>
-                                <input type="file" id="file-${id}" style="display:none" onchange="previsualizar(this, '${id}')">
-                                <button class="btn-gestion" style="background: #28a745; color: white;" onclick="guardarRedaccion('${id}')">Guardar y Enviar</button>
-                            </div>
-                            
-                            <div id="print-header-${id}" class="print-header">De: Dirección Servicios Generales | Dirigido a: Todos los departamentos | Turno: Todos los turnos</div>
-                            <textarea id="txt-${id}" oninput="document.getElementById('print-${id}').innerText = this.value" placeholder="Escriba aquí el contenido..."></textarea>
-                            <div id="print-${id}" class="print-only"></div>
-                            <div id="preview-${id}" class="preview-adjunto"></div>
-                            
-                            <div class="area-acciones">
-                                <button id="btn-print-${id}" class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
-                                <button class="btn-gestion btn-limpiar" onclick="limpiarPantalla('${id}')">🧹 Limpiar Pantalla</button>
                             </div>
                         </div>
                     `);
@@ -590,8 +517,6 @@
             document.getElementById('print-' + id).innerText = '';
             document.getElementById('preview-' + id).style.display = 'none';
             document.getElementById('preview-' + id).innerHTML = '';
-            const deptoOrigenElem = document.getElementById('depto-origen-' + id);
-            if (deptoOrigenElem) deptoOrigenElem.value = 'Dirección Servicios Generales';
             document.getElementById('depto-destino-' + id).value = 'Todos';
             document.getElementById('turno-destino-' + id).value = 'Todos';
             if (id === 'novedades') {
@@ -659,8 +584,7 @@
                     const texto = contenido.texto || 'Sin texto';
                     const fecha = contenido.fecha || row.created_at || 'Fecha desconocida';
                     
-                    const deptoOrigen = contenido.departamento_origen || 'Dirección Servicios Generales';
-                    const deptoDestino = row.departamento_destino || contenido.departamento || 'Todos';
+                    const depto = row.departamento_destino || contenido.departamento || 'Todos';
                     const turno = row.turno_destino || contenido.turno || 'Todos';
                     const supervisor = (row.supervisor_destino || contenido.supervisor) ? ` | <b>Supervisor:</b> ${row.supervisor_destino || contenido.supervisor}` : '';
 
@@ -678,7 +602,7 @@
                     html += `
                         <div class="muro-item">
                             <div class="muro-header">
-                                <span><b>De:</b> ${deptoOrigen} | <b>Destino:</b> ${deptoDestino} | <b>Turno:</b> ${turno}${supervisor}</span>
+                                <span><b>Destino:</b> ${depto} | <b>Turno:</b> ${turno}${supervisor}</span>
                                 <span>${fecha}</span>
                             </div>
                             <div class="muro-body">${texto}</div>
@@ -837,15 +761,13 @@
         }
 
         function actualizarPrint(id) {
-            const deptoOrigenElem = document.getElementById('depto-origen-' + id);
-            const origen = deptoOrigenElem ? deptoOrigenElem.value : 'Dirección Servicios Generales';
             const depto = document.getElementById('depto-destino-' + id).value;
             const turno = document.getElementById('turno-destino-' + id).value;
             const supElem = document.getElementById('supervisor-destino-' + id);
             const supVal = supElem ? supElem.value : '';
             
             let textoSup = supVal ? ` | Supervisor: ${supVal}` : '';
-            document.getElementById('print-header-' + id).innerText = `De: ${origen} | Dirigido a: ${depto} | Turno: ${turno}${textoSup}`;
+            document.getElementById('print-header-' + id).innerText = `Dirigido a: ${depto} | Turno: ${turno}${textoSup}`;
         }
 
         function previsualizar(input, id) {
@@ -861,8 +783,6 @@
         }
 
         async function guardarRedaccion(id) {
-            const origenElem = document.getElementById('depto-origen-' + id);
-            const origen = origenElem ? origenElem.value : 'Dirección Servicios Generales';
             const destino = document.getElementById('depto-destino-' + id).value;
             const turno = document.getElementById('turno-destino-' + id).value;
             const supervisorElem = document.getElementById('supervisor-destino-' + id);
@@ -885,7 +805,6 @@
                 archivos: listaArchivos,
                 archivo: primerArchivo,
                 fecha: new Date().toLocaleString(),
-                departamento_origen: origen,
                 departamento: destino,
                 turno: turno,
                 supervisor: supervisor
@@ -902,17 +821,17 @@
             if (destino === 'Todos') nombreDeptoClave = 'Todos';
 
             let sufijoSupervisor = supervisor ? `_${supervisor.replace(/\s+/g, '_')}` : '_todos';
-            const claveUnica = `comunicado_${id}_${nombreDeptoClave}_${turno}${sufijoSupervisor}_${Date.now()}`;
+            const claveUnica = `comunicado_novedades_${nombreDeptoClave}_${turno}${sufijoSupervisor}_${Date.now()}`;
             
+            // Modificación solicitada: Inserción estricta con la sintaxis original (minusculas con guiones) para destino y origen
             const { error } = await db
                 .from('comunicados_memos')
                 .upsert(
                     { 
                         id_clave: claveUnica, 
                         contenido: data,
-                        departamento_origen: origen,
-                        departamento_destino: destino === 'Todos' ? null : nombreDeptoClave,
-                        turno_destino: turno === 'Todos' ? null : turno,
+                        departamento_destino: destino,
+                        turno_destino: turno,
                         supervisor_destino: supervisor || null
                     },
                     { onConflict: 'id_clave' }
@@ -922,7 +841,7 @@
                 console.error("Error al guardar en Supabase:", error);
                 alert("Error al enviar a la base de datos: " + error.message);
             } else {
-                alert("Registro enviado correctamente.");
+                alert("Novedad enviada correctamente. Si seleccionaste intendencia, turno mañana y todos los supervisores, esto quedará disponible para que todos lo visualicen.");
                 if (id === 'novedades') {
                     cargarHistorialMuroNovedades();
                     archivosMultiplesNovedades = [];
