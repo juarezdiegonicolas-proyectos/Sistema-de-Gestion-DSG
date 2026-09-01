@@ -578,6 +578,7 @@
             contenedorMuro.innerHTML = 'Cargando registros históricos...';
 
             try {
+                // Consulta abierta sin filtros para traer TODO el historial global de novedades
                 const { data, error } = await db
                     .from('comunicados_memos')
                     .select('*')
@@ -600,7 +601,12 @@
                     const deptoDestino = row.departamento_destino || contenido.departamento || 'Todos';
                     const deptoOrigen = row.departamento_origen || contenido.origen || 'direccion-servicios-generales';
                     const turno = row.turno_destino || contenido.turno || 'Todos';
-                    const supervisor = (row.supervisor_destino || contenido.supervisor) ? ` | <b>Supervisor:</b> ${row.supervisor_destino || contenido.supervisor}` : '';
+                    
+                    let supTexto = row.supervisor_destino || contenido.supervisor;
+                    if (!supTexto || supTexto === 'Todos') {
+                        supTexto = 'General (Todos)';
+                    }
+                    const supervisorDisplay = ` | <b>Supervisor:</b> ${supTexto}`;
 
                     let adjuntosHtml = '';
                     if (contenido.archivos && Array.isArray(contenido.archivos) && contenido.archivos.length > 0) {
@@ -616,7 +622,7 @@
                     html += `
                         <div class="muro-item">
                             <div class="muro-header">
-                                <span><b>Origen:</b> ${deptoOrigen} | <b>Destino:</b> ${deptoDestino} | <b>Turno:</b> ${turno}${supervisor}</span>
+                                <span><b>Origen:</b> ${deptoOrigen} | <b>Destino:</b> ${deptoDestino} | <b>Turno:</b> ${turno}${supervisorDisplay}</span>
                                 <span>${fecha}</span>
                             </div>
                             <div class="muro-body">${texto}</div>
