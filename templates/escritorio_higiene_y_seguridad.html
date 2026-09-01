@@ -306,21 +306,10 @@
                 supervisorSelect.innerHTML = '<option value="">-- Todos los supervisores --</option>';
                 
                 try {
-                    let nombreDeptoFiltro = '';
-                    if (deptoValor === 'division-ascensores') nombreDeptoFiltro = 'Ascensores';
-                    else if (deptoValor === 'camilleros-central') nombreDeptoFiltro = 'Camilleros';
-                    else if (deptoValor === 'intendencia') nombreDeptoFiltro = 'Intendencia';
-                    else if (deptoValor === 'lavadero-central') nombreDeptoFiltro = 'Lavadero';
-                    else if (deptoValor === 'conmutador') nombreDeptoFiltro = 'Conmutador';
-                    else if (deptoValor === 'dalo') nombreDeptoFiltro = 'DALO';
-                    else if (deptoValor === 'direccion-servicios-generales') nombreDeptoFiltro = 'Dirección de Servicios Generales';
-                    else if (deptoValor === 'higiene-y-seguridad') nombreDeptoFiltro = 'Higiene y Seguridad';
-                    else nombreDeptoFiltro = deptoValor;
-
                     const { data, error } = await supabaseClient
                         .from('usuarios')
                         .select('nombre_completo')
-                        .ilike('departamento', `%${nombreDeptoFiltro}%`);
+                        .eq('departamento', deptoValor);
 
                     if (!error && data) {
                         // Extraer valores únicos y ordenarlos alfabéticamente
