@@ -323,17 +323,18 @@
                         .ilike('departamento', `%${nombreDeptoFiltro}%`);
 
                     if (!error && data) {
-                        data.forEach(user => {
-                            if (user.nombre_completo) {
-                                const opt = document.createElement('option');
-                                opt.value = user.nombre_completo;
-                                opt.textContent = user.nombre_completo;
-                                supervisorSelect.appendChild(opt);
-                            }
+                        // Extraer valores únicos y ordenarlos alfabéticamente
+                        const unicos = [...new Set(data.map(item => item.nombre_completo))].filter(Boolean).sort();
+
+                        unicos.forEach(nombre => {
+                            const opt = document.createElement('option');
+                            opt.value = nombre;
+                            opt.textContent = nombre;
+                            supervisorSelect.appendChild(opt);
                         });
                     }
                 } catch (err) {
-                    console.error("Error al cargar supervisores para el select:", err);
+                    console.error("Error al cargar supervisores desde usuarios:", err);
                 }
             }
         }
@@ -470,7 +471,6 @@
             const deptoOrigenNormalizado = 'higiene-y-seguridad';
             const deptoDestinoNormalizado = toKebabCase(destinoVisual);
 
-            // Objeto jsonb idéntico a la estructura de tus capturas
             const dataContenido = {
                 texto: textoEscrito,
                 archivos: listaArchivos,
