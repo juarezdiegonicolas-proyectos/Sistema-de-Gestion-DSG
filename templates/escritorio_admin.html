@@ -119,14 +119,25 @@
         .box-A { background-color: #dc3545; }
         .box-L { background-color: #ffc107; }
 
-        /* Estilos específicos integrados para el muro de historial en novedades (limpios y optimizados) */
+        /* Estilos específicos integrados para el muro de historial en novedades (limpios y optimizados)[cite: 5] */
         .historial-muro-container { margin-top: 30px; border-top: 2px solid #1a3a5f; padding-top: 20px; }
         .historial-muro-titulo { font-size: 16px; font-weight: bold; color: #1a3a5f; margin-bottom: 15px; }
-        .muro-item { background: #fdfdfd; border: 1px solid #ddd; border-left: 4px solid #1a3a5f; padding: 15px; border-radius: 6px; margin-bottom: 15px; }
-        .muro-header { display: flex; justify-content: space-between; font-size: 12px; color: #666; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
-        .muro-body { font-family: 'Courier New', monospace; font-size: 14px; white-space: pre-wrap; line-height: 1.5; color: #333; }
-        .muro-adjuntos { margin-top: 10px; font-size: 12px; }
-        .muro-adjuntos a { color: #1a3a5f; text-decoration: underline; margin-right: 15px; }
+        
+        /* Estilos alineados con Higiene y Seguridad[cite: 5] */
+        .muro-item { background: #fdfdfd; border: 1px solid #ddd; padding: 15px; border-radius: 6px; margin-bottom: 15px; }
+        .muro-item.enviado { border-left: 4px solid #4caf50; background-color: #f1f8e9; }
+        .muro-item.recibido { border-left: 4px solid #2196f3; background-color: #e3f2fd; }
+        
+        .muro-header { display: flex; justify-content: space-between; font-size: 12px; color: #666; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 5px; flex-wrap: wrap; gap: 5px; }
+        .muro-tags { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+        .badge-tipo { padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 11px; text-transform: uppercase; }
+        .badge-enviado { background-color: #c8e6c9; color: #2e7d32; border: 1px solid #a5d6a7; }
+        .badge-recibido { background-color: #bbdefb; color: #1565c0; border: 1px solid #90caf9; }
+        
+        .muro-body { font-family: 'Courier New', monospace; font-size: 14px; white-space: pre-wrap; line-height: 1.5; color: #333; margin-top: 8px; }
+        .muro-adjuntos { margin-top: 10px; font-size: 12px; display: flex; flex-direction: column; gap: 6px; }
+        .muro-adjuntos a { color: #1a3a5f; text-decoration: underline; }
+        .muro-img-preview { max-width: 200px; max-height: 150px; border-radius: 4px; border: 1px solid #ccc; display: block; margin-top: 5px; }
 
         @media print {
         .sidebar, .filtros-historicos, .btn-cerrar, .area-acciones, .btn-adjuntar, textarea, .btn-limpiar, .historial-muro-container { display: none !important; }
@@ -608,22 +619,43 @@
                     }
                     const supervisorDisplay = ` | <b>Supervisor:</b> ${supTexto}`;
 
+                    // Lógica visual adaptada de Higiene y Seguridad para distinguir enviado vs recibido[cite: 5]
+                    const esEnviado = deptoOrigen === 'direccion-servicios-generales';
+                    const claseItem = esEnviado ? 'enviado' : 'recibido';
+                    const badgeClase = esEnviado ? 'badge-enviado' : 'badge-recibido';
+                    const badgeTexto = esEnviado ? 'Enviado' : 'Recibido';
+
                     let adjuntosHtml = '';
-                    if (contenido.archivos && Array.isArray(contenido.archivos) && contenido.archivos.length > 0) {
-                        adjuntosHtml = '<div class="muro-adjuntos"><b>Archivos:</b> ';
-                        contenido.archivos.forEach(adj => {
-                            adjuntosHtml += `<a href="${adj.data}" download="${adj.name}" target="_blank">📥 ${adj.name}</a>`;
+                    let renderAdjuntos = [];
+                    if (contenido.archivos && Array.isArray(contenido.archivos)) {
+                        renderAdjuntos = contenido.archivos;
+                    } else if (contenido.archivo && contenido.archivo.name) {
+                        renderAdjuntos = [contenido.archivo];
+                    }
+
+                    if (renderAdjuntos.length > 0) {
+                        adjuntosHtml = '<div class="muro-adjuntos"><b>Archivos Adjuntos:</b>';
+                        renderAdjuntos.forEach(adj => {
+                            if (adj.type && adj.type.startsWith('image')) {
+                                adjuntosHtml += `<div><a href="${adj.data}" download="${adj.name}" target="_blank">📥 ${adj.name}</a><br><img src="${adj.data}" class="muro-img-preview"></div>`;
+                            } else {
+                                adjuntosHtml += `<div><a href="${adj.data}" download="${adj.name}" target="_blank">📥 ${adj.name}</a></div>`;
+                            }
                         });
                         adjuntosHtml += '</div>';
-                    } else if (contenido.archivo && contenido.archivo.name) {
-                        adjuntosHtml = `<div class="muro-adjuntos"><b>Archivo:</b> <a href="${contenido.archivo.data}" download="${contenido.archivo.name}" target="_blank">📥 ${contenido.archivo.name}</a></div>`;
                     }
 
                     html += `
-                        <div class="muro-item">
+                        <div class="muro-item ${claseItem}">
                             <div class="muro-header">
-                                <span><b>Origen:</b> ${deptoOrigen} | <b>Destino:</b> ${deptoDestino} | <b>Turno:</b> ${turno}${supervisorDisplay}</span>
-                                <span>${fecha}</span>
+                                <div class="muro-tags">
+                                    <span class="badge-tipo ${badgeClase}">${badgeTexto}</span>
+                                    <span><b>Origen:</b> ${deptoOrigen}</span>
+                                    <span>➔</span>
+                                    <span><b>Destino:</b> ${deptoDestino}</span>
+                                    <span>| <b>Turno:</b> ${turno}${supervisorDisplay}</span>
+                                </div>
+                                <span>📅 ${fecha}</span>
                             </div>
                             <div class="muro-body">${texto}</div>
                             ${adjuntosHtml}
