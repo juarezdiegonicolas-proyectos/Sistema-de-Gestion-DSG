@@ -237,7 +237,6 @@
             const SUPABASE_KEY = 'sb_publishable_EvvZ8n7Ve2cF9FB4SXA0Ug_7q6qWh9f';
             const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-            // Función universal de normalización estricta a kebab-case
             function toKebabCase(nombreVisual) {
                 if (!nombreVisual || nombreVisual === 'Todos') return 'Todos';
                 return nombreVisual
@@ -899,7 +898,6 @@
                 listaArchivos = primerArchivo ? [primerArchivo] : [];
             }
 
-            // Normalización estricta idéntica para origen y destino
             const deptoOrigenNormalizado = 'direccion-servicios-generales';
             const deptoDestinoNormalizado = toKebabCase(destinoVisual);
 
@@ -917,7 +915,6 @@
             let sufijoSupervisor = supervisor ? `_${supervisor.replace(/\s+/g, '_')}` : '_todos';
             const claveUnica = `comunicado_novedades_${deptoDestinoNormalizado}_${turno}${sufijoSupervisor}_${Date.now()}`;
             
-            // Inserción en Supabase garantizando el uso estricto de kebab-case en ambas columnas
             const { error } = await db
                 .from('comunicados_memos')
                 .upsert(
@@ -1363,5 +1360,3 @@
     </script>
 </body>
 </html>
-
-
