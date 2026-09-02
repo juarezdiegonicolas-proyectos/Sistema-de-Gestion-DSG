@@ -55,7 +55,7 @@
         .header-logos { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
         .header-logos img { height: 110px; width: auto; object-fit: contain; }
 
-        /* Estilos específicos para sección Novedades y Muro */
+        /* Estilos específicos para sección Novedades y Muro (Alineados con admin) */
         .filtros-historicos { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 20px; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #ddd; }
         .input-select { padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; font-size: 13px; background: white; cursor: pointer; }
         .btn-adjuntar { background: #17a2b8; color: white; }
@@ -67,18 +67,20 @@
         .historial-muro-container { margin-top: 30px; border-top: 2px solid #dee2e6; padding-top: 20px; }
         .historial-muro-titulo { font-size: 16px; font-weight: bold; color: #1a3a5f; margin-bottom: 15px; }
         
-        .muro-item { background: #fff; border-left: 5px solid #1a3a5f; border: 1px solid #ddd; padding: 15px; border-radius: 6px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
-        .muro-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 8px; font-size: 12px; color: #666; flex-wrap: wrap; }
-        .muro-header-info { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 200px; }
-        .muro-header-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
-        .muro-body { font-size: 15px; color: #333; white-space: pre-wrap; line-height: 1.5; }
+        .muro-item { background: #fff; border: 1px solid #d1d8df; border-left: 5px solid #007bff; padding: 15px; border-radius: 6px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .muro-item.recibido { border-left-color: #17a2b8; }
+        .muro-item.enviado { border-left-color: #28a745; }
+
+        .muro-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 10px; }
+        .novedad-meta { font-size: 0.85rem; color: #495057; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .novedad-texto { font-size: 0.95rem; color: #212529; white-space: pre-wrap; word-break: break-word; line-height: 1.5; margin-top: 8px; }
         .muro-adjuntos { margin-top: 10px; font-size: 13px; }
         .muro-adjuntos a { display: inline-block; margin-right: 10px; color: #1a3a5f; text-decoration: none; font-weight: 500; }
         .muro-adjuntos a:hover { text-decoration: underline; }
 
-        .badge-estado-muro { padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
-        .badge-estado-enviado { background-color: #e2f0d9; color: #385723; border: 1px solid #b7e1cd; }
-        .badge-estado-recibido { background-color: #d9e1f2; color: #1f3864; border: 1px solid #b4c6e7; }
+        .badge-estado { font-size: 0.75rem; padding: 4px 8px; border-radius: 4px; font-weight: bold; color: white; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+        .badge-recibido { background-color: #17a2b8; }
+        .badge-enviado { background-color: #28a745; }
 
         @media print {
             .sidebar, .btn-accion-global, .btn-cerrar, .menu-item, .no-imprimir, .btn-imprimir, .filtros-historicos, .area-acciones { display: none !important; }
@@ -312,7 +314,6 @@
                         .eq('departamento', deptoValor);
 
                     if (!error && data) {
-                        // Extraer valores únicos y ordenarlos alfabéticamente
                         const unicos = [...new Set(data.map(item => item.nombre_completo))].filter(Boolean).sort();
 
                         unicos.forEach(nombre => {
@@ -587,17 +588,29 @@
                     const deptoDestinoLegible = nombresDeptosLegibles[deptoDestinoValor] || deptoDestinoValor;
 
                     const esEnviado = remitenteDepto === 'higiene-y-seguridad';
+                    const claseMuroItem = esEnviado ? 'enviado' : 'recibido';
                     
                     let etiquetaEstado = '';
                     let infoDetalleCabecera = '';
 
                     if (esEnviado) {
-                        etiquetaEstado = '<span class="badge-estado-muro badge-estado-enviado">Mensaje Enviado</span>';
+                        etiquetaEstado = '<span class="badge-estado badge-enviado">Enviado</span>';
                         let supInfoDestino = supervisorMsg && supervisorMsg !== 'Todos' ? ` (${supervisorMsg})` : '';
-                        infoDetalleCabecera = `<b>Destino:</b> ${deptoDestinoLegible}${supInfoDestino} | <b>Turno Destino:</b> ${turnoMsg}`;
+                        infoDetalleCabecera = `
+                            <div>
+                                <span class="badge-estado badge-enviado">ENVIADO</span>
+                                <strong>Destino:</strong> ${deptoDestinoLegible}${supInfoDestino} | 
+                                <strong>Turno:</strong> ${turnoMsg}
+                            </div>`;
                     } else {
-                        etiquetaEstado = '<span class="badge-estado-muro badge-estado-recibido">Mensaje Recibido</span>';
-                        infoDetalleCabecera = `<b>Departamento Emisor:</b> <span style="color: #1a3a5f; font-weight: bold;">${deptoEmisorLegible}</span> | <b>Turno:</b> ${turnoMsg}`;
+                        etiquetaEstado = '<span class="badge-estado badge-recibido">Recibido</span>';
+                        infoDetalleCabecera = `
+                            <div>
+                                <span class="badge-estado badge-recibido">RECIBIDO</span>
+                                <strong>Origen:</strong> ${deptoEmisorLegible} &rarr; 
+                                <strong>Destino:</strong> ${deptoDestinoLegible} | 
+                                <strong>Turno:</strong> ${turnoMsg}
+                            </div>`;
                     }
 
                     let archivosArr = [];
@@ -648,17 +661,16 @@
                     }
 
                     html += `
-                        <div class="muro-item">
+                        <div class="muro-item ${claseMuroItem}">
                             <div class="muro-header">
-                                <div class="muro-header-info">
-                                    <div>${infoDetalleCabecera}</div>
+                                <div class="novedad-meta">
+                                    ${infoDetalleCabecera}
                                 </div>
-                                <div class="muro-header-meta">
-                                    <span style="white-space: nowrap;">📅 ${fecha}</span>
-                                    ${etiquetaEstado}
+                                <div style="font-size: 0.85rem; color: #6c757d; white-space: nowrap;">
+                                    <i class="far fa-clock"></i> ${fecha}
                                 </div>
                             </div>
-                            <div class="muro-body">${texto}</div>
+                            <div class="novedad-texto">${texto}</div>
                             ${archivosHtml}
                         </div>`;
                 });
