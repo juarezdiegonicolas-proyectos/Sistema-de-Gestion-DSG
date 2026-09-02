@@ -73,7 +73,7 @@
 
         .muro-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 10px; }
         .novedad-meta { font-size: 0.85rem; color: #495057; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-        .novedad-texto { font-size: 0.95rem; color: #212529; white-space: pre-wrap; word-break: break-word; line-height: 1.5; margin-top: 8px; }
+        .novedad-texto { font-size: 0.95rem; color: #212529; white-space: pre-wrap; word-break: break-word; line-height: 1.5; margin-top: 8px; font-family: inherit; }
         .muro-adjuntos { margin-top: 10px; font-size: 13px; }
         .muro-adjuntos a { display: inline-block; margin-right: 10px; color: #1a3a5f; text-decoration: none; font-weight: 500; }
         .muro-adjuntos a:hover { text-decoration: underline; }
@@ -447,7 +447,7 @@
             const destinoVisual = document.getElementById('depto-destino-' + id).value;
             const turno = document.getElementById('turno-destino-' + id).value;
             const supervisorElem = document.getElementById('supervisor-destino-' + id);
-            const supervisor = supervisorElem ? supervisorElem.value : '';
+            const supervisor = (supervisorElem && supervisorElem.value) ? supervisorElem.value : 'General (Todos)';
             const textoEscrito = document.getElementById('txt-' + id).value;
 
             if (!textoEscrito.trim() && archivosMultiplesNovedades.length === 0) {
@@ -484,7 +484,7 @@
                         departamento_destino: deptoDestinoNormalizado,
                         departamento_origen: deptoOrigenNormalizado,
                         turno_destino: turno === 'Todos' ? 'Todos' : turno,
-                        supervisor_destino: supervisor || 'Todos'
+                        supervisor_destino: supervisor
                     },
                     { onConflict: 'id_clave' }
                 );
@@ -539,7 +539,7 @@
 
                     if (deptoDestino === 'higiene-y-seguridad') {
                         if (turnoDestino !== 'todos' && turnoDestino !== turnoActual) return false;
-                        if (supervisorDestino && supervisorDestino !== 'todos' && supervisorDestino !== usuarioActual) return false;
+                        if (supervisorDestino && supervisorDestino !== 'todos' && !supervisorDestino.includes('todos') && supervisorDestino !== usuarioActual) return false;
                         return true;
                     }
 
@@ -566,52 +566,37 @@
                 filtrados.forEach(item => {
                     const contenidoObj = item.contenido || {};
                     const texto = contenidoObj.texto || 'Sin contenido';
-                    const fecha = contenidoObj.fecha || item.created_at || 'Sin fecha';
-                    const turnoMsg = item.turno_destino || contenidoObj.turno || 'General';
-                    const supervisorMsg = item.supervisor_destino || contenidoObj.supervisor || 'Todos';
+                    let fecha = contenidoObj.fecha || item.created_at || 'Sin fecha';
+                    
+                    if (item.created_at) {
+                        try {
+                            let fObj = new Date(item.created_at);
+                            fecha = fObj.toLocaleString('es-AR', {
+                                day: '2-digit', month: '2-digit', year: 'numeric',
+                                hour: '2-digit', minute: '2-digit', second: '2-digit',
+                                hour12: false
+                            });
+                        } catch(e) {}
+                    }
+
+                    const turnoMsg = item.turno_destino || contenidoObj.turno || 'Todos';
+                    const supervisorMsg = item.supervisor_destino || contenidoObj.supervisor || 'General (Todos)';
                     const remitenteDepto = (item.departamento_origen || '').trim().toLowerCase();
-
-                    const nombresDeptosLegibles = {
-                        'higiene-y-seguridad': 'Higiene y Seguridad',
-                        'intendencia': 'Intendencia',
-                        'division-ascensores': 'Ascensores',
-                        'lavadero-central': 'Lavadero Central',
-                        'camilleros-central': 'Camilleros',
-                        'conmutador': 'Conmutador',
-                        'dalo': 'DALO',
-                        'direccion-servicios-generales': 'Dirección Servicios Generales',
-                        'todos': 'Todos los departamentos'
-                    };
-
-                    const deptoEmisorLegible = nombresDeptosLegibles[remitenteDepto] || remitenteDepto || 'Desconocido';
                     const deptoDestinoValor = item.departamento_destino || 'Todos';
-                    const deptoDestinoLegible = nombresDeptosLegibles[deptoDestinoValor] || deptoDestinoValor;
 
                     const esEnviado = remitenteDepto === 'higiene-y-seguridad';
                     const claseMuroItem = esEnviado ? 'enviado' : 'recibido';
-                    
-                    let etiquetaEstado = '';
-                    let infoDetalleCabecera = '';
+                    const tipoBadge = esEnviado ? 'ENVIADO' : 'RECIBIDO';
+                    const claseBadgeEstado = esEnviado ? 'badge-enviado' : 'badge-recibido';
 
-                    if (esEnviado) {
-                        etiquetaEstado = '<span class="badge-estado badge-enviado">Enviado</span>';
-                        let supInfoDestino = supervisorMsg && supervisorMsg !== 'Todos' ? ` (${supervisorMsg})` : '';
-                        infoDetalleCabecera = `
-                            <div>
-                                <span class="badge-estado badge-enviado">ENVIADO</span>
-                                <strong>Destino:</strong> ${deptoDestinoLegible}${supInfoDestino} | 
-                                <strong>Turno:</strong> ${turnoMsg}
-                            </div>`;
-                    } else {
-                        etiquetaEstado = '<span class="badge-estado badge-recibido">Recibido</span>';
-                        infoDetalleCabecera = `
-                            <div>
-                                <span class="badge-estado badge-recibido">RECIBIDO</span>
-                                <strong>Origen:</strong> ${deptoEmisorLegible} &rarr; 
-                                <strong>Destino:</strong> ${deptoDestinoLegible} | 
-                                <strong>Turno:</strong> ${turnoMsg}
-                            </div>`;
-                    }
+                    let infoDetalleCabecera = `
+                        <div>
+                            <span class="badge-estado ${claseBadgeEstado}">${tipoBadge}</span>
+                            <strong>Origen:</strong> ${remitenteDepto} &rarr; 
+                            <strong>Destino:</strong> ${deptoDestinoValor} | 
+                            <strong>Turno:</strong> ${turnoMsg} | 
+                            <strong>Supervisor:</strong> ${supervisorMsg}
+                        </div>`;
 
                     let archivosArr = [];
                     if (Array.isArray(contenidoObj.archivos)) {
