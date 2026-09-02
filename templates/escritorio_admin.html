@@ -287,7 +287,7 @@
                     case 'division-ascensores': return 'Ascensores';
                     case 'lavadero-central': return 'Lavadero Central';
                     case 'camilleros-central': return 'Camilleros';
-                    case 'higiene-y-seguridad': return 'Higiene y Seguridad';
+                    case 'higiene-y-seguridad': return 'Higiene y Seguridad';[cite: 7]
                     case 'dalo': return 'DALO';
                     case 'direccion-servicios-generales': return 'Dirección Servicios Generales';
                     default: return '';
@@ -357,7 +357,7 @@
                                     <option value="camilleros-central">Camilleros</option>
                                     <option value="conmutador">Conmutador</option>
                                     <option value="dalo">DALO</option>
-                                    <option value="higiene-y-seguridad">Higiene y Seguridad</option>
+                                    <option value="higiene-y-seguridad">Higiene y Seguridad</option>[cite: 7]
                                 </select>
                                 
                                 <div id="contenedor-supervisor-destino-novedades" style="display: none;">
@@ -413,7 +413,7 @@
                                         <option value="division-ascensores">Ascensores</option>
                                         <option value="lavadero-central">Lavadero Central</option>
                                         <option value="camilleros-central">Camilleros</option>
-                                        <option value="higiene-y-seguridad">Higiene y Seguridad</option>
+                                        <option value="higiene-y-seguridad">Higiene y Seguridad</option>[cite: 7]
                                         <option value="dalo">DALO</option>
                                     </select>
                                     <select id="turno-${id}" class="input-select">
@@ -441,7 +441,7 @@
                                         <option value="division-ascensores">Ascensores</option>
                                         <option value="lavadero-central">Lavadero Central</option>
                                         <option value="camilleros-central">Camilleros</option>
-                                        <option value="higiene-y-seguridad">Higiene y Seguridad</option>
+                                        <option value="higiene-y-seguridad">Higiene y Seguridad</option>[cite: 7]
                                         <option value="dalo">DALO</option>
                                     </select>
                                     <select id="turno-destino-${id}" class="input-select" onchange="actualizarPrint('${id}')">
@@ -498,7 +498,7 @@
                     <option value="division-ascensores">Ascensores</option>
                     <option value="lavadero-central">Lavadero Central</option>
                     <option value="camilleros-central">Camilleros</option>
-                    <option value="higiene-y-seguridad">Higiene y Seguridad</option>
+                    <option value="higiene-y-seguridad">Higiene y Seguridad</option>[cite: 7]
                     <option value="dalo">DALO</option>
                 </select>
                 <select id="est-turno" class="input-select">
@@ -630,7 +630,7 @@
                     const remitenteDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
                     const deptoDestinoValor = item.departamento_destino || contenidoObj.departamento || 'Todos';
 
-                    const esEnviado = remitenteDepto === 'direccion-servicios-generales' || remitenteDepto === 'higiene-y-seguridad';
+                    const esEnviado = remitenteDepto === 'direccion-servicios-generales' || remitenteDepto === 'higiene-y-seguridad';[cite: 7]
                     const claseMuroItem = esEnviado ? 'enviado' : 'recibido';
                     const tipoBadge = esEnviado ? 'ENVIADO' : 'RECIBIDO';
                     const claseBadgeEstado = esEnviado ? 'badge-enviado' : 'badge-recibido';
