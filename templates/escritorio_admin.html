@@ -126,19 +126,17 @@
         .muro-item { background: #fff; border: 1px solid #d1d8df; border-left: 5px solid #007bff; padding: 15px; border-radius: 6px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .muro-item.recibido { border-left-color: #17a2b8; }
         .muro-item.enviado { border-left-color: #28a745; }
-        .muro-item.terceros { border-left-color: #6c757d; }
 
-        .muro-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 10px; }
-        .novedad-meta { font-size: 0.85rem; color: #495057; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .muro-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; flex-wrap: wrap; gap: 10px; }
+        .novedad-meta { font-size: 0.85rem; color: #495057; display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 250px; }
         .novedad-texto { font-size: 0.95rem; color: #212529; white-space: pre-wrap; word-break: break-word; line-height: 1.5; margin-top: 8px; font-family: inherit; }
         .muro-adjuntos { margin-top: 10px; font-size: 13px; }
         .muro-adjuntos a { display: inline-block; margin-right: 10px; color: #1a3a5f; text-decoration: none; font-weight: 500; }
         .muro-adjuntos a:hover { text-decoration: underline; }
 
-        .badge-estado { font-size: 0.75rem; padding: 4px 8px; border-radius: 4px; font-weight: bold; color: white; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+        .badge-estado { font-size: 0.75rem; padding: 4px 8px; border-radius: 4px; font-weight: bold; color: white; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; display: inline-block; width: fit-content; }
         .badge-recibido { background-color: #17a2b8; }
         .badge-enviado { background-color: #28a745; }
-        .badge-terceros { background-color: #6c757d; }
 
         @media print {
         .sidebar, .filtros-historicos, .btn-cerrar, .area-acciones, .btn-adjuntar, textarea, .btn-limpiar, .historial-muro-container { display: none !important; }
@@ -711,34 +709,22 @@
                     const remitenteDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
                     const deptoDestinoValor = item.departamento_destino || contenidoObj.departamento || 'Todos';
 
-                    // Lógica para el Administrador (Dirección Servicios Generales)
-                    const deptoAdminActual = 'direccion-servicios-generales';
-
-                    let tipoBadge = '';
-                    let claseMuroItem = '';
-                    let claseBadgeEstado = '';
-
-                    if (remitenteDepto === deptoAdminActual) {
-                        tipoBadge = 'ENVIADO';
-                        claseMuroItem = 'enviado';
-                        claseBadgeEstado = 'badge-enviado';
-                    } else if (deptoDestinoValor === deptoAdminActual || deptoDestinoValor === 'todos' || deptoDestinoValor === 'todos los departamentos') {
-                        tipoBadge = 'RECIBIDO';
-                        claseMuroItem = 'recibido';
-                        claseBadgeEstado = 'badge-recibido';
-                    } else {
-                        tipoBadge = `ENVIADO DESDE ${remitenteDepto.toUpperCase()}`;
-                        claseMuroItem = 'terceros';
-                        claseBadgeEstado = 'badge-terceros';
-                    }
+                    const esEnviado = remitenteDepto === 'direccion-servicios-generales' || remitenteDepto === 'higiene-y-seguridad';
+                    const claseMuroItem = esEnviado ? 'enviado' : 'recibido';
+                    const tipoBadge = esEnviado ? 'ENVIADO' : 'RECIBIDO';
+                    const claseBadgeEstado = esEnviado ? 'badge-enviado' : 'badge-recibido';
 
                     let infoDetalleCabecera = `
-                        <div>
-                            <span class="badge-estado ${claseBadgeEstado}">${tipoBadge}</span>
-                            <strong>Origen:</strong> ${remitenteDepto} &rarr; 
-                            <strong>Destino:</strong> ${deptoDestinoValor} | 
-                            <strong>Turno:</strong> ${turnoMsg} | 
-                            <strong>Supervisor:</strong> ${supervisorMsg}
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <div>
+                                <span class="badge-estado ${claseBadgeEstado}">ENVIADO DESDE ${remitenteDepto.toUpperCase()}</span>
+                            </div>
+                            <div>
+                                <strong>Origen:</strong> ${remitenteDepto} &rarr; 
+                                <strong>Destino:</strong> ${deptoDestinoValor} | 
+                                <strong>Turno:</strong> ${turnoMsg} | 
+                                <strong>Supervisor:</strong> ${supervisorMsg}
+                            </div>
                         </div>`;
 
                     let archivosArr = [];
