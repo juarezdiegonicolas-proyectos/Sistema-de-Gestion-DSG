@@ -308,14 +308,14 @@
                     try {
                         const deptoLargo = obtenerNombreDepartamentoLargo(deptoVal);
                         const { data, error } = await db
-                            .from('cierres_jornada')
-                            .select('supervisor')
+                            .from('usuarios')
+                            .select('nombre_completo')
                             .eq('departamento', deptoLargo);
 
                         if (error) throw error;
 
                         selectSup.innerHTML = '<option value="">-- Todos los supervisores --</option>';
-                        const unicos = [...new Set((data || []).map(item => item.supervisor))].filter(Boolean).sort();
+                        const unicos = [...new Set((data || []).map(item => item.nombre_completo))].filter(Boolean).sort();
 
                         unicos.forEach(nombre => {
                             const opt = document.createElement('option');
@@ -324,7 +324,7 @@
                             selectSup.appendChild(opt);
                         });
                     } catch (err) {
-                        console.error("Error al cargar supervisores:", err);
+                        console.error("Error al cargar supervisores desde usuarios:", err);
                     }
                 } else {
                     contenedorSup.style.display = 'none';
@@ -1451,4 +1451,3 @@
     </script>
 </body>
 </html>
-
