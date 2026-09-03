@@ -237,7 +237,6 @@
             const SUPABASE_KEY = 'sb_publishable_EvvZ8n7Ve2cF9FB4SXA0Ug_7q6qWh9f';
             const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-            // Función universal de normalización estricta a kebab-case
             function toKebabCase(nombreVisual) {
                 if (!nombreVisual || nombreVisual === 'Todos') return 'Todos';
                 return nombreVisual
@@ -250,28 +249,19 @@
 
             function imprimirConOrientacion() {
                 const seleccion = prompt("¿Cómo deseas imprimir?\n\nEscribe 'V' para Vertical\nEscribe 'H' para Horizontal", "H");
-                
                 if (seleccion === null) return; 
-
                 const opcion = seleccion.trim().toUpperCase();
-                
                 const viejo = document.getElementById('estilo-forzado-impresion');
                 if (viejo) viejo.remove();
-
                 const nuevoEstilo = document.createElement('style');
                 nuevoEstilo.id = 'estilo-forzado-impresion';
-
                 if (opcion === 'V') {
                     nuevoEstilo.innerHTML = '@media print { @page { size: A4 portrait !important; margin: 10mm !important; } }';
                 } else {
                     nuevoEstilo.innerHTML = '@media print { @page { size: A4 landscape !important; margin: 10mm !important; } }';
                 }
-
                 document.head.appendChild(nuevoEstilo);
-
-                setTimeout(() => {
-                    window.print();
-                }, 100);
+                setTimeout(() => { window.print(); }, 100);
             }
 
             const agentesGlobal = [{"legajo":"120369", "nombre":"VEGA JUAN CARLOS"},{"legajo":"122011", "nombre":"GONZALEZ CARLOS HECTOR"},{"legajo":"128217", "nombre":"CARLOTTO GABRIEL HORACIO"},{"legajo":"130087", "nombre":"GARAY LEONARDO EMILIO"},{"legajo":"130187", "nombre":"CISNEROS NESTOR EDUARDO"},{"legajo":"131954", "nombre":"GORENA JORGE RICARDO"},{"legajo":"132059", "nombre":"BUSTO JUAN MANUEL"},{"legajo":"132831", "nombre":"GORT PEDRO ALBERTO"},{"legajo":"144694", "nombre":"LEDESMA HECTOR CARLOS"},{"legajo":"145765", "nombre":"BARRAZA CRISTIAN JAVIER"},{"legajo":"147812", "nombre":"RODRIGUEZ GONZALO LEANDRO"},{"legajo":"147944", "nombre":"MORENO FERNANDO DANIEL"},{"legajo":"147946", "nombre":"ALVAREZ ANTONIO OSCAR"},{"legajo":"151978", "nombre":"LUZI CHRISTIAN DARIO"},{"legajo":"151979", "nombre":"ALMEIDA CARLOS ALBERTO"},{"legajo":"151980", "nombre":"GONZALEZ PATRICIO ALBERTO"},{"legajo":"151982", "nombre":"VARELA EDUARDO JOSE"},{"legajo":"151983", "nombre":"MARCIANO MARCELO DANIEL"},{"legajo":"151996", "nombre":"FIDEL RUBEN DARIO"},{"legajo":"152016", "nombre":"PAPINI JUAN JOSE"},{"legajo":"152301", "nombre":"CISNEROS LEONARDO SEBASTIAN"},{"legajo":"152302", "nombre":"BAZAN DIEGO ANTONIO"},{"legajo":"153090", "nombre":"OLIVA CRISTIAN RUBEN"},{"legajo":"153572", "nombre":"CANABIDEZ CRISTIAN ALBERTO"},{"legajo":"154334", "nombre":"VAZQUEZ JORGE OSVALDO"},{"legajo":"154335", "nombre":"SANTORO CHRISTIAN RODRIGO"},{"legajo":"154973", "nombre":"HIDALGO SEBASTIAN ARIEL"},{"legajo":"164370", "nombre":"VASCONCELLO SERGIO EDUARDO"},{"legajo":"164669", "nombre":"DIAZ BELFOR ALBERTO"},{"legajo":"166919", "nombre":"BARRAGAN MARIANO JAVIER"},{"legajo":"167190", "nombre":"MORALES EREZUMA LEONARDO AND"},{"legajo":"168007", "nombre":"ICAÑO MARTIN FABIAN"},{"legajo":"169981", "nombre":"KAMINOVICH LEONARDO MARTIN"},{"legajo":"176828", "nombre":"REYNA SANCHEZ EDUARDO GASTON"},{"legajo":"195446", "nombre":"VASQUEZ JORGE ALFREDO"},{"legajo":"195452", "nombre":"FLORES RODRIGO NICOLAS"},{"legajo":"216727", "nombre":"MIRANDA NORBERTO MATIAS"},{"legajo":"235008", "nombre":"BARROCA GERARDO EZEQUIEL"},{"legajo":"243734", "nombre":"VARGAS AXEL BRIAN"},{"legajo":"249665", "nombre":"SANSOGNE MATIAS MAURICIO"},{"legajo":"250625", "nombre":"SOTO NAHUEL MARCELO"},{"legajo":"251466", "nombre":"DOMINGUEZ HECTOR OMAR CIRO"},{"legajo":"261471", "nombre":"VERON NORBERTO MARIO MANUEL"},{"legajo":"259586", "nombre":"LOPEZ VICTOR HUGO"},{"legajo":"244105", "nombre":"REA JUAN GABRIEL"},{"legajo":"242264", "nombre":"ELIAS GUSTAVO DANIEL"},{"legajo":"195453", "nombre":"BARROCA FRANCO DANIEL"}];
@@ -347,7 +337,6 @@
                                 <img src="{{ url_for('static', filename='logo_dsg.png') }}" alt="Logo DSG" style="height: 135px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
                             </div>
                             
-                            <!-- Filtros y Controles de Envío -->
                             <div class="filtros-historicos">
                                 <select id="depto-destino-novedades" class="input-select" onchange="manejarCambioDepto('destino-novedades'); actualizarPrint('novedades');">
                                     <option value="Todos">Todos los departamentos</option>
@@ -391,7 +380,6 @@
                                 <button class="btn-gestion btn-imprimir" style="background: #dc3545;" onclick="limpiarPantalla('novedades')">🧹 Limpiar Pantalla</button>
                             </div>
 
-                            <!-- Contenedor del Historial del Muro -->
                             <div class="historial-muro-container">
                                 <div class="historial-muro-titulo">📌 Historial de Envíos en Muro (Novedades)</div>
                                 <div id="contenedor-novedades">Cargando registros históricos...</div>
@@ -407,7 +395,6 @@
                                 <img src="{{ url_for('static', filename='logo_dsg.png') }}" alt="Logo DSG" style="height: 135px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
                             </div>
                             
-                            <!-- Filtros y Controles de Envío -->
                             <div class="filtros-historicos">
                                 <select id="depto-destino-memos" class="input-select" onchange="manejarCambioDepto('destino-memos'); actualizarPrint('memos');">
                                     <option value="Todos">Todos los departamentos</option>
@@ -451,7 +438,6 @@
                                 <button class="btn-gestion btn-imprimir" style="background: #dc3545;" onclick="limpiarPantalla('memos')">🧹 Limpiar Pantalla</button>
                             </div>
 
-                            <!-- Contenedor del Historial del Muro -->
                             <div class="historial-muro-container">
                                 <div class="historial-muro-titulo">📌 Historial de Envíos en Muro (Memos y Resoluciones)</div>
                                 <div id="contenedor-memos">Cargando registros históricos...</div>
@@ -709,15 +695,16 @@
                     const remitenteDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
                     const deptoDestinoValor = item.departamento_destino || contenidoObj.departamento || 'Todos';
 
+                    // Lógica original restaurada para distinguir enviados vs recibidos
                     const esEnviado = remitenteDepto === 'direccion-servicios-generales' || remitenteDepto === 'higiene-y-seguridad';
                     const claseMuroItem = esEnviado ? 'enviado' : 'recibido';
-                    const tipoBadge = esEnviado ? 'ENVIADO' : 'RECIBIDO';
                     const claseBadgeEstado = esEnviado ? 'badge-enviado' : 'badge-recibido';
+                    const textoEstadoBadge = esEnviado ? 'ENVIADO' : 'RECIBIDO';
 
                     let infoDetalleCabecera = `
                         <div style="display: flex; flex-direction: column; gap: 4px;">
                             <div>
-                                <span class="badge-estado ${claseBadgeEstado}">ENVIADO DESDE ${remitenteDepto.toUpperCase()}</span>
+                                <span class="badge-estado ${claseBadgeEstado}">${textoEstadoBadge}</span>
                             </div>
                             <div>
                                 <strong>Origen:</strong> ${remitenteDepto} &rarr; 
@@ -985,7 +972,6 @@
                 return;
             }
 
-            // Normalización estricta idéntica para origen y destino
             const deptoOrigenNormalizado = 'direccion-servicios-generales';
             const deptoDestinoNormalizado = toKebabCase(destinoVisual);
 
@@ -1004,7 +990,6 @@
             const prefijoClave = id === 'novedades' ? 'comunicado_novedades' : 'comunicado_memos';
             const claveUnica = `${prefijoClave}_${deptoDestinoNormalizado}_${turno}${sufijoSupervisor}_${Date.now()}`;
             
-            // Inserción en Supabase garantizando el uso estricto de kebab-case en ambas columnas
             const { error } = await db
                 .from('comunicados_memos')
                 .upsert(
