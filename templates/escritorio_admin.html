@@ -727,15 +727,14 @@
                         claseMuroItem = 'recibido';
                         claseBadgeEstado = 'badge-recibido';
                     } else {
-                        tipoBadge = `ENVIADO DESDE ${remitenteDepto.toUpperCase()}`;
+                        tipoBadge = `ENVIADO DESDE`;
                         claseMuroItem = 'terceros';
                         claseBadgeEstado = 'badge-terceros';
                     }
 
                     let infoDetalleCabecera = `
                         <div>
-                            <span class="badge-estado ${claseBadgeEstado}">${tipoBadge}</span>
-                            <strong>Origen:</strong> ${remitenteDepto} &rarr; 
+                            <span class="badge-estado ${claseBadgeEstado}">${tipoBadge}</span> ${remitenteDepto} &rarr; 
                             <strong>Destino:</strong> ${deptoDestinoValor} | 
                             <strong>Turno:</strong> ${turnoMsg} | 
                             <strong>Supervisor:</strong> ${supervisorMsg}
