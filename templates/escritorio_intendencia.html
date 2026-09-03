@@ -3,809 +3,808 @@
 <head>
     <meta charset="UTF-8">
     <title>Escritorio Intendencia - DSG</title>
-    <!-- Agregada librería para gráficos -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- SDK de Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { margin: 0; font-family: 'Roboto', sans-serif; display: flex; height: 100vh; background-color: #f4f1ea; overflow: hidden; }
-        .sidebar { width: 260px; background-color: #1a3a5f; color: white; padding: 15px 15px; display: flex; flex-direction: column; flex-shrink: 0; height: 100vh; box-sizing: border-box; overflow: hidden; }
+        body { margin: 0; font-family: 'Roboto', sans-serif; display: flex; height: 100vh; background-color: #f4f1ea; box-sizing: border-box; overflow: hidden; }
         
-        .bienvenida-box { background-color: #2d5a8e; padding: 10px; border-radius: 8px; margin-bottom: 12px; text-align: center; border: 1px solid #5d8dbb; flex-shrink: 0; }
+        /* Sidebar rediseñado */
+        .sidebar { 
+            width: 260px; 
+            background-color: #1a3a5f; 
+            color: white; 
+            padding: 15px 15px; 
+            display: flex; 
+            flex-direction: column; 
+            flex-shrink: 0; 
+            height: 100vh; 
+            box-sizing: border-box; 
+            overflow: hidden; 
+        }
+
+        .bienvenida-box { 
+            background-color: #2d5a8e; 
+            padding: 10px; 
+            border-radius: 8px; 
+            margin-bottom: 12px; 
+            text-align: center; 
+            border: 1px solid #5d8dbb; 
+            flex-shrink: 0; 
+        }
         .bienvenida-box h3 { margin: 0; font-size: 13px; font-weight: 300; color: #cce7ff; }
         .bienvenida-box p { margin: 3px 0 0 0; font-size: 15px; font-weight: bold; }
 
-        .sidebar-header-title { min-height: 40px; margin-bottom: 8px; display: flex; align-items: center; flex-shrink: 0; }
+        .sidebar-header-title { 
+            min-height: 40px; 
+            margin-bottom: 8px; 
+            display: flex; 
+            align-items: center; 
+            flex-shrink: 0; 
+        }
         .sidebar-header-title h2 { font-size: 18px; margin: 0; line-height: 1.2; }
 
-        .menu-links { flex: 1; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; margin-bottom: 8px; }
-        .menu-item { display: flex; align-items: center; justify-content: space-between; color: #ddd; padding: 10px 12px; text-decoration: none; border-bottom: 1px solid rgba(93, 141, 187, 0.3); font-weight: 500; cursor: pointer; font-size: 15px; transition: background 0.2s, color 0.2s; border-radius: 4px; }
+        .menu-links { 
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: space-between; 
+            overflow: hidden; 
+            margin-bottom: 8px; 
+        }
+        .menu-item { 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            color: #ddd; 
+            padding: 10px 12px; 
+            text-decoration: none; 
+            border-bottom: 1px solid rgba(93, 141, 187, 0.3); 
+            font-weight: 500; 
+            cursor: pointer; 
+            font-size: 14px; 
+            transition: background 0.2s, color 0.2s; 
+            border-radius: 4px; 
+        }
         .menu-item:hover { background-color: #5d8dbb; color: white; }
 
-        /* Estilo para la notificación / badge de novedades */
-        .badge-novedades { background-color: #dc3545; color: white; font-size: 12px; font-weight: bold; padding: 2px 7px; border-radius: 10px; display: none; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-
-        .sidebar-footer { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; padding-top: 5px; }
-        .btn-accion-global { width: 100%; padding: 10px; background: linear-gradient(135deg, #28a745, #218838); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: opacity 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
-        .btn-accion-global:hover { opacity: 0.9; }
-        .btn-cerrar { width: 100%; padding: 10px; background: linear-gradient(135deg, #d32f2f, #c62828); color: white; text-align: center; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); box-sizing: border-box; display: flex; align-items: center; justify-content: center; gap: 6px; transition: opacity 0.2s; }
+        .sidebar-footer { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 8px; 
+            flex-shrink: 0; 
+            padding-top: 5px; 
+        }
+        .btn-cerrar { 
+            width: 100%; 
+            padding: 10px; 
+            background: linear-gradient(135deg, #d32f2f, #c62828); 
+            color: white; 
+            text-align: center; 
+            text-decoration: none; 
+            border-radius: 6px; 
+            font-weight: bold; 
+            font-size: 13px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+            box-sizing: border-box; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 6px; 
+            transition: opacity 0.2s; 
+            border: none; 
+            cursor: pointer; 
+        }
         .btn-cerrar:hover { opacity: 0.9; }
 
-        .contenido { flex: 1; padding: 40px; overflow-y: auto; }
+        .contenido { flex: 1; padding: 40px; overflow-y: auto; height: 100vh; box-sizing: border-box; }
         .seccion { display: none; background: white; padding: 40px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         .seccion.activo { display: block; } 
-        .info-hoja { display: flex; justify-content: space-between; margin-bottom: 15px; font-weight: bold; color: #1a3a5f; align-items: center;}
-        
-        .hoja { background-color: #fff; padding: 0 40px; border: 1px solid #ccc; min-height: 900px; position: relative; }
-        
-        #editor-reporte { 
-            width: 100%; min-height: 900px; border: none; font-size: 18px; line-height: 30px; outline: none; font-family: 'Courier New', Courier, monospace; white-space: pre-wrap; word-wrap: break-word; 
-            background-image: linear-gradient(#e0e0e0 1px, transparent 1px); background-size: 100% 30px; padding-top: 30px;
-        }
-
-        .contenedor-observaciones { margin-top: 20px; width: 100%; box-sizing: border-box; }
-        .titulo-observaciones { background: #1a3a5f; color: white; padding: 8px 12px; font-weight: 500; font-size: 14px; border-radius: 6px 6px 0 0; }
-        #editor-observaciones { 
-            width: 100%; min-height: 180px; border: 1px solid #000; border-top: none; font-size: 18px; line-height: 30px; outline: none; font-family: 'Courier New', Courier, monospace; white-space: pre-wrap; word-wrap: break-word; 
-            background-image: linear-gradient(#e0e0e0 1px, transparent 1px); background-size: 100% 30px; padding-top: 30px; padding-left: 10px; padding-right: 10px; border-radius: 0 0 6px 6px; box-sizing: border-box; overflow-y: auto;
-        }
-        
-        .tabla-intendencia { width: 100%; border-collapse: collapse; margin-top: 10px; table-layout: fixed; }
-        .tabla-intendencia th, .tabla-intendencia td { border: 1px solid #000; padding: 6px; text-align: center; word-wrap: break-word; overflow: hidden; }
-        
-        .tabla-intendencia th { background-color: #1a3a5f; color: white; height: 22px; font-size: 14px; font-weight: 500; letter-spacing: 0.5px; }
-        
-        .col-btn { width: 45px; }
-        .col-sector { width: 34%; }
-        .col-agente { width: 36%; }
-        .col-horario { width: 12.5%; }
-
-        .input-select-tabla { width: 100%; border: none; text-align: center; font-family: inherit; font-size: 13px; background: transparent; outline: none; box-sizing: border-box; cursor: pointer; padding: 2px; }
-        .input-c { width: 100%; border: none; text-align: center; font-family: inherit; font-size: 13px; background: transparent; outline: none; box-sizing: border-box; cursor: pointer; }
-        
-        .input-fecha, .input-select { border: 1px solid #ccc; padding: 8px; border-radius: 4px; font-family: inherit; cursor: pointer; }
-        .btn-borrar { background: red; color: white; border: none; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; }
-        .area-acciones { margin-top: 20px; display: flex; gap: 10px; }
-        .btn-gestion { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; }
-        .btn-imprimir { background: #6c757d; color: white; }
-        #info-supervisor { margin-bottom: 20px; color: #1a3a5f; font-weight: bold; border: 1px solid #ddd; padding: 10px; border-radius: 6px; background: #f9f9f9; }
+        .filtros-historicos { display: flex; gap: 10px; background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #eee; align-items: center; flex-wrap: wrap; }
+        .input-select, .input-fecha { border: 1px solid #ccc; padding: 10px; border-radius: 4px; font-family: inherit; cursor: pointer; }
         .header-logos { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
         .header-logos img { height: 110px; width: auto; object-fit: contain; }
-        .filtros-historicos { display: flex; gap: 15px; background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #eee; align-items: center; }
-        .celda-asistencia { cursor: pointer; width: 25px; height: 25px; border: 2px solid #333; display: inline-block; transition: background 0.3s; margin: auto; }
-        .estado-P { background-color: #28a745 !important; }
-        .estado-A { background-color: #dc3545 !important; }
-        .estado-L { background-color: #ffc107 !important; }
-        .botonera-porcentaje { background-color: #1a3a5f; color: white; padding: 12px 20px; border-radius: 8px; font-weight: bold; margin-bottom: 10px; display: inline-block; width: 250px; text-align: left; }
+        .area-acciones { margin-top: 20px; display: flex; gap: 10px; }
+        .btn-gestion { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; }
+        .btn-adjuntar { background: #1a3a5f; color: white; }
+        .btn-imprimir { background: #6c757d; color: white; }
+        .btn-limpiar { background: #ff9800; color: white; }
+        textarea { width: 100%; height: 350px; padding: 10px 15px; border: 1px solid #ccc; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 16px; box-sizing: border-box; line-height: 2.0em; background-image: linear-gradient(#ccc 1px, transparent 1px); background-size: 100% 2.0em; resize: none; }
+        .preview-adjunto { margin-top: 10px; padding: 10px; border: 1px dashed #aaa; display: none; }
+        
+        .print-only { display: none; }
+        .print-header { display: none; font-weight: bold; margin-bottom: 20px; border-bottom: 2px solid #333; padding-bottom: 10px; }
+
+        .box-estado { width: 25px; height: 25px; border: 2px solid #333; display: inline-block; margin: auto; }
+        .box-P { background-color: #28a745; }
+        .box-A { background-color: #dc3545; }
+        .box-L { background-color: #ffc107; }
+
+        /* Estilos optimizados y completos para el muro de historial en novedades */
+        .historial-muro-container { margin-top: 30px; border-top: 2px solid #dee2e6; padding-top: 20px; }
+        .historial-muro-titulo { font-size: 16px; font-weight: bold; color: #1a3a5f; margin-bottom: 15px; }
+
+        .muro-item { background: #fff; border: 1px solid #d1d8df; border-left: 5px solid #007bff; padding: 15px; border-radius: 6px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .muro-item.recibido { border-left-color: #17a2b8; }
+        .muro-item.enviado { border-left-color: #28a745; }
+        .muro-item.terceros { border-left-color: #6c757d; }
+
+        .muro-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 10px; }
+        .novedad-meta { font-size: 0.85rem; color: #495057; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .novedad-texto { font-size: 0.95rem; color: #212529; white-space: pre-wrap; word-break: break-word; line-height: 1.5; margin-top: 8px; font-family: inherit; }
+        .muro-adjuntos { margin-top: 10px; font-size: 13px; }
+        .muro-adjuntos a { display: inline-block; margin-right: 10px; color: #1a3a5f; text-decoration: none; font-weight: 500; }
+        .muro-adjuntos a:hover { text-decoration: underline; }
+
+        .badge-estado { font-size: 0.75rem; padding: 4px 8px; border-radius: 4px; font-weight: bold; color: white; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+        .badge-recibido { background-color: #17a2b8; }
+        .badge-enviado { background-color: #28a745; }
+        .badge-terceros { background-color: #6c757d; }
 
         @media print {
-            .sidebar, .btn-accion-global, .btn-cerrar, .menu-item, .no-imprimir, .btn-imprimir, .btn-borrar { display: none !important; }
-            #planillas .tabla-intendencia th:first-child, #planillas .tabla-intendencia td:first-child { display: none !important; }
-            body, html, .contenido, .seccion.activo, .hoja { background-color: white !important; margin: 0 !important; padding: 0 !important; width: 100% !important; height: auto !important; overflow: visible !important; box-shadow: none !important; display: block !important; }
-            .seccion { display: none !important; } .seccion.activo { display: block !important; } 
-            .hoja { border: none !important; min-height: auto !important; }
-            #editor-reporte, #editor-observaciones { background-image: linear-gradient(#e0e0e0 1px, transparent 1px); background-size: 100% 30px; line-height: 30px; -webkit-print-color-adjust: exact; print-color-adjust: exact; overflow: visible !important; height: auto !important; min-height: auto !important; }
+        .sidebar, .filtros-historicos, .btn-cerrar, .area-acciones, .btn-adjuntar, textarea, .btn-limpiar, .historial-muro-container { display: none !important; }
+        
+        .seccion { display: none !important; }
+        .seccion.activo { 
+            display: block !important; 
+            box-shadow: none !important; 
+            padding: 0 !important; 
+            background: white !important; 
+            margin: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            border: none !important;
+            box-sizing: border-box !important;
         }
-        @page { size: auto; margin: 1cm; }
+
+        html, body {
+            background: white !important;
+            height: auto !important;
+            overflow: visible !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+        }
+
+        .contenido {
+            padding: 0 !important;
+            overflow: visible !important;
+            margin: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+        }
+
+        .print-only { display: block !important; white-space: pre-wrap; font-family: 'Courier New', monospace; }
+        .print-header { display: block !important; }
+        .preview-adjunto { display: block !important; border: none !important; }
+        
+        .box-estado { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        
+        div[id^="visor-"] {
+            border: none !important;
+            padding: 0 !important;
+            background: transparent !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+            overflow: visible !important;
+        }
+
+        table {
+            width: 100% !important;
+            max-width: 100% !important;
+            table-layout: fixed !important;
+            border-collapse: collapse !important;
+            box-sizing: border-box !important;
+        }
+        th, td {
+            box-sizing: border-box !important;
+            word-wrap: break-word !important;
+            overflow-wrap: break-word !important;
+            white-space: normal !important;
+        }
+    }
     </style>
 </head>
 <body>
     <div class="sidebar">
         <div class="bienvenida-box">
             <h3>Bienvenido Agente:</h3>
-            <p id="nombre-supervisor-sidebar">---</p>
+            <p id="nombre-supervisor-sidebar">Intendencia</p>
         </div>
+
         <div class="sidebar-header-title">
-            <h2>Panel <span id="titulo-panel">Intendencia</span></h2>
+            <h2 id="titulo-panel">Intendencia</h2>
         </div>
+
         <div class="menu-links">
-            <div class="menu-item" onclick="mostrar('reportes', 'Reportes')"><span>📊 Reportes</span></div>
-            <div class="menu-item" onclick="mostrar('planillas', 'Planillas (Operativa)')"><span>🛠 Planillas (Operativa)</span></div>
+            <div class="menu-item" onclick="mostrar('reportes', 'Reportes Históricos')"><span>📊 Reportes</span></div>
+            <div class="menu-item" onclick="mostrar('planillas', 'Planillas Históricas')"><span>🛠 Planillas</span></div>
+            <div class="menu-item" onclick="mostrar('rrhh', 'Auditoría RRHH')"><span>👥 RRHH</span></div>
+            <div class="menu-item" onclick="mostrar('insumos', 'Auditoría Insumos')"><span>📦 Insumos</span></div>
             <div class="menu-item" onclick="mostrar('estado-ascensores', 'Estado Actual de Ascensores')"><span>🛗 Estado Ascensores</span></div>
-            <div class="menu-item" onclick="mostrar('historicos', 'Registros Históricos')"><span>📂 Registros Históricos</span></div>
-            <div class="menu-item" onclick="mostrar('novedades', 'Novedades')"><span>📢 Novedades</span><span id="badge-novedades" class="badge-novedades">0</span></div>
-            <div class="menu-item" onclick="mostrar('rrhh', 'RR.HH.')"><span>👥 RR.HH.</span></div>
-            <div class="menu-item" onclick="mostrar('resoluciones', 'Resoluciones')"><span>⚖️ Resoluciones</span></div>
+            <div class="menu-item" onclick="mostrar('novedades', 'Novedades')"><span>📝 Novedades</span></div>
+            <div class="menu-item" onclick="mostrar('memos', 'Memos y Resoluciones')"><span>📜 Memos y Resoluciones</span></div>
+            <div class="menu-item" onclick="mostrar('estadisticas', 'Estadísticas Mensuales')"><span>📈 Estadísticas Mensuales</span></div>
         </div>
+
         <div class="sidebar-footer">
-            <button class="btn-accion-global" onclick="cerrarJornadaGlobal()">📥 CERRAR JORNADA</button>
-            <a href="https://sistema-hospital-dsg.onrender.com" class="btn-cerrar">CERRAR SESIÓN</a>
+            <a href="https://sistema-hospital-dsg.onrender.com" class="btn-cerrar">🚪 CERRAR SESIÓN</a>
         </div>
     </div>
 
     <div class="contenido">
         <script>
-            // Configuración sincronizada de Supabase usando 'db' con las credenciales reales
             const SUPABASE_URL = 'https://ydcbdvosxbwcutddxaze.supabase.co';
             const SUPABASE_KEY = 'sb_publishable_EvvZ8n7Ve2cF9FB4SXA0Ug_7q6qWh9f';
             const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+            // Función universal de normalización estricta a kebab-case
+            function toKebabCase(nombreVisual) {
+                if (!nombreVisual || nombreVisual === 'Todos') return 'Todos';
+                return nombreVisual
+                    .toLowerCase()
+                    .trim()
+                    .normalize("NFD")
+                    .replace(/[\u0300-\u036f]/g, "")
+                    .replace(/\s+/g, '-');
+            }
+
+            function imprimirConOrientacion() {
+                const seleccion = prompt("¿Cómo deseas imprimir?\n\nEscribe 'V' para Vertical\nEscribe 'H' para Horizontal", "H");
+                
+                if (seleccion === null) return; 
+
+                const opcion = seleccion.trim().toUpperCase();
+                
+                const viejo = document.getElementById('estilo-forzado-impresion');
+                if (viejo) viejo.remove();
+
+                const nuevoEstilo = document.createElement('style');
+                nuevoEstilo.id = 'estilo-forzado-impresion';
+
+                if (opcion === 'V') {
+                    nuevoEstilo.innerHTML = '@media print { @page { size: A4 portrait !important; margin: 10mm !important; } }';
+                } else {
+                    nuevoEstilo.innerHTML = '@media print { @page { size: A4 landscape !important; margin: 10mm !important; } }';
+                }
+
+                document.head.appendChild(nuevoEstilo);
+
+                setTimeout(() => {
+                    window.print();
+                }, 100);
+            }
+
+            const agentesGlobal = [{"legajo":"120369", "nombre":"VEGA JUAN CARLOS"},{"legajo":"122011", "nombre":"GONZALEZ CARLOS HECTOR"},{"legajo":"128217", "nombre":"CARLOTTO GABRIEL HORACIO"},{"legajo":"130087", "nombre":"GARAY LEONARDO EMILIO"},{"legajo":"130187", "nombre":"CISNEROS NESTOR EDUARDO"},{"legajo":"131954", "nombre":"GORENA JORGE RICARDO"},{"legajo":"132059", "nombre":"BUSTO JUAN MANUEL"},{"legajo":"132831", "nombre":"GORT PEDRO ALBERTO"},{"legajo":"144694", "nombre":"LEDESMA HECTOR CARLOS"},{"legajo":"145765", "nombre":"BARRAZA CRISTIAN JAVIER"},{"legajo":"147812", "nombre":"RODRIGUEZ GONZALO LEANDRO"},{"legajo":"147944", "nombre":"MORENO FERNANDO DANIEL"},{"legajo":"147946", "nombre":"ALVAREZ ANTONIO OSCAR"},{"legajo":"151978", "nombre":"LUZI CHRISTIAN DARIO"},{"legajo":"151979", "nombre":"ALMEIDA CARLOS ALBERTO"},{"legajo":"151980", "nombre":"GONZALEZ PATRICIO ALBERTO"},{"legajo":"151982", "nombre":"VARELA EDUARDO JOSE"},{"legajo":"151983", "nombre":"MARCIANO MARCELO DANIEL"},{"legajo":"151996", "nombre":"FIDEL RUBEN DARIO"},{"legajo":"152016", "nombre":"PAPINI JUAN JOSE"},{"legajo":"152301", "nombre":"CISNEROS LEONARDO SEBASTIAN"},{"legajo":"152302", "nombre":"BAZAN DIEGO ANTONIO"},{"legajo":"153090", "nombre":"OLIVA CRISTIAN RUBEN"},{"legajo":"153572", "nombre":"CANABIDEZ CRISTIAN ALBERTO"},{"legajo":"154334", "nombre":"VAZQUEZ JORGE OSVALDO"},{"legajo":"154335", "nombre":"SANTORO CHRISTIAN RODRIGO"},{"legajo":"154973", "nombre":"HIDALGO SEBASTIAN ARIEL"},{"legajo":"164370", "nombre":"VASCONCELLO SERGIO EDUARDO"},{"legajo":"164669", "nombre":"DIAZ BELFOR ALBERTO"},{"legajo":"166919", "nombre":"BARRAGAN MARIANO JAVIER"},{"legajo":"167190", "nombre":"MORALES EREZUMA LEONARDO AND"},{"legajo":"168007", "nombre":"ICAÑO MARTIN FABIAN"},{"legajo":"169981", "nombre":"KAMINOVICH LEONARDO MARTIN"},{"legajo":"176828", "nombre":"REYNA SANCHEZ EDUARDO GASTON"},{"legajo":"195446", "nombre":"VASQUEZ JORGE ALFREDO"},{"legajo":"195452", "nombre":"FLORES RODRIGO NICOLAS"},{"legajo":"216727", "nombre":"MIRANDA NORBERTO MATIAS"},{"legajo":"235008", "nombre":"BARROCA GERARDO EZEQUIEL"},{"legajo":"243734", "nombre":"VARGAS AXEL BRIAN"},{"legajo":"249665", "nombre":"SANSOGNE MATIAS MAURICIO"},{"legajo":"250625", "nombre":"SOTO NAHUEL MARCELO"},{"legajo":"251466", "nombre":"DOMINGUEZ HECTOR OMAR CIRO"},{"legajo":"261471", "nombre":"VERON NORBERTO MARIO MANUEL"},{"legajo":"259586", "nombre":"LOPEZ VICTOR HUGO"},{"legajo":"244105", "nombre":"REA JUAN GABRIEL"},{"legajo":"242264", "nombre":"ELIAS GUSTAVO DANIEL"},{"legajo":"195453", "nombre":"BARROCA FRANCO DANIEL"}];
+
+            async function apiGuardar(key, data) {
+                const { error } = await db.from('comunicados_memos').upsert({ id_clave: key, contenido: data });
+                if (error) console.error("Error al guardar en Supabase:", error);
+            }
+
+            function obtenerNombreDepartamentoLargo(val) {
+                switch(val) {
+                    case 'intendencia': return 'Intendencia';
+                    case 'division-ascensores': return 'Ascensores';
+                    case 'lavadero-central': return 'Lavadero Central';
+                    case 'camilleros-central': return 'Camilleros';
+                    case 'higiene-y-seguridad': return 'Higiene y Seguridad';
+                    case 'dalo': return 'DALO';
+                    case 'direccion-servicios-generales': return 'Dirección Servicios Generales';
+                    default: return '';
+                }
+            }
+
+            async function manejarCambioDepto(idSeccion) {
+                const selectDepto = document.getElementById('depto-' + idSeccion);
+                const contenedorSup = document.getElementById('contenedor-supervisor-' + idSeccion);
+                const selectSup = document.getElementById('supervisor-' + idSeccion);
+
+                if (!selectDepto || !contenedorSup || !selectSup) return;
+
+                const deptoVal = selectDepto.value;
+
+                if (deptoVal && deptoVal !== 'Todos') {
+                    contenedorSup.style.display = 'inline-block';
+                    try {
+                        const { data, error } = await db
+                            .from('usuarios')
+                            .select('nombre_completo')
+                            .eq('departamento', deptoVal);
+
+                        if (error) throw error;
+
+                        selectSup.innerHTML = '<option value="">-- Todos los supervisores --</option>';
+                        const unicos = [...new Set((data || []).map(item => item.nombre_completo))].filter(Boolean).sort();
+
+                        unicos.forEach(nombre => {
+                            const opt = document.createElement('option');
+                            opt.value = nombre;
+                            opt.textContent = nombre;
+                            selectSup.appendChild(opt);
+                        });
+                    } catch (err) {
+                        console.error("Error al cargar supervisores desde usuarios:", err);
+                    }
+                } else {
+                    contenedorSup.style.display = 'none';
+                    selectSup.value = '';
+                }
+                
+                if (idSeccion === 'destino-novedades' || idSeccion === 'novedades') {
+                    actualizarPrint('novedades');
+                } else if (idSeccion === 'destino-memos' || idSeccion === 'memos') {
+                    actualizarPrint('memos');
+                }
+            }
+
+            function crearSeccion(id, titulo, tipoContenido) {
+                if (id === 'novedades') {
+                    document.write(`
+                        <div id="novedades" class="seccion">
+                            <div class="header-logos">
+                                <img src="{{ url_for('static', filename='logo_hospi.png') }}" alt="Logo" onerror="this.src='https://via.placeholder.com/150?text=Hospital'">
+                                <h1 style="margin: 0; text-align: center; flex: 1;">Novedades</h1>
+                                <img src="{{ url_for('static', filename='logo_dsg.png') }}" alt="Logo DSG" style="height: 135px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
+                            </div>
+                            
+                            <!-- Filtros y Controles de Envío -->
+                            <div class="filtros-historicos">
+                                <select id="depto-destino-novedades" class="input-select" onchange="manejarCambioDepto('destino-novedades'); actualizarPrint('novedades');">
+                                    <option value="Todos">Todos los departamentos</option>
+                                    <option value="direccion-servicios-generales">Dirección Servicios Generales</option>
+                                    <option value="intendencia">Intendencia</option>
+                                    <option value="division-ascensores">Ascensores</option>
+                                    <option value="lavadero-central">Lavadero Central</option>
+                                    <option value="camilleros-central">Camilleros</option>
+                                    <option value="conmutador">Conmutador</option>
+                                    <option value="dalo">DALO</option>
+                                    <option value="higiene-y-seguridad">Higiene y Seguridad</option>
+                                </select>
+                                
+                                <div id="contenedor-supervisor-destino-novedades" style="display: none;">
+                                    <select id="supervisor-destino-novedades" class="input-select" onchange="actualizarPrint('novedades')">
+                                        <option value="">-- Todos los supervisores --</option>
+                                    </select>
+                                </div>
+                                
+                                <select id="turno-destino-novedades" class="input-select" onchange="actualizarPrint('novedades')">
+                                    <option value="Todos">Todos los turnos</option>
+                                    <option value="Mañana">Mañana</option>
+                                    <option value="Tarde">Tarde</option>
+                                    <option value="Noche A">Noche A</option>
+                                    <option value="Noche B">Noche B</option>
+                                    <option value="Sadofe">Sadofe</option>
+                                </select>
+                                
+                                <button class="btn-gestion btn-adjuntar" onclick="document.getElementById('file-novedades').click()">📎 Adjuntar Archivos</button>
+                                <input type="file" id="file-novedades" style="display:none" multiple onchange="previsualizarMultiples(this, 'novedades')">
+                                <button class="btn-gestion" style="background: #28a745; color: white;" onclick="guardarRedaccion('novedades')">Guardar y Enviar</button>
+                            </div>
+                            
+                            <div id="print-header-novedades" class="print-header">Dirigido a: Todos los departamentos | Turno: Todos los turnos</div>
+                            <textarea id="txt-novedades" oninput="document.getElementById('print-novedades').innerText = this.value" placeholder="Escriba aquí el contenido..."></textarea>
+                            <div id="print-novedades" class="print-only"></div>
+                            <div id="preview-novedades" class="preview-adjunto"></div>
+                            
+                            <div class="area-acciones">
+                                <button id="btn-print-novedades" class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
+                                <button class="btn-gestion btn-imprimir" style="background: #dc3545;" onclick="limpiarPantalla('novedades')">🧹 Limpiar Pantalla</button>
+                            </div>
+
+                            <!-- Contenedor del Historial del Muro -->
+                            <div class="historial-muro-container">
+                                <div class="historial-muro-titulo">📌 Historial de Envíos en Muro (Novedades)</div>
+                                <div id="contenedor-novedades">Cargando registros históricos...</div>
+                            </div>
+                        </div>
+                    `);
+                } else if (id === 'memos') {
+                    document.write(`
+                        <div id="memos" class="seccion">
+                            <div class="header-logos">
+                                <img src="{{ url_for('static', filename='logo_hospi.png') }}" alt="Logo" onerror="this.src='https://via.placeholder.com/150?text=Hospital'">
+                                <h1 style="margin: 0; text-align: center; flex: 1;">Memos y Resoluciones</h1>
+                                <img src="{{ url_for('static', filename='logo_dsg.png') }}" alt="Logo DSG" style="height: 135px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
+                            </div>
+                            
+                            <!-- Filtros y Controles de Envío -->
+                            <div class="filtros-historicos">
+                                <select id="depto-destino-memos" class="input-select" onchange="manejarCambioDepto('destino-memos'); actualizarPrint('memos');">
+                                    <option value="Todos">Todos los departamentos</option>
+                                    <option value="direccion-servicios-generales">Dirección Servicios Generales</option>
+                                    <option value="intendencia">Intendencia</option>
+                                    <option value="division-ascensores">Ascensores</option>
+                                    <option value="lavadero-central">Lavadero Central</option>
+                                    <option value="camilleros-central">Camilleros</option>
+                                    <option value="conmutador">Conmutador</option>
+                                    <option value="dalo">DALO</option>
+                                    <option value="higiene-y-seguridad">Higiene y Seguridad</option>
+                                </select>
+                                
+                                <div id="contenedor-supervisor-destino-memos" style="display: none;">
+                                    <select id="supervisor-destino-memos" class="input-select" onchange="actualizarPrint('memos')">
+                                        <option value="">-- Todos los supervisores --</option>
+                                    </select>
+                                </div>
+                                
+                                <select id="turno-destino-memos" class="input-select" onchange="actualizarPrint('memos')">
+                                    <option value="Todos">Todos los turnos</option>
+                                    <option value="Mañana">Mañana</option>
+                                    <option value="Tarde">Tarde</option>
+                                    <option value="Noche A">Noche A</option>
+                                    <option value="Noche B">Noche B</option>
+                                    <option value="Sadofe">Sadofe</option>
+                                </select>
+                                
+                                <button class="btn-gestion btn-adjuntar" onclick="document.getElementById('file-memos').click()">📎 Adjuntar Archivos</button>
+                                <input type="file" id="file-memos" style="display:none" multiple onchange="previsualizarMultiples(this, 'memos')">
+                                <button class="btn-gestion" style="background: #28a745; color: white;" onclick="guardarRedaccion('memos')">Guardar y Enviar</button>
+                            </div>
+                            
+                            <div id="print-header-memos" class="print-header">Dirigido a: Todos los departamentos | Turno: Todos los turnos</div>
+                            <textarea id="txt-memos" oninput="document.getElementById('print-memos').innerText = this.value" placeholder="Escriba aquí el contenido..."></textarea>
+                            <div id="print-memos" class="print-only"></div>
+                            <div id="preview-memos" class="preview-adjunto"></div>
+                            
+                            <div class="area-acciones">
+                                <button id="btn-print-memos" class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
+                                <button class="btn-gestion btn-imprimir" style="background: #dc3545;" onclick="limpiarPantalla('memos')">🧹 Limpiar Pantalla</button>
+                            </div>
+
+                            <!-- Contenedor del Historial del Muro -->
+                            <div class="historial-muro-container">
+                                <div class="historial-muro-titulo">📌 Historial de Envíos en Muro (Memos y Resoluciones)</div>
+                                <div id="contenedor-memos">Cargando registros históricos...</div>
+                            </div>
+                        </div>
+                    `);
+                } else {
+                    document.write(`
+                        <div id="${id}" class="seccion">
+                            <div class="header-logos">
+                                <img src="{{ url_for('static', filename='logo_hospi.png') }}" alt="Logo">
+                                <h1 style="margin: 0; text-align: center; flex: 1;">${titulo}</h1>
+                                <img src="{{ url_for('static', filename='logo_dsg.png') }}" alt="Logo DSG" style="height: 135px;">
+                            </div>
+                            <div class="filtros-historicos">
+                                ${tipoContenido === 'auditoria' ? `
+                                    <select id="depto-${id}" class="input-select" onchange="manejarCambioDepto('${id}')">
+                                        <option value="direccion-servicios-generales">Dirección Servicios Generales</option>
+                                        <option value="intendencia">Intendencia</option>
+                                        <option value="division-ascensores">Ascensores</option>
+                                        <option value="lavadero-central">Lavadero Central</option>
+                                        <option value="camilleros-central">Camilleros</option>
+                                        <option value="higiene-y-seguridad">Higiene y Seguridad</option>
+                                        <option value="dalo">DALO</option>
+                                    </select>
+                                    <select id="turno-${id}" class="input-select">
+                                        <option value="Mañana">Mañana</option>
+                                        <option value="Tarde">Tarde</option>
+                                        <option value="Noche A">Noche A</option>
+                                        <option value="Noche B">Noche B</option>
+                                        <option value="Sadofe">Sadofe</option>
+                                    </select>
+                                    <div id="contenedor-supervisor-${id}" style="display: none;">
+                                        <select id="supervisor-${id}" class="input-select">
+                                            <option value="">-- Todos los supervisores --</option>
+                                        </select>
+                                    </div>
+                                    <input type="date" id="fecha-${id}" class="input-fecha">
+                                    <button class="btn-gestion" style="background: #1a3a5f; color: white;" onclick="consultar('${id}')">Auditar</button>
+                                ` : tipoContenido === 'estado-ascensores-vivo' ? `
+                                    <span style="font-weight: bold; color: #1a3a5f;">Estado en tiempo real de la tabla estado_actual_ascensores</span>
+                                    <button class="btn-gestion" style="background: #1a3a5f; color: white; margin-left: auto;" onclick="cargarEstadoAscensoresVivo()">Actualizar Datos</button>
+                                ` : `
+                                    <select id="depto-destino-${id}" class="input-select" onchange="actualizarPrint('${id}')">
+                                        <option value="Todos">Todos los departamentos</option>
+                                        <option value="direccion-servicios-generales">Dirección Servicios Generales</option>
+                                        <option value="intendencia">Intendencia</option>
+                                        <option value="division-ascensores">Ascensores</option>
+                                        <option value="lavadero-central">Lavadero Central</option>
+                                        <option value="camilleros-central">Camilleros</option>
+                                        <option value="higiene-y-seguridad">Higiene y Seguridad</option>
+                                        <option value="dalo">DALO</option>
+                                    </select>
+                                    <select id="turno-destino-${id}" class="input-select" onchange="actualizarPrint('${id}')">
+                                        <option value="Todos">Todos los turnos</option>
+                                        <option value="Mañana">Mañana</option>
+                                        <option value="Tarde">Tarde</option>
+                                        <option value="Noche A">Noche A</option>
+                                        <option value="Noche B">Noche B</option>
+                                        <option value="Sadofe">Sadofe</option>
+                                    </select>
+                                    <button class="btn-gestion btn-adjuntar" onclick="document.getElementById('file-${id}').click()">📎 Adjuntar</button>
+                                    <input type="file" id="file-${id}" style="display:none" onchange="previsualizar(this, '${id}')">
+                                    <button class="btn-gestion" style="background: #28a745; color: white;" onclick="guardarRedaccion('${id}')">Guardar y Enviar</button>
+                                `}
+                            </div>
+                            
+                            ${tipoContenido === 'auditoria' ? `<div id="visor-${id}" style="border: 1px solid #ccc; padding: 20px; min-height: 200px;">Seleccione filtros para auditar.</div>` : 
+                              tipoContenido === 'estado-ascensores-vivo' ? `<div id="visor-${id}" style="border: 1px solid #ccc; padding: 20px; min-height: 200px; background: #fff;">Cargando datos actuales...</div>` :
+                              `<div id="print-header-${id}" class="print-header">Dirigido a: Todos los departamentos | Turno: Todos los turnos</div><textarea id="txt-${id}" oninput="document.getElementById('print-${id}').innerText = this.value" placeholder="Escriba aquí el contenido..."></textarea><div id="print-${id}" class="print-only"></div><div id="preview-${id}" class="preview-adjunto"></div>`}
+                            
+                            <div class="area-acciones">
+                                <button id="btn-print-${id}" class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
+                                ${tipoContenido === 'redaccion' ? `<button class="btn-gestion btn-limpiar" onclick="limpiarPantalla('${id}')">🧹 Limpiar Pantalla</button>` : ''}
+                            </div>
+                        </div>
+                    `);
+                }
+            }
+            crearSeccion('reportes', 'Reportes Históricos', 'auditoria');
+            crearSeccion('planillas', 'Planillas Históricas', 'auditoria');
+            crearSeccion('rrhh', 'Auditoría RRHH', 'auditoria');
+            crearSeccion('insumos', 'Auditoría Insumos', 'auditoria');
+            crearSeccion('estado-ascensores', 'Estado Actual de Ascensores', 'estado-ascensores-vivo');
+            crearSeccion('novedades', 'Novedades', 'redaccion');
+            crearSeccion('memos', 'Memos y Resoluciones', 'redaccion');
         </script>
 
-        <div id="reportes" class="seccion activo">
+        <!-- SECCIÓN ESTADÍSTICAS -->
+        <div id="estadisticas" class="seccion">
             <div class="header-logos">
-                <img src="static/logo_hospi.png" alt="Logo Hospital">
-                <h1 style="margin: 0; text-align: center; flex: 1;">Reportes</h1>
-                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
-            </div>
-            <div id="info-supervisor">Supervisor: <span id="display-nombre-rep">---</span> | Turno: <span id="display-turno-rep">---</span> | Depto: <span id="display-depto-rep">---</span></div>
-            <div class="info-hoja">
-                <span>Fecha: <input type="date" id="fecha-reporte" class="input-fecha" onchange="guardarDatos()"></span>
-                <span>Hoja N°: <span id="numero-hoja">001</span></span>
-            </div>
-            <div class="hoja">
-                <div id="editor-reporte" contenteditable="true" oninput="guardarDatos()"></div>
-            </div>
-            <div class="area-acciones"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button></div>
-        </div>
-
-        <div id="planillas" class="seccion">
-            <div class="header-logos">
-                <img src="static/logo_hospi.png" alt="Logo Hospital">
-                <h1 style="margin: 0; text-align: center; flex: 1; font-size: 26px;">Planilla Funciones del Día</h1>
-                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
-            </div>
-            <div id="info-supervisor">Supervisor: <span id="display-nombre">---</span> | Turno: <span id="display-turno">---</span> | Depto: <span id="display-depto">---</span></div>
-            
-            <div class="info-hoja" style="margin-bottom: 15px;">
-                <span>Fecha: <input type="date" id="fecha-planilla" class="input-fecha" onchange="guardarDatos()"></span>
-            </div>
-
-            <table class="tabla-intendencia" id="tabla-exportar">
-                <thead>
-                    <tr>
-                        <th class="col-btn" rowspan="2"></th>
-                        <th class="col-sector" rowspan="2">SECTOR</th>
-                        <th class="col-agente" rowspan="2">AGENTE</th>
-                        <th colspan="2">HORARIO</th>
-                    </tr>
-                    <tr>
-                        <th class="col-horario">DESDE</th>
-                        <th class="col-horario">HASTA</th>
-                    </tr>
-                </thead>
-                <tbody id="cuerpo-tabla" onkeydown="detectarEnter(event)"></tbody>
-            </table>
-            
-            <div class="contenedor-observaciones">
-                <div class="titulo-observaciones">Observaciones:</div>
-                <div id="editor-observaciones" contenteditable="true" oninput="guardarDatos()"></div>
-            </div>
-
-            <div class="area-acciones"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button></div>
-        </div>
-
-        <div id="estado-ascensores" class="seccion">
-            <div class="header-logos">
-                <img src="static/logo_hospi.png" alt="Logo">
-                <h1 style="margin: 0; text-align: center; flex: 1;">Estado Actual de Ascensores</h1>
-                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+                <img src="{{ url_for('static', filename='logo_hospi.png') }}" alt="Logo">
+                <h1 style="margin: 0; text-align: center; flex: 1;" class="titulo-caja">Estadísticas Mensuales</h1>
+                <img src="{{ url_for('static', filename='logo_dsg.png') }}" alt="Logo DSG" style="height: 135px;">
             </div>
             <div class="filtros-historicos">
-                <span style="font-weight: bold; color: #1a3a5f;">Estado en tiempo real de la tabla estado_actual_ascensores</span>
-                <button class="btn-gestion" style="background: #1a3a5f; color: white; margin-left: auto;" onclick="cargarEstadoAscensoresVivo()">Actualizar Datos</button>
-            </div>
-            <div id="visor-estado-ascensores" style="border: 1px solid #ccc; padding: 20px; min-height: 200px; background: #fff;">Cargando datos actuales...</div>
-            <div class="area-acciones">
-                <button id="btn-print-estado-ascensores" class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
-            </div>
-        </div>
-
-        <div id="historicos" class="seccion">
-            <div class="header-logos">
-                <img src="static/logo_hospi.png" alt="Logo Hospital">
-                <h1 style="margin: 0; text-align: center; flex: 1;">Registros Históricos</h1>
-                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
-            </div>
-            <div id="info-supervisor">Departamento: <span id="depto-hist-label">---</span></div>
-            <div class="filtros-historicos">
-                <select id="select-depto" class="input-select" disabled>
-                    <option value="Intendencia">Intendencia</option>
+                <select id="est-tipo" class="input-select">
+                    <option value="rrhh">Asistencia (RRHH)</option>
+                    <option value="ascensores">Estado de Ascensores</option>
                 </select>
-                <select id="select-tipo" class="input-select">
-                    <option value="planilla">Planilla Operativa</option>
-                    <option value="reporte">Reporte Diario</option>
-                    <option value="asistencia">Asistencia de Personal</option>
+                <select id="est-depto" class="input-select">
+                    <option value="Todos">Todos los departamentos</option>
+                    <option value="direccion-servicios-generales">Dirección Servicios Generales</option>
+                    <option value="intendencia">Intendencia</option>
+                    <option value="division-ascensores">Ascensores</option>
+                    <option value="lavadero-central">Lavadero Central</option>
+                    <option value="camilleros-central">Camilleros</option>
+                    <option value="higiene-y-seguridad">Higiene y Seguridad</option>
+                    <option value="dalo">DALO</option>
                 </select>
-                <select id="select-turno" class="input-select">
-                    <option value="Mañana">Turno Mañana</option>
-                    <option value="Tarde">Turno Tarde</option>
-                    <option value="Noche A">Turno Noche A</option>
-                    <option value="Noche B">Turno Noche B</option>
+                <select id="est-turno" class="input-select">
+                    <option value="Todos">Todos los turnos</option>
+                    <option value="Mañana">Mañana</option>
+                    <option value="Tarde">Tarde</option>
+                    <option value="Noche A">Noche A</option>
+                    <option value="Noche B">Noche B</option>
                     <option value="Sadofe">Sadofe</option>
                 </select>
-                <input type="date" id="filtro-fecha-hist" class="input-fecha">
-                <button class="btn-gestion no-imprimir" style="background: #1a3a5f; color: white;" onclick="cargarHistoricos()">Buscar Registros</button>
+                <select id="est-mes" class="input-select">
+                    <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
+                    <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
+                    <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
+                    <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+                </select>
+                <input type="number" id="est-anio" class="input-fecha" value="2026" style="width:100px;">
+                <button class="btn-gestion" style="background: #1a3a5f; color: white;" onclick="generarReporteMensual()">Generar Reporte</button>
             </div>
-            <div id="contenedor-historicos" style="border: 1px solid #ccc; padding: 20px; border-radius: 8px;">
-                <p>Selecciona filtros y presiona "Buscar" para visualizar registros.</p>
-            </div>
-            <div class="area-acciones"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir Resultados</button></div>
-        </div>
-        
-        <div id="novedades" class="seccion">
-            <div class="header-logos">
-                <img src="static/logo_hospi.png" alt="Logo Hospital">
-                <h1 style="margin: 0; text-align: center; flex: 1;">Novedades</h1>
-                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
-            </div>
-            <div class="filtros-historicos">
-                <span style="font-weight: bold; color: #1a3a5f;">Estado en tiempo real de la tabla comunicados_memos</span>
-                <button class="btn-gestion" style="background: #1a3a5f; color: white; margin-left: auto;" onclick="cargarNovedadesVivo()">Actualizar Datos</button>
-            </div>
-            <div id="visor-novedades" style="border: 1px solid #ccc; padding: 20px; min-height: 200px; background: #fff;">Cargando novedades actuales...</div>
-            <div class="area-acciones">
-                <button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
-            </div>
-        </div>
-
-        <div id="rrhh" class="seccion">
-            <div class="header-logos">
-                <img src="static/logo_hospi.png" alt="Logo Hospital">
-                <h1 style="margin: 0; text-align: center; flex: 1;">Personal - Turno: <span id="display-turno-rrhh">---</span></h1>
-                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
-            </div>
-            <table class="tabla-intendencia" style="table-layout: auto;">
-                <thead><tr><th>LEGAJO</th><th>APELLIDO Y NOMBRE</th><th>PRESENTE</th><th>AUSENTE</th><th>LICENCIA</th></tr></thead>
-                <tbody id="cuerpo-rrhh"></tbody>
-            </table>
-            <div class="area-acciones">
-                <button class="btn-gestion no-imprimir" style="background: #28a745; color: white;" onclick="guardarAsistencia()">💾 Guardar Asistencia</button>
-                <button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
-            </div>
-            
-            <div style="margin-top: 30px; text-align: center; color: #1a3a5f; font-weight: bold; font-size: 20px; margin-bottom: 10px;">Control de Asistencia</div>
-            <div style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #ddd; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; justify-content: center; align-items: center; gap: 50px;">
-                <div id="resumen-rrhh" style="font-weight:bold; color: #1a3a5f; font-size: 16px; line-height: 2.0; display: flex; flex-direction: column;"></div>
-                <div style="width: 220px; height: 220px;">
-                    <canvas id="graficoRRHH"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <div id="resoluciones" class="seccion">
-            <div class="header-logos">
-                <img src="static/logo_hospi.png" alt="Logo Hospital">
-                <h1 style="margin: 0; text-align: center; flex: 1;">Resoluciones</h1>
-                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+            <div id="visor-estadisticas" style="padding: 20px; border: 1px solid #eee; text-align: center;">
+                <p>Seleccione tipo de reporte, mes y año para consolidar.</p>
             </div>
         </div>
     </div>
 
     <script>
-        const cuerpoTabla = document.getElementById('cuerpo-tabla');
-        const editorReporte = document.getElementById('editor-reporte');
-        const editorObservaciones = document.getElementById('editor-observaciones');
-        const spanHoja = document.getElementById('numero-hoja');
-        const inputFecha = document.getElementById('fecha-reporte');
-        const inputFechaPlanilla = document.getElementById('fecha-planilla');
-        let chartRRHH;
+        let archivoData = {};
+        let archivosMultiplesNovedades = [];
+        let archivosMultiplesMemos = [];
 
-        let listaSectores = ["- Seleccionar Sector -"];
-        let listaAgentes = ["- Seleccionar Agente -"];
-        let agentes = [];
+        function mostrar(id, titulo) { 
+            document.querySelectorAll('.seccion').forEach(s => s.classList.remove('activo')); 
+            document.getElementById(id).classList.add('activo'); 
+            document.getElementById('titulo-panel').innerText = titulo; 
+            if (id === 'estado-ascensores') {
+                cargarEstadoAscensoresVivo();
+            }
+            if (id === 'novedades') {
+                cargarNovedades();
+                manejarCambioDepto('destino-novedades');
+            }
+            if (id === 'memos') {
+                cargarMemos();
+                manejarCambioDepto('destino-memos');
+            }
+        }
+        function limpiarPantalla(id) {
+            document.getElementById('txt-' + id).value = '';
+            document.getElementById('print-' + id).innerText = '';
+            document.getElementById('preview-' + id).style.display = 'none';
+            document.getElementById('preview-' + id).innerHTML = '';
+            document.getElementById('depto-destino-' + id).value = 'Todos';
+            document.getElementById('turno-destino-' + id).value = 'Todos';
+            if (id === 'novedades' || id === 'memos') {
+                const supElem = document.getElementById('supervisor-destino-' + id);
+                if (supElem) supElem.value = '';
+                const contSup = document.getElementById('contenedor-supervisor-destino-' + id);
+                if (contSup) contSup.style.display = 'none';
+            }
+            actualizarPrint(id);
+            delete archivoData[id];
+            if (id === 'novedades') {
+                archivosMultiplesNovedades = [];
+            }
+            if (id === 'memos') {
+                archivosMultiplesMemos = [];
+            }
+        }
 
-        async function cargarPersonalYSeccionesSupabase() {
-            const turnoActual = localStorage.getItem('usuario_turno') || "Mañana";
+        async function previsualizarMultiples(input, id) {
+            if (!input.files || input.files.length === 0) return;
+            let targetArray = id === 'novedades' ? archivosMultiplesNovedades : archivosMultiplesMemos;
+            targetArray.length = 0;
             
-            const nombreEnPantalla = localStorage.getItem('usuario_nombre') || 
-                                     localStorage.getItem('usuario') || 
-                                     localStorage.getItem('usuario_usuario') || "";
+            const prev = document.getElementById('preview-' + id);
+            prev.style.display = 'block';
+            prev.innerHTML = '<b>Archivos seleccionados:</b><ul style="margin: 5px 0 0 20px; padding:0;"></ul>';
+            const listaUl = prev.querySelector('ul');
+
+            for (let i = 0; i < input.files.length; i++) {
+                const file = input.files[i];
+                const reader = new FileReader();
+                
+                (function(f) {
+                    reader.onload = function(e) {
+                        targetArray.push({
+                            name: f.name,
+                            type: f.type,
+                            data: e.target.result
+                        });
+                        const li = document.createElement('li');
+                        li.textContent = f.name;
+                        listaUl.appendChild(li);
+                    };
+                    reader.readAsDataURL(f);
+                })(file);
+            }
+        }
+
+        async function cargarNovedades() {
+            await cargarMuroGenerico('novedades', 'comunicado_novedades_%');
+        }
+
+        async function cargarMemos() {
+            await cargarMuroGenerico('memos', 'comunicado_memos_%');
+        }
+
+        async function cargarMuroGenerico(idSeccion, ilikeFiltro) {
+            const contenedorNov = document.getElementById('contenedor-' + idSeccion);
+            if (!contenedorNov) return;
             
-            const nombreBusqueda = nombreEnPantalla.trim();
-            
-            console.log("=== DEBUGGING FILTRO SECTORES Y PISOS ===");
-            console.log("Nombre en pantalla evaluado:", nombreBusqueda);
+            contenedorNov.innerHTML = "<p>Buscando registros en Supabase...</p>";
 
             try {
-                if (!nombreBusqueda) {
-                    console.error("No se encontró ningún nombre de usuario en el localStorage.");
-                    return;
-                }
-
-                // 1. Consultar la tabla usuarios
-                const { data: todosLosUsuarios, error: errUsuario } = await db
-                    .from('usuarios')
-                    .select('*');
-
-                if (errUsuario) {
-                    console.error("Error al consultar la tabla usuarios:", errUsuario);
-                    return;
-                }
-
-                let usuarioData = null;
-                if (todosLosUsuarios && todosLosUsuarios.length > 0) {
-                    usuarioData = todosLosUsuarios.find(u => {
-                        const nomComp = u.nombre_completo ? u.nombre_completo.toString().trim().toLowerCase() : '';
-                        const usrCorto = u.usuario ? u.usuario.toString().trim().toLowerCase() : '';
-                        const target = nombreBusqueda.toLowerCase();
-                        
-                        return nomComp === target || nomComp.includes(target) || target.includes(nomComp) || usrCorto === target;
-                    });
-                }
-
-                let pisosSupervisor = [];
-                if (usuarioData && usuarioData.pisos_asignados) {
-                    const rawPisos = usuarioData.pisos_asignados.toString().split(',').map(p => p.trim()).filter(p => p !== '');
-                    const variantesPisos = new Set();
-                    rawPisos.forEach(p => {
-                        variantesPisos.add(p);
-                        variantesPisos.add(p.toUpperCase());
-                        variantesPisos.add(p.toLowerCase());
-                        variantesPisos.add(p.replace('°', '').trim());
-                        variantesPisos.add(p.replace('°', '').trim() + '°');
-                    });
-                    pisosSupervisor = Array.from(variantesPisos);
-                } else {
-                    console.warn("No se encontraron pisos asignados para este usuario.");
-                    return;
-                }
-
-                console.log("Pisos estrictos para filtrar:", pisosSupervisor);
-
-                // 2. Consultar personal de intendencia
-                let queryPersonal = db
-                    .from('intendencia_personal')
+                const { data, error } = await db
+                    .from('comunicados_memos')
                     .select('*')
-                    .eq('turno', turnoActual)
-                    .eq('activo', true);
+                    .ilike('id_clave', ilikeFiltro)
+                    .order('created_at', { ascending: false });
 
-                const { data: personalData, error: errPersonal } = await queryPersonal;
+                if (error) throw error;
 
-                if (!errPersonal && personalData && personalData.length > 0) {
-                    const personalFiltrado = personalData.filter(item => {
-                        if (!item.piso) return false;
-                        const pisosAgente = item.piso.toString().split(',').map(p => p.trim());
-                        return pisosAgente.some(p => pisosSupervisor.includes(p));
-                    });
-
-                    agentes = personalFiltrado.map(item => ({
-                        legajo: item.legajo,
-                        nombre: item.apellido_y_nombre || item.nombre_completo,
-                        turno: item.turno,
-                        sector: item.piso || item.piso_o_sector
-                    }));
-
-                    const agentesUnicos = [...new Set(agentes.map(item => item.nombre).filter(Boolean))];
-                    listaAgentes = ["- Seleccionar Agente -", ...agentesUnicos];
+                if (!data || data.length === 0) {
+                    contenedorNov.innerHTML = '<p style="color: #666; font-style: italic;">No hay registros disponibles en el muro.</p>';
+                    return;
                 }
 
-                // 3. Consultar sectores de intendencia
-                let querySectores = db
-                    .from('intendencia_sectores')
-                    .select('*');
+                let html = '';
+                data.forEach(item => {
+                    const contenidoObj = item.contenido || {};
+                    const texto = contenidoObj.texto || 'Sin contenido';
+                    let fecha = contenidoObj.fecha || item.created_at || 'Sin fecha';
+                    
+                    if (item.created_at) {
+                        try {
+                            let fObj = new Date(item.created_at);
+                            fecha = fObj.toLocaleString('es-AR', {
+                                day: '2-digit', month: '2-digit', year: 'numeric',
+                                hour: '2-digit', minute: '2-digit', second: '2-digit',
+                                hour12: false
+                            });
+                        } catch(e) {}
+                    }
 
-                const { data: sectoresData, error: errSectores } = await querySectores;
+                    const turnoMsg = item.turno_destino || contenidoObj.turno || 'Todos';
+                    const supervisorMsg = item.supervisor_destino || contenidoObj.supervisor || 'General (Todos)';
+                    const remitenteDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
+                    const deptoDestinoValor = item.departamento_destino || contenidoObj.departamento || 'Todos';
 
-                if (!errSectores && sectoresData && sectoresData.length > 0) {
-                    const sectoresFiltrados = sectoresData.filter(item => {
-                        if (!item.piso) return false;
-                        const pisosSector = item.piso.toString().split(',').map(p => p.trim());
-                        return pisosSector.some(p => pisosSupervisor.includes(p));
-                    });
+                    // Lógica adaptada para el departamento Intendencia
+                    const deptoIntendenciaActual = 'intendencia';
 
-                    const sectoresUnicos = [...new Set(sectoresFiltrados.map(item => item.nombre_sector).filter(Boolean))];
-                    listaSectores = ["- Seleccionar Sector -", ...sectoresUnicos];
-                }
+                    let tipoBadge = '';
+                    let claseMuroItem = '';
+                    let claseBadgeEstado = '';
 
-                console.log("Lista final de sectores generada:", listaSectores);
-                console.log("Lista final de agentes generada:", listaAgentes);
+                    if (remitenteDepto === deptoIntendenciaActual) {
+                        tipoBadge = 'ENVIADO';
+                        claseMuroItem = 'enviado';
+                        claseBadgeEstado = 'badge-enviado';
+                    } else if (deptoDestinoValor === deptoIntendenciaActual || deptoDestinoValor === 'todos' || deptoDestinoValor === 'todos los departamentos') {
+                        tipoBadge = 'RECIBIDO';
+                        claseMuroItem = 'recibido';
+                        claseBadgeEstado = 'badge-recibido';
+                    } else {
+                        tipoBadge = `ENVIADO DESDE`;
+                        claseMuroItem = 'terceros';
+                        claseBadgeEstado = 'badge-terceros';
+                    }
+
+                    let infoDetalleCabecera = `
+                        <div>
+                            <span class="badge-estado ${claseBadgeEstado}">${tipoBadge}</span> ${remitenteDepto} &rarr; 
+                            <strong>Destino:</strong> ${deptoDestinoValor} | 
+                            <strong>Turno:</strong> ${turnoMsg} | 
+                            <strong>Supervisor:</strong> ${supervisorMsg}
+                        </div>`;
+
+                    let archivosArr = [];
+                    if (Array.isArray(contenidoObj.archivos)) {
+                        archivosArr = contenidoObj.archivos;
+                    } else if (contenidoObj.archivo && contenidoObj.archivo.data) {
+                        archivosArr = [contenidoObj.archivo];
+                    }
+
+                    let archivosHtml = "";
+                    if (archivosArr.length > 0) {
+                        archivosHtml = '<div class="muro-adjuntos" style="margin-top: 15px; display: flex; flex-direction: column; gap: 10px;"><b>Archivos Adjuntos:</b>';
+                        archivosArr.forEach(arch => {
+                            if (!arch || !arch.data) return;
+                            let base64Data = arch.data;
+                            let nombreArchivo = arch.name || "adjunto_descargable";
+                            let esImagen = base64Data.startsWith('data:image/') || /\.(jpg|jpeg|png|gif|webp)$/i.test(nombreArchivo);
+
+                            if (esImagen) {
+                                archivosHtml += `
+                                    <div style="text-align: center; background: #fafafa; border: 1px solid #ddd; padding: 10px; border-radius: 6px;">
+                                        <div style="margin-bottom: 8px;">
+                                            <img src="${base64Data}" alt="Archivo adjunto" style="max-width: 100%; max-height: 350px; border-radius: 4px; border: 1px solid #ddd; object-fit: contain;" />
+                                        </div>
+                                        <a href="${base64Data}" download="${nombreArchivo}">
+                                            📥 Descargar Imagen (${nombreArchivo})
+                                        </a>
+                                    </div>
+                                `;
+                            } else {
+                                archivosHtml += `
+                                    <div style="background: #f8f9fa; border: 1px solid #ddd; padding: 10px 14px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                                        <div style="display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1;">
+                                            <span style="font-size: 26px; flex-shrink: 0; line-height: 1;">📄</span>
+                                            <div style="min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+                                                <strong style="font-size: 13px; color: #333; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${nombreArchivo}">${nombreArchivo}</strong>
+                                                <span style="font-size: 11px; color: #666; display: block;">Documento adjunto</span>
+                                            </div>
+                                        </div>
+                                        <a href="${base64Data}" download="${nombreArchivo}">
+                                            📥 Descargar Archivo
+                                        </a>
+                                    </div>
+                                `;
+                            }
+                        });
+                        archivosHtml += '</div>';
+                    }
+
+                    html += `
+                        <div class="muro-item ${claseMuroItem}">
+                            <div class="muro-header">
+                                <div class="novedad-meta">${infoDetalleCabecera}</div>
+                                <div style="font-size: 0.85rem; color: #6c757d; white-space: nowrap;">
+                                    <i class="far fa-clock"></i> ${fecha}
+                                </div>
+                            </div>
+                            <div class="novedad-texto">${texto}</div>
+                            ${archivosHtml}
+                        </div>`;
+                });
+
+                contenedorNov.innerHTML = html;
 
             } catch (err) {
-                console.error("Excepción al conectar con Supabase para filtrar por pisos:", err);
-            }
-        }
-
-        function obtenerFechaHoyISO() { return new Date().toISOString().split('T')[0]; }
-
-        let contadorHoja = parseInt(localStorage.getItem('dsg_intendencia_contador_hoja')) || 1;
-        if (spanHoja) spanHoja.innerText = String(contadorHoja).padStart(3, '0');
-        if (inputFecha) inputFecha.value = localStorage.getItem('dsg_intendencia_fecha') || obtenerFechaHoyISO();
-        if (inputFechaPlanilla) inputFechaPlanilla.value = localStorage.getItem('dsg_intendencia_fecha_planilla') || obtenerFechaHoyISO();
-
-        function actualizarGraficoRRHH(p, a, l) {
-            const canvasElem = document.getElementById('graficoRRHH');
-            if (!canvasElem) return;
-            const ctx = canvasElem.getContext('2d');
-            if (chartRRHH) chartRRHH.destroy();
-            chartRRHH = new Chart(ctx, {
-                type: 'pie',
-                data: { labels: ['Presentes', 'Ausentes', 'Licencias'], datasets: [{ data: [p, a, l], backgroundColor: ['#28a745', '#dc3545', '#ffc107'] }] },
-                options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
-            });
-        }
-
-        async function cargarRRHH() {
-            const body = document.getElementById('cuerpo-rrhh');
-            if (!body) return;
-            const turnoActual = localStorage.getItem('usuario_turno') || "Mañana";
-            const fechaActual = inputFechaPlanilla ? inputFechaPlanilla.value : obtenerFechaHoyISO();
-            const elemTurno = document.getElementById('display-turno-rrhh');
-            if (elemTurno) elemTurno.innerText = turnoActual;
-            
-            const filtrados = agentes.filter(a => a.turno === turnoActual);
-            
-            let asistenciasGuardadas = {};
-            const { data: dbAsist } = await db
-                .from('rrhh_asistencia')
-                .select('*')
-                .eq('fecha', fechaActual)
-                .eq('turno', turnoActual)
-                .eq('departamento', 'Intendencia');
-
-            if (dbAsist && dbAsist.length > 0) {
-                dbAsist.forEach(item => {
-                    asistenciasGuardadas[item.legajo_empleado] = (item.estado_asistencia === 'Presente' ? 'P' : (item.estado_asistencia === 'Ausente' ? 'A' : 'L'));
-                });
-            } else {
-                asistenciasGuardadas = JSON.parse(localStorage.getItem('dsg_intendencia_asistencia_rrhh') || "{}");
-            }
-
-            body.innerHTML = '';
-            let p=0, a=0, l=0;
-            filtrados.forEach((agent, index) => {
-                const estado = asistenciasGuardadas[agent.legajo] || "";
-                if(estado === 'P') p++; else if(estado === 'A') a++; else if(estado === 'L') l++;
-                body.innerHTML += `<tr><td>${agent.legajo}</td><td>${agent.nombre}</td>
-                    <td><div class="celda-asistencia ${estado === 'P' ? 'estado-P' : ''}" id="P-${index}" onclick="marcar('${index}', '${agent.legajo}', 'P')"></div></td>
-                    <td><div class="celda-asistencia ${estado === 'A' ? 'estado-A' : ''}" id="A-${index}" onclick="marcar('${index}', '${agent.legajo}', 'A')"></div></td>
-                    <td><div class="celda-asistencia ${estado === 'L' ? 'estado-L' : ''}" id="L-${index}" onclick="marcar('${index}', '${agent.legajo}', 'L')"></div></td>
-                    <input type="hidden" id="estado-${index}" data-legajo="${agent.legajo}" value="${estado}"></tr>`;
-            });
-
-            const elemResumen = document.getElementById('resumen-rrhh');
-            if(p+a+l > 0 && elemResumen) {
-                elemResumen.innerHTML = 
-                    `<div class="botonera-porcentaje">Presentismo: ${((p/(p+a+l))*100).toFixed(1)}% (${p})</div>
-                     <div class="botonera-porcentaje">Ausentismo: ${((a/(p+a+l))*100).toFixed(1)}% (${a})</div>
-                     <div class="botonera-porcentaje">Licencias: ${((l/(p+a+l))*100).toFixed(1)}% (${l})</div>`;
-                actualizarGraficoRRHH(p, a, l);
-            }
-        }
-
-        function marcar(index, legajo, estado) {
-            ['P', 'A', 'L'].forEach(e => {
-                const elem = document.getElementById(`${e}-${index}`);
-                if (elem) elem.className = 'celda-asistencia';
-            });
-            const targetElem = document.getElementById(`${estado}-${index}`);
-            if (targetElem) targetElem.className = `celda-asistencia estado-${estado}`;
-            const hiddenInput = document.getElementById(`estado-${index}`);
-            if (hiddenInput) {
-                hiddenInput.value = estado;
-                hiddenInput.setAttribute('data-legajo', legajo);
-            }
-        }
-
-        async function guardarAsistencia() {
-            let registro = {}, presentes = 0, ausentes = 0, licencias = 0;
-            const turnoActual = localStorage.getItem('usuario_turno') || "Mañana";
-            const fechaActual = inputFechaPlanilla ? inputFechaPlanilla.value : obtenerFechaHoyISO();
-            const usuarioActual = localStorage.getItem('usuario_nombre') || "Supervisor";
-            const agentesTurno = agentes.filter(a => a.turno === turnoActual);
-            const totalAgentes = agentesTurno.length;
-
-            if (totalAgentes === 0) {
-                alert("No hay agentes cargados para este turno.");
-                return;
-            }
-
-            const inputsHidden = document.querySelectorAll('#cuerpo-rrhh input[type="hidden"]');
-            inputsHidden.forEach(input => {
-                let legajo = input.getAttribute('data-legajo');
-                let val = input.value;
-                if (legajo) {
-                    registro[legajo] = val;
-                    if (val === 'P') presentes++;
-                    else if (val === 'A') ausentes++;
-                    else if (val === 'L') licencias++;
-                }
-            });
-
-            let noMarcados = totalAgentes - (presentes + ausentes + licencias);
-            if (noMarcados > 0) {
-                alert("¡Atención! Falta cargar la totalidad de los agentes. Hay " + noMarcados + " agentes sin estado asignado.");
-                return;
-            }
-
-            let pP = ((presentes / totalAgentes) * 100).toFixed(1);
-            let pA = ((ausentes / totalAgentes) * 100).toFixed(1);
-            let pL = ((licencias / totalAgentes) * 100).toFixed(1);
-
-            localStorage.setItem('dsg_intendencia_asistencia_rrhh', JSON.stringify(registro));
-
-            for (const a of agentesTurno) {
-                let valEstado = registro[a.legajo] === 'P' ? 'Presente' : (registro[a.legajo] === 'A' ? 'Ausente' : 'Licencia');
-                await db.from('rrhh_asistencia').upsert({
-                    fecha: fechaActual,
-                    departamento: 'Intendencia',
-                    turno: turnoActual,
-                    legajo_empleado: a.legajo,
-                    estado_asistencia: valEstado,
-                    registrado_por: usuarioActual
-                }, { onConflict: 'fecha,departamento,turno,legajo_empleado' });
-            }
-            
-            const elemResumen = document.getElementById('resumen-rrhh');
-            if (elemResumen) {
-                elemResumen.innerHTML = 
-                    `<div class="botonera-porcentaje">Presentismo: ${pP}% (${presentes})</div>
-                     <div class="botonera-porcentaje">Ausentismo: ${pA}% (${ausentes})</div>
-                     <div class="botonera-porcentaje">Licencias: ${pL}% (${licencias})</div>`;
-            }
-            actualizarGraficoRRHH(presentes, ausentes, licencias);
-            
-            alert(`¡Asistencia guardada en la nube!\nPresentismo: ${pP}%\nAusentismo: ${pA}%\nLicencias: ${pL}%`);
-        }
-
-        function guardarDatos() {
-            if (cuerpoTabla) {
-                document.querySelectorAll('#cuerpo-tabla select').forEach(sel => {
-                    sel.querySelectorAll('option').forEach(opt => {
-                        if (opt.value === sel.value) opt.setAttribute('selected', 'selected');
-                        else opt.removeAttribute('selected');
-                    });
-                });
-                document.querySelectorAll('#cuerpo-tabla input').forEach(inp => {
-                    inp.setAttribute('value', inp.value);
-                });
-
-                localStorage.setItem('dsg_intendencia_tabla', cuerpoTabla.innerHTML);
-            }
-            if (editorReporte) localStorage.setItem('dsg_intendencia_reporte', editorReporte.innerHTML);
-            if (editorObservaciones) localStorage.setItem('dsg_intendencia_observaciones', editorObservaciones.innerHTML);
-            if (inputFecha) localStorage.setItem('dsg_intendencia_fecha', inputFecha.value);
-            if (inputFechaPlanilla) localStorage.setItem('dsg_intendencia_fecha_planilla', inputFechaPlanilla.value);
-        }
-
-        async function cerrarJornadaGlobal() {
-            if (!confirm("¿Cerrar jornada? Se consolidarán los datos y se guardarán en la nube.")) return;
-            
-            const fechaCierreVal = (inputFechaPlanilla ? inputFechaPlanilla.value : new Date().toISOString().split('T')[0]).trim();
-            const turnoVal = (localStorage.getItem('usuario_turno') || "Mañana").trim();
-            const deptoVal = "Intendencia";
-            const supervisorVal = (localStorage.getItem('usuario_nombre') || "Invitado").trim();
-
-            if (db) {
-                try {
-                    const { data: existente, error: errExistente } = await db
-                        .from('cierres_jornada')
-                        .select('id')
-                        .eq('fecha_cierre', fechaCierreVal)
-                        .eq('turno', turnoVal)
-                        .eq('departamento', deptoVal)
-                        .eq('supervisor', supervisorVal)
-                        .maybeSingle();
-
-                    if (!errExistente && existente) {
-                        alert(`⚠️ ATENCIÓN: Ya se ha registrado y cerrado la jornada para el supervisor "${supervisorVal}" en el turno "${turnoVal}" para el día de la fecha. No se puede volver a cerrar.`);
-                        return;
-                    }
-                } catch (errCheck) {
-                    console.error("Error verificando duplicidad en Supabase:", errCheck);
-                }
-            }
-            
-            const filasTabla = cuerpoTabla ? cuerpoTabla.querySelectorAll('tr') : [];
-            
-            filasTabla.forEach(fila => {
-                fila.querySelectorAll('select').forEach(sel => {
-                    Array.from(sel.options).forEach(opt => {
-                        if (opt.value === sel.value) {
-                            opt.setAttribute('selected', 'selected');
-                        } else {
-                            opt.removeAttribute('selected');
-                        }
-                    });
-                });
-                fila.querySelectorAll('input').forEach(inp => {
-                    inp.setAttribute('value', inp.value);
-                });
-            });
-
-            guardarDatos();
-            
-            const tablaClonada = cuerpoTabla ? cuerpoTabla.cloneNode(true) : document.createElement('tbody');
-            tablaClonada.querySelectorAll('button').forEach(btn => btn.remove());
-            
-            tablaClonada.querySelectorAll('select').forEach(sel => {
-                const valorActual = sel.value;
-                const span = document.createElement('span');
-                span.textContent = valorActual;
-                span.style.fontWeight = "500";
-                sel.replaceWith(span);
-            });
-            
-            tablaClonada.querySelectorAll('input').forEach(inp => {
-                const span = document.createElement('span');
-                span.textContent = inp.value || '--:--';
-                inp.replaceWith(span);
-            });
-
-            const tablaConsolidada = `<table class="tabla-intendencia" border="1"><thead><tr><th>SECTOR</th><th>AGENTE</th><th>DESDE</th><th>HASTA</th></tr></thead><tbody>${tablaClonada.innerHTML}</tbody></table>`;
-            
-            const obsTexto = editorObservaciones ? editorObservaciones.innerHTML.trim() : "";
-            const obsConsolidada = `<div style="margin-top:20px; border:1px solid #000; padding:15px;"><b>Observaciones:</b><p>${obsTexto}</p></div>`;
-
-            const reporteVal = editorReporte ? editorReporte.innerHTML.trim() : "";
-            const tablaCompletaVal = tablaConsolidada + obsConsolidada;
-            const asistenciaVal = JSON.parse(localStorage.getItem('dsg_intendencia_asistencia_rrhh') || "{}");
-
-            for (let fila of filasTabla) {
-                const selects = fila.querySelectorAll('select');
-                const inputs = fila.querySelectorAll('input');
-                if (selects.length >= 2) {
-                    await db.from('registros_intendencia').insert({
-                        fecha_cierre: fechaCierreVal,
-                        turno: turnoVal,
-                        supervisor: supervisorVal,
-                        sector: selects[0].value,
-                        agentes_asignados: selects[1].value,
-                        hora_desde: inputs[0] ? inputs[0].value || null : null,
-                        hora_hasta: inputs[1] ? inputs[1].value || null : null,
-                        observaciones: obsTexto
-                    });
-                }
-            }
-
-            await db.from('cierres_jornada').upsert({
-                fecha_cierre: fechaCierreVal,
-                turno: turnoVal,
-                departamento: deptoVal,
-                supervisor: supervisorVal,
-                reporte_diario: reporteVal,
-                tabla_operativa: tablaCompletaVal,
-                detalles_operativos: JSON.stringify({ filas_tabla: tablaClonada.innerHTML }),
-                asistencia_personal: asistenciaVal
-            }, { onConflict: 'fecha_cierre,turno,departamento,supervisor' });
-
-            const cierre = { 
-                fecha: fechaCierreVal, 
-                turno: turnoVal, 
-                depto: deptoVal, 
-                supervisor: supervisorVal,
-                reporte: reporteVal, 
-                tabla: tablaCompletaVal, 
-                asistencia: asistenciaVal, 
-                timestamp: new Date().toISOString() 
-            };
-            
-            let historial = JSON.parse(localStorage.getItem('historial_jornadas') || "[]");
-            historial.push(cierre);
-            localStorage.setItem('historial_jornadas', JSON.stringify(historial));
-            
-            let contadorHojaActual = parseInt(localStorage.getItem('dsg_intendencia_contador_hoja') || "1");
-            localStorage.setItem('dsg_intendencia_contador_hoja', contadorHojaActual + 1);
-            
-            localStorage.removeItem('dsg_intendencia_asistencia_rrhh');
-            localStorage.removeItem('dsg_intendencia_reporte');
-            localStorage.removeItem('dsg_intendencia_tabla');
-            localStorage.removeItem('dsg_intendencia_observaciones');
-            
-            if(editorReporte) editorReporte.innerHTML = "";
-            if(editorObservaciones) editorObservaciones.innerHTML = "";
-            alert("Jornada cerrada y guardada en la base de datos correctamente.");
-            location.reload();
-        }
-
-        async function cargarHistoricos() {
-            const f = document.getElementById('filtro-fecha-hist') ? document.getElementById('filtro-fecha-hist').value.trim() : ""; 
-            const t = document.getElementById('select-turno') ? document.getElementById('select-turno').value.trim() : "";
-            const tipo = document.getElementById('select-tipo') ? document.getElementById('select-tipo').value : "";
-            const d = "Intendencia";
-            const supervisorVal = (localStorage.getItem('usuario_nombre') || "").trim();
-            const visor = document.getElementById('contenedor-historicos');
-            if (!visor) return;
-            
-            visor.innerHTML = "<p>Buscando en la nube...</p>";
-
-            const { data: reg, error } = await db
-                .from('cierres_jornada')
-                .select('*')
-                .eq('fecha_cierre', f)
-                .eq('turno', t)
-                .eq('departamento', d)
-                .eq('supervisor', supervisorVal)
-                .maybeSingle();
-
-            if (tipo === 'reporte') {
-                const estiloRenglones = `background-image: linear-gradient(#e0e0e0 1px, transparent 1px); background-size: 100% 30px; line-height: 30px; padding-left: 10px; font-family: 'Courier New', Courier, monospace; min-height: 400px; white-space: pre-wrap; display: block;`;
-                visor.innerHTML = `
-                    <div style="border: 2px solid #1a3a5f; padding: 20px; background: white;">
-                        <h3>REPORTE ENCONTRADO</h3>
-                        <div style="${estiloRenglones}">${reg && reg.reporte_diario ? reg.reporte_diario : 'Sin reporte.'}</div>
-                    </div>`;
-            } 
-            else if (tipo === 'planilla') {
-                const { data: intData } = await db
-                    .from('registros_intendencia')
-                    .select('*')
-                    .eq('fecha_cierre', f)
-                    .eq('turno', t)
-                    .eq('supervisor', supervisorVal);
-
-                let tablaDinamica = `
-                    <div style="background: #fff; padding: 15px; border-radius: 6px;">
-                        <div style="font-size: 16px; font-weight: bold; color: #1a3a5f; margin-bottom: 10px;">Planilla Operativa - Intendencia</div>
-                        
-                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 0;">
-                            <thead>
-                                <tr style="background-color: #1a3a5f; color: white;">
-                                    <th style="border: 1px solid #333; padding: 10px; text-align: center;" rowspan="2">SECTOR</th>
-                                    <th style="border: 1px solid #333; padding: 10px; text-align: center;" rowspan="2">AGENTES ASIGNADOS</th>
-                                    <th style="border: 1px solid #333; padding: 8px; text-align: center;" colspan="2">HORARIO</th>
-                                </tr>
-                                <tr style="background-color: #1a3a5f; color: white;">
-                                    <th style="border: 1px solid #333; padding: 8px; text-align: center; width: 100px;">DESDE</th>
-                                    <th style="border: 1px solid #333; padding: 8px; text-align: center; width: 100px;">HASTA</th>
-                                </tr>
-                            </thead>
-                            <tbody>`;
-                
-                if (intData && intData.length > 0) {
-                    intData.forEach(row => {
-                        tablaDinamica += `<tr>
-                            <td style="border: 1px solid #333; padding: 10px; text-align: center;">${row.sector || ''}</td>
-                            <td style="border: 1px solid #333; padding: 10px; text-align: center;">${row.agentes_asignados || ''}</td>
-                            <td style="border: 1px solid #333; padding: 10px; text-align: center;">${row.hora_desde || ''}</td>
-                            <td style="border: 1px solid #333; padding: 10px; text-align: center;">${row.hora_hasta || ''}</td>
-                        </tr>`;
-                    });
-                } else {
-                    tablaDinamica += `<tr><td colspan="4" style="border: 1px solid #333; padding: 12px; text-align: center;">No hay registros detallados de Intendencia para esta fecha, turno y supervisor.</td></tr>`;
-                }
-                tablaDinamica += `</tbody></table>`;
-                
-                let obsFinal = '';
-                if (reg && reg.observaciones) {
-                    obsFinal = reg.observaciones;
-                } else if (intData && intData.length > 0) {
-                    const encontrada = intData.find(r => r.observaciones && r.observaciones.trim() !== '');
-                    obsFinal = encontrada ? encontrada.observaciones : '';
-                }
-
-                tablaDinamica += `
-                    <div style="background-color: #1a3a5f; color: white; padding: 8px 12px; font-weight: bold; font-size: 14px; margin-top: 15px; border: 1px solid #333;">
-                        Observaciones:
-                    </div>
-                    <div style="padding: 15px; min-height: 120px; background: #fff; border: 1px solid #333; border-top: none;">
-                        <p style="margin: 0; padding: 0; font-family: 'Courier New', monospace; font-size: 16px; line-height: 24px; white-space: pre-wrap; text-align: left !important;">${obsFinal || 'Sin observaciones registradas.'}</p>
-                    </div>
-                </div>`;
-                
-                visor.innerHTML = tablaDinamica;
-            } 
-            else if (tipo === 'asistencia') {
-                if (reg && reg.asistencia_personal) {
-                    let p = 0, a = 0, l = 0;
-                    let rowsHTML = "";
-                    
-                    agentes.forEach(ag => {
-                        const estado = reg.asistencia_personal[ag.legajo] || "";
-                        if(estado === 'P') p++; else if(estado === 'A') a++; else if(estado === 'L') l++;
-                        
-                        rowsHTML += `
-                            <tr style="height: 40px;">
-                                <td style="border: 1px solid #1a3a5f; text-align: center;">${ag.legajo}</td>
-                                <td style="border: 1px solid #1a3a5f; padding-left: 10px;">${ag.nombre}</td>
-                                <td style="border: 1px solid #1a3a5f; text-align: center;"><div class="celda-asistencia ${estado === 'P' ? 'estado-P' : ''}"></div></td>
-                                <td style="border: 1px solid #1a3a5f; text-align: center;"><div class="celda-asistencia ${estado === 'A' ? 'estado-A' : ''}"></div></td>
-                                <td style="border: 1px solid #1a3a5f; text-align: center;"><div class="celda-asistencia ${estado === 'L' ? 'estado-L' : ''}"></div></td>
-                            </tr>`;
-                    });
-
-                    const total = p + a + l || 1;
-                    visor.innerHTML = `
-                        <div style="border: 2px solid #1a3a5f; padding: 20px; background: white;">
-                            <h3>ASISTENCIA DE PERSONAL REGISTRADA</h3>
-                            <p><b>Presentismo:</b> ${((p/total)*100).toFixed(1)}% (${p}) | <b>Ausentismo:</b> ${((a/total)*100).toFixed(1)}% (${a}) | <b>Licencias:</b> ${((l/total)*100).toFixed(1)}% (${l})</p>
-                            <table class="tabla-intendencia" style="margin-top: 15px;">
-                                <thead><tr><th>LEGAJO</th><th>APELLIDO Y NOMBRE</th><th>PRESENTE</th><th>AUSENTE</th><th>LICENCIA</th></tr></thead>
-                                <tbody>${rowsHTML}</tbody>
-                            </table>
-                        </div>`;
-                } else {
-                    visor.innerHTML = "No hay registros de asistencia para esta jornada.";
-                }
+                console.error("Error al cargar registros del muro:", err);
+                contenedorNov.innerHTML = '<p style="color: red;">Error al sincronizar con la base de datos.</p>';
             }
         }
 
@@ -814,10 +813,7 @@
             visor.innerHTML = '<p style="text-align:center;">Cargando estado actual de ascensores...</p>';
             
             try {
-                const { data, error } = await db
-                    .from('estado_actual_ascensores')
-                    .select('*');
-
+                const { data, error } = await db.from('estado_actual_ascensores').select('*');
                 if (error) throw error;
 
                 if (!data || data.length === 0) {
@@ -829,13 +825,13 @@
                 let legajoOperador = null;
 
                 data.forEach(item => {
-                    let fechaItem = item.updated_at; 
+                    let fechaItem = item.updated_at || item.actualizado_at || item.actualizado_en || item.fecha;
                     if (fechaItem) {
                         if (!ultimaFechaStr || new Date(fechaItem) > new Date(ultimaFechaStr)) {
                             ultimaFechaStr = fechaItem;
                         }
                     }
-                    let legajoItem = item.legajo_operador;
+                    let legajoItem = item.legajo_operador || item.legajo;
                     if (legajoItem && !legajoOperador) {
                         legajoOperador = String(legajoItem).trim();
                     }
@@ -861,13 +857,8 @@
                     let f = new Date(ultimaFechaStr);
                     if (!isNaN(f.getTime())) {
                         fechaFormateada = f.toLocaleString('es-AR', {
-                            year: 'numeric',
-                            month: '2-digit',
-                            day: '2-digit',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            second: '2-digit',
-                            hour12: false
+                            year: 'numeric', month: '2-digit', day: '2-digit',
+                            hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
                         });
                     } else {
                         fechaFormateada = ultimaFechaStr;
@@ -879,11 +870,10 @@
                     tituloContenedor.innerHTML = `Última actualización: <b>${fechaFormateada}</b> | Registrado por: <b>${nombreSupervisor}</b>`;
                 }
 
-                data.sort((a, b) => {
-                    let idA = a.id || 0;
-                    let idB = b.id || 0;
-                    return idA - idB;
-                });
+                data.sort((a, b) => (a.id || 0) - (b.id || 0));
+
+                let cVerde = 0, cAmarillo = 0, cRojo = 0, cMixto = 0;
+                let totalAscensores = data.length;
 
                 let html = '<table style="width:100%; border-collapse: collapse; text-align: left;">';
                 html += '<thead><tr style="background: #1a3a5f; color: white;"><th style="padding: 10px; border: 1px solid #ddd; text-align: center; width: 15%;">Dispositivo</th><th style="padding: 10px; border: 1px solid #ddd; width: 25%;">Estado</th><th style="padding: 10px; border: 1px solid #ddd; width: 30%;">Uso Asignado</th><th style="padding: 10px; border: 1px solid #ddd; width: 30%;">Observaciones / Detalles</th></tr></thead><tbody>';
@@ -894,6 +884,19 @@
                     let uso = item.uso || '-';
                     let observaciones = item.observaciones && item.observaciones !== 'EMPTY' ? item.observaciones : '-';
 
+                    let estLower = String(estado).toLowerCase();
+                    if (estLower.includes('funcionando') && !estLower.includes('ascensorista')) {
+                        cVerde++;
+                    } else if (estLower.includes('mantenimiento')) {
+                        cAmarillo++;
+                    } else if (estLower.includes('fuera') || estLower.includes('servicio')) {
+                        cRojo++;
+                    } else if (estLower.includes('ascensorista') || estLower.includes('mixto')) {
+                        cMixto++;
+                    } else {
+                        cVerde++;
+                    }
+
                     html += `<tr>
                         <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold; text-align: center;">${dispositivo}</td>
                         <td style="padding: 10px; border: 1px solid #ddd;">${estado}</td>
@@ -903,329 +906,566 @@
                 });
 
                 html += '</tbody></table>';
+
+                html += `
+                    <div style="margin-top: 30px; text-align: center; color: #1a3a5f; font-weight: bold; font-size: 20px; margin-bottom: 10px;">Estadísticas de Funcionalidad</div>
+                    <div style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #ddd; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; justify-content: center; align-items: center; gap: 50px; flex-wrap: wrap;">
+                        <div style="font-weight:bold; color: #1a3a5f; font-size: 16px; line-height: 2.0; display: flex; flex-direction: column;">
+                            <div style="background-color: #1a3a5f; color: white; padding: 8px 15px; border-radius: 6px; font-weight: bold; margin-bottom: 8px; width: 270px; text-align: left;">Funcionando: ${totalAscensores > 0 ? ((cVerde/totalAscensores)*100).toFixed(1) : 0}% (${cVerde})</div>
+                            <div style="background-color: #1a3a5f; color: white; padding: 8px 15px; border-radius: 6px; font-weight: bold; margin-bottom: 8px; width: 270px; text-align: left;">En Mantenimiento: ${totalAscensores > 0 ? ((cAmarillo/totalAscensores)*100).toFixed(1) : 0}% (${cAmarillo})</div>
+                            <div style="background-color: #1a3a5f; color: white; padding: 8px 15px; border-radius: 6px; font-weight: bold; margin-bottom: 8px; width: 270px; text-align: left;">Fuera de Servicio: ${totalAscensores > 0 ? ((cRojo/totalAscensores)*100).toFixed(1) : 0}% (${cRojo})</div>
+                            <div style="background-color: #1a3a5f; color: white; padding: 8px 15px; border-radius: 6px; font-weight: bold; margin-bottom: 8px; width: 270px; text-align: left;">Con Ascensorista: ${totalAscensores > 0 ? ((cMixto/totalAscensores)*100).toFixed(1) : 0}% (${cMixto})</div>
+                        </div>
+                        <div style="width: 220px; height: 220px;">
+                            <canvas id="graficoEstadoAscensoresVivo"></canvas>
+                        </div>
+                    </div>`;
+
                 visor.innerHTML = html;
+
+                setTimeout(() => {
+                    const ctx = document.getElementById('graficoEstadoAscensoresVivo')?.getContext('2d');
+                    if (ctx) {
+                        if (typeof chartAscVivo !== 'undefined' && chartAscVivo) chartAscVivo.destroy();
+                        window.chartAscVivo = new Chart(ctx, {
+                            type: 'pie',
+                            data: { 
+                                labels: ['Funcionando', 'Mantenimiento', 'Fuera de Servicio', 'Ascensoristas'], 
+                                datasets: [{ 
+                                    data: [cVerde, cAmarillo, cRojo, cMixto], 
+                                    backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#007bff'] 
+                                }] 
+                            },
+                            options: { 
+                                responsive: true, 
+                                plugins: { legend: { position: 'bottom' } } 
+                            }
+                        });
+                    }
+                }, 50);
+
             } catch (err) {
                 console.error("Error al obtener estado actual de ascensores:", err);
                 visor.innerHTML = '<p style="text-align:center; color: red;">Error al cargar los datos de ascensores y escaleras.</p>';
             }
         }
 
-        // =========================================================================
-        // LÓGICA ACTUALIZADA: RECONOCE SI ES DEPARTAMENTO INTENDENCIA, 
-        // Y PERMITE QUE TURNO O SUPERVISOR SEAN NULL/TODOS
-        // =========================================================================
-        async function verificarNovedadesNoLeidas() {
-            try {
-                const { data, error } = await db
-                    .from('comunicados_memos')
-                    .select('*')
-                    .order('created_at', { ascending: false });
+        function actualizarPrint(id) {
+            const depto = document.getElementById('depto-destino-' + id).value;
+            const turno = document.getElementById('turno-destino-' + id).value;
+            const supElem = document.getElementById('supervisor-destino-' + id);
+            const supVal = supElem ? supElem.value : '';
+            
+            let textoSup = supVal ? ` | Supervisor: ${supVal}` : '';
+            document.getElementById('print-header-' + id).innerText = `Dirigido a: ${depto} | Turno: ${turno}${textoSup}`;
+        }
 
-                if (error || !data) return;
+        function previsualizar(input, id) {
+            const file = input.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                archivoData[id] = { name: file.name, type: file.type, data: e.target.result };
+                const prev = document.getElementById('preview-' + id);
+                prev.style.display = 'block';
+                prev.innerHTML = file.type.startsWith('image') ? `<img src="${e.target.result}" style="max-width:200px; display:block; margin-top:10px;">` : `Archivo adjunto: ${file.name}`;
+            };
+            reader.readAsDataURL(file);
+        }
 
-                const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim().toLowerCase();
-                const usuarioActual = (localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario') || "invitado").trim().toLowerCase();
-                const claveStoragePersonal = `dsg_novedades_ultimo_id_${usuarioActual}`;
+        async function guardarRedaccion(id) {
+            const destinoVisual = document.getElementById('depto-destino-' + id).value;
+            const turno = document.getElementById('turno-destino-' + id).value;
+            const supervisorElem = document.getElementById('supervisor-destino-' + id);
+            const supervisor = supervisorElem ? supervisorElem.value : '';
+            const textoEscrito = document.getElementById('txt-' + id).value;
 
-                const novedadesFiltradas = data.filter(item => {
-                    const deptoDestino = (item.departamento_destino || "").trim().toLowerCase();
-                    const turnoDestino = (item.turno_destino || "").trim().toLowerCase();
-                    const supervisorDestino = (item.supervisor_destino || "").trim().toLowerCase();
+            let listaArchivos = [];
+            let primerArchivo = null;
 
-                    // 1. Validar Departamento: debe ser 'intendencia' o 'todos' (o vacío)
-                    const deptoValido = (deptoDestino === 'intendencia' || deptoDestino === 'todos' || deptoDestino === '');
-                    if (!deptoValido) return false;
+            if (id === 'novedades') {
+                listaArchivos = archivosMultiplesNovedades;
+                primerArchivo = archivosMultiplesNovedades.length > 0 ? archivosMultiplesNovedades[0] : null;
+            } else if (id === 'memos') {
+                listaArchivos = archivosMultiplesMemos;
+                primerArchivo = archivosMultiplesMemos.length > 0 ? archivosMultiplesMemos[0] : null;
+            } else {
+                primerArchivo = archivoData[id] || null;
+                listaArchivos = primerArchivo ? [primerArchivo] : [];
+            }
 
-                    // Si es general para todos los departamentos/turnos/supervisores
-                    if (deptoDestino === 'todos' || deptoDestino === '') {
-                        return true;
-                    }
+            if (!textoEscrito.trim() && listaArchivos.length === 0 && !archivosMultiplesNovedades.length && !archivosMultiplesMemos.length) {
+                alert("Escriba un texto o adjunte algún archivo antes de guardar y enviar.");
+                return;
+            }
 
-                    // Si es específicamente para Intendencia:
-                    // 2. Validar Turno: pasa si es 'todos', viene vacío/null, o coincide con el turno actual
-                    const turnoValido = (!turnoDestino || turnoDestino === 'todos' || turnoDestino === turnoActual);
-                    if (!turnoValido) return false;
+            // Normalización estricta idéntica para origen (Intendencia) y destino
+            const deptoOrigenNormalizado = 'intendencia';
+            const deptoDestinoNormalizado = toKebabCase(destinoVisual);
 
-                    // 3. Validar Supervisor: pasa si viene vacío/null, dice 'todos', o coincide exactamente con el usuario logueado
-                    const supervisorValido = (!supervisorDestino || supervisorDestino === 'todos' || supervisorDestino === usuarioActual);
-                    if (!supervisorValido) return false;
+            const data = {
+                texto: textoEscrito,
+                archivos: listaArchivos,
+                archivo: primerArchivo,
+                fecha: new Date().toLocaleString(),
+                departamento: deptoDestinoNormalizado,
+                origen: deptoOrigenNormalizado,
+                turno: turno,
+                supervisor: supervisor || 'General (Todos)'
+            };
 
-                    return true;
-                });
+            let sufijoSupervisor = supervisor ? `_${supervisor.replace(/\s+/g, '_')}` : '_todos';
+            const prefijoClave = id === 'novedades' ? 'comunicado_novedades' : 'comunicado_memos';
+            const claveUnica = `${prefijoClave}_${deptoDestinoNormalizado}_${turno}${sufijoSupervisor}_${Date.now()}`;
+            
+            // Inserción en Supabase garantizando el uso estricto de kebab-case en ambas columnas
+            const { error } = await db
+                .from('comunicados_memos')
+                .upsert(
+                    { 
+                        id_clave: claveUnica, 
+                        contenido: data,
+                        departamento_destino: deptoDestinoNormalizado,
+                        departamento_origen: deptoOrigenNormalizado,
+                        turno_destino: turno === 'Todos' ? 'Todos' : turno,
+                        supervisor_destino: supervisor || 'General (Todos)'
+                    },
+                    { onConflict: 'id_clave' }
+                );
 
-                if (novedadesFiltradas.length === 0) return;
-
-                const ultimoIdLeido = localStorage.getItem(claveStoragePersonal);
-                let noLeidasCount = 0;
-
-                if (!ultimoIdLeido) {
-                    noLeidasCount = novedadesFiltradas.length;
-                } else {
-                    for (let item of novedadesFiltradas) {
-                        if (String(item.id) === String(ultimoIdLeido)) break;
-                        noLeidasCount++;
-                    }
+            if (error) {
+                console.error("Error al guardar en Supabase:", error);
+                alert("Error al enviar a la base de datos: " + error.message);
+            } else {
+                let nombreSeccionMsg = id === 'novedades' ? 'Novedad' : 'Memo/Resolución';
+                alert(`${nombreSeccionMsg} enviada y guardada correctamente.`);
+                limpiarPantalla(id);
+                if (id === 'novedades') {
+                    cargarNovedades();
+                    archivosMultiplesNovedades = [];
                 }
-
-                const badge = document.getElementById('badge-novedades');
-                if (badge) {
-                    if (noLeidasCount > 0) {
-                        badge.innerText = noLeidasCount;
-                        badge.style.display = 'inline-block';
-                    } else {
-                        badge.style.display = 'none';
-                    }
+                if (id === 'memos') {
+                    cargarMemos();
+                    archivosMultiplesMemos = [];
                 }
-            } catch (err) {
-                console.error("Error al verificar novedades no leídas:", err);
             }
         }
 
-        async function cargarNovedadesVivo() {
-            const visor = document.getElementById('visor-novedades');
-            if (!visor) return;
-
-            visor.innerHTML = '<p style="text-align:center;">Cargando novedades...</p>';
+        async function generarReporteMensual() {
+            const tipo = document.getElementById('est-tipo').value;
+            const deptoSeleccionado = document.getElementById('est-depto').value;
+            const turnoSeleccionado = document.getElementById('est-turno').value;
+            const mes = document.getElementById('est-mes').value;
+            const anio = document.getElementById('est-anio').value;
+            const visor = document.getElementById('visor-estadisticas');
             
-            try {
-                const { data, error } = await db
-                    .from('comunicados_memos')
-                    .select('*')
-                    .order('created_at', { ascending: false });
+            visor.innerHTML = "<p>Cargando datos desde la nube...</p>";
 
-                if (error) throw error;
+            if (tipo === 'rrhh') {
+                let p = 0, a = 0, l = 0;
+                const { data: asistData } = await db.from('rrhh_asistencia').select('*');
+                if (asistData) {
+                    asistData.forEach(ag => {
+                        const f = new Date(ag.fecha);
+                        const matchFecha = (f.getMonth() + 1) == mes && f.getFullYear() == anio;
+                        const matchTurno = (turnoSeleccionado === 'Todos' || ag.turno === turnoSeleccionado);
+                        const matchDepto = (deptoSeleccionado === 'Todos' || ag.departamento === deptoSeleccionado);
 
-                if (!data || data.length === 0) {
-                    visor.innerHTML = '<p style="text-align:center; color: #666;">No hay registros de novedades.</p>';
+                        if (matchFecha && matchTurno && matchDepto) {
+                            const est = String(ag.estado_asistencia || '').trim().toLowerCase();
+                            if (est === 'presente' || est === 'p') p++;
+                            else if (est === 'ausente' || est === 'a') a++;
+                            else if (est === 'licencia' || est === 'l') l++;
+                        }
+                    });
+                }
+                
+                if (p+a+l === 0) { visor.innerHTML = "No hay datos para esta selección."; return; }
+                visor.innerHTML = `<h3>Asistencia (${deptoSeleccionado}) ${mes}/${anio}</h3><div style="width:300px; height:300px; margin:auto;"><canvas id="graficoMes"></canvas></div><p><b>Presentismo:</b> ${((p/(p+a+l))*100).toFixed(1)}%</p>`;
+                new Chart(document.getElementById('graficoMes'), { type: 'doughnut', data: { labels: ['Presentes', 'Ausentes', 'Licencias'], datasets: [{ data: [p, a, l], backgroundColor: ['#28a745', '#dc3545', '#ffc107'] }] } });
+            
+            } else if (tipo === 'ascensores') {
+                const { data: ascData } = await db.from('registros_ascensores').select('*');
+                let func = 0, falla = 0;
+                if (ascData) {
+                    ascData.forEach(item => {
+                        const f = new Date(item.fecha_cierre);
+                        const matchFecha = (f.getMonth() + 1) == mes && f.getFullYear() == anio;
+                        const matchTurno = (turnoSeleccionado === 'Todos' || item.turno === turnoSeleccionado);
+                        const matchDepto = (deptoSeleccionado === 'Todos' || item.departamento === deptoSeleccionado);
+
+                        if (matchFecha && matchTurno && matchDepto) {
+                            const txt = String(item.estado || '').trim().toLowerCase();
+                            if (txt.includes('funciona') || txt.includes('ok') || txt === 'p') func++;
+                            else if (txt.includes('falla') || txt.includes('fuera') || txt === 'a' || txt === 'l') falla++;
+                        }
+                    });
+                }
+
+                if (func+falla === 0) { visor.innerHTML = "No hay registros para esta selección."; return; }
+                visor.innerHTML = `<h3>Estado Ascensores (${deptoSeleccionado}) ${mes}/${anio}</h3><div style="width:300px; height:300px; margin:auto;"><canvas id="graficoMes"></canvas></div><p><b>% Funcionamiento:</b> ${((func/(func+falla))*100).toFixed(1)}%</p>`;
+                new Chart(document.getElementById('graficoMes'), { type: 'pie', data: { labels: ['En Servicio', 'En Falla'], datasets: [{ data: [func, falla], backgroundColor: ['#28a745', '#dc3545'] }] } });
+            }
+        }
+
+        let chartAsc; 
+
+        async function consultar(tipo) {
+            const depto = document.getElementById('depto-' + tipo).value;
+            const turno = document.getElementById('turno-' + tipo).value;
+            const fechaBusqueda = document.getElementById('fecha-' + tipo).value;
+            const supervisorSeleccionado = document.getElementById('supervisor-' + tipo)?.value || '';
+            const visor = document.getElementById('visor-' + tipo);
+            
+            if (!fechaBusqueda) {
+                visor.innerHTML = `<p style='color: red; font-weight: bold;'>Por favor, seleccione una fecha válida.</p>`;
+                return;
+            }
+
+            visor.innerHTML = "<p>Buscando en la base de datos...</p>";
+            
+            let deptoFiltro = obtenerNombreDepartamentoLargo(depto);
+            if (!deptoFiltro) deptoFiltro = depto;
+            
+            let queryReg = db
+                .from('cierres_jornada')
+                .select('*')
+                .eq('fecha_cierre', fechaBusqueda)
+                .eq('turno', turno)
+                .eq('departamento', deptoFiltro);
+
+            if (supervisorSeleccionado) {
+                queryReg = queryReg.eq('supervisor', supervisorSeleccionado);
+            }
+
+            const { data: reg, error } = await queryReg.maybeSingle();
+            
+            if (tipo === 'rrhh') {
+                if (error || !reg || !reg.asistencia_personal) {
+                    visor.innerHTML = `<p style='color: red; font-weight: bold;'>No se encontraron registros de asistencia en la nube para esta selección.</p>`;
                     return;
                 }
 
-                const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim().toLowerCase();
-                const usuarioActual = (localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario') || "invitado").trim().toLowerCase();
+                const jsonAsistencia = reg.asistencia_personal;
+                const legajos = Object.keys(jsonAsistencia);
 
-                const novedadesFiltradas = data.filter(item => {
-                    const deptoDestino = (item.departamento_destino || "").trim().toLowerCase();
-                    const turnoDestino = (item.turno_destino || "").trim().toLowerCase();
-                    const supervisorDestino = (item.supervisor_destino || "").trim().toLowerCase();
-
-                    // 1. Validar Departamento: debe ser 'intendencia' o 'todos' (o vacío)
-                    const deptoValido = (deptoDestino === 'intendencia' || deptoDestino === 'todos' || deptoDestino === '');
-                    if (!deptoValido) return false;
-
-                    if (deptoDestino === 'todos' || deptoDestino === '') {
-                        return true;
-                    }
-
-                    // 2. Validar Turno: pasa si es 'todos', viene vacío/null, o coincide con el turno actual
-                    const turnoValido = (!turnoDestino || turnoDestino === 'todos' || turnoDestino === turnoActual);
-                    if (!turnoValido) return false;
-
-                    // 3. Validar Supervisor: pasa si viene vacío/null, dice 'todos', o coincide exactamente con el usuario logueado
-                    const supervisorValido = (!supervisorDestino || supervisorDestino === 'todos' || supervisorDestino === usuarioActual);
-                    if (!supervisorValido) return false;
-
-                    return true;
-                });
-
-                if (novedadesFiltradas.length > 0) {
-                    const claveStoragePersonal = `dsg_novedades_ultimo_id_${usuarioActual}`;
-                    localStorage.setItem(claveStoragePersonal, novedadesFiltradas[0].id);
-                    const badge = document.getElementById('badge-novedades');
-                    if (badge) badge.style.display = 'none';
-                }
-
-                if (novedadesFiltradas.length === 0) {
-                    visor.innerHTML = '<p style="text-align:center; color: #666;">No hay novedades disponibles para Intendencia en este turno.</p>';
+                if (legajos.length === 0) {
+                    visor.innerHTML = "<p style='color: red; font-weight: bold;'>El registro de asistencia está vacío.</p>";
                     return;
                 }
 
-                let html = '';
-                novedadesFiltradas.forEach(item => {
-                    const contenidoObj = item.contenido || {};
-                    const texto = contenidoObj.texto || 'Sin contenido';
-                    const fecha = contenidoObj.fecha || 'Sin fecha';
-                    const turnoMsg = item.turno_destino || contenidoObj.turno || 'General';
-                    const supervisorDestino = item.supervisor_destino ? ` | <b>Destino Directo:</b> ${item.supervisor_destino}` : '';
+                let tablaPersonal = 'intendencia_personal';
+                if (deptoFiltro === 'Ascensores') {
+                    tablaPersonal = 'ascensores_personal';
+                } else if (deptoFiltro === 'Camilleros') {
+                    tablaPersonal = 'camilleros_personal';
+                } else if (deptoFiltro === 'Lavadero Central') {
+                    tablaPersonal = 'lavadero_personal';
+                }
 
-                    let archivosArray = [];
-                    if (Array.isArray(contenidoObj.archivos)) {
-                        archivosArray = contenidoObj.archivos;
-                    } else if (contenidoObj.archivo && contenidoObj.archivo.data) {
-                        archivosArray = [contenidoObj.archivo];
+                const { data: resPersonal, error: errPers } = await db
+                    .from(tablaPersonal)
+                    .select('legajo, apellido_y_nombre')
+                    .in('legajo', legajos);
+
+                const mapaNombres = {};
+                if (resPersonal) {
+                    resPersonal.forEach(p => {
+                        if (p.legajo != null) mapaNombres[String(p.legajo).trim()] = p.apellido_y_nombre || 'Desconocido';
+                    });
+                }
+
+                let presentes = 0, ausentes = 0, licencias = 0;
+                let total = legajos.length;
+
+                let html = `<table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                    <thead>
+                        <tr>
+                            <th style="border: 1px solid #000; padding: 8px; background-color: #1a3a5f; color: white;">LEGAJO</th>
+                            <th style="border: 1px solid #000; padding: 8px; background-color: #1a3a5f; color: white;">APELLIDO Y NOMBRE</th>
+                            <th style="border: 1px solid #000; padding: 8px; background-color: #1a3a5f; color: white; width: 80px;">PRESENTE</th>
+                            <th style="border: 1px solid #000; padding: 8px; background-color: #1a3a5f; color: white; width: 80px;">AUSENTE</th>
+                            <th style="border: 1px solid #000; padding: 8px; background-color: #1a3a5f; color: white; width: 80px;">LICENCIA</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+                
+                legajos.forEach(legajo => {
+                    const legTrim = String(legajo).trim();
+                    let nombre = mapaNombres[legTrim];
+                    if (!nombre && typeof agentesGlobal !== 'undefined') {
+                        const encontradoGlobal = agentesGlobal.find(ag => String(ag.legajo).trim() === legTrim);
+                        if (encontradoGlobal) nombre = encontradoGlobal.nombre;
                     }
+                    if (!nombre) nombre = `Legajo N° ${legTrim}`;
+                    
+                    const estRaw = String(jsonAsistencia[legajo] || 'P').trim().toUpperCase();
+                    let estadoChar = (estRaw === 'A' || estRaw === 'L' || estRaw === 'P') ? estRaw : 'P';
 
-                    let archivosHtml = "";
-                    if (archivosArray.length > 0) {
-                        archivosArray.forEach(arch => {
-                            let base64Data = arch.data || "";
-                            let nombreArchivo = arch.name || "adjunto_descargable";
-                            
-                            let esImagen = base64Data.startsWith('data:image/') || 
-                                           /\.(jpg|jpeg|png|gif|webp)$/i.test(nombreArchivo);
+                    if (estadoChar === 'P') presentes++; 
+                    else if (estadoChar === 'A') ausentes++; 
+                    else if (estadoChar === 'L') licencias++;
 
-                            if (esImagen) {
-                                archivosHtml += `
-                                    <div style="margin-top: 15px; text-align: center;">
-                                        <div style="margin-bottom: 10px;">
-                                            <img src="${base64Data}" alt="Archivo adjunto" style="max-width: 100%; max-height: 400px; border-radius: 6px; border: 1px solid #ddd; object-fit: contain;" />
-                                        </div>
-                                        <a href="${base64Data}" download="${nombreArchivo}" style="display: inline-block; background: #1a3a5f; color: #fff; padding: 8px 15px; border-radius: 4px; text-decoration: none; font-size: 14px; font-weight: 500;">
-                                            📥 Descargar Imagen
-                                        </a>
-                                    </div>
-                                `;
-                            } else {
-                                archivosHtml += `
-                                    <div style="margin-top: 15px; background: #f8f9fa; border: 1px solid #ddd; padding: 12px 15px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
-                                        <div style="display: flex; align-items: center; gap: 10px;">
-                                            <span style="font-size: 24px;">📄</span>
-                                            <div>
-                                                <strong style="font-size: 14px; color: #333; display: block; word-break: break-all;">${nombreArchivo}</strong>
-                                                <span style="font-size: 12px; color: #666;">Documento adjunto disponible para descarga</span>
-                                            </div>
-                                        </div>
-                                        <a href="${base64Data}" download="${nombreArchivo}" style="background: #1a3a5f; color: #fff; padding: 8px 15px; border-radius: 4px; text-decoration: none; font-size: 14px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px;">
-                                            📥 Descargar Archivo
-                                        </a>
-                                    </div>
-                                `;
-                            }
-                        });
-                    }
-
-                    html += `
-                        <div style="background: #fff; border-left: 5px solid #1a3a5f; border-top: 1px solid #ddd; border-right: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 20px; border-radius: 6px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 8px; flex-wrap: wrap; gap: 8px;">
-                                <strong style="color: #1a3a5f; font-size: 16px;">📢 Comunicado Oficial</strong>
-                                <span style="font-size: 12px; color: #666; background: #f1f1f1; padding: 4px 10px; border-radius: 4px;">Turno: ${turnoMsg} | Fecha: ${fecha}${supervisorDestino} | <strong>Enviado por:</strong> Dirección de Servicios Generales</span>
-                            </div>
-                            <div style="font-size: 15px; color: #333; white-space: pre-wrap; line-height: 1.5; font-family: inherit;">${texto}</div>
-                            ${archivosHtml}
-                        </div>`;
+                    html += `<tr>
+                        <td style="border: 1px solid #000; padding: 8px; text-align: center;">${legTrim}</td>
+                        <td style="border: 1px solid #000; padding: 8px; text-align: center;">${nombre}</td>
+                        <td style="border: 1px solid #000; padding: 8px; text-align: center;"><div class="box-estado ${estadoChar === 'P' ? 'box-P' : ''}"></div></td>
+                        <td style="border: 1px solid #000; padding: 8px; text-align: center;"><div class="box-estado ${estadoChar === 'A' ? 'box-A' : ''}"></div></td>
+                        <td style="border: 1px solid #000; padding: 8px; text-align: center;"><div class="box-estado ${estadoChar === 'L' ? 'box-L' : ''}"></div></td>
+                    </tr>`;
                 });
+                
+                html += `</tbody></table>`;
+                
+                html += `
+                    <div style="margin-top: 30px; text-align: center; color: #1a3a5f; font-weight: bold; font-size: 20px; margin-bottom: 10px;">Estadísticas de Presentismo</div>
+                    <div style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #ddd; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; justify-content: center; align-items: center; gap: 50px; flex-wrap: wrap;">
+                        <div style="font-weight:bold; color: #1a3a5f; font-size: 16px; line-height: 2.0; display: flex; flex-direction: column;">
+                            <div style="background-color: #1a3a5f; color: white; padding: 8px 15px; border-radius: 6px; font-weight: bold; margin-bottom: 8px; width: 270px; text-align: left;">Presentismo: ${total > 0 ? ((presentes/total)*100).toFixed(1) : 0}% (${presentes})</div>
+                            <div style="background-color: #1a3a5f; color: white; padding: 8px 15px; border-radius: 6px; font-weight: bold; margin-bottom: 8px; width: 270px; text-align: left;">Ausentismo: ${total > 0 ? ((ausentes/total)*100).toFixed(1) : 0}% (${ausentes})</div>
+                            <div style="background-color: #1a3a5f; color: white; padding: 8px 15px; border-radius: 6px; font-weight: bold; margin-bottom: 8px; width: 270px; text-align: left;">Licencias: ${total > 0 ? ((licencias/total)*100).toFixed(1) : 0}% (${licencias})</div>
+                        </div>
+                        <div style="width: 220px; height: 220px;">
+                            <canvas id="graficoRrhh"></canvas>
+                        </div>
+                    </div>`;
 
                 visor.innerHTML = html;
 
-            } catch (err) {
-                console.error("Error al cargar novedades:", err);
-                visor.innerHTML = '<p style="text-align:center; color: red;">Error al cargar los datos de novedades.</p>';
-            }
-        }
+                setTimeout(() => {
+                    const ctx = document.getElementById('graficoRrhh')?.getContext('2d');
+                    if (ctx) {
+                        if (typeof chartRrhh !== 'undefined' && chartRrhh) chartRrhh.destroy();
+                        window.chartRrhh = new Chart(ctx, {
+                            type: 'pie',
+                            data: { 
+                                labels: ['Presentes', 'Ausentes', 'Licencias'], 
+                                datasets: [{ 
+                                    data: [presentes, ausentes, licencias], 
+                                    backgroundColor: ['#28a745', '#dc3545', '#ffc107'] 
+                                }] 
+                            },
+                            options: { 
+                                responsive: true, 
+                                plugins: { legend: { position: 'bottom' } } 
+                            }
+                        });
+                    }
+                }, 50);
+            
+            } else if (tipo === 'planillas') {
+                if (deptoFiltro === 'Ascensores') {
+                    const { data: dispData } = await db.from('registros_ascensores').select('*').eq('fecha_cierre', fechaBusqueda).eq('turno', turno);
 
-        window.onload = async () => {
-            const nombre = localStorage.getItem('usuario_nombre') || "Invitado"; 
-            const turno = localStorage.getItem('usuario_turno') || "Mañana"; 
-            const depto = "Intendencia";
-            
-            const elemSidebar = document.getElementById('nombre-supervisor-sidebar');
-            if (elemSidebar) elemSidebar.innerText = nombre;
-            
-            const elemDisplayNombre = document.getElementById('display-nombre');
-            if (elemDisplayNombre) elemDisplayNombre.innerText = nombre;
-            
-            const elemDisplayTurno = document.getElementById('display-turno');
-            if (elemDisplayTurno) elemDisplayTurno.innerText = turno;
-            
-            const elemDisplayDepto = document.getElementById('display-depto');
-            if (elemDisplayDepto) elemDisplayDepto.innerText = depto;
-            
-            const elemNombreRep = document.getElementById('display-nombre-rep');
-            if (elemNombreRep) elemNombreRep.innerText = nombre;
-            
-            const elemTurnoRep = document.getElementById('display-turno-rep');
-            if (elemTurnoRep) elemTurnoRep.innerText = turno;
-            
-            const elemDeptoRep = document.getElementById('display-depto-rep');
-            if (elemDeptoRep) elemDeptoRep.innerText = depto;
-            
-            const elemDeptoHist = document.getElementById('depto-hist-label');
-            if (elemDeptoHist) elemDeptoHist.innerText = depto;
-            
-            await cargarPersonalYSeccionesSupabase();
-            
-            // Verificamos notificaciones pendientes de novedades al iniciar
-            await verificarNovedadesNoLeidas();
-            
-            try {
-                const { data: cierresPrevios, error } = await db
-                    .from('cierres_jornada')
-                    .select('id')
-                    .eq('departamento', depto)
-                    .eq('turno', turno)
-                    .eq('supervisor', nombre);
+                    let tablaDinamica = `<table style="width: 100%; border-collapse: collapse; margin-top: 15px;"><thead><tr><th style="border: 1px solid #333; padding: 10px; background-color: #1a3a5f; color: white;">N° de Ascensor</th><th style="border: 1px solid #333; padding: 10px; background-color: #1a3a5f; color: white;">Estado</th><th style="border: 1px solid #333; padding: 10px; background-color: #1a3a5f; color: white;">Uso Asignado</th><th style="border: 1px solid #333; padding: 10px; background-color: #1a3a5f; color: white;">Observaciones / Detalle</th></tr></thead><tbody>`;
+                    
+                    let cVerde = 0, cAmarillo = 0, cRojo = 0, cMixto = 0;
+                    let totalAscensores = dispData ? dispData.length : 0;
 
-                const cantidadRegistros = (error || !cierresPrevios) ? 0 : cierresPrevios.length;
-                const numeroHojaReal = cantidadRegistros + 1;
-                const numeroHojaFormateado = String(numeroHojaReal).padStart(3, '0');
-                
-                const elementoHoja = document.getElementById('num-hoja') || document.getElementById('numero-reporte') || document.getElementById('nro-hoja') || document.getElementById('numero-hoja');
-                if (elementoHoja) {
-                    elementoHoja.innerText = numeroHojaFormateado;
-                }
-                window.numeroHojaActual = numeroHojaFormateado;
-            } catch (err) {
-                console.error("Error al obtener el contador:", err);
-            }
-            
-            const tablaGuardada = localStorage.getItem('dsg_intendencia_tabla');
-            if (cuerpoTabla) {
-                if (tablaGuardada && tablaGuardada.trim() !== '') {
-                    cuerpoTabla.innerHTML = tablaGuardada;
+                    if (dispData && dispData.length > 0) {
+                        dispData.forEach(item => {
+                            let estadoNormalizado = String(item.estado || '').trim();
+                            let textoOriginal = item.observaciones || '-';
+                            let usoAsignado = textoOriginal;
+                            let detalleObs = '-';
+
+                            if (textoOriginal.includes('(')) {
+                                let indiceParentesis = textoOriginal.indexOf('(');
+                                usoAsignado = textoOriginal.substring(0, indiceParentesis).trim();
+                                detalleObs = textoOriginal.substring(indiceParentesis).trim();
+                            }
+
+                            let estLower = estadoNormalizado.toLowerCase();
+                            if (estLower.includes('funcionando') && !estLower.includes('ascensorista')) {
+                                cVerde++;
+                            } else if (estLower.includes('mantenimiento')) {
+                                cAmarillo++;
+                            } else if (estLower.includes('fuera') || estLower.includes('servicio')) {
+                                cRojo++;
+                            } else if (estLower.includes('ascensorista') || estLower.includes('mixto')) {
+                                cMixto++;
+                            } else {
+                                cVerde++;
+                            }
+
+                            tablaDinamica += `<tr><td style="border: 1px solid #333; padding: 8px; text-align: center;">${item.identificador_dispositivo}</td><td style="border: 1px solid #333; padding: 8px; text-align: center;">${estadoNormalizado}</td><td style="border: 1px solid #333; padding: 8px; text-align: center;">${usoAsignado}</td><td style="border: 1px solid #333; padding: 8px; text-align: center;">${detalleObs}</td></tr>`;
+                        });
+                    } else {
+                        tablaDinamica += `<tr><td colspan="4" style="border: 1px solid #333; padding: 12px; text-align: center;">No hay registros detallados de ascensores para esta fecha.</td></tr>`;
+                    }
+                    tablaDinamica += `</tbody></table>`;
+
+                    tablaDinamica += `
+                        <div style="margin-top: 30px; text-align: center; color: #1a3a5f; font-weight: bold; font-size: 20px; margin-bottom: 10px;">Estadísticas de Funcionalidad</div>
+                        <div style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #ddd; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; justify-content: center; align-items: center; gap: 50px; flex-wrap: wrap;">
+                            <div style="font-weight:bold; color: #1a3a5f; font-size: 16px; line-height: 2.0; display: flex; flex-direction: column;">
+                                <div style="background-color: #1a3a5f; color: white; padding: 8px 15px; border-radius: 6px; font-weight: bold; margin-bottom: 8px; width: 270px; text-align: left;">Funcionando: ${totalAscensores > 0 ? ((cVerde/totalAscensores)*100).toFixed(1) : 0}% (${cVerde})</div>
+                                <div style="background-color: #1a3a5f; color: white; padding: 8px 15px; border-radius: 6px; font-weight: bold; margin-bottom: 8px; width: 270px; text-align: left;">En Mantenimiento: ${totalAscensores > 0 ? ((cAmarillo/totalAscensores)*100).toFixed(1) : 0}% (${cAmarillo})</div>
+                                <div style="background-color: #1a3a5f; color: white; padding: 8px 15px; border-radius: 6px; font-weight: bold; margin-bottom: 8px; width: 270px; text-align: left;">Fuera de Servicio: ${totalAscensores > 0 ? ((cRojo/totalAscensores)*100).toFixed(1) : 0}% (${cRojo})</div>
+                                <div style="background-color: #1a3a5f; color: white; padding: 8px 15px; border-radius: 6px; font-weight: bold; margin-bottom: 8px; width: 270px; text-align: left;">Con Ascensorista: ${totalAscensores > 0 ? ((cMixto/totalAscensores)*100).toFixed(1) : 0}% (${cMixto})</div>
+                            </div>
+                            <div style="width: 220px; height: 220px;">
+                                <canvas id="graficoAscensores"></canvas>
+                            </div>
+                        </div>`;
+
+                    visor.innerHTML = tablaDinamica;
+
+                    setTimeout(() => {
+                        const ctx = document.getElementById('graficoAscensores')?.getContext('2d');
+                        if (ctx) {
+                            if (typeof chartAsc !== 'undefined' && chartAsc) chartAsc.destroy();
+                            window.chartAsc = new Chart(ctx, {
+                                type: 'pie',
+                                data: { 
+                                    labels: ['Funcionando', 'Mantenimiento', 'Fuera de Servicio', 'Ascensoristas'], 
+                                    datasets: [{ 
+                                        data: [cVerde, cAmarillo, cRojo, cMixto], 
+                                        backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#007bff'] 
+                                    }] 
+                                },
+                                options: { 
+                                    responsive: true, 
+                                    plugins: { legend: { position: 'bottom' } } 
+                                }
+                            });
+                        }
+                    }, 50);
+
+                } else if (deptoFiltro === 'Intendencia') {
+                    let queryInt = db.from('registros_intendencia').select('*').eq('fecha_cierre', fechaBusqueda).eq('turno', turno);
+                    if (supervisorSeleccionado) queryInt = queryInt.eq('supervisor', supervisorSeleccionado);
+                    const { data: intData } = await queryInt;
+
+                    let tablaDinamica = `
+                        <div style="background: #fff; width: 100%; box-sizing: border-box;">
+                            <div style="font-size: 16px; font-weight: bold; color: #1a3a5f; margin-bottom: 10px;">Planilla Operativa - Intendencia ${supervisorSeleccionado ? '(' + supervisorSeleccionado + ')' : ''}</div>
+                            <table style="width: 100%; border-collapse: collapse; margin-bottom: 0;">
+                                <thead>
+                                    <tr style="background-color: #1a3a5f; color: white;">
+                                        <th style="border: 1px solid #333; padding: 10px; text-align: center;" rowspan="2">SECTOR</th>
+                                        <th style="border: 1px solid #333; padding: 10px; text-align: center;" rowspan="2">AGENTES ASIGNADOS</th>
+                                        <th style="border: 1px solid #333; padding: 8px; text-align: center;" colspan="2">HORARIO</th>
+                                    </tr>
+                                    <tr style="background-color: #1a3a5f; color: white;">
+                                        <th style="border: 1px solid #333; padding: 8px; text-align: center; width: 100px;">DESDE</th>
+                                        <th style="border: 1px solid #333; padding: 8px; text-align: center; width: 100px;">HASTA</th>
+                                    </tr>
+                                </thead>
+                               <tbody>`;
+                    
+                    if (intData && intData.length > 0) {
+                        intData.forEach(row => {
+                            tablaDinamica += `<tr>
+                                <td style="border: 1px solid #333; padding: 10px; text-align: center;">${row.sector || ''}</td>
+                                <td style="border: 1px solid #333; padding: 10px; text-align: center;">${row.agentes_asignados || ''}</td>
+                                <td style="border: 1px solid #333; padding: 10px; text-align: center;">${row.hora_desde || ''}</td>
+                                <td style="border: 1px solid #333; padding: 10px; text-align: center;">${row.hora_hasta || ''}</td>
+                            </tr>`;
+                        });
+                    } else {
+                        tablaDinamica += `<tr><td colspan="4" style="border: 1px solid #333; padding: 12px; text-align: center;">No hay registros detallados de Intendencia para esta fecha y turno con este supervisor.</td></tr>`;
+                    }
+                    tablaDinamica += `</tbody></table>`;
+                    
+                    let obsFinal = '';
+                    if (reg && reg.observaciones) obsFinal = reg.observaciones;
+                    else if (intData && intData.length > 0) {
+                        const encontrada = intData.find(r => r.observaciones && r.observaciones.trim() !== '');
+                        obsFinal = encontrada ? encontrada.observaciones : '';
+                    }
+
+                    tablaDinamica += `
+                        <div style="background-color: #1a3a5f; color: white; padding: 8px 12px; font-weight: bold; font-size: 14px; margin-top: 15px; border: 1px solid #333;">Observaciones:</div>
+                        <div style="padding: 10px 15px; min-height: 120px; background: #fff; border: 1px solid #333; border-top: none; font-family: 'Courier New', Courier, monospace; font-size: 16px; line-height: 30px; background-image: linear-gradient(#e0e0e0 1px, transparent 1px); background-size: 100% 30px;">
+                            <p style="margin: 0; padding: 0; white-space: pre-wrap;">${obsFinal || 'Sin observaciones registradas.'}</p>
+                        </div>
+                    </div>`;
+                    visor.innerHTML = tablaDinamica;
+
+                } else if (deptoFiltro === 'Camilleros') {
+                    const { data: camData } = await db.from('registros_camilleros').select('*').eq('fecha_cierre', fechaBusqueda).eq('turno', turno);
+
+                    let tablaDinamica = `
+                        <div style="background: #fff; width: 100%; box-sizing: border-box;">
+                            <div style="font-size: 16px; font-weight: bold; color: #1a3a5f; margin-bottom: 10px;">Planilla Operativa - Camilleros</div>
+                            <table style="width: 100%; border-collapse: collapse; margin-bottom: 0; font-size: 12px;">
+                                <thead>
+                                    <tr style="background-color: #1a3a5f; color: white;">
+                                        <th style="border: 1px solid #333; padding: 8px 4px; text-align: center; width: 10%;">HORA</th>
+                                        <th style="border: 1px solid #333; padding: 8px 4px; text-align: center; width: 15%;">PISO/SALA/CAMA</th>
+                                        <th style="border: 1px solid #333; padding: 8px 4px; text-align: center; width: 20%;">APELLIDO Y NOMBRE</th>
+                                        <th style="border: 1px solid #333; padding: 8px 4px; text-align: center; width: 15%;">DESTINO</th>
+                                        <th style="border: 1px solid #333; padding: 8px 4px; text-align: center; width: 10%;">HORA ESTADÍA</th>
+                                        <th style="border: 1px solid #333; padding: 8px 4px; text-align: center; width: 10%;">MOVILIDAD</th>
+                                        <th style="border: 1px solid #333; padding: 8px 4px; text-align: center; width: 11%;">CAMILLERO</th>
+                                        <th style="border: 1px solid #333; padding: 8px 4px; text-align: center; width: 9%;">HORA DE FINALIZACION</th>
+                                    </tr>
+                                </thead>
+                                <tbody>`;
+                    
+                    if (camData && camData.length > 0) {
+                        camData.forEach((row) => {
+                            tablaDinamica += `<tr>
+                                <td style="border: 1px solid #333; padding: 6px 4px; text-align: center;">${row.hora || ''}</td>
+                                <td style="border: 1px solid #333; padding: 6px 4px; text-align: center;">${row.numero_cama || ''}</td>
+                                <td style="border: 1px solid #333; padding: 6px 4px; text-align: center;">${row.nombre_paciente || ''}</td>
+                                <td style="border: 1px solid #333; padding: 6px 4px; text-align: center;">${row.destino || ''}</td>
+                                <td style="border: 1px solid #333; padding: 6px 4px; text-align: center;">${row.duracion_estancia || ''}</td>
+                                <td style="border: 1px solid #333; padding: 6px 4px; text-align: center;">${row.tipo_movilidad || ''}</td>
+                                <td style="border: 1px solid #333; padding: 6px 4px; text-align: center;">${row.personal_asignado || ''}</td>
+                                <td style="border: 1px solid #333; padding: 6px 4px; text-align: center;">${row.hora_finalizacion || ''}</td>
+                            </tr>`;
+                        });
+                    } else {
+                        tablaDinamica += `<tr><td colspan="8" style="border: 1px solid #333; padding: 12px; text-align: center;">No hay registros de movimientos de camilleros para esta fecha.</td></tr>`;
+                    }
+                    tablaDinamica += `</tbody></table>`;
+
+                    let obsCamilleros = '';
+                    if (reg && reg.observaciones) obsCamilleros = reg.observaciones;
+                    else if (camData && camData.length > 0) {
+                        const obsEncontrada = camData.find(r => r.observaciones && r.observaciones.trim() !== '');
+                        obsCamilleros = obsEncontrada ? obsEncontrada.observaciones : '';
+                    }
+
+                    tablaDinamica += `
+                        <div style="background-color: #1a3a5f; color: white; padding: 8px 12px; font-weight: bold; font-size: 14px; margin-top: 15px; border: 1px solid #333;">Observaciones de la Jornada:</div>
+                        <div style="padding: 0px 15px; min-height: 120px; background: #fff; border: 1px solid #333; border-top: none; font-family: 'Courier New', Courier, monospace; font-size: 16px; line-height: 30px; background-image: linear-gradient(#e0e0e0 1px, transparent 1px); background-size: 100% 30px;">
+                            <p style="margin: 0; padding: 0; white-space: pre-wrap;">${obsCamilleros || 'Sin observaciones registradas.'}</p>
+                        </div>
+                    </div>`;
+
+                    visor.innerHTML = tablaDinamica;
+
                 } else {
-                    cuerpoTabla.innerHTML = '<tr>' + crearFilaHTML() + '</tr>';
+                    if (error || !reg) {
+                        visor.innerHTML = `<p style='color: red; font-weight: bold;'>No se encontraron registros para ${deptoFiltro} en el turno ${turno} (${fechaBusqueda}).</p>`;
+                        return;
+                    }
+
+                    let tablaDinamica = `
+                        <div style="background: #fff; width: 100%; box-sizing: border-box;">
+                            <div style="font-size: 16px; font-weight: bold; color: #1a3a5f; margin-bottom: 10px;">Planilla Operativa (${reg.departamento})</div>
+                            <div style="background-color: #1a3a5f; color: white; padding: 8px 12px; font-weight: bold; font-size: 14px; margin-top: 15px; border: 1px solid #333;">Observaciones y Contenido:</div>
+                            <div style="padding: 0px 15px; min-height: 100px; background: #fff; border: 1px solid #333; border-top: none; font-family: 'Courier New', Courier, monospace; font-size: 16px; line-height: 30px; background-image: linear-gradient(#e0e0e0 1px, transparent 1px); background-size: 100% 30px;">
+                                <p style="margin: 0; padding: 0; white-space: pre-wrap;">${reg.observaciones || 'Sin datos adicionales.'}</p>
+                            </div>
+                        </div>
+                    `;
+                    visor.innerHTML = tablaDinamica;
                 }
-            }
 
-            if (editorReporte) editorReporte.innerHTML = localStorage.getItem('dsg_intendencia_reporte') || "";
-            if (editorObservaciones) editorObservaciones.innerHTML = localStorage.getItem('dsg_intendencia_observaciones') || "";
-            cargarRRHH();
-        };
-
-        function crearFilaHTML() { 
-            let opcionesSectoresHTML = listaSectores.map(sec => `<option value="${sec}">${sec}</option>`).join('');
-            let opcionesAgentesHTML = listaAgentes.map(ag => `<option value="${ag}">${ag}</option>`).join('');
-            
-            return `<td><button class="btn-borrar" onclick="borrarFila(this)">X</button></td>` +
-                    `<td><select class="input-select-tabla" onchange="guardarDatos()">${opcionesSectoresHTML}</select></td>` +
-                    `<td><select class="input-select-tabla" onchange="guardarDatos()">${opcionesAgentesHTML}</select></td>` +
-                    `<td><input class="input-c" type="time" value="" onchange="guardarDatos()"></td>` +
-                    `<td><input class="input-c" type="time" value="" onchange="guardarDatos()"></td>`;
-        }
-
-        function borrarFila(btn) {
-            const fila = btn.closest('tr');
-            if (cuerpoTabla && cuerpoTabla.rows.length > 1) {
-                fila.remove();
-                guardarDatos();
-            } else {
-                alert("Debe haber al menos una fila en la planilla.");
+            } else if (tipo === 'reportes' || tipo === 'insumos') {
+                if (error || !reg) {
+                    visor.innerHTML = `<p style='color: red; font-weight: bold;'>No se encontraron registros para ${deptoFiltro} en el turno ${turno} (${fechaBusqueda}).</p>`;
+                    return;
+                }
+                visor.innerHTML = `<h3>Reporte Diario - Vista de Auditoría</h3><style>.hoja-modelo-limpio { width: 100% !important; background-color: #fff !important; border: 1px solid #ccc !important; padding: 30px !important; position: relative !important; min-height: 800px !important; font-family: 'Courier New', Courier, monospace !important; font-size: 16px !important; line-height: 30px !important; box-sizing: border-box !important; background-image: linear-gradient(to right, transparent 0px, transparent 0px), linear-gradient(#e0e0e0 1px, transparent 1px) !important; background-size: 100% 30px !important; white-space: pre-wrap !important; }</style><div class="hoja-modelo-limpio">${reg.reporte_diario || 'No hay contenido de reporte.'}</div>`;
             }
         }
-
-        function detectarEnter(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                if (!cuerpoTabla) return;
-                const nuevaFila = cuerpoTabla.insertRow();
-                nuevaFila.innerHTML = crearFilaHTML();
-                guardarDatos();
-                const primerInput = nuevaFila.querySelector('select, input');
-                if (primerInput) primerInput.focus();
-            }
-        }
-
-        function mostrar(idSeccion, titulo) {
-            document.querySelectorAll('.seccion').forEach(s => s.classList.remove('activo'));
-            const sec = document.getElementById(idSeccion);
-            if (sec) sec.classList.add('activo');
-            const tituloPanel = document.getElementById('titulo-panel');
-            if (tituloPanel) tituloPanel.innerText = titulo;
-            if (idSeccion === 'estado-ascensores') {
-                cargarEstadoAscensoresVivo();
-            } else if (idSeccion === 'novedades') {
-                cargarNovedadesVivo();
-            }
-        }
+        document.getElementById('reportes').classList.add('activo');
+        cargarNovedades();
+        cargarMemos();
     </script>
 </body>
 </html>
