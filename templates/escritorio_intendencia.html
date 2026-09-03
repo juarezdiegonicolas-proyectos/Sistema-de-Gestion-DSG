@@ -78,13 +78,28 @@
         .estado-L { background-color: #ffc107 !important; }
         .botonera-porcentaje { background-color: #1a3a5f; color: white; padding: 12px 20px; border-radius: 8px; font-weight: bold; margin-bottom: 10px; display: inline-block; width: 250px; text-align: left; }
 
+        /* Estilos específicos para el muro y sección de Novedades copiados de admin */
+        #editor-novedades {
+            width: 100%; min-height: 400px; border: none; font-size: 18px; line-height: 30px; outline: none; font-family: 'Courier New', Courier, monospace; white-space: pre-wrap; word-wrap: break-word; 
+            background-image: linear-gradient(#e0e0e0 1px, transparent 1px); background-size: 100% 30px; padding-top: 30px; box-sizing: border-box;
+        }
+        .historial-muro-container { margin-top: 30px; border-top: 2px solid #1a3a5f; padding-top: 20px; }
+        .muro-card { background: #fff; border-left: 5px solid #1a3a5f; border: 1px solid #ddd; border-left-width: 5px; padding: 20px; border-radius: 6px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
+        .muro-card.enviado { border-left-color: #28a745; }
+        .muro-card.recibido { border-left-color: #17a2b8; }
+        .muro-card.terceros { border-left-color: #6c757d; }
+        .badge-estado { padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase; color: white; }
+        .badge-enviado { background-color: #28a745; }
+        .badge-recibido { background-color: #17a2b8; }
+        .badge-terceros { background-color: #6c757d; }
+
         @media print {
             .sidebar, .btn-accion-global, .btn-cerrar, .menu-item, .no-imprimir, .btn-imprimir, .btn-borrar { display: none !important; }
             #planillas .tabla-intendencia th:first-child, #planillas .tabla-intendencia td:first-child { display: none !important; }
             body, html, .contenido, .seccion.activo, .hoja { background-color: white !important; margin: 0 !important; padding: 0 !important; width: 100% !important; height: auto !important; overflow: visible !important; box-shadow: none !important; display: block !important; }
             .seccion { display: none !important; } .seccion.activo { display: block !important; } 
             .hoja { border: none !important; min-height: auto !important; }
-            #editor-reporte, #editor-observaciones { background-image: linear-gradient(#e0e0e0 1px, transparent 1px); background-size: 100% 30px; line-height: 30px; -webkit-print-color-adjust: exact; print-color-adjust: exact; overflow: visible !important; height: auto !important; min-height: auto !important; }
+            #editor-reporte, #editor-observaciones, #editor-novedades { background-image: linear-gradient(#e0e0e0 1px, transparent 1px); background-size: 100% 30px; line-height: 30px; -webkit-print-color-adjust: exact; print-color-adjust: exact; overflow: visible !important; height: auto !important; min-height: auto !important; }
         }
         @page { size: auto; margin: 1cm; }
     </style>
@@ -222,19 +237,63 @@
             <div class="area-acciones"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir Resultados</button></div>
         </div>
         
+        <!-- SECCIÓN NOVEDADES REPLICADA EXACTAMENTE COMO ADMIN -->
         <div id="novedades" class="seccion">
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo Hospital">
                 <h1 style="margin: 0; text-align: center; flex: 1;">Novedades</h1>
                 <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
+            
             <div class="filtros-historicos">
-                <span style="font-weight: bold; color: #1a3a5f;">Estado en tiempo real de la tabla comunicados_memos</span>
-                <button class="btn-gestion" style="background: #1a3a5f; color: white; margin-left: auto;" onclick="cargarNovedadesVivo()">Actualizar Datos</button>
+                <select id="destino-novedades" class="input-select" onchange="manejarCambioDepto('destino-novedades')">
+                    <option value="todos">Todos los departamentos</option>
+                    <option value="direccion-servicios-generales">Dirección Servicios Generales</option>
+                    <option value="intendencia" selected>Intendencia</option>
+                    <option value="ascensores">Ascensores</option>
+                    <option value="lavadero-central">Lavadero Central</option>
+                    <option value="camilleros">Camilleros</option>
+                    <option value="conmutador">Conmutador</option>
+                    <option value="dalo">DALO</option>
+                    <option value="higiene-y-seguridad">Higiene y Seguridad</option>
+                </select>
+
+                <select id="supervisor-novedades" class="input-select" style="display: none;">
+                    <option value="todos">Todos los supervisores</option>
+                </select>
+
+                <select id="turno-novedades" class="input-select">
+                    <option value="todos">Todos los turnos</option>
+                    <option value="Mañana">Mañana</option>
+                    <option value="Tarde">Tarde</option>
+                    <option value="Noche A">Noche A</option>
+                    <option value="Noche B">Noche B</option>
+                    <option value="Sadofe">Sadofe</option>
+                </select>
+
+                <input type="file" id="input-archivo-novedades" multiple style="display: none;" onchange="previsualizarMultiples(event, 'preview-novedades')">
+                <button class="btn-gestion no-imprimir" style="background: #1a3a5f; color: white;" onclick="document.getElementById('input-archivo-novedades').click()">📎 Adjuntar Archivos</button>
+                <button class="btn-gestion no-imprimir" style="background: #28a745; color: white; margin-left: auto;" onclick="guardarRedaccion('novedades')">💾 Guardar y Enviar</button>
             </div>
-            <div id="visor-novedades" style="border: 1px solid #ccc; padding: 20px; min-height: 200px; background: #fff;">Cargando novedades actuales...</div>
+
+            <div id="print-header-novedades" style="display:none; font-weight: bold; margin-bottom: 10px; font-size: 16px;"></div>
+
+            <div class="hoja">
+                <div id="editor-novedades" contenteditable="true" placeholder="Escriba aquí la novedad o comunicado..."></div>
+                <div id="preview-novedades" style="margin-top: 15px;"></div>
+            </div>
+
             <div class="area-acciones">
                 <button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
+                <button class="btn-gestion no-imprimir" style="background: #dc3545; color: white;" onclick="limpiarPantalla('novedades')">🧹 Limpiar Pantalla</button>
+            </div>
+
+            <!-- Muro Histórico de Novedades -->
+            <div class="historial-muro-container">
+                <h3 style="color: #1a3a5f; margin-bottom: 15px;">📌 Historial de Envíos en Muro (Novedades)</h3>
+                <div id="muro-novedades-container">
+                    <p>Cargando muro de novedades...</p>
+                </div>
             </div>
         </div>
 
@@ -283,6 +342,7 @@
         let listaSectores = ["- Seleccionar Sector -"];
         let listaAgentes = ["- Seleccionar Agente -"];
         let agentes = [];
+        let archivosTemporalesNovedades = [];
 
         async function cargarPersonalYSeccionesSupabase() {
             const turnoActual = localStorage.getItem('usuario_turno') || "Mañana";
@@ -911,9 +971,148 @@
         }
 
         // =========================================================================
-        // LÓGICA ACTUALIZADA: RECONOCE SI ES DEPARTAMENTO INTENDENCIA, 
-        // Y PERMITE QUE TURNO O SUPERVISOR SEAN NULL/TODOS
+        // LÓGICA COMPLETA DE NOVEDADES Y MURO (ADMIN EQUIVALENTE)
         // =========================================================================
+        function toKebabCase(str) {
+            return str ? str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-') : '';
+        }
+
+        async function manejarCambioDepto(idSelect) {
+            const selectDepto = document.getElementById(idSelect);
+            const selectSup = document.getElementById('supervisor-novedades');
+            if (!selectDepto || !selectSup) return;
+            
+            const deptoSeleccionado = selectDepto.value;
+            if (deptoSeleccionado === 'todos' || deptoSeleccionado === '') {
+                selectSup.style.display = 'none';
+                selectSup.innerHTML = '<option value="todos">Todos los supervisores</option>';
+                return;
+            }
+
+            selectSup.style.display = 'inline-block';
+            selectSup.innerHTML = '<option value="todos">Cargando supervisores...</option>';
+
+            try {
+                const { data, error } = await db.from('usuarios').select('nombre_completo, departamento');
+                if (error) throw error;
+
+                let optionsHTML = '<option value="todos">Todos los supervisores</option>';
+                if (data) {
+                    const filtrados = data.filter(u => u.departamento && toKebabCase(u.departamento) === deptoSeleccionado);
+                    filtrados.forEach(u => {
+                        if (u.nombre_completo) {
+                            optionsHTML += `<option value="${u.nombre_completo}">${u.nombre_completo}</option>`;
+                        }
+                    });
+                }
+                selectSup.innerHTML = optionsHTML;
+            } catch (err) {
+                console.error("Error cargando supervisores para novedades:", err);
+                selectSup.innerHTML = '<option value="todos">Todos los supervisores</option>';
+            }
+        }
+
+        function previsualizarMultiples(event, containerId) {
+            const files = event.target.files;
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            
+            archivosTemporalesNovedades = [];
+            if (!files || files.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+
+            let loadedCount = 0;
+            let previewHTML = '<div style="font-weight: bold; margin-bottom: 8px; color: #1a3a5f;">Archivos adjuntos seleccionados:</div>';
+
+            Array.from(files).forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const base64String = e.target.result;
+                    archivosTemporalesNovedades.push({
+                        name: file.name,
+                        type: file.type,
+                        size: file.size,
+                        data: base64String
+                    });
+
+                    loadedCount++;
+                    previewHTML += `<div style="font-size: 13px; color: #333; padding: 4px 0; border-bottom: 1px solid #eee;">📎 ${file.name} (${(file.size/1024).toFixed(1)} KB)</div>`;
+                    
+                    if (loadedCount === files.length) {
+                        container.innerHTML = previewHTML;
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function guardarRedaccion(tipo) {
+            if (tipo === 'novedades') {
+                const editor = document.getElementById('editor-novedades');
+                const texto = editor ? editor.innerHTML.trim() : '';
+                const deptoDestino = document.getElementById('destino-novedades') ? document.getElementById('destino-novedades').value : 'todos';
+                const supervisorDestino = document.getElementById('supervisor-novedades') && document.getElementById('supervisor-novedades').style.display !== 'none' ? document.getElementById('supervisor-novedades').value : 'todos';
+                const turnoDestino = document.getElementById('turno-novedades') ? document.getElementById('turno-novedades').value : 'todos';
+                
+                if (!texto && archivosTemporalesNovedades.length === 0) {
+                    alert("Por favor, escriba un comunicado o adjunte al menos un archivo antes de enviar.");
+                    return;
+                }
+
+                const fechaActual = new Date().toISOString().split('T')[0];
+                const supervisorActual = localStorage.getItem('usuario_nombre') || "Intendencia";
+
+                const contenidoJson = {
+                    texto: texto,
+                    fecha: fechaActual,
+                    origen: 'Intendencia',
+                    supervisor: supervisorActual,
+                    archivos: archivosTemporalesNovedades,
+                    archivo: archivosTemporalesNovedades.length > 0 ? archivosTemporalesNovedades[0] : null
+                };
+
+                const claveUnica = `comunicado_novedades_${deptoDestino}_${turnoDestino}_${supervisorDestino !== 'todos' ? toKebabCase(supervisorDestino) : 'general'}_${Date.now()}`;
+
+                try {
+                    const { error } = await db.from('comunicados_memos').upsert({
+                        id_clave: claveUnica,
+                        departamento_destino: deptoDestino,
+                        supervisor_destino: supervisorDestino === 'todos' ? null : supervisorDestino,
+                        turno_destino: turnoDestino === 'todos' ? null : turnoDestino,
+                        contenido: contenidoJson
+                    }, { onConflict: 'id_clave' });
+
+                    if (error) throw error;
+
+                    alert("¡Novedad guardada y enviada correctamente!");
+                    limpiarPantalla('novedades');
+                    cargarNovedadesVivo();
+                } catch (err) {
+                    console.error("Error guardando novedad:", err);
+                    alert("Error al guardar la novedad en la base de datos.");
+                }
+            }
+        }
+
+        function limpiarPantalla(tipo) {
+            if (tipo === 'novedades') {
+                const editor = document.getElementById('editor-novedades');
+                if (editor) editor.innerHTML = '';
+                const preview = document.getElementById('preview-novedades');
+                if (preview) preview.innerHTML = '';
+                const inputArchivo = document.getElementById('input-archivo-novedades');
+                if (inputArchivo) inputArchivo.value = '';
+                archivosTemporalesNovedades = [];
+                const selDepto = document.getElementById('destino-novedades');
+                if (selDepto) selDepto.value = 'todos';
+                manejarCambioDepto('destino-novedades');
+                const selTurno = document.getElementById('turno-novedades');
+                if (selTurno) selTurno.value = 'todos';
+            }
+        }
+
         async function verificarNovedadesNoLeidas() {
             try {
                 const { data, error } = await db
@@ -932,21 +1131,16 @@
                     const turnoDestino = (item.turno_destino || "").trim().toLowerCase();
                     const supervisorDestino = (item.supervisor_destino || "").trim().toLowerCase();
 
-                    // 1. Validar Departamento: debe ser 'intendencia' o 'todos' (o vacío)
                     const deptoValido = (deptoDestino === 'intendencia' || deptoDestino === 'todos' || deptoDestino === '');
                     if (!deptoValido) return false;
 
-                    // Si es general para todos los departamentos/turnos/supervisores
                     if (deptoDestino === 'todos' || deptoDestino === '') {
                         return true;
                     }
 
-                    // Si es específicamente para Intendencia:
-                    // 2. Validar Turno: pasa si es 'todos', viene vacío/null, o coincide con el turno actual
                     const turnoValido = (!turnoDestino || turnoDestino === 'todos' || turnoDestino === turnoActual);
                     if (!turnoValido) return false;
 
-                    // 3. Validar Supervisor: pasa si viene vacío/null, dice 'todos', o coincide exactamente con el usuario logueado
                     const supervisorValido = (!supervisorDestino || supervisorDestino === 'todos' || supervisorDestino === usuarioActual);
                     if (!supervisorValido) return false;
 
@@ -982,10 +1176,10 @@
         }
 
         async function cargarNovedadesVivo() {
-            const visor = document.getElementById('visor-novedades');
+            const visor = document.getElementById('muro-novedades-container');
             if (!visor) return;
 
-            visor.innerHTML = '<p style="text-align:center;">Cargando novedades...</p>';
+            visor.innerHTML = '<p style="text-align:center;">Cargando historial del muro...</p>';
             
             try {
                 const { data, error } = await db
@@ -996,56 +1190,36 @@
                 if (error) throw error;
 
                 if (!data || data.length === 0) {
-                    visor.innerHTML = '<p style="text-align:center; color: #666;">No hay registros de novedades.</p>';
+                    visor.innerHTML = '<p style="text-align:center; color: #666;">No hay registros de novedades en el muro.</p>';
                     return;
                 }
 
-                const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim().toLowerCase();
                 const usuarioActual = (localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario') || "invitado").trim().toLowerCase();
-
-                const novedadesFiltradas = data.filter(item => {
-                    const deptoDestino = (item.departamento_destino || "").trim().toLowerCase();
-                    const turnoDestino = (item.turno_destino || "").trim().toLowerCase();
-                    const supervisorDestino = (item.supervisor_destino || "").trim().toLowerCase();
-
-                    // 1. Validar Departamento: debe ser 'intendencia' o 'todos' (o vacío)
-                    const deptoValido = (deptoDestino === 'intendencia' || deptoDestino === 'todos' || deptoDestino === '');
-                    if (!deptoValido) return false;
-
-                    if (deptoDestino === 'todos' || deptoDestino === '') {
-                        return true;
-                    }
-
-                    // 2. Validar Turno: pasa si es 'todos', viene vacío/null, o coincide con el turno actual
-                    const turnoValido = (!turnoDestino || turnoDestino === 'todos' || turnoDestino === turnoActual);
-                    if (!turnoValido) return false;
-
-                    // 3. Validar Supervisor: pasa si viene vacío/null, dice 'todos', o coincide exactamente con el usuario logueado
-                    const supervisorValido = (!supervisorDestino || supervisorDestino === 'todos' || supervisorDestino === usuarioActual);
-                    if (!supervisorValido) return false;
-
-                    return true;
-                });
-
-                if (novedadesFiltradas.length > 0) {
-                    const claveStoragePersonal = `dsg_novedades_ultimo_id_${usuarioActual}`;
-                    localStorage.setItem(claveStoragePersonal, novedadesFiltradas[0].id);
+                const claveStoragePersonal = `dsg_novedades_ultimo_id_${usuarioActual}`;
+                
+                if (data.length > 0) {
+                    localStorage.setItem(claveStoragePersonal, data[0].id);
                     const badge = document.getElementById('badge-novedades');
                     if (badge) badge.style.display = 'none';
                 }
 
-                if (novedadesFiltradas.length === 0) {
-                    visor.innerHTML = '<p style="text-align:center; color: #666;">No hay novedades disponibles para Intendencia en este turno.</p>';
-                    return;
-                }
-
                 let html = '';
-                novedadesFiltradas.forEach(item => {
+                data.forEach(item => {
                     const contenidoObj = item.contenido || {};
                     const texto = contenidoObj.texto || 'Sin contenido';
                     const fecha = contenidoObj.fecha || 'Sin fecha';
-                    const turnoMsg = item.turno_destino || contenidoObj.turno || 'General';
-                    const supervisorDestino = item.supervisor_destino ? ` | <b>Destino Directo:</b> ${item.supervisor_destino}` : '';
+                    const deptoDestino = item.departamento_destino || 'Todos';
+                    const turnoMsg = item.turno_destino || 'General';
+                    const origenMsg = contenidoObj.origen || 'Administración / Sistema';
+                    const supervisorMsg = contenidoObj.supervisor || 'Desconocido';
+
+                    let tipoClase = 'recibido';
+                    let badgeEstado = '<span class="badge-estado badge-recibido">Recibido</span>';
+                    
+                    if (origenMsg.toLowerCase().includes('intendencia')) {
+                        tipoClase = 'enviado';
+                        badgeEstado = '<span class="badge-estado badge-enviado">Enviado por Intendencia</span>';
+                    }
 
                     let archivosArray = [];
                     if (Array.isArray(contenidoObj.archivos)) {
@@ -1094,10 +1268,13 @@
                     }
 
                     html += `
-                        <div style="background: #fff; border-left: 5px solid #1a3a5f; border-top: 1px solid #ddd; border-right: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 20px; border-radius: 6px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
+                        <div class="muro-card ${tipoClase}">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 8px; flex-wrap: wrap; gap: 8px;">
-                                <strong style="color: #1a3a5f; font-size: 16px;">📢 Comunicado Oficial</strong>
-                                <span style="font-size: 12px; color: #666; background: #f1f1f1; padding: 4px 10px; border-radius: 4px;">Turno: ${turnoMsg} | Fecha: ${fecha}${supervisorDestino} | <strong>Enviado por:</strong> Dirección de Servicios Generales</span>
+                                <div>
+                                    ${badgeEstado}
+                                    <strong style="color: #1a3a5f; font-size: 15px; margin-left: 8px;">De: ${origenMsg} (${supervisorMsg})</strong>
+                                </div>
+                                <span style="font-size: 12px; color: #666; background: #f1f1f1; padding: 4px 10px; border-radius: 4px;">Destino: ${deptoDestino} | Turno: ${turnoMsg} | Fecha: ${fecha}</span>
                             </div>
                             <div style="font-size: 15px; color: #333; white-space: pre-wrap; line-height: 1.5; font-family: inherit;">${texto}</div>
                             ${archivosHtml}
@@ -1107,8 +1284,8 @@
                 visor.innerHTML = html;
 
             } catch (err) {
-                console.error("Error al cargar novedades:", err);
-                visor.innerHTML = '<p style="text-align:center; color: red;">Error al cargar los datos de novedades.</p>';
+                console.error("Error al cargar novedades en muro:", err);
+                visor.innerHTML = '<p style="text-align:center; color: red;">Error al cargar el historial del muro.</p>';
             }
         }
 
@@ -1142,8 +1319,6 @@
             if (elemDeptoHist) elemDeptoHist.innerText = depto;
             
             await cargarPersonalYSeccionesSupabase();
-            
-            // Verificamos notificaciones pendientes de novedades al iniciar
             await verificarNovedadesNoLeidas();
             
             try {
