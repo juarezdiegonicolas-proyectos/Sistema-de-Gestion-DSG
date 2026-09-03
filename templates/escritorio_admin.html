@@ -306,11 +306,10 @@
                 if (deptoVal && deptoVal !== 'Todos') {
                     contenedorSup.style.display = 'inline-block';
                     try {
-                        const deptoLargo = obtenerNombreDepartamentoLargo(deptoVal);
                         const { data, error } = await db
                             .from('usuarios')
                             .select('nombre_completo')
-                            .eq('departamento', deptoLargo);
+                            .eq('departamento', deptoVal);
 
                         if (error) throw error;
 
@@ -333,6 +332,8 @@
                 
                 if (idSeccion === 'destino-novedades' || idSeccion === 'novedades') {
                     actualizarPrint('novedades');
+                } else if (idSeccion === 'destino-memos' || idSeccion === 'memos') {
+                    actualizarPrint('memos');
                 }
             }
 
