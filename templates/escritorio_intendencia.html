@@ -254,8 +254,10 @@
             
             <!-- Filtros y Controles de Envío -->
             <div class="filtros-historicos">
-                <select id="depto-destino-novedades-intendencia" class="input-select" onchange="manejarCambioDeptoNovedades(); actualizarPrint('novedades-intendencia');">
-                    <!-- Las opciones de departamentos se llenarán dinámicamente según permisos de admin -->
+                <select id="depto-destino-novedades-intendencia" class="input-select" onchange="manejarCambioDepto('destino-novedades-intendencia'); actualizarPrint('novedades-intendencia');">
+                    <option value="Todos">Todos los departamentos</option>
+                    <option value="direccion-servicios-generales">Dirección Servicios Generales</option>
+                    <option value="intendencia">Intendencia</option>
                 </select>
                 
                 <div id="contenedor-supervisor-destino-novedades-intendencia" style="display: none;">
@@ -340,7 +342,6 @@
         let listaSectores = ["- Seleccionar Sector -"];
         let listaAgentes = ["- Seleccionar Agente -"];
         let agentes = [];
-        let usuarioActualDatos = null; // Guardará el registro completo del usuario logueado
 
         async function cargarPersonalYSeccionesSupabase() {
             const turnoActual = localStorage.getItem('usuario_turno') || "Mañana";
@@ -370,8 +371,9 @@
                     return;
                 }
 
+                let usuarioData = null;
                 if (todosLosUsuarios && todosLosUsuarios.length > 0) {
-                    usuarioActualDatos = todosLosUsuarios.find(u => {
+                    usuarioData = todosLosUsuarios.find(u => {
                         const nomComp = u.nombre_completo ? u.nombre_completo.toString().trim().toLowerCase() : '';
                         const usrCorto = u.usuario ? u.usuario.toString().trim().toLowerCase() : '';
                         const target = nombreBusqueda.toLowerCase();
@@ -381,8 +383,8 @@
                 }
 
                 let pisosSupervisor = [];
-                if (usuarioActualDatos && usuarioActualDatos.pisos_asignados) {
-                    const rawPisos = usuarioActualDatos.pisos_asignados.toString().split(',').map(p => p.trim()).filter(p => p !== '');
+                if (usuarioData && usuarioData.pisos_asignados) {
+                    const rawPisos = usuarioData.pisos_asignados.toString().split(',').map(p => p.trim()).filter(p => p !== '');
                     const variantesPisos = new Set();
                     rawPisos.forEach(p => {
                         variantesPisos.add(p);
@@ -446,9 +448,6 @@
 
                 console.log("Lista final de sectores generada:", listaSectores);
                 console.log("Lista final de agentes generada:", listaAgentes);
-
-                // Inicializar selectores de departamentos en Novedades según permisos de admin
-                inicializarFiltrosNovedadesDeptos();
 
             } catch (err) {
                 console.error("Excepción al conectar con Supabase para filtrar por pisos:", err);
@@ -971,7 +970,7 @@
         }
 
         // =========================================================================
-        // LÓGICA UNIFICADA DE NOVEDADES Y PERMISOS DE ADMIN / DEPARTAMENTOS
+        // LÓGICA UNIFICADA DE NOVEDADES (REDACCIÓN, ADJUNTOS Y MURO CON 3 ESTADOS)
         // =========================================================================
 
         function toKebabCase(nombreVisual) {
@@ -1013,84 +1012,20 @@
             }
         }
 
-        // Determina si el usuario es Administrador o general
-        function esUsuarioAdmin() {
-            if (!usuarioActualDatos) return false;
-            const rol = (usuarioActualDatos.rol || usuarioActualDatos.tipo_usuario || "").toLowerCase();
-            const deptoUsr = (usuarioActualDatos.departamento || "").toLowerCase();
-            return rol.includes('admin') || rol.includes('direccion') || deptoUsr.includes('direccion') || deptoUsr.includes('dsg');
-        }
-
-        // Inicializa el selector de departamentos en Novedades según si es admin o supervisor regular
-        async function inicializarFiltrosNovedadesDeptos() {
-            const selectDepto = document.getElementById('depto-destino-novedades-intendencia');
-            if (!selectDepto) return;
-
-            selectDepto.innerHTML = '';
-            const isAdmin = esUsuarioAdmin();
-
-            if (isAdmin) {
-                // Si es admin, puede seleccionar Todos o cualquier departamento disponible en la base de datos
-                let optTodos = document.createElement('option');
-                optTodos.value = 'Todos';
-                optTodos.textContent = 'Todos los departamentos';
-                selectDepto.appendChild(optTodos);
-
-                try {
-                    const { data: deptosData, error } = await db
-                        .from('usuarios')
-                        .select('departamento');
-
-                    if (!error && deptosData) {
-                        const setDeptos = new Set();
-                        deptosData.forEach(d => {
-                            if (d.departamento) setDeptos.add(d.departamento.trim());
-                        });
-
-                        setDeptos.forEach(dep => {
-                            const kebab = toKebabCase(dep);
-                            const opt = document.createElement('option');
-                            opt.value = kebab;
-                            opt.textContent = dep;
-                            selectDepto.appendChild(opt);
-                        });
-                    }
-                } catch (e) {
-                    console.error("Error al cargar departamentos para admin:", e);
-                    // Fallback predeterminado si falla la consulta
-                    let optInt = document.createElement('option');
-                    optInt.value = 'intendencia';
-                    optInt.textContent = 'Intendencia';
-                    selectDepto.appendChild(optInt);
-                }
-            } else {
-                // Si es supervisor regular, solo Intendencia
-                let optInt = document.createElement('option');
-                optInt.value = 'intendencia';
-                optInt.textContent = 'Intendencia';
-                selectDepto.appendChild(optInt);
-            }
-
-            manejarCambioDeptoNovedades();
-        }
-
-        function manejarCambioDeptoNovedades() {
-            const selectDepto = document.getElementById('depto-destino-novedades-intendencia');
-            const contenedorSup = document.getElementById('contenedor-supervisor-destino-novedades-intendencia');
+        function manejarCambioDepto(idSufijo) {
+            const selectDepto = document.getElementById('depto-' + idSufijo);
+            const contenedorSup = document.getElementById('contenedor-supervisor-' + idSufijo);
             if (!selectDepto || !contenedorSup) return;
 
-            // Mostrar el selector de supervisores dependiente si se selecciona un departamento específico o intendencia
-            if (selectDepto.value !== 'Todos') {
+            if (selectDepto.value === 'intendencia') {
                 contenedorSup.style.display = 'block';
-                cargarSupervisoresPorDepartamento(selectDepto.value, 'novedades-intendencia');
+                cargarSupervisoresIntendencia(idSufijo);
             } else {
                 contenedorSup.style.display = 'none';
-                const selectSup = document.getElementById('supervisor-destino-novedades-intendencia');
-                if (selectSup) selectSup.innerHTML = '<option value="">-- Todos los supervisores --</option>';
             }
         }
 
-        async function cargarSupervisoresPorDepartamento(deptoKebab, idSufijo) {
+        async function cargarSupervisoresIntendencia(idSufijo) {
             const selectSup = document.getElementById('supervisor-' + idSufijo);
             if (!selectSup) return;
             selectSup.innerHTML = '<option value="">-- Todos los supervisores --</option>';
@@ -1098,15 +1033,13 @@
             try {
                 const { data, error } = await db
                     .from('usuarios')
-                    .select('nombre_completo, usuario, departamento');
+                    .select('nombre_completo, usuario')
+                    .or('departamento.ilike.%intendencia%,pisos_asignados.not.is.null');
 
                 if (!error && data) {
                     data.forEach(u => {
                         const nombre = u.nombre_completo || u.usuario;
-                        const depUsr = toKebabCase(u.departamento || '');
-                        
-                        // Filtrar supervisores que pertenezcan al departamento seleccionado o si es general
-                        if (nombre && (deptoKebab === 'todos' || depUsr === deptoKebab || depUsr.includes(deptoKebab))) {
+                        if (nombre) {
                             const opt = document.createElement('option');
                             opt.value = nombre;
                             opt.textContent = nombre;
@@ -1115,13 +1048,12 @@
                     });
                 }
             } catch (err) {
-                console.error("Error al cargar supervisores por departamento:", err);
+                console.error("Error al cargar supervisores:", err);
             }
         }
 
         function actualizarPrint(id) {
-            const deptoElem = document.getElementById('depto-destino-' + id);
-            const depto = deptoElem ? deptoElem.options[deptoElem.selectedIndex].text : 'Todos';
+            const depto = document.getElementById('depto-destino-' + id).value;
             const turno = document.getElementById('turno-destino-' + id).value;
             const supElem = document.getElementById('supervisor-destino-' + id);
             const sup = supElem ? supElem.value : '';
@@ -1151,8 +1083,7 @@
         }
 
         async function guardarRedaccionIntendencia() {
-            const deptoSelect = document.getElementById('depto-destino-novedades-intendencia');
-            const destinoVisual = deptoSelect ? deptoSelect.options[deptoSelect.selectedIndex].text : 'Todos';
+            const destinoVisual = document.getElementById('depto-destino-novedades-intendencia').value;
             const turno = document.getElementById('turno-destino-novedades-intendencia').value;
             const supervisorElem = document.getElementById('supervisor-destino-novedades-intendencia');
             const supervisor = supervisorElem ? supervisorElem.value : '';
@@ -1164,7 +1095,7 @@
             }
 
             const deptoOrigenNormalizado = 'intendencia';
-            const deptoDestinoNormalizado = deptoSelect ? deptoSelect.value : 'todos';
+            const deptoDestinoNormalizado = toKebabCase(destinoVisual);
 
             const dataPayload = {
                 texto: textoEscrito,
@@ -1196,7 +1127,7 @@
             if (error) {
                 alert("Error al enviar a la base de datos: " + error.message);
             } else {
-                alert("Novedad enviada correctamente.");
+                alert("Novedad de Intendencia enviada correctamente.");
                 limpiarPantalla('novedades-intendencia');
                 cargarNovedadesVivo();
                 archivosMultiplesNovedadesIntendencia = [];
@@ -1288,6 +1219,7 @@
                     return;
                 }
 
+                const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim().toLowerCase();
                 const usuarioActual = (localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario') || "invitado").trim().toLowerCase();
 
                 if (data.length > 0) {
@@ -1387,8 +1319,8 @@
         }
 
         window.onload = async () => {
-            const nombre = localStorage.getItem('usuario_nombre'] || "Invitado"; 
-            const turno = localStorage.getItem('usuario_turno'] || "Mañana"; 
+            const nombre = localStorage.getItem('usuario_nombre') || "Invitado"; 
+            const turno = localStorage.getItem('usuario_turno') || "Mañana"; 
             const depto = "Intendencia";
             
             const elemSidebar = document.getElementById('nombre-supervisor-sidebar');
@@ -1503,3 +1435,4 @@
     </script>
 </body>
 </html>
+
