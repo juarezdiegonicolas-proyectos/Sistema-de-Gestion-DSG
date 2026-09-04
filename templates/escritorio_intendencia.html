@@ -1136,40 +1136,27 @@
 
         async function verificarNovedadesNoLeidas() {
             try {
+                const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim();
+                const usuarioActual = (localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario') || "").trim();
+
+                // Consulta exacta por columnas en la base de datos para notificaciones
                 const { data, error } = await db
                     .from('comunicados_memos')
                     .select('*')
+                    .or(`departamento_destino.eq.Todos,and(departamento_destino.ilike.intendencia,or(supervisor_destino.eq.Todos,supervisor_destino.ilike.%${usuarioActual}%))`)
                     .order('created_at', { ascending: false });
 
                 if (error || !data) return;
 
-                const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim().toLowerCase();
-                const usuarioActual = (localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario') || "invitado").trim().toLowerCase();
-                const claveStoragePersonal = `dsg_novedades_ultimo_id_${usuarioActual}`;
+                const claveStoragePersonal = `dsg_novedades_ultimo_id_${usuarioActual.toLowerCase()}`;
 
                 const novedadesFiltradas = data.filter(item => {
-                    const deptoDestino = (item.departamento_destino || "").trim().toLowerCase();
-                    const turnoDestino = (item.turno_destino || "").trim().toLowerCase();
-                    const supervisorDestino = (item.supervisor_destino || "").trim().toLowerCase();
-                    const origenMsg = (item.departamento_origen || (item.contenido && item.contenido.origen) || "").trim().toLowerCase();
+                    const origenMsg = (item.departamento_origen || "").trim().toLowerCase();
+                    if (origenMsg === 'intendencia') return false; // Excluye mensajes propios
 
-                    // No notificar mensajes propios enviados por Intendencia
-                    if (origenMsg === 'intendencia') return false;
-
-                    const deptoValido = (deptoDestino === 'intendencia' || deptoDestino === 'todos' || deptoDestino === '');
-                    if (!deptoValido) return false;
-
-                    if (deptoDestino === 'todos' || deptoDestino === '') {
-                        return true;
-                    }
-
-                    const turnoValido = (!turnoDestino || turnoDestino === 'todos' || turnoDestino === turnoActual);
-                    if (!turnoValido) return false;
-
-                    const supervisorValido = (!supervisorDestino || supervisorDestino === 'todos' || supervisorDestino.toLowerCase() === 'general (todos)' || supervisorDestino.toLowerCase().includes(usuarioActual));
-                    if (!supervisorValido) return false;
-
-                    return true;
+                    const turnoDestino = item.turno_destino || 'Todos';
+                    const turnoValido = (turnoDestino === 'Todos' || turnoDestino.toLowerCase() === turnoActual.toLowerCase());
+                    return turnoValido;
                 });
 
                 if (novedadesFiltradas.length === 0) return;
@@ -1207,9 +1194,15 @@
             contenedorNov.innerHTML = "<p>Buscando registros históricos en el muro...</p>";
 
             try {
+                const departamentoUsuario = (localStorage.getItem('usuario_departamento') || "intendencia").trim();
+                const usuarioActual = (localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario') || "").trim();
+                const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim();
+
+                // Consulta directa y filtrada en Supabase según los campos físicos de la tabla
                 const { data, error } = await db
                     .from('comunicados_memos')
                     .select('*')
+                    .or(`departamento_destino.eq.Todos,and(departamento_destino.ilike.${departamentoUsuario},or(supervisor_destino.eq.Todos,supervisor_destino.ilike.%${usuarioActual}%)),departamento_origen.ilike.${departamentoUsuario}`)
                     .order('created_at', { ascending: false });
 
                 if (error) throw error;
@@ -1219,11 +1212,8 @@
                     return;
                 }
 
-                const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim().toLowerCase();
-                const usuarioActual = (localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario') || "invitado").trim().toLowerCase();
-
                 if (data.length > 0) {
-                    const claveStoragePersonal = `dsg_novedades_ultimo_id_${usuarioActual}`;
+                    const claveStoragePersonal = `dsg_novedades_ultimo_id_${usuarioActual.toLowerCase()}`;
                     localStorage.setItem(claveStoragePersonal, data[0].id_clave || data[0].id);
                     const badge = document.getElementById('badge-novedades');
                     if (badge) badge.style.display = 'none';
@@ -1245,10 +1235,10 @@
                         } catch(e) {}
                     }
 
-                    const turnoMsg = item.turno_destino || contenidoObj.turno || 'Todos';
-                    const supervisorMsg = item.supervisor_destino || contenidoObj.supervisor || 'General (Todos)';
-                    const remitenteDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
-                    const deptoDestinoValor = item.departamento_destino || contenidoObj.departamento || 'Todos';
+                    const turnoMsg = item.turno_destino || 'Todos';
+                    const supervisorMsg = item.supervisor_destino || 'General (Todos)';
+                    const remitenteDepto = (item.departamento_origen || '').trim().toLowerCase();
+                    const deptoDestinoValor = item.departamento_destino || 'Todos';
 
                     const deptoActual = 'intendencia';
 
@@ -1260,7 +1250,7 @@
                         tipoBadge = 'ENVIADO';
                         claseMuroItem = 'enviado';
                         claseBadgeEstado = 'badge-enviado';
-                    } else if (deptoDestinoValor === deptoActual || deptoDestinoValor === 'todos' || deptoDestinoValor === '') {
+                    } else if (deptoDestinoValor === deptoActual || deptoDestinoValor.toLowerCase() === 'todos') {
                         tipoBadge = 'RECIBIDO';
                         claseMuroItem = 'recibido';
                         claseBadgeEstado = 'badge-recibido';
