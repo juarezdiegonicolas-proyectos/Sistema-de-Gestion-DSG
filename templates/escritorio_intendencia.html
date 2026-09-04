@@ -254,8 +254,15 @@
             
             <!-- Filtros y Controles de Envío -->
             <div class="filtros-historicos">
-                <select id="depto-destino-novedades-intendencia" class="input-select" onchange="manejarCambioDepto('novedades-intendencia'); actualizarPrint('novedades-intendencia');">
+                <select id="depto-destino-novedades-intendencia" class="input-select" onchange="manejarCambioDepto('destino-novedades-intendencia'); actualizarPrint('novedades-intendencia');">
                     <option value="Todos">Todos los departamentos</option>
+                    <option value="Dirección Servicios Generales">Dirección Servicios Generales</option>
+                    <option value="Intendencia">Intendencia</option>
+                    <option value="Mantenimiento">Mantenimiento</option>
+                    <option value="Ropería">Ropería</option>
+                    <option value="Gastronomía">Gastronomía</option>
+                    <option value="Camilleros">Camilleros</option>
+                    <option value="Limpieza">Limpieza</option>
                 </select>
                 
                 <div id="contenedor-supervisor-destino-novedades-intendencia" style="display: none;">
@@ -1010,56 +1017,21 @@
             }
         }
 
-        async function cargarDepartamentosYSupervisoresDestino() {
-            const selectDepto = document.getElementById('depto-destino-novedades-intendencia');
-            if (!selectDepto) return;
-            
-            try {
-                const { data, error } = await db
-                    .from('usuarios')
-                    .select('departamento, nombre_completo, usuario')
-                    .not('departamento', 'is', null);
-
-                if (!error && data) {
-                    const deptoSet = new Set();
-                    data.forEach(u => {
-                        if (u.departamento) {
-                            let deptos = u.departamento.toString().split(',').map(d => d.trim());
-                            deptos.forEach(d => {
-                                if (d) deptoSet.add(d);
-                            });
-                        }
-                    });
-
-                    // Mantener la opción predeterminada y agregar dinámicamente los departamentos extraídos
-                    selectDepto.innerHTML = '<option value="Todos">Todos los departamentos</option>';
-                    deptoSet.forEach(dept => {
-                        const opt = document.createElement('option');
-                        opt.value = dept.toLowerCase();
-                        opt.textContent = dept.charAt(0).toUpperCase() + dept.slice(1);
-                        selectDepto.appendChild(opt);
-                    });
-                }
-            } catch (err) {
-                console.error("Error al cargar departamentos para novedades:", err);
-            }
-        }
-
         function manejarCambioDepto(idSufijo) {
             const selectDepto = document.getElementById('depto-' + idSufijo);
             const contenedorSup = document.getElementById('contenedor-supervisor-' + idSufijo);
             if (!selectDepto || !contenedorSup) return;
 
-            // Mostrar el selector de supervisores si el departamento seleccionado no es 'Todos'
-            if (selectDepto.value !== 'Todos') {
+            const deptoVal = selectDepto.value;
+            if (deptoVal && deptoVal !== 'Todos') {
                 contenedorSup.style.display = 'block';
-                cargarSupervisoresPorDepartamento(selectDepto.value, idSufijo);
+                cargarSupervisoresPorDepto(idSufijo, deptoVal);
             } else {
                 contenedorSup.style.display = 'none';
             }
         }
 
-        async function cargarSupervisoresPorDepartamento(departamentoSeleccionado, idSufijo) {
+        async function cargarSupervisoresPorDepto(idSufijo, departamentoSeleccionado) {
             const selectSup = document.getElementById('supervisor-' + idSufijo);
             if (!selectSup) return;
             selectSup.innerHTML = '<option value="">-- Todos los supervisores --</option>';
@@ -1082,7 +1054,7 @@
                     });
                 }
             } catch (err) {
-                console.error("Error al cargar supervisores del departamento:", err);
+                console.error("Error al cargar supervisores por departamento:", err);
             }
         }
 
@@ -1382,7 +1354,6 @@
             if (elemDeptoHist) elemDeptoHist.innerText = depto;
             
             await cargarPersonalYSeccionesSupabase();
-            await cargarDepartamentosYSupervisoresDestino();
             
             // Verificamos notificaciones pendientes de novedades al iniciar
             await verificarNovedadesNoLeidas();
