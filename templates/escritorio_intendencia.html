@@ -254,10 +254,8 @@
             
             <!-- Filtros y Controles de Envío -->
             <div class="filtros-historicos">
-                <select id="depto-destino-novedades-intendencia" class="input-select" onchange="manejarCambioDepto('destino-novedades-intendencia'); actualizarPrint('novedades-intendencia');">
+                <select id="depto-destino-novedades-intendencia" class="input-select" onchange="manejarCambioDepto('novedades-intendencia'); actualizarPrint('novedades-intendencia');">
                     <option value="Todos">Todos los departamentos</option>
-                    <option value="direccion-servicios-generales">Dirección Servicios Generales</option>
-                    <option value="intendencia">Intendencia</option>
                 </select>
                 
                 <div id="contenedor-supervisor-destino-novedades-intendencia" style="display: none;">
@@ -970,7 +968,7 @@
         }
 
         // =========================================================================
-        // LÓGICA UNIFICADA DE NOVEDADES (REDACCIÓN, ADJUNTOS Y MURO CON 3 ESTADOS)
+        // LÓGICA UNIFICADA DE NOVEDADES (INCLUYENDO CARGA DINÁMICA DE DEPARTAMENTOS Y SUPERVISORES)
         // =========================================================================
 
         function toKebabCase(nombreVisual) {
@@ -984,6 +982,33 @@
         }
 
         let archivosMultiplesNovedadesIntendencia = [];
+
+        async function cargarDepartamentosNovedades(idSufijo) {
+            const selectDepto = document.getElementById('depto-destino-' + idSufijo);
+            if (!selectDepto) return;
+            
+            // Mantener "Todos" por defecto
+            selectDepto.innerHTML = '<option value="Todos">Todos los departamentos</option>';
+
+            try {
+                // Consultar departamentos o áreas desde la tabla usuarios u otra fuente común
+                const { data, error } = await db
+                    .from('usuarios')
+                    .select('departamento');
+
+                if (!error && data) {
+                    const deptosUnicos = [...new Set(data.map(u => u.departamento).filter(Boolean))];
+                    deptosUnicos.sort().forEach(dep => {
+                        const opt = document.createElement('option');
+                        opt.value = dep;
+                        opt.textContent = dep.charAt(0).toUpperCase() + dep.slice(1);
+                        selectDepto.appendChild(opt);
+                    });
+                }
+            } catch (err) {
+                console.error("Error al cargar departamentos dinámicos:", err);
+            }
+        }
 
         async function previsualizarMultiples(input, id) {
             if (!input.files || input.files.length === 0) return;
@@ -1013,28 +1038,29 @@
         }
 
         function manejarCambioDepto(idSufijo) {
-            const selectDepto = document.getElementById('depto-' + idSufijo);
+            const selectDepto = document.getElementById('depto-destino-' + idSufijo);
             const contenedorSup = document.getElementById('contenedor-supervisor-' + idSufijo);
             if (!selectDepto || !contenedorSup) return;
 
-            if (selectDepto.value === 'intendencia') {
+            // Si se selecciona un departamento específico (distinto de "Todos"), habilitar el selector de supervisores correspondiente
+            if (selectDepto.value && selectDepto.value !== 'Todos') {
                 contenedorSup.style.display = 'block';
-                cargarSupervisoresIntendencia(idSufijo);
+                cargarSupervisoresPorDepartamento(idSufijo, selectDepto.value);
             } else {
                 contenedorSup.style.display = 'none';
             }
         }
 
-        async function cargarSupervisoresIntendencia(idSufijo) {
-            const selectSup = document.getElementById('supervisor-' + idSufijo);
+        async function cargarSupervisoresPorDepartamento(idSufijo, departamentoSeleccionado) {
+            const selectSup = document.getElementById('supervisor-destino-' + idSufijo);
             if (!selectSup) return;
             selectSup.innerHTML = '<option value="">-- Todos los supervisores --</option>';
 
             try {
                 const { data, error } = await db
                     .from('usuarios')
-                    .select('nombre_completo, usuario')
-                    .or('departamento.ilike.%intendencia%,pisos_asignados.not.is.null');
+                    .select('nombre_completo, usuario, departamento')
+                    .ilike('departamento', `%${departamentoSeleccionado}%`);
 
                 if (!error && data) {
                     data.forEach(u => {
@@ -1048,7 +1074,7 @@
                     });
                 }
             } catch (err) {
-                console.error("Error al cargar supervisores:", err);
+                console.error("Error al cargar supervisores por departamento:", err);
             }
         }
 
@@ -1348,6 +1374,9 @@
             if (elemDeptoHist) elemDeptoHist.innerText = depto;
             
             await cargarPersonalYSeccionesSupabase();
+            
+            // Cargar dinámicamente los departamentos para novedades
+            await cargarDepartamentosNovedades('novedades-intendencia');
             
             // Verificamos notificaciones pendientes de novedades al iniciar
             await verificarNovedadesNoLeidas();
