@@ -254,20 +254,20 @@
             
             <!-- Filtros y Controles de Envío -->
             <div class="filtros-historicos">
-                <select id="depto-destino-novedades-intendencia" class="input-select" onchange="manejarCambioDepto('novedades-intendencia'); actualizarPrint('novedades-intendencia');">
+                <select id="depto-destino-novedades-intendencia" class="input-select" onchange="manejarCambioDepto('destino-novedades-intendencia'); actualizarPrint('novedades-intendencia');">
                     <option value="Todos">Todos los departamentos</option>
-                    <option value="Dirección Servicios Generales">Dirección Servicios Generales</option>
-                    <option value="Intendencia">Intendencia</option>
-                    <option value="Ascensores">Ascensores</option>
-                    <option value="Lavadero Central">Lavadero Central</option>
-                    <option value="Camilleros">Camilleros</option>
-                    <option value="Conmutador">Conmutador</option>
-                    <option value="DALO">DALO</option>
-                    <option value="Higiene y Seguridad">Higiene y Seguridad</option>
+                    <option value="direccion-servicios-generales">Dirección Servicios Generales</option>
+                    <option value="intendencia">Intendencia</option>
+                    <option value="division-ascensores">Ascensores</option>
+                    <option value="lavadero-central">Lavadero Central</option>
+                    <option value="camilleros-central">Camilleros</option>
+                    <option value="conmutador">Conmutador</option>
+                    <option value="dalo">DALO</option>
+                    <option value="higiene-y-seguridad">Higiene y Seguridad</option>
                 </select>
                 
-                <div id="contenedor-supervisor-novedades-intendencia" style="display: none;">
-                    <select id="supervisor-novedades-intendencia" class="input-select" onchange="actualizarPrint('novedades-intendencia')">
+                <div id="contenedor-supervisor-destino-novedades-intendencia" style="display: none;">
+                    <select id="supervisor-destino-novedades-intendencia" class="input-select" onchange="actualizarPrint('novedades-intendencia')">
                         <option value="">-- Todos los supervisores --</option>
                     </select>
                 </div>
@@ -1019,11 +1019,12 @@
         }
 
         function manejarCambioDepto(idSufijo) {
-            const selectDepto = document.getElementById('depto-destino-' + idSufijo);
+            const selectDepto = document.getElementById('depto-' + idSufijo);
             const contenedorSup = document.getElementById('contenedor-supervisor-' + idSufijo);
             if (!selectDepto || !contenedorSup) return;
 
-            if (selectDepto.value === 'Intendencia') {
+            // Se habilita para cualquier departamento seleccionado distinto de "Todos"
+            if (selectDepto.value !== 'Todos') {
                 contenedorSup.style.display = 'block';
                 cargarSupervisoresIntendencia(idSufijo);
             } else {
@@ -1032,25 +1033,42 @@
         }
 
         async function cargarSupervisoresIntendencia(idSufijo) {
+            const selectDepto = document.getElementById('depto-' + idSufijo);
             const selectSup = document.getElementById('supervisor-' + idSufijo);
-            if (!selectSup) return;
+            if (!selectSup || !selectDepto) return;
+            
             selectSup.innerHTML = '<option value="">-- Todos los supervisores --</option>';
+
+            const deptoSeleccionado = selectDepto.value;
+            const deptoKebab = toKebabCase(deptoSeleccionado);
 
             try {
                 const { data, error } = await db
                     .from('usuarios')
-                    .select('nombre_completo, usuario')
-                    .or('departamento.ilike.%intendencia%,pisos_asignados.not.is.null');
+                    .select('nombre_completo, usuario, departamento, pisos_asignados');
 
                 if (!error && data) {
-                    data.forEach(u => {
+                    // Filtramos los supervisores que correspondan al departamento seleccionado
+                    const filtrados = data.filter(u => {
+                        if (!u.departamento) return false;
+                        const depUsr = toKebabCase(u.departamento);
+                        return depUsr === deptoKebab || depUsr.includes(deptoKebab) || deptoKebab.includes(depUsr);
+                    });
+
+                    // Si no encontramos registros estrictos por departamento, traemos todos para evitar vacíos
+                    const listaFinal = filtrados.length > 0 ? filtrados : data;
+
+                    const nombresUnicos = new Set();
+                    listaFinal.forEach(u => {
                         const nombre = u.nombre_completo || u.usuario;
-                        if (nombre) {
-                            const opt = document.createElement('option');
-                            opt.value = nombre;
-                            opt.textContent = nombre;
-                            selectSup.appendChild(opt);
-                        }
+                        if (nombre) nombresUnicos.add(nombre);
+                    });
+
+                    nombresUnicos.forEach(nombre => {
+                        const opt = document.createElement('option');
+                        opt.value = nombre;
+                        opt.textContent = nombre;
+                        selectSup.appendChild(opt);
                     });
                 }
             } catch (err) {
@@ -1091,7 +1109,7 @@
         async function guardarRedaccionIntendencia() {
             const destinoVisual = document.getElementById('depto-destino-novedades-intendencia').value;
             const turno = document.getElementById('turno-destino-novedades-intendencia').value;
-            const supervisorElem = document.getElementById('supervisor-novedades-intendencia');
+            const supervisorElem = document.getElementById('supervisor-destino-novedades-intendencia');
             const supervisor = supervisorElem ? supervisorElem.value : '';
             const textoEscrito = document.getElementById('txt-novedades-intendencia').value;
 
