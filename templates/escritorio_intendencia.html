@@ -254,10 +254,8 @@
             
             <!-- Filtros y Controles de Envío -->
             <div class="filtros-historicos">
-                <select id="depto-destino-novedades-intendencia" class="input-select" onchange="manejarCambioDepto('destino-novedades-intendencia'); actualizarPrint('novedades-intendencia');">
+                <select id="depto-destino-novedades-intendencia" class="input-select" onchange="manejarCambioDepto('novedades-intendencia'); actualizarPrint('novedades-intendencia');">
                     <option value="Todos">Todos los departamentos</option>
-                    <option value="direccion-servicios-generales">Dirección Servicios Generales</option>
-                    <option value="intendencia">Intendencia</option>
                 </select>
                 
                 <div id="contenedor-supervisor-destino-novedades-intendencia" style="display: none;">
@@ -1012,20 +1010,56 @@
             }
         }
 
+        async function cargarDepartamentosYSupervisoresDestino() {
+            const selectDepto = document.getElementById('depto-destino-novedades-intendencia');
+            if (!selectDepto) return;
+            
+            try {
+                const { data, error } = await db
+                    .from('usuarios')
+                    .select('departamento, nombre_completo, usuario')
+                    .not('departamento', 'is', null);
+
+                if (!error && data) {
+                    const deptoSet = new Set();
+                    data.forEach(u => {
+                        if (u.departamento) {
+                            let deptos = u.departamento.toString().split(',').map(d => d.trim());
+                            deptos.forEach(d => {
+                                if (d) deptoSet.add(d);
+                            });
+                        }
+                    });
+
+                    // Mantener la opción predeterminada y agregar dinámicamente los departamentos extraídos
+                    selectDepto.innerHTML = '<option value="Todos">Todos los departamentos</option>';
+                    deptoSet.forEach(dept => {
+                        const opt = document.createElement('option');
+                        opt.value = dept.toLowerCase();
+                        opt.textContent = dept.charAt(0).toUpperCase() + dept.slice(1);
+                        selectDepto.appendChild(opt);
+                    });
+                }
+            } catch (err) {
+                console.error("Error al cargar departamentos para novedades:", err);
+            }
+        }
+
         function manejarCambioDepto(idSufijo) {
             const selectDepto = document.getElementById('depto-' + idSufijo);
             const contenedorSup = document.getElementById('contenedor-supervisor-' + idSufijo);
             if (!selectDepto || !contenedorSup) return;
 
-            if (selectDepto.value === 'intendencia') {
+            // Mostrar el selector de supervisores si el departamento seleccionado no es 'Todos'
+            if (selectDepto.value !== 'Todos') {
                 contenedorSup.style.display = 'block';
-                cargarSupervisoresIntendencia(idSufijo);
+                cargarSupervisoresPorDepartamento(selectDepto.value, idSufijo);
             } else {
                 contenedorSup.style.display = 'none';
             }
         }
 
-        async function cargarSupervisoresIntendencia(idSufijo) {
+        async function cargarSupervisoresPorDepartamento(departamentoSeleccionado, idSufijo) {
             const selectSup = document.getElementById('supervisor-' + idSufijo);
             if (!selectSup) return;
             selectSup.innerHTML = '<option value="">-- Todos los supervisores --</option>';
@@ -1033,8 +1067,8 @@
             try {
                 const { data, error } = await db
                     .from('usuarios')
-                    .select('nombre_completo, usuario')
-                    .or('departamento.ilike.%intendencia%,pisos_asignados.not.is.null');
+                    .select('nombre_completo, usuario, departamento')
+                    .ilike('departamento', `%${departamentoSeleccionado}%`);
 
                 if (!error && data) {
                     data.forEach(u => {
@@ -1048,7 +1082,7 @@
                     });
                 }
             } catch (err) {
-                console.error("Error al cargar supervisores:", err);
+                console.error("Error al cargar supervisores del departamento:", err);
             }
         }
 
@@ -1136,27 +1170,40 @@
 
         async function verificarNovedadesNoLeidas() {
             try {
-                const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim();
-                const usuarioActual = (localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario') || "").trim();
-
-                // Consulta exacta por columnas en la base de datos para notificaciones
                 const { data, error } = await db
                     .from('comunicados_memos')
                     .select('*')
-                    .or(`departamento_destino.eq.Todos,and(departamento_destino.ilike.intendencia,or(supervisor_destino.eq.Todos,supervisor_destino.ilike.%${usuarioActual}%))`)
                     .order('created_at', { ascending: false });
 
                 if (error || !data) return;
 
-                const claveStoragePersonal = `dsg_novedades_ultimo_id_${usuarioActual.toLowerCase()}`;
+                const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim().toLowerCase();
+                const usuarioActual = (localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario') || "invitado").trim().toLowerCase();
+                const claveStoragePersonal = `dsg_novedades_ultimo_id_${usuarioActual}`;
 
                 const novedadesFiltradas = data.filter(item => {
-                    const origenMsg = (item.departamento_origen || "").trim().toLowerCase();
-                    if (origenMsg === 'intendencia') return false; // Excluye mensajes propios
+                    const deptoDestino = (item.departamento_destino || "").trim().toLowerCase();
+                    const turnoDestino = (item.turno_destino || "").trim().toLowerCase();
+                    const supervisorDestino = (item.supervisor_destino || "").trim().toLowerCase();
+                    const origenMsg = (item.departamento_origen || (item.contenido && item.contenido.origen) || "").trim().toLowerCase();
 
-                    const turnoDestino = item.turno_destino || 'Todos';
-                    const turnoValido = (turnoDestino === 'Todos' || turnoDestino.toLowerCase() === turnoActual.toLowerCase());
-                    return turnoValido;
+                    // No notificar mensajes propios enviados por Intendencia
+                    if (origenMsg === 'intendencia') return false;
+
+                    const deptoValido = (deptoDestino === 'intendencia' || deptoDestino === 'todos' || deptoDestino === '');
+                    if (!deptoValido) return false;
+
+                    if (deptoDestino === 'todos' || deptoDestino === '') {
+                        return true;
+                    }
+
+                    const turnoValido = (!turnoDestino || turnoDestino === 'todos' || turnoDestino === turnoActual);
+                    if (!turnoValido) return false;
+
+                    const supervisorValido = (!supervisorDestino || supervisorDestino === 'todos' || supervisorDestino.toLowerCase() === 'general (todos)' || supervisorDestino.toLowerCase().includes(usuarioActual));
+                    if (!supervisorValido) return false;
+
+                    return true;
                 });
 
                 if (novedadesFiltradas.length === 0) return;
@@ -1194,15 +1241,9 @@
             contenedorNov.innerHTML = "<p>Buscando registros históricos en el muro...</p>";
 
             try {
-                const departamentoUsuario = (localStorage.getItem('usuario_departamento') || "intendencia").trim();
-                const usuarioActual = (localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario') || "").trim();
-                const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim();
-
-                // Consulta directa y filtrada en Supabase según los campos físicos de la tabla
                 const { data, error } = await db
                     .from('comunicados_memos')
                     .select('*')
-                    .or(`departamento_destino.eq.Todos,and(departamento_destino.ilike.${departamentoUsuario},or(supervisor_destino.eq.Todos,supervisor_destino.ilike.%${usuarioActual}%)),departamento_origen.ilike.${departamentoUsuario}`)
                     .order('created_at', { ascending: false });
 
                 if (error) throw error;
@@ -1212,8 +1253,11 @@
                     return;
                 }
 
+                const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim().toLowerCase();
+                const usuarioActual = (localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario') || "invitado").trim().toLowerCase();
+
                 if (data.length > 0) {
-                    const claveStoragePersonal = `dsg_novedades_ultimo_id_${usuarioActual.toLowerCase()}`;
+                    const claveStoragePersonal = `dsg_novedades_ultimo_id_${usuarioActual}`;
                     localStorage.setItem(claveStoragePersonal, data[0].id_clave || data[0].id);
                     const badge = document.getElementById('badge-novedades');
                     if (badge) badge.style.display = 'none';
@@ -1235,10 +1279,10 @@
                         } catch(e) {}
                     }
 
-                    const turnoMsg = item.turno_destino || 'Todos';
-                    const supervisorMsg = item.supervisor_destino || 'General (Todos)';
-                    const remitenteDepto = (item.departamento_origen || '').trim().toLowerCase();
-                    const deptoDestinoValor = item.departamento_destino || 'Todos';
+                    const turnoMsg = item.turno_destino || contenidoObj.turno || 'Todos';
+                    const supervisorMsg = item.supervisor_destino || contenidoObj.supervisor || 'General (Todos)';
+                    const remitenteDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
+                    const deptoDestinoValor = item.departamento_destino || contenidoObj.departamento || 'Todos';
 
                     const deptoActual = 'intendencia';
 
@@ -1250,7 +1294,7 @@
                         tipoBadge = 'ENVIADO';
                         claseMuroItem = 'enviado';
                         claseBadgeEstado = 'badge-enviado';
-                    } else if (deptoDestinoValor === deptoActual || deptoDestinoValor.toLowerCase() === 'todos') {
+                    } else if (deptoDestinoValor === deptoActual || deptoDestinoValor === 'todos' || deptoDestinoValor === '') {
                         tipoBadge = 'RECIBIDO';
                         claseMuroItem = 'recibido';
                         claseBadgeEstado = 'badge-recibido';
@@ -1338,6 +1382,7 @@
             if (elemDeptoHist) elemDeptoHist.innerText = depto;
             
             await cargarPersonalYSeccionesSupabase();
+            await cargarDepartamentosYSupervisoresDestino();
             
             // Verificamos notificaciones pendientes de novedades al iniciar
             await verificarNovedadesNoLeidas();
