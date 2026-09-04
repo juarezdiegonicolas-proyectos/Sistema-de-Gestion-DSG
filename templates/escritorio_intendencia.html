@@ -256,10 +256,18 @@
             <div class="filtros-historicos">
                 <select id="depto-destino-novedades-intendencia" class="input-select" onchange="manejarCambioDepto('novedades-intendencia'); actualizarPrint('novedades-intendencia');">
                     <option value="Todos">Todos los departamentos</option>
+                    <option value="Dirección Servicios Generales">Dirección Servicios Generales</option>
+                    <option value="Intendencia">Intendencia</option>
+                    <option value="Ascensores">Ascensores</option>
+                    <option value="Lavadero Central">Lavadero Central</option>
+                    <option value="Camilleros">Camilleros</option>
+                    <option value="Conmutador">Conmutador</option>
+                    <option value="DALO">DALO</option>
+                    <option value="Higiene y Seguridad">Higiene y Seguridad</option>
                 </select>
                 
-                <div id="contenedor-supervisor-destino-novedades-intendencia" style="display: none;">
-                    <select id="supervisor-destino-novedades-intendencia" class="input-select" onchange="actualizarPrint('novedades-intendencia')">
+                <div id="contenedor-supervisor-novedades-intendencia" style="display: none;">
+                    <select id="supervisor-novedades-intendencia" class="input-select" onchange="actualizarPrint('novedades-intendencia')">
                         <option value="">-- Todos los supervisores --</option>
                     </select>
                 </div>
@@ -968,7 +976,7 @@
         }
 
         // =========================================================================
-        // LÓGICA UNIFICADA DE NOVEDADES (INCLUYENDO CARGA DINÁMICA DE DEPARTAMENTOS Y SUPERVISORES)
+        // LÓGICA UNIFICADA DE NOVEDADES (REDACCIÓN, ADJUNTOS Y MURO CON 3 ESTADOS)
         // =========================================================================
 
         function toKebabCase(nombreVisual) {
@@ -982,33 +990,6 @@
         }
 
         let archivosMultiplesNovedadesIntendencia = [];
-
-        async function cargarDepartamentosNovedades(idSufijo) {
-            const selectDepto = document.getElementById('depto-destino-' + idSufijo);
-            if (!selectDepto) return;
-            
-            // Mantener "Todos" por defecto
-            selectDepto.innerHTML = '<option value="Todos">Todos los departamentos</option>';
-
-            try {
-                // Consultar departamentos o áreas desde la tabla usuarios u otra fuente común
-                const { data, error } = await db
-                    .from('usuarios')
-                    .select('departamento');
-
-                if (!error && data) {
-                    const deptosUnicos = [...new Set(data.map(u => u.departamento).filter(Boolean))];
-                    deptosUnicos.sort().forEach(dep => {
-                        const opt = document.createElement('option');
-                        opt.value = dep;
-                        opt.textContent = dep.charAt(0).toUpperCase() + dep.slice(1);
-                        selectDepto.appendChild(opt);
-                    });
-                }
-            } catch (err) {
-                console.error("Error al cargar departamentos dinámicos:", err);
-            }
-        }
 
         async function previsualizarMultiples(input, id) {
             if (!input.files || input.files.length === 0) return;
@@ -1042,25 +1023,24 @@
             const contenedorSup = document.getElementById('contenedor-supervisor-' + idSufijo);
             if (!selectDepto || !contenedorSup) return;
 
-            // Si se selecciona un departamento específico (distinto de "Todos"), habilitar el selector de supervisores correspondiente
-            if (selectDepto.value && selectDepto.value !== 'Todos') {
+            if (selectDepto.value === 'Intendencia') {
                 contenedorSup.style.display = 'block';
-                cargarSupervisoresPorDepartamento(idSufijo, selectDepto.value);
+                cargarSupervisoresIntendencia(idSufijo);
             } else {
                 contenedorSup.style.display = 'none';
             }
         }
 
-        async function cargarSupervisoresPorDepartamento(idSufijo, departamentoSeleccionado) {
-            const selectSup = document.getElementById('supervisor-destino-' + idSufijo);
+        async function cargarSupervisoresIntendencia(idSufijo) {
+            const selectSup = document.getElementById('supervisor-' + idSufijo);
             if (!selectSup) return;
             selectSup.innerHTML = '<option value="">-- Todos los supervisores --</option>';
 
             try {
                 const { data, error } = await db
                     .from('usuarios')
-                    .select('nombre_completo, usuario, departamento')
-                    .ilike('departamento', `%${departamentoSeleccionado}%`);
+                    .select('nombre_completo, usuario')
+                    .or('departamento.ilike.%intendencia%,pisos_asignados.not.is.null');
 
                 if (!error && data) {
                     data.forEach(u => {
@@ -1074,7 +1054,7 @@
                     });
                 }
             } catch (err) {
-                console.error("Error al cargar supervisores por departamento:", err);
+                console.error("Error al cargar supervisores:", err);
             }
         }
 
@@ -1111,7 +1091,7 @@
         async function guardarRedaccionIntendencia() {
             const destinoVisual = document.getElementById('depto-destino-novedades-intendencia').value;
             const turno = document.getElementById('turno-destino-novedades-intendencia').value;
-            const supervisorElem = document.getElementById('supervisor-destino-novedades-intendencia');
+            const supervisorElem = document.getElementById('supervisor-novedades-intendencia');
             const supervisor = supervisorElem ? supervisorElem.value : '';
             const textoEscrito = document.getElementById('txt-novedades-intendencia').value;
 
@@ -1374,9 +1354,6 @@
             if (elemDeptoHist) elemDeptoHist.innerText = depto;
             
             await cargarPersonalYSeccionesSupabase();
-            
-            // Cargar dinámicamente los departamentos para novedades
-            await cargarDepartamentosNovedades('novedades-intendencia');
             
             // Verificamos notificaciones pendientes de novedades al iniciar
             await verificarNovedadesNoLeidas();
