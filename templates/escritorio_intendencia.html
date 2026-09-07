@@ -1023,7 +1023,6 @@
             const contenedorSup = document.getElementById('contenedor-supervisor-' + idSufijo);
             if (!selectDepto || !contenedorSup) return;
 
-            // Se habilita para cualquier departamento seleccionado distinto de "Todos"
             if (selectDepto.value !== 'Todos') {
                 contenedorSup.style.display = 'block';
                 cargarSupervisoresIntendencia(idSufijo);
@@ -1048,14 +1047,12 @@
                     .select('nombre_completo, usuario, departamento, pisos_asignados');
 
                 if (!error && data) {
-                    // Filtramos los supervisores que correspondan al departamento seleccionado
                     const filtrados = data.filter(u => {
                         if (!u.departamento) return false;
                         const depUsr = toKebabCase(u.departamento);
                         return depUsr === deptoKebab || depUsr.includes(deptoKebab) || deptoKebab.includes(depUsr);
                     });
 
-                    // Si no encontramos registros estrictos por departamento, traemos todos para evitar vacíos
                     const listaFinal = filtrados.length > 0 ? filtrados : data;
 
                     const nombresUnicos = new Set();
@@ -1128,7 +1125,7 @@
                 departamento: deptoDestinoNormalizado,
                 origen: deptoOrigenNormalizado,
                 turno: turno,
-                supervisor: supervisor || 'Todos'
+                supervisor: supervisor || 'General (Todos)'
             };
 
             const sufijoSupervisor = supervisor ? `_${supervisor.replace(/\s+/g, '_')}` : '_todos';
@@ -1143,7 +1140,7 @@
                         departamento_destino: deptoDestinoNormalizado,
                         departamento_origen: deptoOrigenNormalizado,
                         turno_destino: turno === 'Todos' ? 'Todos' : turno,
-                        supervisor_destino: supervisor || 'Todos'
+                        supervisor_destino: supervisor || 'General (Todos)'
                     },
                     { onConflict: 'id_clave' }
                 );
@@ -1177,24 +1174,23 @@
                     const supervisorDestino = (item.supervisor_destino || "").trim().toLowerCase();
                     const origenMsg = (item.departamento_origen || (item.contenido && item.contenido.origen) || "").trim().toLowerCase();
 
-                    // 1. Si el mensaje fue enviado por este mismo departamento, se omite de notificaciones de entrada
                     if (origenMsg === 'intendencia') return false;
 
-                    // 2. Validar departamento destino
-                    const esParaMiDepto = (deptoDestino === 'intendencia' || deptoDestino === 'todos' || deptoDestino === '');
-                    if (!esParaMiDepto) return false;
+                    const deptoValido = (deptoDestino === 'intendencia' || deptoDestino === 'todos' || deptoDestino === '');
+                    if (!deptoValido) return false;
 
-                    // 3. Validar Supervisor de forma estricta
-                    if (supervisorDestino && supervisorDestino !== 'todos' && supervisorDestino !== 'general (todos)') {
-                        const supervisorLimpio = supervisorDestino.toLowerCase();
-                        if (!usuarioActual.includes(supervisorLimpio) && !supervisorLimpio.includes(usuarioActual)) {
-                            return false;
-                        }
+                    if (deptoDestino === 'todos' || deptoDestino === '') {
+                        return true;
                     }
 
-                    // 4. Validar Turno
                     const turnoValido = (!turnoDestino || turnoDestino === 'todos' || turnoDestino === turnoActual);
                     if (!turnoValido) return false;
+
+                    // Filtro estricto por supervisor: solo se muestra si es general/todos o si el nombre coincide con el supervisor destino
+                    const esGeneral = (!supervisorDestino || supervisorDestino === 'todos' || supervisorDestino === 'general (todos)');
+                    const supervisorCoincide = supervisorDestino && (supervisorDestino.toLowerCase().includes(usuarioActual) || usuarioActual.includes(supervisorDestino.toLowerCase()));
+
+                    if (!esGeneral && !supervisorCoincide) return false;
 
                     return true;
                 });
@@ -1248,51 +1244,44 @@
 
                 const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim().toLowerCase();
                 const usuarioActual = (localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario') || "invitado").trim().toLowerCase();
-                const deptoActual = "intendencia";
 
-                // Aplicar lógica estricta de filtrado en el muro
-                const novedadesFiltradas = data.filter(item => {
+                // Filtrar el muro para que cada supervisor solo vea lo suyo o lo general para intendencia
+                const dataFiltradaSupervisor = data.filter(item => {
                     const deptoDestino = (item.departamento_destino || "").trim().toLowerCase();
-                    const turnoDestino = (item.turno_destino || "").trim().toLowerCase();
-                    const supervisorDestino = (item.supervisor_destino || "").trim().toLowerCase();
                     const origenMsg = (item.departamento_origen || (item.contenido && item.contenido.origen) || "").trim().toLowerCase();
+                    const supervisorDestino = (item.supervisor_destino || (item.contenido && item.contenido.supervisor) || "").trim().toLowerCase();
 
-                    // 1. Si el mensaje fue enviado por este mismo departamento, se muestra en su historial de enviados
-                    if (origenMsg === deptoActual) return true;
+                    // Si el mensaje fue enviado por el propio departamento de Intendencia, lo mostramos completo
+                    if (origenMsg === 'intendencia') return true;
 
-                    // 2. Validar departamento destino
-                    const esParaMiDepto = (deptoDestino === deptoActual || deptoDestino === 'todos' || deptoDestino === '');
-                    if (!esParaMiDepto) return false;
+                    // Validar departamento destino
+                    const deptoValido = (deptoDestino === 'intendencia' || deptoDestino === 'todos' || deptoDestino === '');
+                    if (!deptoValido) return false;
 
-                    // 3. Validar Supervisor de forma estricta
-                    if (supervisorDestino && supervisorDestino !== 'todos' && supervisorDestino !== 'general (todos)') {
-                        const supervisorLimpio = supervisorDestino.toLowerCase();
-                        if (!usuarioActual.includes(supervisorLimpio) && !supervisorLimpio.includes(usuarioActual)) {
-                            return false;
-                        }
+                    // Si es para todos los supervisores, se muestra
+                    if (supervisorDestino === 'todos' || supervisorDestino === 'general (todos)' || !supervisorDestino) {
+                        return true;
                     }
 
-                    // 4. Validar Turno
-                    const turnoValido = (!turnoDestino || turnoDestino === 'todos' || turnoDestino === turnoActual);
-                    if (!turnoValido) return false;
-
-                    return true;
+                    // Si está dirigido a un supervisor específico, evaluar si coincide con el usuario logueado actual
+                    const matchDirecto = supervisorDestino.includes(usuarioActual) || usuarioActual.includes(supervisorDestino);
+                    return matchDirecto;
                 });
 
-                if (novedadesFiltradas.length > 0) {
+                if (data.length > 0) {
                     const claveStoragePersonal = `dsg_novedades_ultimo_id_${usuarioActual}`;
-                    localStorage.setItem(claveStoragePersonal, novedadesFiltradas[0].id_clave || novedadesFiltradas[0].id);
+                    localStorage.setItem(claveStoragePersonal, data[0].id_clave || data[0].id);
                     const badge = document.getElementById('badge-novedades');
                     if (badge) badge.style.display = 'none';
                 }
 
-                if (novedadesFiltradas.length === 0) {
-                    contenedorNov.innerHTML = '<p style="color: #666; font-style: italic;">No hay novedades para mostrar en tu muro.</p>';
+                if (dataFiltradaSupervisor.length === 0) {
+                    contenedorNov.innerHTML = '<p style="color: #666; font-style: italic;">No hay novedades dirigidas a este usuario.</p>';
                     return;
                 }
 
                 let html = '';
-                novedadesFiltradas.forEach(item => {
+                dataFiltradaSupervisor.forEach(item => {
                     const contenidoObj = item.contenido || {};
                     const texto = contenidoObj.texto || 'Sin contenido';
                     let fecha = contenidoObj.fecha || item.created_at || 'Sin fecha';
@@ -1308,9 +1297,11 @@
                     }
 
                     const turnoMsg = item.turno_destino || contenidoObj.turno || 'Todos';
-                    const supervisorMsg = item.supervisor_destino || contenidoObj.supervisor || 'Todos';
+                    const supervisorMsg = item.supervisor_destino || contenidoObj.supervisor || 'General (Todos)';
                     const remitenteDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
                     const deptoDestinoValor = item.departamento_destino || contenidoObj.departamento || 'Todos';
+
+                    const deptoActual = 'intendencia';
 
                     let tipoBadge = '';
                     let claseMuroItem = '';
@@ -1379,8 +1370,8 @@
         }
 
         window.onload = async () => {
-            const nombre = localStorage.getItem('usuario_nombre'] || "Invitado"; 
-            const turno = localStorage.getItem('usuario_turno'] || "Mañana"; 
+            const nombre = localStorage.getItem('usuario_nombre') || "Invitado"; 
+            const turno = localStorage.getItem('usuario_turno') || "Mañana"; 
             const depto = "Intendencia";
             
             const elemSidebar = document.getElementById('nombre-supervisor-sidebar');
@@ -1409,7 +1400,6 @@
             
             await cargarPersonalYSeccionesSupabase();
             
-            // Verificamos notificaciones pendientes de novedades al iniciar
             await verificarNovedadesNoLeidas();
             
             try {
