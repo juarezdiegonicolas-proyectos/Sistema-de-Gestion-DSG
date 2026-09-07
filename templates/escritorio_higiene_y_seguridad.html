@@ -447,7 +447,7 @@
             const destinoVisual = document.getElementById('depto-destino-' + id).value;
             const turno = document.getElementById('turno-destino-' + id).value;
             const supervisorElem = document.getElementById('supervisor-destino-' + id);
-            const supervisor = (supervisorElem && supervisorElem.value) ? supervisorElem.value : 'General (Todos)';
+            const supervisorDestinoVal = (supervisorElem && supervisorElem.value) ? supervisorElem.value : 'General (Todos)';
             const textoEscrito = document.getElementById('txt-' + id).value;
 
             if (!textoEscrito.trim() && archivosMultiplesNovedades.length === 0) {
@@ -460,6 +460,7 @@
 
             const deptoOrigenNormalizado = 'higiene-y-seguridad';
             const deptoDestinoNormalizado = toKebabCase(destinoVisual);
+            const nombreUsuarioActual = localStorage.getItem('usuario_nombre') || "Invitado";
 
             const dataContenido = {
                 texto: textoEscrito,
@@ -469,11 +470,11 @@
                 departamento: deptoDestinoNormalizado,
                 origen: deptoOrigenNormalizado,
                 turno: turno,
-                supervisor: supervisor,
-                supervisor_origen: supervisor // Aquí guardamos el supervisor destino para que se muestre correctamente al enviarlo
+                supervisor: supervisorDestinoVal,
+                supervisor_origen: nombreUsuarioActual
             };
             
-            let sufijoSupervisor = supervisor ? `_${supervisor.replace(/\s+/g, '_')}` : '_todos';
+            let sufijoSupervisor = supervisorDestinoVal ? `_${supervisorDestinoVal.replace(/\s+/g, '_')}` : '_todos';
             const claveUnica = `comunicado_novedades_${deptoDestinoNormalizado}_${turno}${sufijoSupervisor}_${Date.now()}`;
             
             const { error } = await db
@@ -485,8 +486,8 @@
                         departamento_destino: deptoDestinoNormalizado,
                         departamento_origen: deptoOrigenNormalizado,
                         turno_destino: turno === 'Todos' ? 'Todos' : turno,
-                        supervisor_destino: supervisor,
-                        supervisor_origen: supervisor // Guardamos el supervisor destino también en la columna correspondiente
+                        supervisor_destino: supervisorDestinoVal,
+                        supervisor_origen: nombreUsuarioActual
                     },
                     { onConflict: 'id_clave' }
                 );
@@ -582,7 +583,6 @@
                     }
 
                     const turnoMsg = item.turno_destino || contenidoObj.turno || 'Todos';
-                    const supervisorMsg = item.supervisor_destino || contenidoObj.supervisor || 'General (Todos)';
                     const remitenteDepto = (item.departamento_origen || '').trim().toLowerCase();
                     const deptoDestinoValor = item.departamento_destino || 'Todos';
 
@@ -591,9 +591,9 @@
                     const tipoBadge = esEnviado ? 'ENVIADO' : 'RECIBIDO';
                     const claseBadgeEstado = esEnviado ? 'badge-enviado' : 'badge-recibido';
 
-                    // Si es enviado, mostramos el supervisor destino; si es recibido, tomamos la lógica de origen o contenido
+                    // Si es enviado, supervisor_origen es el usuario actual; si es recibido, viene de la columna/contenido correspondiente
                     const supervisorOrigenFinal = esEnviado 
-                        ? (item.supervisor_destino || contenidoObj.supervisor || 'General (Todos)')
+                        ? (item.supervisor_origen || contenidoObj.supervisor_origen || 'No especificado')
                         : (item.supervisor_origen || contenidoObj.supervisor_origen || 'No especificado');
 
                     let infoDetalleCabecera = `
@@ -602,7 +602,7 @@
                             <strong>Origen:</strong> ${remitenteDepto} &rarr; 
                             <strong>Destino:</strong> ${deptoDestinoValor} | 
                             <strong>Turno:</strong> ${turnoMsg} | 
-                            <strong>Supervisor:</strong> ${supervisorOrigenFinal}
+                            <strong>Supervisor Origen:</strong> ${supervisorOrigenFinal}
                         </div>`;
 
                     let archivosArr = [];
@@ -849,4 +849,3 @@
     </script>
 </body>
 </html>
-
