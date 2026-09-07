@@ -1126,7 +1126,8 @@
                 departamento: deptoDestinoNormalizado,
                 origen: deptoOrigenNormalizado,
                 turno: turno,
-                supervisor: supervisor || 'General (Todos)'
+                supervisor: supervisor || 'General (Todos)',
+                supervisor_origen: supervisorOrigenActual
             };
 
             const sufijoSupervisor = supervisor ? `_${supervisor.replace(/\s+/g, '_')}` : '_todos';
@@ -1247,14 +1248,19 @@
                 const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim().toLowerCase();
                 const usuarioActual = (localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario') || "invitado").trim().toLowerCase();
 
-                // Filtrar el muro para que cada supervisor solo vea lo suyo o lo general para intendencia
+                // Filtrar el muro para que cada supervisor solo vea lo suyo, lo general o lo enviado por ellos mismos
                 const dataFiltradaSupervisor = data.filter(item => {
                     const deptoDestino = (item.departamento_destino || "").trim().toLowerCase();
                     const origenMsg = (item.departamento_origen || (item.contenido && item.contenido.origen) || "").trim().toLowerCase();
                     const supervisorDestino = (item.supervisor_destino || (item.contenido && item.contenido.supervisor) || "").trim().toLowerCase();
+                    const supervisorOrigen = (item.supervisor_origen || (item.contenido && item.contenido.supervisor_origen) || "").trim().toLowerCase();
 
-                    // Si el mensaje fue enviado por el propio departamento de Intendencia, lo mostramos completo
-                    if (origenMsg === 'intendencia') return true;
+                    // Si el mensaje fue enviado por el propio departamento de Intendencia, permitimos que el supervisor lo vea en su muro
+                    if (origenMsg === 'intendencia') {
+                        // Opcional: restringir para que cada supervisor vea sus propios envíos o los generales de intendencia
+                        if (!supervisorOrigen || supervisorOrigen === 'todos' || supervisorOrigen === 'general (todos)') return true;
+                        return supervisorOrigen.includes(usuarioActual) || usuarioActual.includes(supervisorOrigen);
+                    }
 
                     // Validar departamento destino
                     const deptoValido = (deptoDestino === 'intendencia' || deptoDestino === 'todos' || deptoDestino === '');
@@ -1303,7 +1309,7 @@
                     const remitenteDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
                     const deptoDestinoValor = item.departamento_destino || contenidoObj.departamento || 'Todos';
 
-                    // Tomar el supervisor origen desde la columna de la base de datos (con fallback al contenido si hiciera falta)
+                    // Tomar el supervisor origen desde la columna de la base de datos (con fallback al contenido)
                     const supervisorOrigenVal = item.supervisor_origen || contenidoObj.supervisor_origen || '';
 
                     const deptoActual = 'intendencia';
