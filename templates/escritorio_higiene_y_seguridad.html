@@ -460,7 +460,6 @@
 
             const deptoOrigenNormalizado = 'higiene-y-seguridad';
             const deptoDestinoNormalizado = toKebabCase(destinoVisual);
-            const supervisorOrigenActual = (localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario') || "").trim();
 
             const dataContenido = {
                 texto: textoEscrito,
@@ -470,8 +469,7 @@
                 departamento: deptoDestinoNormalizado,
                 origen: deptoOrigenNormalizado,
                 turno: turno,
-                supervisor: supervisor,
-                supervisor_origen: supervisorOrigenActual
+                supervisor: supervisor
             };
             
             let sufijoSupervisor = supervisor ? `_${supervisor.replace(/\s+/g, '_')}` : '_todos';
@@ -486,8 +484,7 @@
                         departamento_destino: deptoDestinoNormalizado,
                         departamento_origen: deptoOrigenNormalizado,
                         turno_destino: turno === 'Todos' ? 'Todos' : turno,
-                        supervisor_destino: supervisor,
-                        supervisor_origen: supervisorOrigenActual
+                        supervisor_destino: supervisor
                     },
                     { onConflict: 'id_clave' }
                 );
@@ -592,16 +589,13 @@
                     const tipoBadge = esEnviado ? 'ENVIADO' : 'RECIBIDO';
                     const claseBadgeEstado = esEnviado ? 'badge-enviado' : 'badge-recibido';
 
-                    // Se asigna el supervisor origen que envió el comunicado (tanto si está en la columna de la tabla como en el contenido)
-                    const supervisorRemitenteFinal = item.supervisor_origen || contenidoObj.supervisor_origen || 'No especificado';
-
                     let infoDetalleCabecera = `
                         <div>
                             <span class="badge-estado ${claseBadgeEstado}">${tipoBadge}</span>
-                            <strong>Origen:</strong> ${remitenteDepto} (${supervisorRemitenteFinal}) &rarr; 
+                            <strong>Origen:</strong> ${remitenteDepto} &rarr; 
                             <strong>Destino:</strong> ${deptoDestinoValor} | 
                             <strong>Turno:</strong> ${turnoMsg} | 
-                            <strong>Supervisor Destino:</strong> ${supervisorMsg}
+                            <strong>Supervisor:</strong> ${supervisorMsg}
                         </div>`;
 
                     let archivosArr = [];
@@ -848,3 +842,4 @@
     </script>
 </body>
 </html>
+
