@@ -449,7 +449,6 @@
             const supervisorElem = document.getElementById('supervisor-destino-' + id);
             const supervisor = (supervisorElem && supervisorElem.value) ? supervisorElem.value : 'General (Todos)';
             const textoEscrito = document.getElementById('txt-' + id).value;
-            const supervisorActual = localStorage.getItem('usuario_nombre') || "Invitado";
 
             if (!textoEscrito.trim() && archivosMultiplesNovedades.length === 0) {
                 alert("Escriba un texto o adjunte algún archivo antes de guardar y enviar.");
@@ -471,7 +470,7 @@
                 origen: deptoOrigenNormalizado,
                 turno: turno,
                 supervisor: supervisor,
-                supervisor_origen: supervisorActual
+                supervisor_origen: supervisor // Aquí guardamos el supervisor destino para que se muestre correctamente al enviarlo
             };
             
             let sufijoSupervisor = supervisor ? `_${supervisor.replace(/\s+/g, '_')}` : '_todos';
@@ -487,7 +486,7 @@
                         departamento_origen: deptoOrigenNormalizado,
                         turno_destino: turno === 'Todos' ? 'Todos' : turno,
                         supervisor_destino: supervisor,
-                        supervisor_origen: supervisorActual
+                        supervisor_origen: supervisor // Guardamos el supervisor destino también en la columna correspondiente
                     },
                     { onConflict: 'id_clave' }
                 );
@@ -592,8 +591,10 @@
                     const tipoBadge = esEnviado ? 'ENVIADO' : 'RECIBIDO';
                     const claseBadgeEstado = esEnviado ? 'badge-enviado' : 'badge-recibido';
 
-                    // Tomamos el supervisor que envió de la columna supervisor_origen o del objeto contenido
-                    const supervisorOrigenFinal = item.supervisor_origen || contenidoObj.supervisor_origen || 'No especificado';
+                    // Si es enviado, mostramos el supervisor destino; si es recibido, tomamos la lógica de origen o contenido
+                    const supervisorOrigenFinal = esEnviado 
+                        ? (item.supervisor_destino || contenidoObj.supervisor || 'General (Todos)')
+                        : (item.supervisor_origen || contenidoObj.supervisor_origen || 'No especificado');
 
                     let infoDetalleCabecera = `
                         <div>
