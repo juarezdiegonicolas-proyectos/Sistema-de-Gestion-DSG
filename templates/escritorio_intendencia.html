@@ -1128,7 +1128,7 @@
                 departamento: deptoDestinoNormalizado,
                 origen: deptoOrigenNormalizado,
                 turno: turno,
-                supervisor: supervisor || 'General (Todos)'
+                supervisor: supervisor || 'Todos'
             };
 
             const sufijoSupervisor = supervisor ? `_${supervisor.replace(/\s+/g, '_')}` : '_todos';
@@ -1143,7 +1143,7 @@
                         departamento_destino: deptoDestinoNormalizado,
                         departamento_origen: deptoOrigenNormalizado,
                         turno_destino: turno === 'Todos' ? 'Todos' : turno,
-                        supervisor_destino: supervisor || 'General (Todos)'
+                        supervisor_destino: supervisor || 'Todos'
                     },
                     { onConflict: 'id_clave' }
                 );
@@ -1177,21 +1177,24 @@
                     const supervisorDestino = (item.supervisor_destino || "").trim().toLowerCase();
                     const origenMsg = (item.departamento_origen || (item.contenido && item.contenido.origen) || "").trim().toLowerCase();
 
-                    // No notificar mensajes propios enviados por Intendencia
+                    // 1. Si el mensaje fue enviado por este mismo departamento, se omite de notificaciones de entrada
                     if (origenMsg === 'intendencia') return false;
 
-                    const deptoValido = (deptoDestino === 'intendencia' || deptoDestino === 'todos' || deptoDestino === '');
-                    if (!deptoValido) return false;
+                    // 2. Validar departamento destino
+                    const esParaMiDepto = (deptoDestino === 'intendencia' || deptoDestino === 'todos' || deptoDestino === '');
+                    if (!esParaMiDepto) return false;
 
-                    if (deptoDestino === 'todos' || deptoDestino === '') {
-                        return true;
+                    // 3. Validar Supervisor de forma estricta
+                    if (supervisorDestino && supervisorDestino !== 'todos' && supervisorDestino !== 'general (todos)') {
+                        const supervisorLimpio = supervisorDestino.toLowerCase();
+                        if (!usuarioActual.includes(supervisorLimpio) && !supervisorLimpio.includes(usuarioActual)) {
+                            return false;
+                        }
                     }
 
+                    // 4. Validar Turno
                     const turnoValido = (!turnoDestino || turnoDestino === 'todos' || turnoDestino === turnoActual);
                     if (!turnoValido) return false;
-
-                    const supervisorValido = (!supervisorDestino || supervisorDestino === 'todos' || supervisorDestino.toLowerCase() === 'general (todos)' || supervisorDestino.toLowerCase().includes(usuarioActual));
-                    if (!supervisorValido) return false;
 
                     return true;
                 });
@@ -1245,16 +1248,51 @@
 
                 const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim().toLowerCase();
                 const usuarioActual = (localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario') || "invitado").trim().toLowerCase();
+                const deptoActual = "intendencia";
 
-                if (data.length > 0) {
+                // Aplicar lógica estricta de filtrado en el muro
+                const novedadesFiltradas = data.filter(item => {
+                    const deptoDestino = (item.departamento_destino || "").trim().toLowerCase();
+                    const turnoDestino = (item.turno_destino || "").trim().toLowerCase();
+                    const supervisorDestino = (item.supervisor_destino || "").trim().toLowerCase();
+                    const origenMsg = (item.departamento_origen || (item.contenido && item.contenido.origen) || "").trim().toLowerCase();
+
+                    // 1. Si el mensaje fue enviado por este mismo departamento, se muestra en su historial de enviados
+                    if (origenMsg === deptoActual) return true;
+
+                    // 2. Validar departamento destino
+                    const esParaMiDepto = (deptoDestino === deptoActual || deptoDestino === 'todos' || deptoDestino === '');
+                    if (!esParaMiDepto) return false;
+
+                    // 3. Validar Supervisor de forma estricta
+                    if (supervisorDestino && supervisorDestino !== 'todos' && supervisorDestino !== 'general (todos)') {
+                        const supervisorLimpio = supervisorDestino.toLowerCase();
+                        if (!usuarioActual.includes(supervisorLimpio) && !supervisorLimpio.includes(usuarioActual)) {
+                            return false;
+                        }
+                    }
+
+                    // 4. Validar Turno
+                    const turnoValido = (!turnoDestino || turnoDestino === 'todos' || turnoDestino === turnoActual);
+                    if (!turnoValido) return false;
+
+                    return true;
+                });
+
+                if (novedadesFiltradas.length > 0) {
                     const claveStoragePersonal = `dsg_novedades_ultimo_id_${usuarioActual}`;
-                    localStorage.setItem(claveStoragePersonal, data[0].id_clave || data[0].id);
+                    localStorage.setItem(claveStoragePersonal, novedadesFiltradas[0].id_clave || novedadesFiltradas[0].id);
                     const badge = document.getElementById('badge-novedades');
                     if (badge) badge.style.display = 'none';
                 }
 
+                if (novedadesFiltradas.length === 0) {
+                    contenedorNov.innerHTML = '<p style="color: #666; font-style: italic;">No hay novedades para mostrar en tu muro.</p>';
+                    return;
+                }
+
                 let html = '';
-                data.forEach(item => {
+                novedadesFiltradas.forEach(item => {
                     const contenidoObj = item.contenido || {};
                     const texto = contenidoObj.texto || 'Sin contenido';
                     let fecha = contenidoObj.fecha || item.created_at || 'Sin fecha';
@@ -1270,11 +1308,9 @@
                     }
 
                     const turnoMsg = item.turno_destino || contenidoObj.turno || 'Todos';
-                    const supervisorMsg = item.supervisor_destino || contenidoObj.supervisor || 'General (Todos)';
+                    const supervisorMsg = item.supervisor_destino || contenidoObj.supervisor || 'Todos';
                     const remitenteDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
                     const deptoDestinoValor = item.departamento_destino || contenidoObj.departamento || 'Todos';
-
-                    const deptoActual = 'intendencia';
 
                     let tipoBadge = '';
                     let claseMuroItem = '';
@@ -1343,8 +1379,8 @@
         }
 
         window.onload = async () => {
-            const nombre = localStorage.getItem('usuario_nombre') || "Invitado"; 
-            const turno = localStorage.getItem('usuario_turno') || "Mañana"; 
+            const nombre = localStorage.getItem('usuario_nombre'] || "Invitado"; 
+            const turno = localStorage.getItem('usuario_turno'] || "Mañana"; 
             const depto = "Intendencia";
             
             const elemSidebar = document.getElementById('nombre-supervisor-sidebar');
