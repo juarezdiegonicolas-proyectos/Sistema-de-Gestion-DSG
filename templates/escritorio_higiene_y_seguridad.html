@@ -449,6 +449,7 @@
             const supervisorElem = document.getElementById('supervisor-destino-' + id);
             const supervisor = (supervisorElem && supervisorElem.value) ? supervisorElem.value : 'General (Todos)';
             const textoEscrito = document.getElementById('txt-' + id).value;
+            const supervisorActual = localStorage.getItem('usuario_nombre') || "Invitado";
 
             if (!textoEscrito.trim() && archivosMultiplesNovedades.length === 0) {
                 alert("Escriba un texto o adjunte algún archivo antes de guardar y enviar.");
@@ -469,7 +470,8 @@
                 departamento: deptoDestinoNormalizado,
                 origen: deptoOrigenNormalizado,
                 turno: turno,
-                supervisor: supervisor
+                supervisor: supervisor,
+                supervisor_origen: supervisorActual
             };
             
             let sufijoSupervisor = supervisor ? `_${supervisor.replace(/\s+/g, '_')}` : '_todos';
@@ -484,7 +486,8 @@
                         departamento_destino: deptoDestinoNormalizado,
                         departamento_origen: deptoOrigenNormalizado,
                         turno_destino: turno === 'Todos' ? 'Todos' : turno,
-                        supervisor_destino: supervisor
+                        supervisor_destino: supervisor,
+                        supervisor_origen: supervisorActual
                     },
                     { onConflict: 'id_clave' }
                 );
@@ -589,13 +592,16 @@
                     const tipoBadge = esEnviado ? 'ENVIADO' : 'RECIBIDO';
                     const claseBadgeEstado = esEnviado ? 'badge-enviado' : 'badge-recibido';
 
+                    // Tomamos el supervisor que envió de la columna supervisor_origen o del objeto contenido
+                    const supervisorOrigenFinal = item.supervisor_origen || contenidoObj.supervisor_origen || 'No especificado';
+
                     let infoDetalleCabecera = `
                         <div>
                             <span class="badge-estado ${claseBadgeEstado}">${tipoBadge}</span>
                             <strong>Origen:</strong> ${remitenteDepto} &rarr; 
                             <strong>Destino:</strong> ${deptoDestinoValor} | 
                             <strong>Turno:</strong> ${turnoMsg} | 
-                            <strong>Supervisor:</strong> ${supervisorMsg}
+                            <strong>Supervisor:</strong> ${supervisorOrigenFinal}
                         </div>`;
 
                     let archivosArr = [];
