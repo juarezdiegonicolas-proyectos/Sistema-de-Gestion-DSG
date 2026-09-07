@@ -1115,9 +1115,9 @@
                 return;
             }
 
-            const deptoOrigenNormalizado = 'Intendencia';
-            const supervisorOrigenActual = (localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario') || "Supervisor Intendencia").trim();
+            const deptoOrigenNormalizado = 'intendencia';
             const deptoDestinoNormalizado = toKebabCase(destinoVisual);
+            const supervisorOrigenActual = (localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario') || "").trim();
 
             const dataPayload = {
                 texto: textoEscrito,
@@ -1125,7 +1125,6 @@
                 fecha: new Date().toLocaleString(),
                 departamento: deptoDestinoNormalizado,
                 origen: deptoOrigenNormalizado,
-                supervisor_origen: supervisorOrigenActual,
                 turno: turno,
                 supervisor: supervisor || 'General (Todos)'
             };
@@ -1142,7 +1141,8 @@
                         departamento_destino: deptoDestinoNormalizado,
                         departamento_origen: deptoOrigenNormalizado,
                         turno_destino: turno === 'Todos' ? 'Todos' : turno,
-                        supervisor_destino: supervisor || 'General (Todos)'
+                        supervisor_destino: supervisor || 'General (Todos)',
+                        supervisor_origen: supervisorOrigenActual
                     },
                     { onConflict: 'id_clave' }
                 );
@@ -1254,7 +1254,7 @@
                     const supervisorDestino = (item.supervisor_destino || (item.contenido && item.contenido.supervisor) || "").trim().toLowerCase();
 
                     // Si el mensaje fue enviado por el propio departamento de Intendencia, lo mostramos completo
-                    if (origenMsg.toLowerCase() === 'intendencia') return true;
+                    if (origenMsg === 'intendencia') return true;
 
                     // Validar departamento destino
                     const deptoValido = (deptoDestino === 'intendencia' || deptoDestino === 'todos' || deptoDestino === '');
@@ -1300,9 +1300,11 @@
 
                     const turnoMsg = item.turno_destino || contenidoObj.turno || 'Todos';
                     const supervisorMsg = item.supervisor_destino || contenidoObj.supervisor || 'General (Todos)';
-                    const remitenteDepto = (item.departamento_origen || contenidoObj.origen || '').trim();
-                    const supervisorOrigenVal = contenidoObj.supervisor_origen || '';
+                    const remitenteDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
                     const deptoDestinoValor = item.departamento_destino || contenidoObj.departamento || 'Todos';
+
+                    // Tomar el supervisor origen desde la columna de la base de datos (con fallback al contenido si hiciera falta)
+                    const supervisorOrigenVal = item.supervisor_origen || contenidoObj.supervisor_origen || '';
 
                     const deptoActual = 'intendencia';
 
@@ -1310,11 +1312,11 @@
                     let claseMuroItem = '';
                     let claseBadgeEstado = '';
 
-                    if (remitenteDepto.toLowerCase() === deptoActual) {
+                    if (remitenteDepto === deptoActual) {
                         tipoBadge = 'ENVIADO';
                         claseMuroItem = 'enviado';
                         claseBadgeEstado = 'badge-enviado';
-                    } else if (deptoDestinoValor.toLowerCase() === deptoActual || deptoDestinoValor === 'todos' || deptoDestinoValor === '') {
+                    } else if (deptoDestinoValor === deptoActual || deptoDestinoValor === 'todos' || deptoDestinoValor === '') {
                         tipoBadge = 'RECIBIDO';
                         claseMuroItem = 'recibido';
                         claseBadgeEstado = 'badge-recibido';
@@ -1324,12 +1326,18 @@
                         claseBadgeEstado = 'badge-terceros';
                     }
 
+                    // Lógica solicitada: Si es RECIBIDO, en la etiqueta de supervisor se muestra quién lo envió (supervisor_origen)
+                    let supervisorTextoMostrar = supervisorMsg;
+                    if (tipoBadge === 'RECIBIDO' && supervisorOrigenVal) {
+                        supervisorTextoMostrar = supervisorOrigenVal.toUpperCase();
+                    }
+
                     let infoDetalleCabecera = `
                         <div>
-                            <span class="badge-estado ${claseBadgeEstado}">${tipoBadge}</span> <strong>Origen:</strong> ${remitenteDepto || 'DSG'} ${supervisorOrigenVal ? `(${supervisorOrigenVal})` : ''} &rarr; 
+                            <span class="badge-estado ${claseBadgeEstado}">${tipoBadge}</span> <strong>Origen:</strong> ${remitenteDepto || 'DSG'} &rarr; 
                             <strong>Destino:</strong> ${deptoDestinoValor} | 
                             <strong>Turno:</strong> ${turnoMsg} | 
-                            <strong>Supervisor:</strong> ${supervisorMsg}
+                            <strong>Supervisor:</strong> ${supervisorTextoMostrar}
                         </div>`;
 
                     let archivosArr = [];
