@@ -1117,6 +1117,7 @@
 
             const deptoOrigenNormalizado = 'intendencia';
             const deptoDestinoNormalizado = toKebabCase(destinoVisual);
+            const supervisorRemitenteActual = (localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario') || "Intendencia").trim();
 
             const dataPayload = {
                 texto: textoEscrito,
@@ -1140,7 +1141,8 @@
                         departamento_destino: deptoDestinoNormalizado,
                         departamento_origen: deptoOrigenNormalizado,
                         turno_destino: turno === 'Todos' ? 'Todos' : turno,
-                        supervisor_destino: supervisor || 'General (Todos)'
+                        supervisor_destino: supervisor || 'General (Todos)',
+                        supervisor_origen: supervisorRemitenteActual
                     },
                     { onConflict: 'id_clave' }
                 );
@@ -1321,12 +1323,22 @@
                         claseBadgeEstado = 'badge-terceros';
                     }
 
+                    // Determinar qué supervisor mostrar en la etiqueta de la tarjeta
+                    let supervisorMostrar = supervisorMsg;
+                    if (tipoBadge === 'RECIBIDO') {
+                        // Si es recibido, mostrar el supervisor de origen (o un fallback si no está guardado)
+                        supervisorMostrar = item.supervisor_origen || contenidoObj.supervisor_origen || 'Supervisor Externo';
+                    } else {
+                        // Si es enviado, mostrar el supervisor destino o general según corresponda
+                        supervisorMostrar = supervisorMsg;
+                    }
+
                     let infoDetalleCabecera = `
                         <div>
                             <span class="badge-estado ${claseBadgeEstado}">${tipoBadge}</span> <strong>Origen:</strong> ${remitenteDepto || 'DSG'} &rarr; 
                             <strong>Destino:</strong> ${deptoDestinoValor} | 
                             <strong>Turno:</strong> ${turnoMsg} | 
-                            <strong>Supervisor:</strong> ${supervisorMsg}
+                            <strong>Supervisor:</strong> ${supervisorMostrar}
                         </div>`;
 
                     let archivosArr = [];
