@@ -242,18 +242,18 @@
             // Variable global para almacenar el nombre del Administrador logueado
             let nombreAgenteLogueado = "Administrador";
 
-            // Obtener perfil del usuario logueado al iniciar (mapeado exactamente como el código provisto)
+            // Obtener perfil del usuario logueado al iniciar (mapeando correctamente usuario_nombre)
             async function obtenerPerfilLogueado() {
                 try {
                     const { data: { session } } = await db.auth.getSession();
                     if (session && session.user) {
                         const { data, error } = await db
                             .from('usuarios')
-                            .select('nombre_completo')
+                            .select('usuario_nombre')
                             .eq('id', session.user.id)
                             .maybeSingle();
-                        if (data && data.nombre_completo) {
-                            nombreAgenteLogueado = data.nombre_completo;
+                        if (data && data.usuario_nombre) {
+                            nombreAgenteLogueado = data.usuario_nombre;
                             const elSidebar = document.getElementById('nombre-supervisor-sidebar');
                             if (elSidebar) elSidebar.innerText = nombreAgenteLogueado;
                         }
@@ -335,13 +335,13 @@
                     try {
                         const { data, error } = await db
                             .from('usuarios')
-                            .select('nombre_completo')
+                            .select('usuario_nombre')
                             .eq('departamento', deptoVal);
 
                         if (error) throw error;
 
                         selectSup.innerHTML = '<option value="">-- Todos los supervisores --</option>';
-                        const unicos = [...new Set((data || []).map(item => item.nombre_completo))].filter(Boolean).sort();
+                        const unicos = [...new Set((data || []).map(item => item.usuario_nombre))].filter(Boolean).sort();
 
                         unicos.forEach(nombre => {
                             const opt = document.createElement('option');
@@ -868,12 +868,12 @@
                 if (legajoOperador) {
                     const { data: userData, error: userError } = await db
                         .from('usuarios')
-                        .select('nombre_completo')
+                        .select('usuario_nombre')
                         .eq('legajo', legajoOperador)
                         .maybeSingle();
 
-                    if (!userError && userData && userData.nombre_completo) {
-                        nombreSupervisor = userData.nombre_completo;
+                    if (!userError && userData && userData.usuario_nombre) {
+                        nombreSupervisor = userData.usuario_nombre;
                     } else {
                         nombreSupervisor = `Legajo: ${legajoOperador}`;
                     }
