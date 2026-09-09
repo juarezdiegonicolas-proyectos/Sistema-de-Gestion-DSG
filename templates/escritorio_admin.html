@@ -734,10 +734,9 @@
 
                     let infoDetalleCabecera = `
                         <div>
-                            <span class="badge-estado ${claseBadgeEstado}">${tipoBadge}</span> ${remitenteDepto} &rarr; 
+                            <span class="badge-estado ${claseBadgeEstado}">${tipoBadge}</span> <strong>Supervisor Origen:</strong> ${contenidoObj.supervisor || 'General (Todos)'} | <strong>Supervisor Destino:</strong> ${supervisorMsg} | ${remitenteDepto} &rarr; 
                             <strong>Destino:</strong> ${deptoDestinoValor} | 
-                            <strong>Turno:</strong> ${turnoMsg} | 
-                            <strong>Supervisor:</strong> ${supervisorMsg}
+                            <strong>Turno:</strong> ${turnoMsg}
                         </div>`;
 
                     let archivosArr = [];
