@@ -71,14 +71,14 @@
         .muro-item.recibido { border-left-color: #17a2b8; }
         .muro-item.enviado { border-left-color: #28a745; }
 
-        .muro-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 10px; }
-        .novedad-meta { font-size: 0.85rem; color: #495057; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .muro-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; gap: 15px; }
+        .novedad-meta { font-size: 0.85rem; color: #495057; display: flex; flex-direction: column; gap: 4px; width: 100%; }
         .novedad-texto { font-size: 0.95rem; color: #212529; white-space: pre-wrap; word-break: break-word; line-height: 1.5; margin-top: 8px; font-family: inherit; }
         .muro-adjuntos { margin-top: 10px; font-size: 13px; }
         .muro-adjuntos a { display: inline-block; margin-right: 10px; color: #1a3a5f; text-decoration: none; font-weight: 500; }
         .muro-adjuntos a:hover { text-decoration: underline; }
 
-        .badge-estado { font-size: 0.75rem; padding: 4px 8px; border-radius: 4px; font-weight: bold; color: white; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+        .badge-estado { font-size: 0.75rem; padding: 4px 8px; border-radius: 4px; font-weight: bold; color: white; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; display: inline-block; margin-bottom: 2px; }
         .badge-recibido { background-color: #17a2b8; }
         .badge-enviado { background-color: #28a745; }
 
@@ -592,7 +592,7 @@
                     const claseBadgeEstado = esEnviado ? 'badge-enviado' : 'badge-recibido';
 
                     const supervisorOrigenFinal = item.supervisor_origen || contenidoObj.supervisor_origen || 'No especificado';
-                    const supervisorDestinoFinal = item.supervisor_destino || contenidoObj.supervisor || 'General (Todos)';
+                    const supervisorDestinoFinal = item.supervisor_destino || contenidoObj.supervisor || 'No especificado';
 
                     let infoDetalleCabecera = `
                         <div>
