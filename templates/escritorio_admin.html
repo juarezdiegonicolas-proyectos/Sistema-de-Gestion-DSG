@@ -240,13 +240,9 @@
             const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
             // Variable global para almacenar el nombre del Administrador logueado
-            let nombreAgenteLogueado = localStorage.getItem('nombre_completo') || localStorage.getItem('nombre') || localStorage.getItem('usuario') || "Administrador";
+            let nombreAgenteLogueado = "Administrador";
 
-            // Mostrar inmediatamente en la interfaz el nombre del localStorage
-            const elSidebarInit = document.getElementById('nombre-supervisor-sidebar');
-            if (elSidebarInit) elSidebarInit.innerText = nombreAgenteLogueado;
-
-            // Obtener perfil del usuario logueado al iniciar
+            // Obtener perfil del usuario logueado al iniciar (mapeado exactamente como el código provisto)
             async function obtenerPerfilLogueado() {
                 try {
                     const { data: { session } } = await db.auth.getSession();
