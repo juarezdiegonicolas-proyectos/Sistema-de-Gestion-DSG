@@ -55,7 +55,7 @@
         .header-logos { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
         .header-logos img { height: 110px; width: auto; object-fit: contain; }
 
-        /* Estilos específicos para sección Novedades y Muro (Alineados con Intendencia) */
+        /* Estilos específicos para sección Novedades y Muro (Alineados con admin) */
         .filtros-historicos { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 20px; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #ddd; }
         .input-select { padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; font-size: 13px; background: white; cursor: pointer; }
         .btn-adjuntar { background: #17a2b8; color: white; }
@@ -71,14 +71,14 @@
         .muro-item.recibido { border-left-color: #17a2b8; }
         .muro-item.enviado { border-left-color: #28a745; }
 
-        .muro-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 10px; }
-        .novedad-meta { font-size: 0.85rem; color: #495057; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .muro-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; flex-wrap: wrap; gap: 10px; }
+        .novedad-meta { font-size: 0.85rem; color: #495057; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; line-height: 1.8; }
         .novedad-texto { font-size: 0.95rem; color: #212529; white-space: pre-wrap; word-break: break-word; line-height: 1.5; margin-top: 8px; font-family: inherit; }
         .muro-adjuntos { margin-top: 10px; font-size: 13px; }
         .muro-adjuntos a { display: inline-block; margin-right: 10px; color: #1a3a5f; text-decoration: none; font-weight: 500; }
         .muro-adjuntos a:hover { text-decoration: underline; }
 
-        .badge-estado { font-size: 0.75rem; padding: 4px 8px; border-radius: 4px; font-weight: bold; color: white; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+        .badge-estado { font-size: 0.75rem; padding: 4px 8px; border-radius: 4px; font-weight: bold; color: white; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; display: inline-block; vertical-align: middle; margin-right: 4px; }
         .badge-recibido { background-color: #17a2b8; }
         .badge-enviado { background-color: #28a745; }
 
@@ -657,7 +657,7 @@
                                 <div class="novedad-meta">
                                     ${infoDetalleCabecera}
                                 </div>
-                                <div style="font-size: 0.85rem; color: #6c757d; white-space: nowrap;">
+                                <div style="font-size: 0.85rem; color: #6c757d; white-space: nowrap; padding-top: 2px;">
                                     <i class="far fa-clock"></i> ${fecha}
                                 </div>
                             </div>
@@ -848,3 +848,4 @@
     </script>
 </body>
 </html>
+
