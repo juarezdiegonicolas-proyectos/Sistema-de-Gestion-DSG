@@ -1309,8 +1309,9 @@
                     const remitenteDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
                     const deptoDestinoValor = item.departamento_destino || contenidoObj.departamento || 'Todos';
 
-                    // Tomar el supervisor origen desde la columna de la base de datos (con fallback al contenido)
-                    const supervisorOrigenVal = item.supervisor_origen || contenidoObj.supervisor_origen || '';
+                    // Tomar el supervisor origen y destino desde las columnas de la base de datos (con fallback al contenido)
+                    const supervisorOrigenVal = item.supervisor_origen || contenidoObj.supervisor_origen || 'General';
+                    const supervisorDestinoVal = item.supervisor_destino || contenidoObj.supervisor || 'General (Todos)';
 
                     const deptoActual = 'intendencia';
 
@@ -1332,18 +1333,13 @@
                         claseBadgeEstado = 'badge-terceros';
                     }
 
-                    // Lógica solicitada: Si es RECIBIDO, en la etiqueta de supervisor se muestra quién lo envió (supervisor_origen)
-                    let supervisorTextoMostrar = supervisorMsg;
-                    if (tipoBadge === 'RECIBIDO' && supervisorOrigenVal) {
-                        supervisorTextoMostrar = supervisorOrigenVal.toUpperCase();
-                    }
-
                     let infoDetalleCabecera = `
                         <div>
                             <span class="badge-estado ${claseBadgeEstado}">${tipoBadge}</span> <strong>Origen:</strong> ${remitenteDepto || 'DSG'} &rarr; 
                             <strong>Destino:</strong> ${deptoDestinoValor} | 
                             <strong>Turno:</strong> ${turnoMsg} | 
-                            <strong>Supervisor:</strong> ${supervisorTextoMostrar}
+                            <strong>Supervisor Origen:</strong> ${supervisorOrigenVal.toUpperCase()} | 
+                            <strong>Supervisor Destino:</strong> ${supervisorDestinoVal.toUpperCase()}
                         </div>`;
 
                     let archivosArr = [];
