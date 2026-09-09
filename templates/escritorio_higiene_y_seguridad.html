@@ -591,10 +591,8 @@
                     const tipoBadge = esEnviado ? 'ENVIADO' : 'RECIBIDO';
                     const claseBadgeEstado = esEnviado ? 'badge-enviado' : 'badge-recibido';
 
-                    // Si es enviado, supervisor_origen es el usuario actual; si es recibido, viene de la columna/contenido correspondiente
-                    const supervisorOrigenFinal = esEnviado 
-                        ? (item.supervisor_origen || contenidoObj.supervisor_origen || 'No especificado')
-                        : (item.supervisor_origen || contenidoObj.supervisor_origen || 'No especificado');
+                    const supervisorOrigenFinal = item.supervisor_origen || contenidoObj.supervisor_origen || 'No especificado';
+                    const supervisorDestinoFinal = item.supervisor_destino || contenidoObj.supervisor || 'General (Todos)';
 
                     let infoDetalleCabecera = `
                         <div>
@@ -602,7 +600,8 @@
                             <strong>Origen:</strong> ${remitenteDepto} &rarr; 
                             <strong>Destino:</strong> ${deptoDestinoValor} | 
                             <strong>Turno:</strong> ${turnoMsg} | 
-                            <strong>Supervisor Origen:</strong> ${supervisorOrigenFinal}
+                            <strong>Supervisor Origen:</strong> ${supervisorOrigenFinal} | 
+                            <strong>Supervisor Destino:</strong> ${supervisorDestinoFinal}
                         </div>`;
 
                     let archivosArr = [];
