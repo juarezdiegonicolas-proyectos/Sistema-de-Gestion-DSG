@@ -119,7 +119,7 @@
         .box-A { background-color: #dc3545; }
         .box-L { background-color: #ffc107; }
 
-        /* Estilos optimizados y completos para el muro de historial en novedades con diseño de supervisor origen y supervisor destino */
+        /* Estilos optimizados y completos para el muro de historial en novedades */
         .historial-muro-container { margin-top: 30px; border-top: 2px solid #dee2e6; padding-top: 20px; }
         .historial-muro-titulo { font-size: 16px; font-weight: bold; color: #1a3a5f; margin-bottom: 15px; }
 
@@ -574,7 +574,7 @@
                 </select>
                 <select id="est-mes" class="input-select">
                     <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
-                    <option value="4">Abrií</option><option value="5">Mayo</option><option value="6">Junio</option>
+                    <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
                     <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
                     <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
                 </select>
@@ -707,10 +707,7 @@
                     }
 
                     const turnoMsg = item.turno_destino || contenidoObj.turno || 'Todos';
-                    const supervisorDestinoMsg = item.supervisor_destino || contenidoObj.supervisor || 'General (Todos)';
-                    
-                    // Extracción de Supervisor Origen y Departamento Origen
-                    const supervisorOrigenMsg = contenidoObj.supervisor_origen || item.supervisor_origen || 'Administrador';
+                    const supervisorMsg = item.supervisor_destino || contenidoObj.supervisor || 'General (Todos)';
                     const remitenteDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
                     const deptoDestinoValor = item.departamento_destino || contenidoObj.departamento || 'Todos';
 
@@ -735,13 +732,12 @@
                         claseBadgeEstado = 'badge-terceros';
                     }
 
-                    // Diseño actualizado con Supervisor Origen y Supervisor Destino
                     let infoDetalleCabecera = `
                         <div>
-                            <span class="badge-estado ${claseBadgeEstado}">${tipoBadge}</span> 
-                            <strong>Origen:</strong> ${remitenteDepto} (Sup: ${supervisorOrigenMsg}) &rarr; 
-                            <strong>Destino:</strong> ${deptoDestinoValor} (Sup: ${supervisorDestinoMsg}) | 
-                            <strong>Turno:</strong> ${turnoMsg}
+                            <span class="badge-estado ${claseBadgeEstado}">${tipoBadge}</span> ${remitenteDepto} &rarr; 
+                            <strong>Destino:</strong> ${deptoDestinoValor} | 
+                            <strong>Turno:</strong> ${turnoMsg} | 
+                            <strong>Supervisor:</strong> ${supervisorMsg}
                         </div>`;
 
                     let archivosArr = [];
@@ -1005,7 +1001,6 @@
             // Normalización estricta idéntica para origen y destino
             const deptoOrigenNormalizado = 'direccion-servicios-generales';
             const deptoDestinoNormalizado = toKebabCase(destinoVisual);
-            const supervisorOrigenStr = 'Administrador';
 
             const data = {
                 texto: textoEscrito,
@@ -1015,15 +1010,14 @@
                 departamento: deptoDestinoNormalizado,
                 origen: deptoOrigenNormalizado,
                 turno: turno,
-                supervisor: supervisor || 'General (Todos)',
-                supervisor_origen: supervisorOrigenStr
+                supervisor: supervisor || 'General (Todos)'
             };
 
             let sufijoSupervisor = supervisor ? `_${supervisor.replace(/\s+/g, '_')}` : '_todos';
             const prefijoClave = id === 'novedades' ? 'comunicado_novedades' : 'comunicado_memos';
             const claveUnica = `${prefijoClave}_${deptoDestinoNormalizado}_${turno}${sufijoSupervisor}_${Date.now()}`;
             
-            // Inserción en Supabase garantizando el uso estricto de kebab-case en ambas columnas y guardando supervisor origen
+            // Inserción en Supabase garantizando el uso estricto de kebab-case en ambas columnas
             const { error } = await db
                 .from('comunicados_memos')
                 .upsert(
@@ -1033,8 +1027,7 @@
                         departamento_destino: deptoDestinoNormalizado,
                         departamento_origen: deptoOrigenNormalizado,
                         turno_destino: turno === 'Todos' ? 'Todos' : turno,
-                        supervisor_destino: supervisor || 'General (Todos)',
-                        supervisor_origen: supervisorOrigenStr
+                        supervisor_destino: supervisor || 'General (Todos)'
                     },
                     { onConflict: 'id_clave' }
                 );
@@ -1476,5 +1469,6 @@
     </script>
 </body>
 </html>
+
 
 
