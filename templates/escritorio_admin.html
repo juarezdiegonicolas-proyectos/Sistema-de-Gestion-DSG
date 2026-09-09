@@ -710,6 +710,9 @@
                     const supervisorMsg = item.supervisor_destino || contenidoObj.supervisor || 'General (Todos)';
                     const remitenteDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
                     const deptoDestinoValor = item.departamento_destino || contenidoObj.departamento || 'Todos';
+                    
+                    const supervisorOrigenVal = item.supervisor_origen || contenidoObj.supervisor_origen || '';
+                    const supervisorDestinoVal = item.supervisor_destino || contenidoObj.supervisor_destino || supervisorMsg;
 
                     // Lógica para el Administrador (Dirección Servicios Generales)
                     const deptoAdminActual = 'direccion-servicios-generales';
@@ -734,10 +737,10 @@
 
                     let infoDetalleCabecera = `
                         <div>
-                            <span class="badge-estado ${claseBadgeEstado}">${tipoBadge}</span> ${remitenteDepto} &rarr; 
-                            <strong>Destino:</strong> ${deptoDestinoValor} | 
-                            <strong>Turno:</strong> ${turnoMsg} | 
-                            <strong>Supervisor:</strong> ${supervisorMsg}
+                            <span class="badge-estado ${claseBadgeEstado}">${tipoBadge}</span> 
+                            <strong>Origen:</strong> ${remitenteDepto}${supervisorOrigenVal ? ' (' + supervisorOrigenVal + ')' : ''} &rarr; 
+                            <strong>Destino:</strong> ${deptoDestinoValor}${supervisorDestinoVal && supervisorDestinoVal !== 'General (Todos)' ? ' (' + supervisorDestinoVal + ')' : ''} | 
+                            <strong>Turno:</strong> ${turnoMsg}
                         </div>`;
 
                     let archivosArr = [];
@@ -1001,6 +1004,8 @@
             // Normalización estricta idéntica para origen y destino
             const deptoOrigenNormalizado = 'direccion-servicios-generales';
             const deptoDestinoNormalizado = toKebabCase(destinoVisual);
+            const supervisorOrigenVal = 'Administrador'; // O el supervisor actual origen
+            const supervisorDestinoVal = supervisor || 'General (Todos)';
 
             const data = {
                 texto: textoEscrito,
@@ -1010,7 +1015,9 @@
                 departamento: deptoDestinoNormalizado,
                 origen: deptoOrigenNormalizado,
                 turno: turno,
-                supervisor: supervisor || 'General (Todos)'
+                supervisor: supervisorDestinoVal,
+                supervisor_origen: supervisorOrigenVal,
+                supervisor_destino: supervisorDestinoVal
             };
 
             let sufijoSupervisor = supervisor ? `_${supervisor.replace(/\s+/g, '_')}` : '_todos';
@@ -1027,7 +1034,8 @@
                         departamento_destino: deptoDestinoNormalizado,
                         departamento_origen: deptoOrigenNormalizado,
                         turno_destino: turno === 'Todos' ? 'Todos' : turno,
-                        supervisor_destino: supervisor || 'General (Todos)'
+                        supervisor_destino: supervisorDestinoVal,
+                        supervisor_origen: supervisorOrigenVal
                     },
                     { onConflict: 'id_clave' }
                 );
@@ -1469,4 +1477,3 @@
     </script>
 </body>
 </html>
-
