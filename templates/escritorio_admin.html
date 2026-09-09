@@ -209,7 +209,7 @@
 <body>
     <div class="sidebar">
         <div class="bienvenida-box">
-            <h3>Bienvenido Agente:</h3>
+            <h3 id="titulo-bienvenida-sidebar">Bienvenido Agente:</h3>
             <p id="nombre-supervisor-sidebar">Administrador</p>
         </div>
 
@@ -245,6 +245,13 @@
             // Obtener perfil del usuario logueado al iniciar
             async function obtenerPerfilLogueado() {
                 try {
+                    const nombreLocal = localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario') || localStorage.getItem('usuario_usuario');
+                    if (nombreLocal) {
+                        nombreAgenteLogueado = nombreLocal.trim();
+                        const elSidebar = document.getElementById('nombre-supervisor-sidebar');
+                        if (elSidebar) elSidebar.innerText = nombreAgenteLogueado;
+                    }
+
                     const { data: { session } } = await db.auth.getSession();
                     if (session && session.user) {
                         const { data, error } = await db
@@ -257,6 +264,11 @@
                             const elSidebar = document.getElementById('nombre-supervisor-sidebar');
                             if (elSidebar) elSidebar.innerText = nombreAgenteLogueado;
                         }
+                    }
+
+                    const tituloBienvenidaSidebar = document.getElementById('titulo-bienvenida-sidebar');
+                    if (tituloBienvenidaSidebar) {
+                        tituloBienvenidaSidebar.innerText = 'Bienvenido Usuario:';
                     }
                 } catch(e) {
                     console.error("Error obteniendo perfil logueado:", e);
@@ -1499,7 +1511,6 @@
     </script>
 </body>
 </html>
-
 
 
 
