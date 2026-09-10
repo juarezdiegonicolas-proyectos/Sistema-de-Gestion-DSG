@@ -209,7 +209,7 @@
 <body>
     <div class="sidebar">
         <div class="bienvenida-box">
-            <h3>Bienvenido Agente:</h3>
+            <h3 id="titulo-bienvenida-box">Bienvenido Agente:</h3>
             <p id="nombre-supervisor-sidebar">Cargando...</p>
         </div>
 
@@ -243,7 +243,7 @@
             let nombreAgenteLogueado = "Administrador";
             let departamentoAgenteLogueado = "direccion-servicios-generales";
 
-            // Obtener perfil completo del usuario logueado al iniciar (nombre y departamento real) y actualizar la bienvenida del sidebar
+            // Obtener perfil completo del usuario logueado al iniciar (nombre y departamento real)
             async function obtenerPerfilLogueado() {
                 try {
                     const { data: { session } } = await db.auth.getSession();
@@ -256,14 +256,12 @@
                         if (data) {
                             if (data.nombre_completo) {
                                 nombreAgenteLogueado = data.nombre_completo;
+                                actualizarTituloBienvenida(nombreAgenteLogueado);
+                                const elSidebar = document.getElementById('nombre-supervisor-sidebar');
+                                if (elSidebar) elSidebar.innerText = nombreAgenteLogueado;
                             }
                             if (data.departamento) {
                                 departamentoAgenteLogueado = data.departamento.trim().toLowerCase();
-                            }
-                            const elSidebar = document.getElementById('nombre-supervisor-sidebar');
-                            if (elSidebar) {
-                                const deptoLargo = obtenerNombreDepartamentoLargo(departamentoAgenteLogueado);
-                                elSidebar.innerText = nombreAgenteLogueado + (deptoLargo ? ` - ${deptoLargo}` : '');
                             }
                         }
                     }
@@ -271,23 +269,34 @@
                     // Fallback directo por localStorage o si no hay sesión activa estricta en Supabase client SDK pero sí en token local
                     if (nombreAgenteLogueado === "Administrador") {
                         const storedName = localStorage.getItem('nombre_completo') || localStorage.getItem('usuario_nombre');
-                        const storedDepto = localStorage.getItem('departamento');
                         if (storedName) {
                             nombreAgenteLogueado = storedName;
-                        }
-                        if (storedDepto) {
-                            departamentoAgenteLogueado = storedDepto.trim().toLowerCase();
-                        }
-                        const elSidebar = document.getElementById('nombre-supervisor-sidebar');
-                        if (elSidebar) {
-                            const deptoLargo = obtenerNombreDepartamentoLargo(departamentoAgenteLogueado);
-                            elSidebar.innerText = nombreAgenteLogueado + (deptoLargo ? ` - ${deptoLargo}` : '');
+                            actualizarTituloBienvenida(nombreAgenteLogueado);
+                            const elSidebar = document.getElementById('nombre-supervisor-sidebar');
+                            if (elSidebar) elSidebar.innerText = nombreAgenteLogueado;
+                        } else {
+                            actualizarTituloBienvenida(nombreAgenteLogueado);
                         }
                     }
                 } catch(e) {
                     console.error("Error obteniendo perfil logueado:", e);
+                    actualizarTituloBienvenida(nombreAgenteLogueado);
                 }
             }
+
+            function actualizarTituloBienvenida(nombre) {
+                const h3Box = document.getElementById('titulo-bienvenida-box');
+                if (!h3Box) return;
+                const nombreUpper = (nombre || "").trim().toUpperCase();
+                if (nombreUpper === "DIAZ ISABEL") {
+                    h3Box.innerText = "Bienvenido/a Sra. Directora";
+                } else if (nombreUpper === "MAIOLO ADRIAN") {
+                    h3Box.innerText = "Bienvenido Sr. Jefe de Departamento.";
+                } else {
+                    h3Box.innerText = "Bienvenido Agente:";
+                }
+            }
+
             obtenerPerfilLogueado();
 
             // Función universal de normalización estricta a kebab-case
@@ -1525,5 +1534,6 @@
     </script>
 </body>
 </html>
+
 
 
