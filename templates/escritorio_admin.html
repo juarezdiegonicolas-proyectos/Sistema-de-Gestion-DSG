@@ -257,7 +257,15 @@
                             if (data.nombre_completo) {
                                 nombreAgenteLogueado = data.nombre_completo;
                                 const elSidebar = document.getElementById('nombre-supervisor-sidebar');
-                                if (elSidebar) elSidebar.innerText = nombreAgenteLogueado;
+                                if (elSidebar) {
+                                    if (nombreAgenteLogueado === "GARRIDO JAVIER") {
+                                        elSidebar.innerText = `¡Bienvenido Jefe! ${nombreAgenteLogueado}`;
+                                    } else if (nombreAgenteLogueado === "GARCIA ALAN") {
+                                        elSidebar.innerText = `Hola Crack, ${nombreAgenteLogueado}`;
+                                    } else {
+                                        elSidebar.innerText = nombreAgenteLogueado;
+                                    }
+                                }
                             }
                             if (data.departamento) {
                                 departamentoAgenteLogueado = data.departamento.trim().toLowerCase();
@@ -271,7 +279,15 @@
                         if (storedName) {
                             nombreAgenteLogueado = storedName;
                             const elSidebar = document.getElementById('nombre-supervisor-sidebar');
-                            if (elSidebar) elSidebar.innerText = nombreAgenteLogueado;
+                            if (elSidebar) {
+                                if (nombreAgenteLogueado === "GARRIDO JAVIER") {
+                                    elSidebar.innerText = `¡Bienvenido Jefe! ${nombreAgenteLogueado}`;
+                                } else if (nombreAgenteLogueado === "GARCIA ALAN") {
+                                    elSidebar.innerText = `Hola Crack, ${nombreAgenteLogueado}`;
+                                } else {
+                                    elSidebar.innerText = nombreAgenteLogueado;
+                                }
+                            }
                         }
                     }
                 } catch(e) {
