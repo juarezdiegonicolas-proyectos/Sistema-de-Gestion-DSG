@@ -209,7 +209,7 @@
 <body>
     <div class="sidebar">
         <div class="bienvenida-box">
-            <h3>Bienvenido Agente:</h3>
+            <h3 id="titulo-bienvenida-agente">Bienvenido Agente:</h3>
             <p id="nombre-supervisor-sidebar">Cargando...</p>
         </div>
 
@@ -243,30 +243,18 @@
             let nombreAgenteLogueado = "Administrador";
             let departamentoAgenteLogueado = "direccion-servicios-generales";
 
-            // Obtener perfil completo del usuario logueado al iniciar (nombre y departamento real)
+            // Obtener perfil completo del usuario logueado al iniciar (nombre, departamento y lógica de bienvenida personalizada)
             async function obtenerPerfilLogueado() {
                 try {
                     const { data: { session } } = await db.auth.getSession();
                     if (session && session.user) {
                         const { data, error } = await db
                             .from('usuarios')
-                            .select('nombre_completo, departamento')
+                            .select('nombre_completo, departamento, email')
                             .eq('id', session.user.id)
                             .maybeSingle();
                         if (data) {
-                            if (data.nombre_completo) {
-                                nombreAgenteLogueado = data.nombre_completo;
-                                const elSidebar = document.getElementById('nombre-supervisor-sidebar');
-                                if (elSidebar) {
-                                    if (nombreAgenteLogueado === "GARRIDO JAVIER") {
-                                        elSidebar.innerText = `¡Bienvenido Jefe! ${nombreAgenteLogueado}`;
-                                    } else if (nombreAgenteLogueado === "GARCIA ALAN") {
-                                        elSidebar.innerText = `Hola Crack, ${nombreAgenteLogueado}`;
-                                    } else {
-                                        elSidebar.innerText = nombreAgenteLogueado;
-                                    }
-                                }
-                            }
+                            aplicarLogicaBienvenida(data);
                             if (data.departamento) {
                                 departamentoAgenteLogueado = data.departamento.trim().toLowerCase();
                             }
@@ -276,24 +264,45 @@
                     // Fallback directo por localStorage o si no hay sesión activa estricta en Supabase client SDK pero sí en token local
                     if (nombreAgenteLogueado === "Administrador") {
                         const storedName = localStorage.getItem('nombre_completo') || localStorage.getItem('usuario_nombre');
-                        if (storedName) {
-                            nombreAgenteLogueado = storedName;
-                            const elSidebar = document.getElementById('nombre-supervisor-sidebar');
-                            if (elSidebar) {
-                                if (nombreAgenteLogueado === "GARRIDO JAVIER") {
-                                    elSidebar.innerText = `¡Bienvenido Jefe! ${nombreAgenteLogueado}`;
-                                } else if (nombreAgenteLogueado === "GARCIA ALAN") {
-                                    elSidebar.innerText = `Hola Crack, ${nombreAgenteLogueado}`;
-                                } else {
-                                    elSidebar.innerText = nombreAgenteLogueado;
-                                }
-                            }
+                        const storedEmail = localStorage.getItem('email') || localStorage.getItem('usuario_email');
+                        if (storedName || storedEmail) {
+                            aplicarLogicaBienvenida({ nombre_completo: storedName, email: storedEmail });
                         }
                     }
                 } catch(e) {
                     console.error("Error obteniendo perfil logueado:", e);
                 }
             }
+
+            // Lógica específica para modificar el mensaje de bienvenida y el título superior del sidebar según los dos usuarios indicados
+            function aplicarLogicaBienvenida(userData) {
+                const emailUsuario = (userData.email || '').trim().toLowerCase();
+                const nombreUsuario = (userData.nombre_completo || '').trim();
+                
+                const elSidebar = document.getElementById('nombre-supervisor-sidebar');
+                const elTituloBienvenida = document.getElementById('titulo-bienvenida-agente');
+
+                // Definir aquí los correos o identificadores de los dos usuarios específicos
+                // (Reemplazar con los emails reales de dichos usuarios o sus nombres exactos)
+                const USER_1_EMAIL = "usuario1@hospital.com"; 
+                const USER_2_EMAIL = "usuario2@hospital.com";
+
+                if (emailUsuario === USER_1_EMAIL || nombreUsuario === "Usuario Uno") {
+                    if (elTituloBienvenida) elTituloBienvenida.innerText = "Bienvenido Usuario Especial 1:";
+                    nombreAgenteLogueado = nombreUsuario || "Usuario 1";
+                } else if (emailUsuario === USER_2_EMAIL || nombreUsuario === "Usuario Dos") {
+                    if (elTituloBienvenida) elTituloBienvenida.innerText = "Bienvenido Usuario Especial 2:";
+                    nombreAgenteLogueado = nombreUsuario || "Usuario 2";
+                } else {
+                    if (elTituloBienvenida) elTituloBienvenida.innerText = "Bienvenido Agente:";
+                    if (nombreUsuario) {
+                        nombreAgenteLogueado = nombreUsuario;
+                    }
+                }
+
+                if (elSidebar) elSidebar.innerText = nombreAgenteLogueado;
+            }
+
             obtenerPerfilLogueado();
 
             // Función universal de normalización estricta a kebab-case
