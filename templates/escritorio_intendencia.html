@@ -287,7 +287,7 @@
             </div>
             
             <div id="print-header-novedades-intendencia" class="print-header">Dirigido a: Todos los departamentos | Turno: Todos los turnos</div>
-            <textarea id="txt-novedades-intendencia" oninput="document.getElementById('print-novedades-intendencia').innerText = this.value" placeholder="Escriba aquí el contenido de novedades..." style="width: 100%; min-height: 150px; border: 1px solid #ccc; padding: 12px; border-radius: 6px; font-family: inherit; font-size: 15px; box-sizing: border-box; outline: none; resize: vertical;"></textarea>
+            <div contenteditable="true" id="txt-novedades-intendencia" oninput="document.getElementById('print-novedades-intendencia').innerText = this.innerText" style="width: 100%; min-height: 150px; border: 1px solid #ccc; padding: 12px; border-radius: 6px; font-family: inherit; font-size: 15px; box-sizing: border-box; outline: none; background-color: #fff; overflow-y: auto;" data-placeholder="Escriba aquí el contenido de novedades..."></div>
             <div id="print-novedades-intendencia" class="print-only"></div>
             <div id="preview-novedades-intendencia" class="preview-adjunto"></div>
             
@@ -1088,7 +1088,7 @@
 
         function limpiarPantalla(id) {
             const txt = document.getElementById('txt-' + id);
-            if (txt) txt.value = '';
+            if (txt) txt.innerText = '';
             const printTxt = document.getElementById('print-' + id);
             if (printTxt) printTxt.innerText = '';
             const preview = document.getElementById('preview-' + id);
@@ -1108,7 +1108,7 @@
             const turno = document.getElementById('turno-destino-novedades-intendencia').value;
             const supervisorElem = document.getElementById('supervisor-destino-novedades-intendencia');
             const supervisor = supervisorElem ? supervisorElem.value : '';
-            const textoEscrito = document.getElementById('txt-novedades-intendencia').value;
+            const textoEscrito = document.getElementById('txt-novedades-intendencia').innerText;
 
             if (!textoEscrito.trim() && archivosMultiplesNovedadesIntendencia.length === 0) {
                 alert("Escriba un texto o adjunte algún archivo antes de guardar y enviar.");
