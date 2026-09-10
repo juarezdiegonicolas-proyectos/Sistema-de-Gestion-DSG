@@ -109,7 +109,7 @@
 <body>
     <div class="sidebar">
         <div class="bienvenida-box">
-            <h3>Bienvenido Agente:</h3>
+            <h3 id="titulo-bienvenida">Bienvenido Agente:</h3>
             <p id="nombre-supervisor-sidebar">---</p>
         </div>
         <div class="sidebar-header-title">
@@ -817,6 +817,11 @@
             const turno = localStorage.getItem('usuario_turno') || "Mañana"; 
             const depto = "Higiene y Seguridad";
             
+            // Validación específica para cambiar el título de bienvenida si ingresa RODRIGUEZ ADRIAN
+            if (nombre.trim().toUpperCase() === "RODRIGUEZ ADRIAN") {
+                document.getElementById('titulo-bienvenida').innerText = "Bienvenido Sr. Director:";
+            }
+
             document.getElementById('nombre-supervisor-sidebar').innerText = nombre;
             document.getElementById('display-nombre-rep').innerText = nombre; 
             document.getElementById('display-turno-rep').innerText = turno; 
