@@ -243,7 +243,7 @@
             let nombreAgenteLogueado = "Administrador";
             let departamentoAgenteLogueado = "direccion-servicios-generales";
 
-            // Obtener perfil completo del usuario logueado al iniciar (nombre y departamento real)
+            // Obtener perfil completo del usuario logueado al iniciar (nombre y departamento real) y actualizar la bienvenida del sidebar
             async function obtenerPerfilLogueado() {
                 try {
                     const { data: { session } } = await db.auth.getSession();
@@ -256,11 +256,14 @@
                         if (data) {
                             if (data.nombre_completo) {
                                 nombreAgenteLogueado = data.nombre_completo;
-                                const elSidebar = document.getElementById('nombre-supervisor-sidebar');
-                                if (elSidebar) elSidebar.innerText = nombreAgenteLogueado;
                             }
                             if (data.departamento) {
                                 departamentoAgenteLogueado = data.departamento.trim().toLowerCase();
+                            }
+                            const elSidebar = document.getElementById('nombre-supervisor-sidebar');
+                            if (elSidebar) {
+                                const deptoLargo = obtenerNombreDepartamentoLargo(departamentoAgenteLogueado);
+                                elSidebar.innerText = nombreAgenteLogueado + (deptoLargo ? ` - ${deptoLargo}` : '');
                             }
                         }
                     }
@@ -268,10 +271,17 @@
                     // Fallback directo por localStorage o si no hay sesión activa estricta en Supabase client SDK pero sí en token local
                     if (nombreAgenteLogueado === "Administrador") {
                         const storedName = localStorage.getItem('nombre_completo') || localStorage.getItem('usuario_nombre');
+                        const storedDepto = localStorage.getItem('departamento');
                         if (storedName) {
                             nombreAgenteLogueado = storedName;
-                            const elSidebar = document.getElementById('nombre-supervisor-sidebar');
-                            if (elSidebar) elSidebar.innerText = nombreAgenteLogueado;
+                        }
+                        if (storedDepto) {
+                            departamentoAgenteLogueado = storedDepto.trim().toLowerCase();
+                        }
+                        const elSidebar = document.getElementById('nombre-supervisor-sidebar');
+                        if (elSidebar) {
+                            const deptoLargo = obtenerNombreDepartamentoLargo(departamentoAgenteLogueado);
+                            elSidebar.innerText = nombreAgenteLogueado + (deptoLargo ? ` - ${deptoLargo}` : '');
                         }
                     }
                 } catch(e) {
@@ -1515,6 +1525,5 @@
     </script>
 </body>
 </html>
-
 
 
