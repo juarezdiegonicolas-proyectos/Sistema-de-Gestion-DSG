@@ -1081,7 +1081,7 @@
             const prefijoClave = id === 'novedades' ? 'comunicado_novedades' : 'comunicado_memos';
             const claveUnica = `${prefijoClave}_${deptoDestinoNormalizado}_${turno}${sufijoSupervisor}_${Date.now()}`;
             
-            // Inserción en Supabase mapeando correctamente el origen real y destino normalizado
+            // Inserción en Supabase mapeando correctamente el origen real y destino normalizado (incluyendo supervisor_origen)
             const { error } = await db
                 .from('comunicados_memos')
                 .upsert(
