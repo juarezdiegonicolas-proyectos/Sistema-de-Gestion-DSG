@@ -209,8 +209,8 @@
 <body>
     <div class="sidebar">
         <div class="bienvenida-box">
-            <h3>Bienvenido Supervisor:</h3>
-            <p id="nombre-supervisor-sidebar">Administrador</p>
+            <h3>Bienvenido Agente:</h3>
+            <p id="nombre-supervisor-sidebar">Cargando...</p>
         </div>
 
         <div class="sidebar-header-title">
@@ -262,6 +262,16 @@
                             if (data.departamento) {
                                 departamentoAgenteLogueado = data.departamento.trim().toLowerCase();
                             }
+                        }
+                    }
+                    
+                    // Fallback directo por localStorage o si no hay sesión activa estricta en Supabase client SDK pero sí en token local
+                    if (nombreAgenteLogueado === "Administrador") {
+                        const storedName = localStorage.getItem('nombre_completo') || localStorage.getItem('usuario_nombre');
+                        if (storedName) {
+                            nombreAgenteLogueado = storedName;
+                            const elSidebar = document.getElementById('nombre-supervisor-sidebar');
+                            if (elSidebar) elSidebar.innerText = nombreAgenteLogueado;
                         }
                     }
                 } catch(e) {
@@ -738,7 +748,7 @@
                     }
 
                     const turnoMsg = item.turno_destino || contenidoObj.turno || 'Todos';
-                    const supervisorOrigenMsg = item.supervisor_origen || contenidoObj.supervisor_origen || contenidoObj.supervisor || 'Administrador';
+                    const supervisorOrigenMsg = item.supervisor_origen || contenidoObj.supervisor_origen || contenidoObj.supervisor || nombreAgenteLogueado;
                     const supervisorDestinoMsg = item.supervisor_destino || contenidoObj.supervisor || 'General (Todos)';
                     const remitenteDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
                     const deptoDestinoValor = item.departamento_destino || contenidoObj.departamento || 'Todos';
@@ -870,7 +880,7 @@
                     }
                 });
 
-                let nombreSupervisor = 'Sistema / Desconocido';
+                let nombreSupervisor = nombreAgenteLogueado;
                 if (legajoOperador) {
                     const { data: userData, error: userError } = await db
                         .from('usuarios')
@@ -1034,7 +1044,7 @@
             // Normalización estricta utilizando el departamento real del usuario logueado como origen
             const deptoOrigenNormalizado = departamentoAgenteLogueado;
             const deptoDestinoNormalizado = toKebabCase(destinoVisual);
-            const supervisorOrigenVal = nombreAgenteLogueado || "Administrador";
+            const supervisorOrigenVal = nombreAgenteLogueado;
 
             const data = {
                 texto: textoEscrito,
