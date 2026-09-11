@@ -140,18 +140,6 @@
         .badge-enviado { background-color: #28a745; }
         .badge-terceros { background-color: #6c757d; }
 
-        /* Estilos para el contador de notificaciones en el menú lateral */
-        .badge-contador {
-            background-color: #dc3545;
-            color: white;
-            font-size: 11px;
-            font-weight: bold;
-            padding: 2px 6px;
-            border-radius: 10px;
-            display: inline-block;
-            margin-left: 5px;
-        }
-
         @media print {
         .sidebar, .filtros-historicos, .btn-cerrar, .area-acciones, .btn-adjuntar, textarea, .btn-limpiar, .historial-muro-container { display: none !important; }
         
@@ -235,7 +223,7 @@
             <div class="menu-item" onclick="mostrar('rrhh', 'Auditoría RRHH')"><span>👥 RRHH</span></div>
             <div class="menu-item" onclick="mostrar('insumos', 'Auditoría Insumos')"><span>📦 Insumos</span></div>
             <div class="menu-item" onclick="mostrar('estado-ascensores', 'Estado Actual de Ascensores')"><span>🛗 Estado Ascensores</span></div>
-            <div class="menu-item" onclick="mostrar('novedades', 'Novedades')"><span>📝 Novedades <span id="contador-novedades-menu"></span></span></div>
+            <div class="menu-item" onclick="mostrar('novedades', 'Novedades')"><span>📝 Novedades</span></div>
             <div class="menu-item" onclick="mostrar('memos', 'Memos y Resoluciones')"><span>📜 Memos y Resoluciones</span></div>
             <div class="menu-item" onclick="mostrar('estadisticas', 'Estadísticas Mensuales')"><span>📈 Estadísticas Mensuales</span></div>
         </div>
@@ -254,14 +242,12 @@
             // Variables globales mapeadas para el usuario activo logueado
             let nombreAgenteLogueado = "Administrador";
             let departamentoAgenteLogueado = "direccion-servicios-generales";
-            let usuarioIdLogueado = null;
 
             // Obtener perfil completo del usuario logueado al iniciar (nombre y departamento real)
             async function obtenerPerfilLogueado() {
                 try {
                     const { data: { session } } = await db.auth.getSession();
                     if (session && session.user) {
-                        usuarioIdLogueado = session.user.id;
                         const { data, error } = await db
                             .from('usuarios')
                             .select('nombre_completo, departamento')
@@ -292,9 +278,6 @@
                             actualizarTituloBienvenida(nombreAgenteLogueado);
                         }
                     }
-
-                    // Una vez obtenido el perfil, verificamos notificaciones pendientes
-                    verificarNotificacionesNovedades();
                 } catch(e) {
                     console.error("Error obteniendo perfil logueado:", e);
                     actualizarTituloBienvenida(nombreAgenteLogueado);
@@ -679,114 +662,12 @@
             if (id === 'novedades') {
                 cargarNovedades();
                 manejarCambioDepto('destino-novedades');
-                marcarNovedadesComoLeidas(); // Marca como leídas y limpia el contador al entrar
             }
             if (id === 'memos') {
                 cargarMemos();
                 manejarCambioDepto('destino-memos');
             }
         }
-
-        // Lógica de Notificaciones Dinámicas por Usuario en Supabase
-        async function verificarNotificacionesNovedades() {
-            try {
-                if (!usuarioIdLogueado) return;
-
-                // 1. Obtener todas las novedades dirigidas a este usuario o a su departamento/todos
-                const { data: novedades, error } = await db
-                    .from('comunicados_memos')
-                    .select('id_clave, departamento_destino')
-                    .ilike('id_clave', 'comunicado_novedades_%');
-
-                if (error) throw error;
-                if (!novedades || novedades.length === 0) {
-                    actualizarContadorMenu(0);
-                    return;
-                }
-
-                // Filtrar las que le competen al usuario actual (por su depto o 'todos')
-                const deptoUser = (departamentoAgenteLogueado || '').trim().toLowerCase();
-                const misNovedades = novedades.filter(item => {
-                    const dest = (item.departamento_destino || '').trim().toLowerCase();
-                    return dest === 'todos' || dest === 'todos los departamentos' || dest === deptoUser;
-                });
-
-                if (misNovedades.length === 0) {
-                    actualizarContadorMenu(0);
-                    return;
-                }
-
-                const idsNovedades = misNovedades.map(n => n.id_clave);
-
-                // 2. Consultar cuáles de estas ya fueron leídas por este usuario específico
-                const { data: leidasData, error: errLeidas } = await db
-                    .from('novedades_leidas')
-                    .select('id_clave')
-                    .eq('usuario_id', usuarioIdLogueado)
-                    .in('id_clave', idsNovedades);
-
-                if (errLeidas) throw errLeidas;
-
-                const idsLeidasSet = new Set((leidasData || []).map(l => l.id_clave));
-
-                // 3. Contar las que NO están en la tabla de leídas
-                const noLeidas = idsNovedades.filter(id => !idsLeidasSet.has(id));
-
-                actualizarContadorMenu(noLeidas.length);
-            } catch (err) {
-                console.error("Error al verificar notificaciones de novedades:", err);
-            }
-        }
-
-        function actualizarContadorMenu(cantidad) {
-            const spanContador = document.getElementById('contador-novedades-menu');
-            if (!spanContador) return;
-            if (cantidad > 0) {
-                spanContador.innerHTML = `<span class="badge-contador">${cantidad}</span>`;
-            } else {
-                spanContador.innerHTML = '';
-            }
-        }
-
-        async function marcarNovedadesComoLeidas() {
-            try {
-                if (!usuarioIdLogueado) return;
-
-                // Obtener todas las novedades vigentes que competen al usuario
-                const { data: novedades, error } = await db
-                    .from('comunicados_memos')
-                    .select('id_clave, departamento_destino')
-                    .ilike('id_clave', 'comunicado_novedades_%');
-
-                if (error || !novedades) return;
-
-                const deptoUser = (departamentoAgenteLogueado || '').trim().toLowerCase();
-                const misNovedades = novedades.filter(item => {
-                    const dest = (item.departamento_destino || '').trim().toLowerCase();
-                    return dest === 'todos' || dest === 'todos los departamentos' || dest === deptoUser;
-                });
-
-                if (misNovedades.length === 0) return;
-
-                // Insertar registros de lectura en lote para el usuario actual (usando upsert o ignore conflict)
-                const registrosUpsert = misNovedades.map(n => ({
-                    usuario_id: usuarioIdLogueado,
-                    id_clave: n.id_clave,
-                    leido_en: new Date().toISOString()
-                }));
-
-                const { error: errUpsert } = await db
-                    .from('novedades_leidas')
-                    .upsert(registrosUpsert, { onConflict: 'usuario_id,id_clave' });
-
-                if (!errUpsert) {
-                    actualizarContadorMenu(0);
-                }
-            } catch (err) {
-                console.error("Error al marcar novedades como leídas:", err);
-            }
-        }
-
         function limpiarPantalla(id) {
             document.getElementById('txt-' + id).value = '';
             document.getElementById('print-' + id).innerText = '';
@@ -1653,6 +1534,10 @@
     </script>
 </body>
 </html>
+
+
+
+
 
 
 
