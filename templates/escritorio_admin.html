@@ -67,6 +67,19 @@
         }
         .menu-item:hover { background-color: #5d8dbb; color: white; }
 
+        /* Notificación al lado de Novedades */
+        .notif-badge-sidebar {
+            background-color: #dc3545;
+            color: white;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 10px;
+            display: none;
+            margin-left: 5px;
+            vertical-align: middle;
+        }
+
         .sidebar-footer { 
             display: flex; 
             flex-direction: column; 
@@ -223,7 +236,7 @@
             <div class="menu-item" onclick="mostrar('rrhh', 'Auditoría RRHH')"><span>👥 RRHH</span></div>
             <div class="menu-item" onclick="mostrar('insumos', 'Auditoría Insumos')"><span>📦 Insumos</span></div>
             <div class="menu-item" onclick="mostrar('estado-ascensores', 'Estado Actual de Ascensores')"><span>🛗 Estado Ascensores</span></div>
-            <div class="menu-item" onclick="mostrar('novedades', 'Novedades')"><span>📝 Novedades</span></div>
+            <div class="menu-item" onclick="mostrar('novedades', 'Novedades')"><span>📝 Novedades <span id="badge-notif-novedades" class="notif-badge-sidebar">0</span></span></div>
             <div class="menu-item" onclick="mostrar('memos', 'Memos y Resoluciones')"><span>📜 Memos y Resoluciones</span></div>
             <div class="menu-item" onclick="mostrar('estadisticas', 'Estadísticas Mensuales')"><span>📈 Estadísticas Mensuales</span></div>
         </div>
@@ -662,6 +675,8 @@
             if (id === 'novedades') {
                 cargarNovedades();
                 manejarCambioDepto('destino-novedades');
+                // Al entrar a Novedades, marcamos los mensajes como leídos actualizando el contador local o guardando ids leídos
+                marcarNovedadesComoLeidas();
             }
             if (id === 'memos') {
                 cargarMemos();
@@ -729,6 +744,39 @@
             await cargarMuroGenerico('memos', 'comunicado_memos_%');
         }
 
+        // Gestión de contador de mensajes no leídos para Novedades
+        let idsNovedadesCargadas = [];
+
+        function obtenerIdsLeidos() {
+            try {
+                let leidos = JSON.parse(localStorage.getItem('novedades_leidas') || '[]');
+                return Array.isArray(leidos) ? leidos : [];
+            } catch(e) {
+                return [];
+            }
+        }
+
+        function marcarNovedadesComoLeidas() {
+            if (idsNovedadesCargadas.length > 0) {
+                let leidos = obtenerIdsLeidos();
+                let actualizados = [...new Set([...leidos, ...idsNovedadesCargadas])];
+                localStorage.setItem('novedades_leidas', JSON.stringify(actualizados));
+                actualizarBadgeNovedades(0);
+            }
+        }
+
+        function actualizarBadgeNovedades(cantidadNoLeidos) {
+            const badge = document.getElementById('badge-notif-novedades');
+            if (!badge) return;
+            if (cantidadNoLeidos > 0) {
+                badge.innerText = cantidadNoLeidos;
+                badge.style.display = 'inline-block';
+            } else {
+                badge.style.display = 'none';
+                badge.innerText = '0';
+            }
+        }
+
         async function cargarMuroGenerico(idSeccion, ilikeFiltro) {
             const contenedorNov = document.getElementById('contenedor-' + idSeccion);
             if (!contenedorNov) return;
@@ -746,7 +794,18 @@
 
                 if (!data || data.length === 0) {
                     contenedorNov.innerHTML = '<p style="color: #666; font-style: italic;">No hay registros disponibles en el muro.</p>';
+                    if (idSeccion === 'novedades') {
+                        idsNovedadesCargadas = [];
+                        actualizarBadgeNovedades(0);
+                    }
                     return;
+                }
+
+                if (idSeccion === 'novedades') {
+                    idsNovedadesCargadas = data.map(item => item.id_clave);
+                    let leidos = obtenerIdsLeidos();
+                    let noLeidosCount = idsNovedadesCargadas.filter(id => !leidos.includes(id)).length;
+                    actualizarBadgeNovedades(noLeidosCount);
                 }
 
                 let html = '';
@@ -1529,11 +1588,30 @@
             }
         }
         document.getElementById('reportes').classList.add('activo');
+        
+        // Verificación inicial de notificaciones al cargar la página
+        async function inicializarVerificacionNovedades() {
+            try {
+                const { data, error } = await db
+                    .from('comunicados_memos')
+                    .select('id_clave')
+                    .ilike('id_clave', 'comunicado_novedades_%');
+                if (!error && data) {
+                    let todosIds = data.map(item => item.id_clave);
+                    let leidos = obtenerIdsLeidos();
+                    let noLeidosCount = todosIds.filter(id => !leidos.includes(id)).length;
+                    actualizarBadgeNovedades(noLeidosCount);
+                }
+            } catch(e) {}
+        }
+        inicializarVerificacionNovedades();
+
         cargarNovedades();
         cargarMemos();
     </script>
 </body>
 </html>
+
 
 
 
