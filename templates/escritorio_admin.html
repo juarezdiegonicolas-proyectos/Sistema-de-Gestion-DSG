@@ -67,6 +67,17 @@
         }
         .menu-item:hover { background-color: #5d8dbb; color: white; }
 
+        /* Estilo para insignia de mensajes sin leer en el menú */
+        .badge-menu-novedades {
+            background-color: #dc3545;
+            color: white;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 2px 7px;
+            border-radius: 10px;
+            display: none;
+        }
+
         .sidebar-footer { 
             display: flex; 
             flex-direction: column; 
@@ -223,7 +234,7 @@
             <div class="menu-item" onclick="mostrar('rrhh', 'Auditoría RRHH')"><span>👥 RRHH</span></div>
             <div class="menu-item" onclick="mostrar('insumos', 'Auditoría Insumos')"><span>📦 Insumos</span></div>
             <div class="menu-item" onclick="mostrar('estado-ascensores', 'Estado Actual de Ascensores')"><span>🛗 Estado Ascensores</span></div>
-            <div class="menu-item" onclick="mostrar('novedades', 'Novedades')"><span>📝 Novedades</span></div>
+            <div class="menu-item" onclick="mostrar('novedades', 'Novedades')"><span>📝 Novedades</span><span id="badge-novedades-menu" class="badge-menu-novedades">0</span></div>
             <div class="menu-item" onclick="mostrar('memos', 'Memos y Resoluciones')"><span>📜 Memos y Resoluciones</span></div>
             <div class="menu-item" onclick="mostrar('estadisticas', 'Estadísticas Mensuales')"><span>📈 Estadísticas Mensuales</span></div>
         </div>
@@ -282,6 +293,10 @@
                     console.error("Error obteniendo perfil logueado:", e);
                     actualizarTituloBienvenida(nombreAgenteLogueado);
                 }
+                
+                // Una vez cargado el perfil, inicializamos la verificación de novedades pendientes
+                verificarNovedadesNoLeidas();
+                setInterval(verificarNovedadesNoLeidas, 15000); // Polling cada 15 segundos
             }
 
             function actualizarTituloBienvenida(nombre) {
@@ -656,18 +671,113 @@
             document.querySelectorAll('.seccion').forEach(s => s.classList.remove('activo')); 
             document.getElementById(id).classList.add('activo'); 
             document.getElementById('titulo-panel').innerText = titulo; 
+            
             if (id === 'estado-ascensores') {
                 cargarEstadoAscensoresVivo();
             }
             if (id === 'novedades') {
                 cargarNovedades();
                 manejarCambioDepto('destino-novedades');
+                marcarNovedadesComoLeidas(); // Al ingresar a novedades, se marcan como leídas para este supervisor
             }
             if (id === 'memos') {
                 cargarMemos();
                 manejarCambioDepto('destino-memos');
             }
         }
+
+        // Clave única de almacenamiento local de lectura para el supervisor actual
+        function obtenerClaveLeidosStorage() {
+            return `novedades_leidas_${(nombreAgenteLogueado || 'admin').trim().toLowerCase().replace(/\s+/g, '_')}`;
+        }
+
+        // Verificar cuántas novedades recibidas no han sido leídas por este supervisor
+        async function verificarNovedadesNoLeidas() {
+            try {
+                const { data, error } = await db
+                    .from('comunicados_memos')
+                    .select('id_clave, departamento_destino, supervisor_destino, departamento_origen')
+                    .ilike('id_clave', 'comunicado_novedades_%');
+
+                if (error || !data) return;
+
+                let leidosIds = JSON.parse(localStorage.getItem(obtenerClaveLeidosStorage()) || '[]');
+                let countNoLeidos = 0;
+
+                data.forEach(item => {
+                    const deptoDestino = (item.departamento_destino || '').trim().toLowerCase();
+                    const supDestino = (item.supervisor_destino || '').trim().toLowerCase();
+                    const deptoOrigen = (item.departamento_origen || '').trim().toLowerCase();
+                    const deptoActual = departamentoAgenteLogueado;
+                    const nombreActual = nombreAgenteLogueado.trim().toLowerCase();
+
+                    // Es relevante si es dirigido al depto actual (o todos) y no es enviado por uno mismo
+                    const esParaMiDepto = (deptoDestino === deptoActual || deptoDestino === 'todos' || deptoDestino === 'todos los departamentos');
+                    const esParaMiSup = (supDestino === 'general (todos)' || supDestino === '' || supDestino === nombreActual);
+                    const esMioPropio = (deptoOrigen === deptoActual);
+
+                    if (esParaMiDepto && esParaMiSup && !esMioPropio) {
+                        if (!leidosIds.includes(item.id_clave)) {
+                            countNoLeidos++;
+                        }
+                    }
+                });
+
+                const badge = document.getElementById('badge-novedades-menu');
+                if (badge) {
+                    if (countNoLeidos > 0) {
+                        badge.innerText = countNoLeidos;
+                        badge.style.display = 'inline-block';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+            } catch (e) {
+                console.error("Error al verificar novedades no leídas:", e);
+            }
+        }
+
+        // Marcar todas las novedades visibles actuales como leídas al ingresar a la sección
+        async function marcarNovedadesComoLeidas() {
+            try {
+                const { data, error } = await db
+                    .from('comunicados_memos')
+                    .select('id_clave, departamento_destino, supervisor_destino, departamento_origen')
+                    .ilike('id_clave', 'comunicado_novedades_%');
+
+                if (error || !data) return;
+
+                let leidosIds = JSON.parse(localStorage.getItem(obtenerClaveLeidosStorage()) || '[]');
+                let huboCambios = false;
+
+                data.forEach(item => {
+                    const deptoDestino = (item.departamento_destino || '').trim().toLowerCase();
+                    const supDestino = (item.supervisor_destino || '').trim().toLowerCase();
+                    const deptoOrigen = (item.departamento_origen || '').trim().toLowerCase();
+                    const deptoActual = departamentoAgenteLogueado;
+                    const nombreActual = nombreAgenteLogueado.trim().toLowerCase();
+
+                    const esParaMiDepto = (deptoDestino === deptoActual || deptoDestino === 'todos' || deptoDestino === 'todos los departamentos');
+                    const esParaMiSup = (supDestino === 'general (todos)' || supDestino === '' || supDestino === nombreActual);
+                    const esMioPropio = (deptoOrigen === deptoActual);
+
+                    if (esParaMiDepto && esParaMiSup && !esMioPropio) {
+                        if (!leidosIds.includes(item.id_clave)) {
+                            leidosIds.push(item.id_clave);
+                            huboCambios = true;
+                        }
+                    }
+                });
+
+                if (huboCambios) {
+                    localStorage.setItem(obtenerClaveLeidosStorage(), JSON.stringify(leidosIds));
+                    verificarNovedadesNoLeidas();
+                }
+            } catch (e) {
+                console.error("Error al marcar novedades como leídas:", e);
+            }
+        }
+
         function limpiarPantalla(id) {
             document.getElementById('txt-' + id).value = '';
             document.getElementById('print-' + id).innerText = '';
