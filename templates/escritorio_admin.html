@@ -64,27 +64,8 @@
             font-size: 14px; 
             transition: background 0.2s, color 0.2s; 
             border-radius: 4px; 
-            position: relative;
         }
         .menu-item:hover { background-color: #5d8dbb; color: white; }
-
-        /* Estilo para notificación en novedades */
-        .badge-notif {
-            background-color: #dc3545;
-            color: white;
-            font-size: 11px;
-            font-weight: bold;
-            padding: 2px 6px;
-            border-radius: 10px;
-            display: inline-block;
-            margin-left: 5px;
-            animation: pulse-notif 1.5s infinite;
-        }
-        @keyframes pulse-notif {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.15); }
-            100% { transform: scale(1); }
-        }
 
         .sidebar-footer { 
             display: flex; 
@@ -242,7 +223,7 @@
             <div class="menu-item" onclick="mostrar('rrhh', 'Auditoría RRHH')"><span>👥 RRHH</span></div>
             <div class="menu-item" onclick="mostrar('insumos', 'Auditoría Insumos')"><span>📦 Insumos</span></div>
             <div class="menu-item" onclick="mostrar('estado-ascensores', 'Estado Actual de Ascensores')"><span>🛗 Estado Ascensores</span></div>
-            <div class="menu-item" onclick="mostrar('novedades', 'Novedades')"><span>📝 Novedades <span id="badge-notif-novedades" class="badge-notif" style="display:none;">0</span></span></div>
+            <div class="menu-item" onclick="mostrar('novedades', 'Novedades')"><span>📝 Novedades</span></div>
             <div class="menu-item" onclick="mostrar('memos', 'Memos y Resoluciones')"><span>📜 Memos y Resoluciones</span></div>
             <div class="menu-item" onclick="mostrar('estadisticas', 'Estadísticas Mensuales')"><span>📈 Estadísticas Mensuales</span></div>
         </div>
@@ -297,12 +278,6 @@
                             actualizarTituloBienvenida(nombreAgenteLogueado);
                         }
                     }
-
-                    // Inicializar contador de notificaciones tras obtener el perfil
-                    verificarNotificacionesNovedades();
-                    // Opcional: refrescar periódicamente cada 60 segundos
-                    setInterval(verificarNotificacionesNovedades, 60000);
-
                 } catch(e) {
                     console.error("Error obteniendo perfil logueado:", e);
                     actualizarTituloBienvenida(nombreAgenteLogueado);
@@ -333,59 +308,6 @@
                     .normalize("NFD")
                     .replace(/[\u0300-\u036f]/g, "")
                     .replace(/\s+/g, '-');
-            }
-
-            // Función para verificar y actualizar el badge de notificaciones en Novedades
-            async function verificarNotificacionesNovedades() {
-                try {
-                    const { data, error } = await db
-                        .from('comunicados_memos')
-                        .select('*')
-                        .ilike('id_clave', 'comunicado_novedades_%')
-                        .order('created_at', { ascending: false });
-
-                    if (error) throw error;
-                    if (!data) return;
-
-                    const deptoUsuarioActual = departamentoAgenteLogueado;
-                    let contadorRecibidos = 0;
-                    
-                    // Recuperar timestamp de última lectura guardado en localStorage para este usuario/sesión
-                    const ultimaLecturaKey = 'ultima_lectura_novedades_' + deptoUsuarioActual;
-                    const ultimaLecturaTime = localStorage.getItem(ultimaLecturaKey) ? new Date(localStorage.getItem(ultimaLecturaKey)).getTime() : 0;
-
-                    data.forEach(item => {
-                        const contenidoObj = item.contenido || {};
-                        const remitenteDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
-                        const deptoDestinoValor = item.departamento_destino || contenidoObj.departamento || 'Todos';
-
-                        // Contar solo los mensajes dirigidos a este departamento o a todos (excluyendo los propios enviados)
-                        if (remitenteDepto !== deptoUsuarioActual) {
-                            if (deptoDestinoValor === deptoUsuarioActual || deptoDestinoValor === 'todos' || deptoDestinoValor === 'todos los departamentos') {
-                                if (item.created_at) {
-                                    const fechaItemTime = new Date(item.created_at).getTime();
-                                    if (fechaItemTime > ultimaLecturaTime) {
-                                        contadorRecibidos++;
-                                    }
-                                } else {
-                                    contadorRecibidos++;
-                                }
-                            }
-                        }
-                    });
-
-                    const badgeElem = document.getElementById('badge-notif-novedades');
-                    if (badgeElem) {
-                        if (contadorRecibidos > 0) {
-                            badgeElem.innerText = contadorRecibidos;
-                            badgeElem.style.display = 'inline-block';
-                        } else {
-                            badgeElem.style.display = 'none';
-                        }
-                    }
-                } catch (err) {
-                    console.error("Error al verificar notificaciones:", err);
-                }
             }
 
             function imprimirConOrientacion() {
@@ -740,12 +662,6 @@
             if (id === 'novedades') {
                 cargarNovedades();
                 manejarCambioDepto('destino-novedades');
-                // Al entrar a Novedades, marcar como leídas las notificaciones guardando el timestamp actual
-                const deptoUsuarioActual = departamentoAgenteLogueado;
-                const ultimaLecturaKey = 'ultima_lectura_novedades_' + deptoUsuarioActual;
-                localStorage.setItem(ultimaLecturaKey, new Date().toISOString());
-                const badgeElem = document.getElementById('badge-notif-novedades');
-                if (badgeElem) badgeElem.style.display = 'none';
             }
             if (id === 'memos') {
                 cargarMemos();
