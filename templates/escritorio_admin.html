@@ -404,9 +404,9 @@
                     document.write(`
                         <div id="novedades" class="seccion">
                             <div class="header-logos">
-                                <img src="/static/logo_hospi.png" alt="Logo" onerror="this.src='https://via.placeholder.com/150?text=Hospital'">
+                                <img src="{{ url_for('static', filename='logo_hospi.png') }}" alt="Logo" onerror="this.src='https://via.placeholder.com/150?text=Hospital'">
                                 <h1 style="margin: 0; text-align: center; flex: 1;">Novedades</h1>
-                                <img src="/static/logo_dsg.png" alt="Logo DSG" style="height: 135px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
+                                <img src="{{ url_for('static', filename='logo_dsg.png') }}" alt="Logo DSG" style="height: 135px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
                             </div>
                             
                             <!-- Filtros y Controles de Envío -->
@@ -449,7 +449,7 @@
                             <div id="preview-novedades" class="preview-adjunto"></div>
                             
                             <div class="area-acciones">
-                                <button id="btn-print-novedades" class="btn-gestion btn-imprimir" onclick="imprimirConOrientacion()">🖨 Imprimir</button>
+                                <button id="btn-print-novedades" class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
                                 <button class="btn-gestion btn-imprimir" style="background: #dc3545;" onclick="limpiarPantalla('novedades')">🧹 Limpiar Pantalla</button>
                             </div>
 
@@ -464,9 +464,9 @@
                     document.write(`
                         <div id="memos" class="seccion">
                             <div class="header-logos">
-                                <img src="/static/logo_hospi.png" alt="Logo" onerror="this.src='https://via.placeholder.com/150?text=Hospital'">
+                                <img src="{{ url_for('static', filename='logo_hospi.png') }}" alt="Logo" onerror="this.src='https://via.placeholder.com/150?text=Hospital'">
                                 <h1 style="margin: 0; text-align: center; flex: 1;">Memos y Resoluciones</h1>
-                                <img src="/static/logo_dsg.png" alt="Logo DSG" style="height: 135px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
+                                <img src="{{ url_for('static', filename='logo_dsg.png') }}" alt="Logo DSG" style="height: 135px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
                             </div>
                             
                             <!-- Filtros y Controles de Envío -->
@@ -509,7 +509,7 @@
                             <div id="preview-memos" class="preview-adjunto"></div>
                             
                             <div class="area-acciones">
-                                <button id="btn-print-memos" class="btn-gestion btn-imprimir" onclick="imprimirConOrientacion()">🖨 Imprimir</button>
+                                <button id="btn-print-memos" class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
                                 <button class="btn-gestion btn-imprimir" style="background: #dc3545;" onclick="limpiarPantalla('memos')">🧹 Limpiar Pantalla</button>
                             </div>
 
@@ -524,9 +524,9 @@
                     document.write(`
                         <div id="${id}" class="seccion">
                             <div class="header-logos">
-                                <img src="/static/logo_hospi.png" alt="Logo">
+                                <img src="{{ url_for('static', filename='logo_hospi.png') }}" alt="Logo">
                                 <h1 style="margin: 0; text-align: center; flex: 1;">${titulo}</h1>
-                                <img src="/static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+                                <img src="{{ url_for('static', filename='logo_dsg.png') }}" alt="Logo DSG" style="height: 135px;">
                             </div>
                             <div class="filtros-historicos">
                                 ${tipoContenido === 'auditoria' ? `
@@ -586,7 +586,7 @@
                               `<div id="print-header-${id}" class="print-header">Dirigido a: Todos los departamentos | Turno: Todos los turnos</div><textarea id="txt-${id}" oninput="document.getElementById('print-${id}').innerText = this.value" placeholder="Escriba aquí el contenido..."></textarea><div id="print-${id}" class="print-only"></div><div id="preview-${id}" class="preview-adjunto"></div>`}
                             
                             <div class="area-acciones">
-                                <button id="btn-print-${id}" class="btn-gestion btn-imprimir" onclick="imprimirConOrientacion()">🖨 Imprimir</button>
+                                <button id="btn-print-${id}" class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
                                 ${tipoContenido === 'redaccion' ? `<button class="btn-gestion btn-limpiar" onclick="limpiarPantalla('${id}')">🧹 Limpiar Pantalla</button>` : ''}
                             </div>
                         </div>
@@ -605,9 +605,9 @@
         <!-- SECCIÓN ESTADÍSTICAS -->
         <div id="estadisticas" class="seccion">
             <div class="header-logos">
-                <img src="/static/logo_hospi.png" alt="Logo">
+                <img src="{{ url_for('static', filename='logo_hospi.png') }}" alt="Logo">
                 <h1 style="margin: 0; text-align: center; flex: 1;" class="titulo-caja">Estadísticas Mensuales</h1>
-                <img src="/static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+                <img src="{{ url_for('static', filename='logo_dsg.png') }}" alt="Logo DSG" style="height: 135px;">
             </div>
             <div class="filtros-historicos">
                 <select id="est-tipo" class="input-select">
@@ -1534,3 +1534,7 @@
     </script>
 </body>
 </html>
+
+
+
+
