@@ -64,8 +64,32 @@
             font-size: 14px; 
             transition: background 0.2s, color 0.2s; 
             border-radius: 4px; 
+            position: relative;
         }
         .menu-item:hover { background-color: #5d8dbb; color: white; }
+
+        /* Estilos para el sistema de notificación (badge contador) en el menú */
+        .menu-badge {
+            background-color: #dc3545;
+            color: white;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 10px;
+            display: inline-block;
+            min-width: 16px;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            animation: pulse-badge 2s infinite;
+        }
+        .menu-badge.hidden {
+            display: none !important;
+        }
+        @keyframes pulse-badge {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
 
         .sidebar-footer { 
             display: flex; 
@@ -223,8 +247,8 @@
             <div class="menu-item" onclick="mostrar('rrhh', 'Auditoría RRHH')"><span>👥 RRHH</span></div>
             <div class="menu-item" onclick="mostrar('insumos', 'Auditoría Insumos')"><span>📦 Insumos</span></div>
             <div class="menu-item" onclick="mostrar('estado-ascensores', 'Estado Actual de Ascensores')"><span>🛗 Estado Ascensores</span></div>
-            <div class="menu-item" onclick="mostrar('novedades', 'Novedades')"><span>📝 Novedades</span></div>
-            <div class="menu-item" onclick="mostrar('memos', 'Memos y Resoluciones')"><span>📜 Memos y Resoluciones</span></div>
+            <div class="menu-item" onclick="mostrar('novedades', 'Novedades')"><span>📝 Novedades</span><span id="badge-novedades" class="menu-badge hidden">0</span></div>
+            <div class="menu-item" onclick="mostrar('memos', 'Memos y Resoluciones')"><span>📜 Memos y Resoluciones</span><span id="badge-memos" class="menu-badge hidden">0</span></div>
             <div class="menu-item" onclick="mostrar('estadisticas', 'Estadísticas Mensuales')"><span>📈 Estadísticas Mensuales</span></div>
         </div>
 
@@ -282,6 +306,11 @@
                     console.error("Error obteniendo perfil logueado:", e);
                     actualizarTituloBienvenida(nombreAgenteLogueado);
                 }
+                
+                // Una vez obtenido el perfil, inicializamos la verificación de notificaciones no leídas
+                verificarNotificacionesPendientes();
+                // Opcional: configurar un intervalo de sondeo cada 60 segundos
+                setInterval(verificarNotificacionesPendientes, 60000);
             }
 
             function actualizarTituloBienvenida(nombre) {
@@ -652,6 +681,120 @@
         let archivosMultiplesNovedades = [];
         let archivosMultiplesMemos = [];
 
+        // Sistema de Notificaciones / Badges Pendientes en tiempo real
+        async function verificarNotificacionesPendientes() {
+            try {
+                const deptoActual = departamentoAgenteLogueado;
+                const nombreActual = nombreAgenteLogueado;
+
+                // Clave en localStorage para guardar los IDs o marca de tiempo ya leídos por el usuario
+                const leidosNovedades = JSON.parse(localStorage.getItem('leidos_novedades') || '[]');
+                const leidosMemos = JSON.parse(localStorage.getItem('leidos_memos') || '[]');
+
+                // Consultar comunicados de novedades
+                const { data: novData, error: errNov } = await db
+                    .from('comunicados_memos')
+                    .select('*')
+                    .ilike('id_clave', 'comunicado_novedades_%');
+
+                if (!errNov && novData) {
+                    let countNov = 0;
+                    novData.forEach(item => {
+                        const contenidoObj = item.contenido || {};
+                        const deptoDestino = (item.departamento_destino || contenidoObj.departamento || '').trim().toLowerCase();
+                        const origenDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
+                        const supDestino = item.supervisor_destino || contenidoObj.supervisor || '';
+
+                        // Determinar si el mensaje va dirigido al departamento o usuario actual y no es propio
+                        const esParaMiDepto = (deptoDestino === deptoActual || deptoDestino === 'todos' || deptoDestino === 'todos-los-departamentos');
+                        const esPropio = (origenDepto === deptoActual && (contenidoObj.supervisor_origen === nombreActual || !contenidoObj.supervisor_origen));
+
+                        if (esParaMiDepto && !esPropio) {
+                            if (!leidosNovedades.includes(item.id_clave)) {
+                                countNov++;
+                            }
+                        }
+                    });
+
+                    const badgeNov = document.getElementById('badge-novedades');
+                    if (badgeNov) {
+                        if (countNov > 0) {
+                            badgeNov.innerText = countNov;
+                            badgeNov.classList.remove('hidden');
+                        } else {
+                            badgeNov.classList.add('hidden');
+                        }
+                    }
+                }
+
+                // Consultar comunicados de memos
+                const { data: memoData, error: errMemo } = await db
+                    .from('comunicados_memos')
+                    .select('*')
+                    .ilike('id_clave', 'comunicado_memos_%');
+
+                if (!errMemo && memoData) {
+                    let countMemo = 0;
+                    memoData.forEach(item => {
+                        const contenidoObj = item.contenido || {};
+                        const deptoDestino = (item.departamento_destino || contenidoObj.departamento || '').trim().toLowerCase();
+                        const origenDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
+
+                        const esParaMiDepto = (deptoDestino === deptoActual || deptoDestino === 'todos' || deptoDestino === 'todos-los-departamentos');
+                        const esPropio = (origenDepto === deptoActual && (contenidoObj.supervisor_origen === nombreActual || !contenidoObj.supervisor_origen));
+
+                        if (esParaMiDepto && !esPropio) {
+                            if (!leidosMemos.includes(item.id_clave)) {
+                                countMemo++;
+                            }
+                        }
+                    });
+
+                    const badgeMemo = document.getElementById('badge-memos');
+                    if (badgeMemo) {
+                        if (countMemo > 0) {
+                            badgeMemo.innerText = countMemo;
+                            badgeMemo.classList.remove('hidden');
+                        } else {
+                            badgeMemo.classList.add('hidden');
+                        }
+                    }
+                }
+
+            } catch (e) {
+                console.error("Error verificando notificaciones pendientes:", e);
+            }
+        }
+
+        // Marcar notificaciones como leídas al abrir la sección correspondiente
+        async function marcarComoLeidas(tipo) {
+            try {
+                const ilikeFiltro = tipo === 'novedades' ? 'comunicado_novedades_%' : 'comunicado_memos_%';
+                const storageKey = tipo === 'novedades' ? 'leidos_novedades' : 'leidos_memos';
+                
+                const { data, error } = await db
+                    .from('comunicados_memos')
+                    .select('id_clave, departamento_destino, departamento_origen, contenido')
+                    .ilike('id_clave', ilikeFiltro);
+
+                if (!error && data) {
+                    let leidos = JSON.parse(localStorage.getItem(storageKey) || '[]');
+                    data.forEach(item => {
+                        if (!leidos.includes(item.id_clave)) {
+                            leidos.push(item.id_clave);
+                        }
+                    });
+                    localStorage.setItem(storageKey, JSON.stringify(leidos));
+                    
+                    // Ocultar badge visualmente de inmediato
+                    const badgeElem = document.getElementById('badge-' + tipo);
+                    if (badgeElem) badgeElem.classList.add('hidden');
+                }
+            } catch (e) {
+                console.error("Error al marcar como leídas:", e);
+            }
+        }
+
         function mostrar(id, titulo) { 
             document.querySelectorAll('.seccion').forEach(s => s.classList.remove('activo')); 
             document.getElementById(id).classList.add('activo'); 
@@ -662,10 +805,12 @@
             if (id === 'novedades') {
                 cargarNovedades();
                 manejarCambioDepto('destino-novedades');
+                marcarComoLeidas('novedades');
             }
             if (id === 'memos') {
                 cargarMemos();
                 manejarCambioDepto('destino-memos');
+                marcarComoLeidas('memos');
             }
         }
         function limpiarPantalla(id) {
