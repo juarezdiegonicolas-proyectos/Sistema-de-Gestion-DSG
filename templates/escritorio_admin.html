@@ -248,7 +248,7 @@
             <div class="menu-item" onclick="mostrar('insumos', 'Auditoría Insumos')"><span>📦 Insumos</span></div>
             <div class="menu-item" onclick="mostrar('estado-ascensores', 'Estado Actual de Ascensores')"><span>🛗 Estado Ascensores</span></div>
             <div class="menu-item" onclick="mostrar('novedades', 'Novedades')"><span>📝 Novedades</span><span id="badge-novedades" class="menu-badge hidden">0</span></div>
-            <div class="menu-item" onclick="mostrar('memos', 'Memos y Resoluciones')"><span>📜 Memos y Resoluciones</span><span id="badge-memos" class="menu-badge hidden">0</span></div>
+            <div class="menu-item" onclick="mostrar('memos', 'Memos y Resoluciones')"><span>📜 Memos y Resoluciones</span></div>
             <div class="menu-item" onclick="mostrar('estadisticas', 'Estadísticas Mensuales')"><span>📈 Estadísticas Mensuales</span></div>
         </div>
 
@@ -307,9 +307,8 @@
                     actualizarTituloBienvenida(nombreAgenteLogueado);
                 }
                 
-                // Una vez obtenido el perfil, inicializamos la verificación de notificaciones no leídas
+                // Una vez obtenido el perfil, inicializamos la verificación de notificaciones no leídas (solo en novedades)
                 verificarNotificacionesPendientes();
-                // Opcional: configurar un intervalo de sondeo cada 60 segundos
                 setInterval(verificarNotificacionesPendientes, 60000);
             }
 
@@ -681,17 +680,14 @@
         let archivosMultiplesNovedades = [];
         let archivosMultiplesMemos = [];
 
-        // Sistema de Notificaciones / Badges Pendientes en tiempo real
+        // Sistema de Notificaciones / Badges Pendientes en tiempo real (Únicamente para Novedades)
         async function verificarNotificacionesPendientes() {
             try {
                 const deptoActual = departamentoAgenteLogueado;
                 const nombreActual = nombreAgenteLogueado;
 
-                // Clave en localStorage para guardar los IDs o marca de tiempo ya leídos por el usuario
                 const leidosNovedades = JSON.parse(localStorage.getItem('leidos_novedades') || '[]');
-                const leidosMemos = JSON.parse(localStorage.getItem('leidos_memos') || '[]');
 
-                // Consultar comunicados de novedades
                 const { data: novData, error: errNov } = await db
                     .from('comunicados_memos')
                     .select('*')
@@ -705,7 +701,6 @@
                         const origenDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
                         const supDestino = item.supervisor_destino || contenidoObj.supervisor || '';
 
-                        // Determinar si el mensaje va dirigido al departamento o usuario actual y no es propio
                         const esParaMiDepto = (deptoDestino === deptoActual || deptoDestino === 'todos' || deptoDestino === 'todos-los-departamentos');
                         const esPropio = (origenDepto === deptoActual && (contenidoObj.supervisor_origen === nombreActual || !contenidoObj.supervisor_origen));
 
@@ -726,51 +721,16 @@
                         }
                     }
                 }
-
-                // Consultar comunicados de memos
-                const { data: memoData, error: errMemo } = await db
-                    .from('comunicados_memos')
-                    .select('*')
-                    .ilike('id_clave', 'comunicado_memos_%');
-
-                if (!errMemo && memoData) {
-                    let countMemo = 0;
-                    memoData.forEach(item => {
-                        const contenidoObj = item.contenido || {};
-                        const deptoDestino = (item.departamento_destino || contenidoObj.departamento || '').trim().toLowerCase();
-                        const origenDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
-
-                        const esParaMiDepto = (deptoDestino === deptoActual || deptoDestino === 'todos' || deptoDestino === 'todos-los-departamentos');
-                        const esPropio = (origenDepto === deptoActual && (contenidoObj.supervisor_origen === nombreActual || !contenidoObj.supervisor_origen));
-
-                        if (esParaMiDepto && !esPropio) {
-                            if (!leidosMemos.includes(item.id_clave)) {
-                                countMemo++;
-                            }
-                        }
-                    });
-
-                    const badgeMemo = document.getElementById('badge-memos');
-                    if (badgeMemo) {
-                        if (countMemo > 0) {
-                            badgeMemo.innerText = countMemo;
-                            badgeMemo.classList.remove('hidden');
-                        } else {
-                            badgeMemo.classList.add('hidden');
-                        }
-                    }
-                }
-
             } catch (e) {
                 console.error("Error verificando notificaciones pendientes:", e);
             }
         }
 
-        // Marcar notificaciones como leídas al abrir la sección correspondiente
         async function marcarComoLeidas(tipo) {
+            if (tipo !== 'novedades') return;
             try {
-                const ilikeFiltro = tipo === 'novedades' ? 'comunicado_novedades_%' : 'comunicado_memos_%';
-                const storageKey = tipo === 'novedades' ? 'leidos_novedades' : 'leidos_memos';
+                const ilikeFiltro = 'comunicado_novedades_%';
+                const storageKey = 'leidos_novedades';
                 
                 const { data, error } = await db
                     .from('comunicados_memos')
@@ -786,7 +746,6 @@
                     });
                     localStorage.setItem(storageKey, JSON.stringify(leidos));
                     
-                    // Ocultar badge visualmente de inmediato
                     const badgeElem = document.getElementById('badge-' + tipo);
                     if (badgeElem) badgeElem.classList.add('hidden');
                 }
@@ -810,7 +769,6 @@
             if (id === 'memos') {
                 cargarMemos();
                 manejarCambioDepto('destino-memos');
-                marcarComoLeidas('memos');
             }
         }
         function limpiarPantalla(id) {
@@ -917,7 +875,6 @@
                     const remitenteDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
                     const deptoDestinoValor = item.departamento_destino || contenidoObj.departamento || 'Todos';
 
-                    // Lógica mapeada dinámicamente según el departamento del usuario activo
                     const deptoUsuarioActual = departamentoAgenteLogueado;
 
                     let tipoBadge = '';
@@ -1205,7 +1162,6 @@
                 return;
             }
 
-            // Normalización estricta utilizando el departamento real del usuario logueado como origen
             const deptoOrigenNormalizado = departamentoAgenteLogueado;
             const deptoDestinoNormalizado = toKebabCase(destinoVisual);
             const supervisorOrigenVal = nombreAgenteLogueado;
@@ -1226,7 +1182,6 @@
             const prefijoClave = id === 'novedades' ? 'comunicado_novedades' : 'comunicado_memos';
             const claveUnica = `${prefijoClave}_${deptoDestinoNormalizado}_${turno}${sufijoSupervisor}_${Date.now()}`;
             
-            // Inserción en Supabase mapeando correctamente el origen real y destino normalizado (incluyendo supervisor_origen)
             const { error } = await db
                 .from('comunicados_memos')
                 .upsert(
