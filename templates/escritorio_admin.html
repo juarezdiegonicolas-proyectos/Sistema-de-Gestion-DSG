@@ -308,9 +308,10 @@
                 }
                 
                 // Una vez obtenido el perfil, inicializamos la verificación de notificaciones no leídas
-                verificarNotificacionesPendientes();
-                // Opcional: configurar un intervalo de sondeo cada 60 segundos
-                setInterval(verificarNotificacionesPendientes, 60000);
+                verificarNovedadesNoLeidas();
+                verificarMemosNoLeidos();
+                // Sondeo cada 60 segundos, usando la misma lógica ya probada en Higiene y Seguridad
+                setInterval(() => { verificarNovedadesNoLeidas(); verificarMemosNoLeidos(); }, 60000);
             }
 
             function actualizarTituloBienvenida(nombre) {
@@ -681,118 +682,166 @@
         let archivosMultiplesNovedades = [];
         let archivosMultiplesMemos = [];
 
-        // Sistema de Notificaciones / Badges Pendientes en tiempo real
-        async function verificarNotificacionesPendientes() {
+        // Sistema de Notificaciones / Badges (misma lógica probada en escritorio_higiene_y_seguridad)
+        async function verificarNovedadesNoLeidas() {
             try {
+                const { data, error } = await db
+                    .from('comunicados_memos')
+                    .select('*')
+                    .ilike('id_clave', 'comunicado_novedades_%')
+                    .order('created_at', { ascending: false });
+
+                if (error || !data) return;
+
                 const deptoActual = departamentoAgenteLogueado;
-                const nombreActual = nombreAgenteLogueado;
 
-                // Clave en localStorage para guardar los IDs o marca de tiempo ya leídos por el usuario
-                const leidosNovedades = JSON.parse(localStorage.getItem('leidos_novedades') || '[]');
-                const leidosMemos = JSON.parse(localStorage.getItem('leidos_memos') || '[]');
+                const recibidas = data.filter(item => {
+                    const contenidoObj = item.contenido || {};
+                    const deptoDestino = (item.departamento_destino || contenidoObj.departamento || 'Todos').trim().toLowerCase();
+                    const remitenteDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
 
-                // Consultar comunicados de novedades
-                const { data: novData, error: errNov } = await db
-                    .from('comunicados_memos')
-                    .select('*')
-                    .ilike('id_clave', 'comunicado_novedades_%');
+                    if (remitenteDepto === deptoActual) return false; // lo enviado por uno mismo no cuenta
 
-                if (!errNov && novData) {
-                    let countNov = 0;
-                    novData.forEach(item => {
-                        const contenidoObj = item.contenido || {};
-                        const deptoDestino = (item.departamento_destino || contenidoObj.departamento || '').trim().toLowerCase();
-                        const origenDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
-                        const supDestino = item.supervisor_destino || contenidoObj.supervisor || '';
+                    return deptoDestino === deptoActual || deptoDestino === 'todos' || deptoDestino === 'todos los departamentos';
+                });
 
-                        // Determinar si el mensaje va dirigido al departamento o usuario actual y no es propio
-                        const esParaMiDepto = (deptoDestino === deptoActual || deptoDestino === 'todos' || deptoDestino === 'todos-los-departamentos');
-                        const esPropio = (origenDepto === deptoActual && (contenidoObj.supervisor_origen === nombreActual || !contenidoObj.supervisor_origen));
+                if (recibidas.length === 0) return;
 
-                        if (esParaMiDepto && !esPropio) {
-                            if (!leidosNovedades.includes(item.id_clave)) {
-                                countNov++;
-                            }
-                        }
-                    });
+                const claveStorage = `dsg_admin_ultimo_novedad_leida_${(nombreAgenteLogueado || 'admin').trim().toLowerCase()}`;
+                const ultimoIdLeido = localStorage.getItem(claveStorage);
+                let noLeidasCount = 0;
 
-                    const badgeNov = document.getElementById('badge-novedades');
-                    if (badgeNov) {
-                        if (countNov > 0) {
-                            badgeNov.innerText = countNov;
-                            badgeNov.classList.remove('hidden');
-                        } else {
-                            badgeNov.classList.add('hidden');
-                        }
+                if (!ultimoIdLeido) {
+                    noLeidasCount = recibidas.length;
+                } else {
+                    for (let item of recibidas) {
+                        if (String(item.id) === String(ultimoIdLeido)) break;
+                        noLeidasCount++;
                     }
                 }
 
-                // Consultar comunicados de memos
-                const { data: memoData, error: errMemo } = await db
-                    .from('comunicados_memos')
-                    .select('*')
-                    .ilike('id_clave', 'comunicado_memos_%');
-
-                if (!errMemo && memoData) {
-                    let countMemo = 0;
-                    memoData.forEach(item => {
-                        const contenidoObj = item.contenido || {};
-                        const deptoDestino = (item.departamento_destino || contenidoObj.departamento || '').trim().toLowerCase();
-                        const origenDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
-
-                        const esParaMiDepto = (deptoDestino === deptoActual || deptoDestino === 'todos' || deptoDestino === 'todos-los-departamentos');
-                        const esPropio = (origenDepto === deptoActual && (contenidoObj.supervisor_origen === nombreActual || !contenidoObj.supervisor_origen));
-
-                        if (esParaMiDepto && !esPropio) {
-                            if (!leidosMemos.includes(item.id_clave)) {
-                                countMemo++;
-                            }
-                        }
-                    });
-
-                    const badgeMemo = document.getElementById('badge-memos');
-                    if (badgeMemo) {
-                        if (countMemo > 0) {
-                            badgeMemo.innerText = countMemo;
-                            badgeMemo.classList.remove('hidden');
-                        } else {
-                            badgeMemo.classList.add('hidden');
-                        }
+                const badgeNov = document.getElementById('badge-novedades');
+                if (badgeNov) {
+                    if (noLeidasCount > 0) {
+                        badgeNov.innerText = noLeidasCount;
+                        badgeNov.classList.remove('hidden');
+                    } else {
+                        badgeNov.classList.add('hidden');
                     }
                 }
-
             } catch (e) {
-                console.error("Error verificando notificaciones pendientes:", e);
+                console.error("Error al verificar novedades no leídas:", e);
             }
         }
 
-        // Marcar notificaciones como leídas al abrir la sección correspondiente
-        async function marcarComoLeidas(tipo) {
+        async function verificarMemosNoLeidos() {
             try {
-                const ilikeFiltro = tipo === 'novedades' ? 'comunicado_novedades_%' : 'comunicado_memos_%';
-                const storageKey = tipo === 'novedades' ? 'leidos_novedades' : 'leidos_memos';
-                
                 const { data, error } = await db
                     .from('comunicados_memos')
-                    .select('id_clave, departamento_destino, departamento_origen, contenido')
-                    .ilike('id_clave', ilikeFiltro);
+                    .select('*')
+                    .ilike('id_clave', 'comunicado_memos_%')
+                    .order('created_at', { ascending: false });
 
-                if (!error && data) {
-                    let leidos = JSON.parse(localStorage.getItem(storageKey) || '[]');
-                    data.forEach(item => {
-                        if (!leidos.includes(item.id_clave)) {
-                            leidos.push(item.id_clave);
-                        }
-                    });
-                    localStorage.setItem(storageKey, JSON.stringify(leidos));
-                    
-                    // Ocultar badge visualmente de inmediato
-                    const badgeElem = document.getElementById('badge-' + tipo);
-                    if (badgeElem) badgeElem.classList.add('hidden');
+                if (error || !data) return;
+
+                const deptoActual = departamentoAgenteLogueado;
+
+                const recibidos = data.filter(item => {
+                    const contenidoObj = item.contenido || {};
+                    const deptoDestino = (item.departamento_destino || contenidoObj.departamento || 'Todos').trim().toLowerCase();
+                    const remitenteDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
+
+                    if (remitenteDepto === deptoActual) return false;
+
+                    return deptoDestino === deptoActual || deptoDestino === 'todos' || deptoDestino === 'todos los departamentos';
+                });
+
+                if (recibidos.length === 0) return;
+
+                const claveStorage = `dsg_admin_ultimo_memo_leido_${(nombreAgenteLogueado || 'admin').trim().toLowerCase()}`;
+                const ultimoIdLeido = localStorage.getItem(claveStorage);
+                let noLeidosCount = 0;
+
+                if (!ultimoIdLeido) {
+                    noLeidosCount = recibidos.length;
+                } else {
+                    for (let item of recibidos) {
+                        if (String(item.id) === String(ultimoIdLeido)) break;
+                        noLeidosCount++;
+                    }
+                }
+
+                const badgeMemo = document.getElementById('badge-memos');
+                if (badgeMemo) {
+                    if (noLeidosCount > 0) {
+                        badgeMemo.innerText = noLeidosCount;
+                        badgeMemo.classList.remove('hidden');
+                    } else {
+                        badgeMemo.classList.add('hidden');
+                    }
                 }
             } catch (e) {
-                console.error("Error al marcar como leídas:", e);
+                console.error("Error al verificar memos no leídos:", e);
             }
+        }
+
+        // Se llaman al entrar realmente a cada solapa: guardan el último id recibido como "leído" y ocultan el badge.
+        async function marcarNovedadesComoLeidas() {
+            try {
+                const { data, error } = await db
+                    .from('comunicados_memos')
+                    .select('id, departamento_destino, departamento_origen, contenido')
+                    .ilike('id_clave', 'comunicado_novedades_%')
+                    .order('created_at', { ascending: false });
+
+                if (!error && data) {
+                    const deptoActual = departamentoAgenteLogueado;
+                    const recibidas = data.filter(item => {
+                        const contenidoObj = item.contenido || {};
+                        const deptoDestino = (item.departamento_destino || contenidoObj.departamento || 'Todos').trim().toLowerCase();
+                        const remitenteDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
+                        if (remitenteDepto === deptoActual) return false;
+                        return deptoDestino === deptoActual || deptoDestino === 'todos' || deptoDestino === 'todos los departamentos';
+                    });
+                    if (recibidas.length > 0) {
+                        const claveStorage = `dsg_admin_ultimo_novedad_leida_${(nombreAgenteLogueado || 'admin').trim().toLowerCase()}`;
+                        localStorage.setItem(claveStorage, recibidas[0].id);
+                    }
+                }
+            } catch (e) {
+                console.error("Error al marcar novedades como leídas:", e);
+            }
+            const badgeNov = document.getElementById('badge-novedades');
+            if (badgeNov) badgeNov.classList.add('hidden');
+        }
+
+        async function marcarMemosComoLeidos() {
+            try {
+                const { data, error } = await db
+                    .from('comunicados_memos')
+                    .select('id, departamento_destino, departamento_origen, contenido')
+                    .ilike('id_clave', 'comunicado_memos_%')
+                    .order('created_at', { ascending: false });
+
+                if (!error && data) {
+                    const deptoActual = departamentoAgenteLogueado;
+                    const recibidos = data.filter(item => {
+                        const contenidoObj = item.contenido || {};
+                        const deptoDestino = (item.departamento_destino || contenidoObj.departamento || 'Todos').trim().toLowerCase();
+                        const remitenteDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
+                        if (remitenteDepto === deptoActual) return false;
+                        return deptoDestino === deptoActual || deptoDestino === 'todos' || deptoDestino === 'todos los departamentos';
+                    });
+                    if (recibidos.length > 0) {
+                        const claveStorage = `dsg_admin_ultimo_memo_leido_${(nombreAgenteLogueado || 'admin').trim().toLowerCase()}`;
+                        localStorage.setItem(claveStorage, recibidos[0].id);
+                    }
+                }
+            } catch (e) {
+                console.error("Error al marcar memos como leídos:", e);
+            }
+            const badgeMemo = document.getElementById('badge-memos');
+            if (badgeMemo) badgeMemo.classList.add('hidden');
         }
 
         function mostrar(id, titulo) { 
@@ -805,12 +854,12 @@
             if (id === 'novedades') {
                 cargarNovedades();
                 manejarCambioDepto('destino-novedades');
-                marcarComoLeidas('novedades');
+                marcarNovedadesComoLeidas();
             }
             if (id === 'memos') {
                 cargarMemos();
                 manejarCambioDepto('destino-memos');
-                marcarComoLeidas('memos');
+                marcarMemosComoLeidos();
             }
         }
         function limpiarPantalla(id) {
@@ -1679,3 +1728,4 @@
     </script>
 </body>
 </html>
+
