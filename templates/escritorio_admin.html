@@ -307,9 +307,10 @@
                     actualizarTituloBienvenida(nombreAgenteLogueado);
                 }
                 
-                // Una vez obtenido el perfil, inicializamos la verificación de notificaciones no leídas y configuramos Realtime / sondeo
+                // Una vez obtenido el perfil, inicializamos la verificación de notificaciones no leídas
                 verificarNotificacionesPendientes();
-                configurarRealtimeNotificaciones();
+                // Opcional: configurar un intervalo de sondeo cada 60 segundos
+                setInterval(verificarNotificacionesPendientes, 60000);
             }
 
             function actualizarTituloBienvenida(nombre) {
@@ -326,21 +327,6 @@
             }
 
             obtenerPerfilLogueado();
-
-            // Configurar Supabase Realtime para detectar inserciones de forma instantánea
-            function configurarRealtimeNotificaciones() {
-                try {
-                    db.channel('public:comunicados_memos')
-                      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'comunicados_memos' }, payload => {
-                          verificarNotificacionesPendientes();
-                      })
-                      .subscribe();
-                } catch (e) {
-                    console.error("Error al configurar Realtime:", e);
-                }
-                // Intervalo de respaldo cada 30 segundos
-                setInterval(verificarNotificacionesPendientes, 30000);
-            }
 
             // Función universal de normalización estricta a kebab-case
             function toKebabCase(nombreVisual) {
