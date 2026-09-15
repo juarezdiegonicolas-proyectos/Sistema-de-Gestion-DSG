@@ -266,16 +266,20 @@
             // Variables globales mapeadas para el usuario activo logueado
             let nombreAgenteLogueado = "Administrador";
             let departamentoAgenteLogueado = "direccion-servicios-generales";
+            let turnoAgenteLogueado = "Mañana";
+            let supervisorAgenteLogueado = "";
+            let currentUserId = null;
 
-            // Obtener perfil completo del usuario logueado al iniciar (nombre y departamento real)
+            // Obtener perfil completo del usuario logueado al iniciar (nombre, departamento, turno, supervisor)
             async function obtenerPerfilLogueado() {
                 try {
                     const { data: { session } } = await db.auth.getSession();
                     if (session && session.user) {
+                        currentUserId = session.user.id;
                         const { data, error } = await db
                             .from('usuarios')
-                            .select('nombre_completo, departamento')
-                            .eq('id', session.user.id)
+                            .select('id, nombre_completo, departamento, turno, supervisor')
+                            .eq('id', currentUserId)
                             .maybeSingle();
                         if (data) {
                             if (data.nombre_completo) {
@@ -287,10 +291,15 @@
                             if (data.departamento) {
                                 departamentoAgenteLogueado = data.departamento.trim().toLowerCase();
                             }
+                            if (data.turno) {
+                                turnoAgenteLogueado = data.turno.trim();
+                            }
+                            if (data.supervisor) {
+                                supervisorAgenteLogueado = data.supervisor.trim();
+                            }
                         }
                     }
                     
-                    // Fallback directo por localStorage o si no hay sesión activa estricta en Supabase client SDK pero sí en token local
                     if (nombreAgenteLogueado === "Administrador") {
                         const storedName = localStorage.getItem('nombre_completo') || localStorage.getItem('usuario_nombre');
                         if (storedName) {
@@ -307,10 +316,8 @@
                     actualizarTituloBienvenida(nombreAgenteLogueado);
                 }
                 
-                // Una vez obtenido el perfil, inicializamos la verificación de notificaciones no leídas
                 verificarNotificacionesPendientes();
-                // Opcional: configurar un intervalo de sondeo cada 60 segundos
-                setInterval(verificarNotificacionesPendientes, 60000);
+                configurarRealtimeNovedades();
             }
 
             function actualizarTituloBienvenida(nombre) {
@@ -328,7 +335,6 @@
 
             obtenerPerfilLogueado();
 
-            // Función universal de normalización estricta a kebab-case
             function toKebabCase(nombreVisual) {
                 if (!nombreVisual || nombreVisual === 'Todos') return 'Todos';
                 return nombreVisual
@@ -341,36 +347,22 @@
 
             function imprimirConOrientacion() {
                 const seleccion = prompt("¿Cómo deseas imprimir?\n\nEscribe 'V' para Vertical\nEscribe 'H' para Horizontal", "H");
-                
                 if (seleccion === null) return; 
-
                 const opcion = seleccion.trim().toUpperCase();
-                
                 const viejo = document.getElementById('estilo-forzado-impresion');
                 if (viejo) viejo.remove();
-
                 const nuevoEstilo = document.createElement('style');
                 nuevoEstilo.id = 'estilo-forzado-impresion';
-
                 if (opcion === 'V') {
                     nuevoEstilo.innerHTML = '@media print { @page { size: A4 portrait !important; margin: 10mm !important; } }';
                 } else {
                     nuevoEstilo.innerHTML = '@media print { @page { size: A4 landscape !important; margin: 10mm !important; } }';
                 }
-
                 document.head.appendChild(nuevoEstilo);
-
-                setTimeout(() => {
-                    window.print();
-                }, 100);
+                setTimeout(() => { window.print(); }, 100);
             }
 
             const agentesGlobal = [{"legajo":"120369", "nombre":"VEGA JUAN CARLOS"},{"legajo":"122011", "nombre":"GONZALEZ CARLOS HECTOR"},{"legajo":"128217", "nombre":"CARLOTTO GABRIEL HORACIO"},{"legajo":"130087", "nombre":"GARAY LEONARDO EMILIO"},{"legajo":"130187", "nombre":"CISNEROS NESTOR EDUARDO"},{"legajo":"131954", "nombre":"GORENA JORGE RICARDO"},{"legajo":"132059", "nombre":"BUSTO JUAN MANUEL"},{"legajo":"132831", "nombre":"GORT PEDRO ALBERTO"},{"legajo":"144694", "nombre":"LEDESMA HECTOR CARLOS"},{"legajo":"145765", "nombre":"BARRAZA CRISTIAN JAVIER"},{"legajo":"147812", "nombre":"RODRIGUEZ GONZALO LEANDRO"},{"legajo":"147944", "nombre":"MORENO FERNANDO DANIEL"},{"legajo":"147946", "nombre":"ALVAREZ ANTONIO OSCAR"},{"legajo":"151978", "nombre":"LUZI CHRISTIAN DARIO"},{"legajo":"151979", "nombre":"ALMEIDA CARLOS ALBERTO"},{"legajo":"151980", "nombre":"GONZALEZ PATRICIO ALBERTO"},{"legajo":"151982", "nombre":"VARELA EDUARDO JOSE"},{"legajo":"151983", "nombre":"MARCIANO MARCELO DANIEL"},{"legajo":"151996", "nombre":"FIDEL RUBEN DARIO"},{"legajo":"152016", "nombre":"PAPINI JUAN JOSE"},{"legajo":"152301", "nombre":"CISNEROS LEONARDO SEBASTIAN"},{"legajo":"152302", "nombre":"BAZAN DIEGO ANTONIO"},{"legajo":"153090", "nombre":"OLIVA CRISTIAN RUBEN"},{"legajo":"153572", "nombre":"CANABIDEZ CRISTIAN ALBERTO"},{"legajo":"154334", "nombre":"VAZQUEZ JORGE OSVALDO"},{"legajo":"154335", "nombre":"SANTORO CHRISTIAN RODRIGO"},{"legajo":"154973", "nombre":"HIDALGO SEBASTIAN ARIEL"},{"legajo":"164370", "nombre":"VASCONCELLO SERGIO EDUARDO"},{"legajo":"164669", "nombre":"DIAZ BELFOR ALBERTO"},{"legajo":"166919", "nombre":"BARRAGAN MARIANO JAVIER"},{"legajo":"167190", "nombre":"MORALES EREZUMA LEONARDO AND"},{"legajo":"168007", "nombre":"ICAÑO MARTIN FABIAN"},{"legajo":"169981", "nombre":"KAMINOVICH LEONARDO MARTIN"},{"legajo":"176828", "nombre":"REYNA SANCHEZ EDUARDO GASTON"},{"legajo":"195446", "nombre":"VASQUEZ JORGE ALFREDO"},{"legajo":"195452", "nombre":"FLORES RODRIGO NICOLAS"},{"legajo":"216727", "nombre":"MIRANDA NORBERTO MATIAS"},{"legajo":"235008", "nombre":"BARROCA GERARDO EZEQUIEL"},{"legajo":"243734", "nombre":"VARGAS AXEL BRIAN"},{"legajo":"249665", "nombre":"SANSOGNE MATIAS MAURICIO"},{"legajo":"250625", "nombre":"SOTO NAHUEL MARCELO"},{"legajo":"251466", "nombre":"DOMINGUEZ HECTOR OMAR CIRO"},{"legajo":"261471", "nombre":"VERON NORBERTO MARIO MANUEL"},{"legajo":"259586", "nombre":"LOPEZ VICTOR HUGO"},{"legajo":"244105", "nombre":"REA JUAN GABRIEL"},{"legajo":"242264", "nombre":"ELIAS GUSTAVO DANIEL"},{"legajo":"195453", "nombre":"BARROCA FRANCO DANIEL"}];
-
-            async function apiGuardar(key, data) {
-                const { error } = await db.from('comunicados_memos').upsert({ id_clave: key, contenido: data });
-                if (error) console.error("Error al guardar en Supabase:", error);
-            }
 
             function obtenerNombreDepartamentoLargo(val) {
                 switch(val) {
@@ -391,22 +383,15 @@
                 const selectSup = document.getElementById('supervisor-' + idSeccion);
 
                 if (!selectDepto || !contenedorSup || !selectSup) return;
-
                 const deptoVal = selectDepto.value;
 
                 if (deptoVal && deptoVal !== 'Todos') {
                     contenedorSup.style.display = 'inline-block';
                     try {
-                        const { data, error } = await db
-                            .from('usuarios')
-                            .select('nombre_completo')
-                            .eq('departamento', deptoVal);
-
+                        const { data, error } = await db.from('usuarios').select('nombre_completo').eq('departamento', deptoVal);
                         if (error) throw error;
-
                         selectSup.innerHTML = '<option value="">-- Todos los supervisores --</option>';
                         const unicos = [...new Set((data || []).map(item => item.nombre_completo))].filter(Boolean).sort();
-
                         unicos.forEach(nombre => {
                             const opt = document.createElement('option');
                             opt.value = nombre;
@@ -433,9 +418,9 @@
                     document.write(`
                         <div id="novedades" class="seccion">
                             <div class="header-logos">
-                                <img src="logo_hospi.png" alt="Logo" onerror="this.src='https://via.placeholder.com/150?text=Hospital'">
+                                <img src="{{ url_for('static', filename='logo_hospi.png') }}" alt="Logo" onerror="this.src='https://via.placeholder.com/150?text=Hospital'">
                                 <h1 style="margin: 0; text-align: center; flex: 1;">Novedades</h1>
-                                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
+                                <img src="{{ url_for('static', filename='logo_dsg.png') }}" alt="Logo DSG" style="height: 135px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
                             </div>
                             
                             <!-- Filtros y Controles de Envío -->
@@ -478,7 +463,7 @@
                             <div id="preview-novedades" class="preview-adjunto"></div>
                             
                             <div class="area-acciones">
-                                <button id="btn-print-novedades" class="btn-gestion btn-imprimir" onclick="imprimirConOrientacion()">🖨 Imprimir</button>
+                                <button id="btn-print-novedades" class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
                                 <button class="btn-gestion btn-imprimir" style="background: #dc3545;" onclick="limpiarPantalla('novedades')">🧹 Limpiar Pantalla</button>
                             </div>
 
@@ -493,12 +478,11 @@
                     document.write(`
                         <div id="memos" class="seccion">
                             <div class="header-logos">
-                                <img src="logo_hospi.png" alt="Logo" onerror="this.src='https://via.placeholder.com/150?text=Hospital'">
+                                <img src="{{ url_for('static', filename='logo_hospi.png') }}" alt="Logo" onerror="this.src='https://via.placeholder.com/150?text=Hospital'">
                                 <h1 style="margin: 0; text-align: center; flex: 1;">Memos y Resoluciones</h1>
-                                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
+                                <img src="{{ url_for('static', filename='logo_dsg.png') }}" alt="Logo DSG" style="height: 135px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
                             </div>
                             
-                            <!-- Filtros y Controles de Envío -->
                             <div class="filtros-historicos">
                                 <select id="depto-destino-memos" class="input-select" onchange="manejarCambioDepto('destino-memos'); actualizarPrint('memos');">
                                     <option value="Todos">Todos los departamentos</option>
@@ -511,13 +495,11 @@
                                     <option value="dalo">DALO</option>
                                     <option value="higiene-y-seguridad">Higiene y Seguridad</option>
                                 </select>
-                                
                                 <div id="contenedor-supervisor-destino-memos" style="display: none;">
                                     <select id="supervisor-destino-memos" class="input-select" onchange="actualizarPrint('memos')">
                                         <option value="">-- Todos los supervisores --</option>
                                     </select>
                                 </div>
-                                
                                 <select id="turno-destino-memos" class="input-select" onchange="actualizarPrint('memos')">
                                     <option value="Todos">Todos los turnos</option>
                                     <option value="Mañana">Mañana</option>
@@ -526,23 +508,18 @@
                                     <option value="Noche B">Noche B</option>
                                     <option value="Sadofe">Sadofe</option>
                                 </select>
-                                
                                 <button class="btn-gestion btn-adjuntar" onclick="document.getElementById('file-memos').click()">📎 Adjuntar Archivos</button>
                                 <input type="file" id="file-memos" style="display:none" multiple onchange="previsualizarMultiples(this, 'memos')">
                                 <button class="btn-gestion" style="background: #28a745; color: white;" onclick="guardarRedaccion('memos')">Guardar y Enviar</button>
                             </div>
-                            
                             <div id="print-header-memos" class="print-header">Dirigido a: Todos los departamentos | Turno: Todos los turnos</div>
                             <textarea id="txt-memos" oninput="document.getElementById('print-memos').innerText = this.value" placeholder="Escriba aquí el contenido..."></textarea>
                             <div id="print-memos" class="print-only"></div>
                             <div id="preview-memos" class="preview-adjunto"></div>
-                            
                             <div class="area-acciones">
-                                <button id="btn-print-memos" class="btn-gestion btn-imprimir" onclick="imprimirConOrientacion()">🖨 Imprimir</button>
+                                <button id="btn-print-memos" class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
                                 <button class="btn-gestion btn-imprimir" style="background: #dc3545;" onclick="limpiarPantalla('memos')">🧹 Limpiar Pantalla</button>
                             </div>
-
-                            <!-- Contenedor del Historial del Muro -->
                             <div class="historial-muro-container">
                                 <div class="historial-muro-titulo">📌 Historial de Envíos en Muro (Memos y Resoluciones)</div>
                                 <div id="contenedor-memos">Cargando registros históricos...</div>
@@ -553,9 +530,9 @@
                     document.write(`
                         <div id="${id}" class="seccion">
                             <div class="header-logos">
-                                <img src="logo_hospi.png" alt="Logo">
+                                <img src="{{ url_for('static', filename='logo_hospi.png') }}" alt="Logo">
                                 <h1 style="margin: 0; text-align: center; flex: 1;">${titulo}</h1>
-                                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+                                <img src="{{ url_for('static', filename='logo_dsg.png') }}" alt="Logo DSG" style="height: 135px;">
                             </div>
                             <div class="filtros-historicos">
                                 ${tipoContenido === 'auditoria' ? `
@@ -609,13 +586,11 @@
                                     <button class="btn-gestion" style="background: #28a745; color: white;" onclick="guardarRedaccion('${id}')">Guardar y Enviar</button>
                                 `}
                             </div>
-                            
                             ${tipoContenido === 'auditoria' ? `<div id="visor-${id}" style="border: 1px solid #ccc; padding: 20px; min-height: 200px;">Seleccione filtros para auditar.</div>` : 
                               tipoContenido === 'estado-ascensores-vivo' ? `<div id="visor-${id}" style="border: 1px solid #ccc; padding: 20px; min-height: 200px; background: #fff;">Cargando datos actuales...</div>` :
                               `<div id="print-header-${id}" class="print-header">Dirigido a: Todos los departamentos | Turno: Todos los turnos</div><textarea id="txt-${id}" oninput="document.getElementById('print-${id}').innerText = this.value" placeholder="Escriba aquí el contenido..."></textarea><div id="print-${id}" class="print-only"></div><div id="preview-${id}" class="preview-adjunto"></div>`}
-                            
                             <div class="area-acciones">
-                                <button id="btn-print-${id}" class="btn-gestion btn-imprimir" onclick="imprimirConOrientacion()">🖨 Imprimir</button>
+                                <button id="btn-print-${id}" class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
                                 ${tipoContenido === 'redaccion' ? `<button class="btn-gestion btn-limpiar" onclick="limpiarPantalla('${id}')">🧹 Limpiar Pantalla</button>` : ''}
                             </div>
                         </div>
@@ -634,9 +609,9 @@
         <!-- SECCIÓN ESTADÍSTICAS -->
         <div id="estadisticas" class="seccion">
             <div class="header-logos">
-                <img src="logo_hospi.png" alt="Logo">
+                <img src="{{ url_for('static', filename='logo_hospi.png') }}" alt="Logo">
                 <h1 style="margin: 0; text-align: center; flex: 1;" class="titulo-caja">Estadísticas Mensuales</h1>
-                <img src="logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+                <img src="{{ url_for('static', filename='logo_dsg.png') }}" alt="Logo DSG" style="height: 135px;">
             </div>
             <div class="filtros-historicos">
                 <select id="est-tipo" class="input-select">
@@ -681,17 +656,23 @@
         let archivosMultiplesNovedades = [];
         let archivosMultiplesMemos = [];
 
-        // Sistema de Notificaciones / Badges Pendientes en tiempo real
+        // 1. Verificación de Notificaciones con Filtro Estricto de Destino y Exclusión de Lecturas
         async function verificarNotificacionesPendientes() {
             try {
-                const deptoActual = departamentoAgenteLogueado;
-                const nombreActual = nombreAgenteLogueado;
+                if (!currentUserId) return;
+                const deptoActual = (departamentoAgenteLogueado || '').trim().toLowerCase();
+                const turnoActual = (turnoAgenteLogueado || '').trim().toLowerCase();
+                const supervisorActual = (supervisorAgenteLogueado || '').trim().toLowerCase();
 
-                // Clave en localStorage para guardar los IDs o marca de tiempo ya leídos por el usuario
-                const leidosNovedades = JSON.parse(localStorage.getItem('leidos_novedades') || '[]');
-                const leidosMemos = JSON.parse(localStorage.getItem('leidos_memos') || '[]');
+                // Consultar IDs ya leídos por este usuario en comunicados_lecturas
+                const { data: lecturasData } = await db
+                    .from('comunicados_lecturas')
+                    .select('comunicado_id')
+                    .eq('user_id', currentUserId);
+                
+                const idsLeidos = (lecturasData || []).map(l => l.comunicado_id);
 
-                // Consultar comunicados de novedades
+                // Consultar comunicados de novedades dirigidos al perfil del usuario
                 const { data: novData, error: errNov } = await db
                     .from('comunicados_memos')
                     .select('*')
@@ -700,19 +681,26 @@
                 if (!errNov && novData) {
                     let countNov = 0;
                     novData.forEach(item => {
+                        // Si ya está registrado en comunicados_lecturas, lo omitimos
+                        if (idsLeidos.includes(item.id)) return;
+
                         const contenidoObj = item.contenido || {};
                         const deptoDestino = (item.departamento_destino || contenidoObj.departamento || '').trim().toLowerCase();
+                        const turnoDestino = (item.turno_destino || contenidoObj.turno || '').trim().toLowerCase();
+                        const supDestino = (item.supervisor_destino || contenidoObj.supervisor || '').trim().toLowerCase();
                         const origenDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
-                        const supDestino = item.supervisor_destino || contenidoObj.supervisor || '';
+                        const supOrigen = (item.supervisor_origen || contenidoObj.supervisor_origen || '').trim().toLowerCase();
 
-                        // Determinar si el mensaje va dirigido al departamento o usuario actual y no es propio
-                        const esParaMiDepto = (deptoDestino === deptoActual || deptoDestino === 'todos' || deptoDestino === 'todos-los-departamentos');
-                        const esPropio = (origenDepto === deptoActual && (contenidoObj.supervisor_origen === nombreActual || !contenidoObj.supervisor_origen));
+                        // Validar coincidencia estricta de Departamento, Turno y Supervisor Destino
+                        const matchDepto = (deptoDestino === deptoActual || deptoDestino === 'todos' || deptoDestino === 'todos-los-departamentos');
+                        const matchTurno = (turnoDestino === turnoActual || turnoDestino === 'todos' || turnoDestino === 'todos los turnos');
+                        const matchSup = (!supDestino || supDestino.includes('general') || supDestino === supervisorActual);
 
-                        if (esParaMiDepto && !esPropio) {
-                            if (!leidosNovedades.includes(item.id_clave)) {
-                                countNov++;
-                            }
+                        // Excluir mensajes propios generados por el mismo usuario
+                        const esPropio = (origenDepto === deptoActual && (supOrigen === supervisorAgenteLogueado.toLowerCase() || !supOrigen));
+
+                        if (matchDepto && matchTurno && matchSup && !esPropio) {
+                            countNov++;
                         }
                     });
 
@@ -726,72 +714,82 @@
                         }
                     }
                 }
-
-                // Consultar comunicados de memos
-                const { data: memoData, error: errMemo } = await db
-                    .from('comunicados_memos')
-                    .select('*')
-                    .ilike('id_clave', 'comunicado_memos_%');
-
-                if (!errMemo && memoData) {
-                    let countMemo = 0;
-                    memoData.forEach(item => {
-                        const contenidoObj = item.contenido || {};
-                        const deptoDestino = (item.departamento_destino || contenidoObj.departamento || '').trim().toLowerCase();
-                        const origenDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
-
-                        const esParaMiDepto = (deptoDestino === deptoActual || deptoDestino === 'todos' || deptoDestino === 'todos-los-departamentos');
-                        const esPropio = (origenDepto === deptoActual && (contenidoObj.supervisor_origen === nombreActual || !contenidoObj.supervisor_origen));
-
-                        if (esParaMiDepto && !esPropio) {
-                            if (!leidosMemos.includes(item.id_clave)) {
-                                countMemo++;
-                            }
-                        }
-                    });
-
-                    const badgeMemo = document.getElementById('badge-memos');
-                    if (badgeMemo) {
-                        if (countMemo > 0) {
-                            badgeMemo.innerText = countMemo;
-                            badgeMemo.classList.remove('hidden');
-                        } else {
-                            badgeMemo.classList.add('hidden');
-                        }
-                    }
-                }
-
             } catch (e) {
                 console.error("Error verificando notificaciones pendientes:", e);
             }
         }
 
-        // Marcar notificaciones como leídas al abrir la sección correspondiente
+        // 2. Acción de Lectura Inteligente: Inserta en comunicados_lecturas y remueve la notificación al abrir Novedades
         async function marcarComoLeidas(tipo) {
+            if (tipo !== 'novedades' || !currentUserId) return;
             try {
-                const ilikeFiltro = tipo === 'novedades' ? 'comunicado_novedades_%' : 'comunicado_memos_%';
-                const storageKey = tipo === 'novedades' ? 'leidos_novedades' : 'leidos_memos';
-                
                 const { data, error } = await db
                     .from('comunicados_memos')
-                    .select('id_clave, departamento_destino, departamento_origen, contenido')
-                    .ilike('id_clave', ilikeFiltro);
+                    .select('id, id_clave, departamento_destino, turno_destino, supervisor_destino, departamento_origen, contenido')
+                    .ilike('id_clave', 'comunicado_novedades_%');
 
                 if (!error && data) {
-                    let leidos = JSON.parse(localStorage.getItem(storageKey) || '[]');
-                    data.forEach(item => {
-                        if (!leidos.includes(item.id_clave)) {
-                            leidos.push(item.id_clave);
+                    const deptoActual = (departamentoAgenteLogueado || '').trim().toLowerCase();
+                    const turnoActual = (turnoAgenteLogueado || '').trim().toLowerCase();
+                    const supervisorActual = (supervisorAgenteLogueado || '').trim().toLowerCase();
+
+                    // Consultar los ya leídos para no duplicar inserts
+                    const { data: lecturasData } = await db
+                        .from('comunicados_lecturas')
+                        .select('comunicado_id')
+                        .eq('user_id', currentUserId);
+                    const idsLeidos = (lecturasData || []).map(l => l.comunicado_id);
+
+                    for (const item of data) {
+                        if (idsLeidos.includes(item.id)) continue;
+
+                        const contenidoObj = item.contenido || {};
+                        const deptoDestino = (item.departamento_destino || contenidoObj.departamento || '').trim().toLowerCase();
+                        const turnoDestino = (item.turno_destino || contenidoObj.turno || '').trim().toLowerCase();
+                        const supDestino = (item.supervisor_destino || contenidoObj.supervisor || '').trim().toLowerCase();
+                        const origenDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
+
+                        const matchDepto = (deptoDestino === deptoActual || deptoDestino === 'todos' || deptoDestino === 'todos-los-departamentos');
+                        const matchTurno = (turnoDestino === turnoActual || turnoDestino === 'todos' || turnoDestino === 'todos los turnos');
+                        const matchSup = (!supDestino || supDestino.includes('general') || supDestino === supervisorActual);
+                        const esPropio = (origenDepto === deptoActual);
+
+                        if (matchDepto && matchTurno && matchSup && !esPropio) {
+                            // Insertar marca de lectura en la base de datos
+                            await db.from('comunicados_lecturas').insert({
+                                comunicado_id: item.id,
+                                user_id: currentUserId,
+                                leido_at: new Date().toISOString()
+                            });
                         }
-                    });
-                    localStorage.setItem(storageKey, JSON.stringify(leidos));
-                    
-                    // Ocultar badge visualmente de inmediato
+                    }
+
                     const badgeElem = document.getElementById('badge-' + tipo);
                     if (badgeElem) badgeElem.classList.add('hidden');
                 }
             } catch (e) {
                 console.error("Error al marcar como leídas:", e);
+            }
+        }
+
+        // 3. Supabase Realtime: Escucha nuevos registros en comunicados_memos para Novedades en tiempo real
+        function configurarRealtimeNovedades() {
+            try {
+                db.channel('public:comunicados_memos')
+                  .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'comunicados_memos' }, payload => {
+                      const nuevo = payload.new;
+                      if (nuevo && nuevo.id_clave && nuevo.id_clave.startsWith('comunicado_novedades_')) {
+                          verificarNotificacionesPendientes();
+                          // Si el usuario se encuentra actualmente en la sección de novedades, actualiza el muro automáticamente
+                          const seccionNovedades = document.getElementById('novedades');
+                          if (seccionNovedades && seccionNovedades.classList.contains('activo')) {
+                              cargarNovedades();
+                          }
+                      }
+                  })
+                  .subscribe();
+            } catch (e) {
+                console.error("Error configurando Realtime:", e);
             }
         }
 
@@ -803,16 +801,17 @@
                 cargarEstadoAscensoresVivo();
             }
             if (id === 'novedades') {
-                cargarNovedades();
+                marcarComoLeidas('novedades').then(() => {
+                    cargarNovedades();
+                });
                 manejarCambioDepto('destino-novedades');
-                marcarComoLeidas('novedades');
             }
             if (id === 'memos') {
                 cargarMemos();
                 manejarCambioDepto('destino-memos');
-                marcarComoLeidas('memos');
             }
         }
+
         function limpiarPantalla(id) {
             document.getElementById('txt-' + id).value = '';
             document.getElementById('print-' + id).innerText = '';
@@ -828,12 +827,8 @@
             }
             actualizarPrint(id);
             delete archivoData[id];
-            if (id === 'novedades') {
-                archivosMultiplesNovedades = [];
-            }
-            if (id === 'memos') {
-                archivosMultiplesMemos = [];
-            }
+            if (id === 'novedades') archivosMultiplesNovedades = [];
+            if (id === 'memos') archivosMultiplesMemos = [];
         }
 
         async function previsualizarMultiples(input, id) {
@@ -849,14 +844,9 @@
             for (let i = 0; i < input.files.length; i++) {
                 const file = input.files[i];
                 const reader = new FileReader();
-                
                 (function(f) {
                     reader.onload = function(e) {
-                        targetArray.push({
-                            name: f.name,
-                            type: f.type,
-                            data: e.target.result
-                        });
+                        targetArray.push({ name: f.name, type: f.type, data: e.target.result });
                         const li = document.createElement('li');
                         li.textContent = f.name;
                         listaUl.appendChild(li);
@@ -916,8 +906,6 @@
                     const supervisorDestinoMsg = item.supervisor_destino || contenidoObj.supervisor || 'General (Todos)';
                     const remitenteDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
                     const deptoDestinoValor = item.departamento_destino || contenidoObj.departamento || 'Todos';
-
-                    // Lógica mapeada dinámicamente según el departamento del usuario activo
                     const deptoUsuarioActual = departamentoAgenteLogueado;
 
                     let tipoBadge = '';
@@ -969,9 +957,7 @@
                                         <div style="margin-bottom: 8px;">
                                             <img src="${base64Data}" alt="Archivo adjunto" style="max-width: 100%; max-height: 350px; border-radius: 4px; border: 1px solid #ddd; object-fit: contain;" />
                                         </div>
-                                        <a href="${base64Data}" download="${nombreArchivo}">
-                                            📥 Descargar Imagen (${nombreArchivo})
-                                        </a>
+                                        <a href="${base64Data}" download="${nombreArchivo}">📥 Descargar Imagen (${nombreArchivo})</a>
                                     </div>
                                 `;
                             } else {
@@ -984,9 +970,7 @@
                                                 <span style="font-size: 11px; color: #666; display: block;">Documento adjunto</span>
                                             </div>
                                         </div>
-                                        <a href="${base64Data}" download="${nombreArchivo}">
-                                            📥 Descargar Archivo
-                                        </a>
+                                        <a href="${base64Data}" download="${nombreArchivo}">📥 Descargar Archivo</a>
                                     </div>
                                 `;
                             }
@@ -1008,7 +992,6 @@
                 });
 
                 contenedorNov.innerHTML = html;
-
             } catch (err) {
                 console.error("Error al cargar registros del muro:", err);
                 contenedorNov.innerHTML = '<p style="color: red;">Error al sincronizar con la base de datos.</p>';
@@ -1018,11 +1001,9 @@
         async function cargarEstadoAscensoresVivo() {
             const visor = document.getElementById('visor-estado-ascensores');
             visor.innerHTML = '<p style="text-align:center;">Cargando estado actual de ascensores...</p>';
-            
             try {
                 const { data, error } = await db.from('estado_actual_ascensores').select('*');
                 if (error) throw error;
-
                 if (!data || data.length === 0) {
                     visor.innerHTML = '<p style="text-align:center;">No hay registros en la tabla estado_actual_ascensores.</p>';
                     return;
@@ -1030,46 +1011,27 @@
 
                 let ultimaFechaStr = '';
                 let legajoOperador = null;
-
                 data.forEach(item => {
                     let fechaItem = item.updated_at || item.actualizado_at || item.actualizado_en || item.fecha;
                     if (fechaItem) {
-                        if (!ultimaFechaStr || new Date(fechaItem) > new Date(ultimaFechaStr)) {
-                            ultimaFechaStr = fechaItem;
-                        }
+                        if (!ultimaFechaStr || new Date(fechaItem) > new Date(ultimaFechaStr)) ultimaFechaStr = fechaItem;
                     }
                     let legajoItem = item.legajo_operador || item.legajo;
-                    if (legajoItem && !legajoOperador) {
-                        legajoOperador = String(legajoItem).trim();
-                    }
+                    if (legajoItem && !legajoOperador) legajoOperador = String(legajoItem).trim();
                 });
 
                 let nombreSupervisor = nombreAgenteLogueado;
                 if (legajoOperador) {
-                    const { data: userData, error: userError } = await db
-                        .from('usuarios')
-                        .select('nombre_completo')
-                        .eq('legajo', legajoOperador)
-                        .maybeSingle();
-
-                    if (!userError && userData && userData.nombre_completo) {
-                        nombreSupervisor = userData.nombre_completo;
-                    } else {
-                        nombreSupervisor = `Legajo: ${legajoOperador}`;
-                    }
+                    const { data: userData } = await db.from('usuarios').select('nombre_completo').eq('legajo', legajoOperador).maybeSingle();
+                    if (userData && userData.nombre_completo) nombreSupervisor = userData.nombre_completo;
+                    else nombreSupervisor = `Legajo: ${legajoOperador}`;
                 }
 
                 let fechaFormateada = 'Sin fecha registrada';
                 if (ultimaFechaStr) {
                     let f = new Date(ultimaFechaStr);
-                    if (!isNaN(f.getTime())) {
-                        fechaFormateada = f.toLocaleString('es-AR', {
-                            year: 'numeric', month: '2-digit', day: '2-digit',
-                            hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
-                        });
-                    } else {
-                        fechaFormateada = ultimaFechaStr;
-                    }
+                    if (!isNaN(f.getTime())) fechaFormateada = f.toLocaleString('es-AR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+                    else fechaFormateada = ultimaFechaStr;
                 }
 
                 const tituloContenedor = document.querySelector('#visor-estado-ascensores').previousElementSibling;
@@ -1078,7 +1040,6 @@
                 }
 
                 data.sort((a, b) => (a.id || 0) - (b.id || 0));
-
                 let cVerde = 0, cAmarillo = 0, cRojo = 0, cMixto = 0;
                 let totalAscensores = data.length;
 
@@ -1090,19 +1051,13 @@
                     let estado = item.estado || '-';
                     let uso = item.uso || '-';
                     let observaciones = item.observaciones && item.observaciones !== 'EMPTY' ? item.observaciones : '-';
-
                     let estLower = String(estado).toLowerCase();
-                    if (estLower.includes('funcionando') && !estLower.includes('ascensorista')) {
-                        cVerde++;
-                    } else if (estLower.includes('mantenimiento')) {
-                        cAmarillo++;
-                    } else if (estLower.includes('fuera') || estLower.includes('servicio')) {
-                        cRojo++;
-                    } else if (estLower.includes('ascensorista') || estLower.includes('mixto')) {
-                        cMixto++;
-                    } else {
-                        cVerde++;
-                    }
+
+                    if (estLower.includes('funcionando') && !estLower.includes('ascensorista')) cVerde++;
+                    else if (estLower.includes('mantenimiento')) cAmarillo++;
+                    else if (estLower.includes('fuera') || estLower.includes('servicio')) cRojo++;
+                    else if (estLower.includes('ascensorista') || estLower.includes('mixto')) cMixto++;
+                    else cVerde++;
 
                     html += `<tr>
                         <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold; text-align: center;">${dispositivo}</td>
@@ -1111,7 +1066,6 @@
                         <td style="padding: 10px; border: 1px solid #ddd;">${observaciones}</td>
                     </tr>`;
                 });
-
                 html += '</tbody></table>';
 
                 html += `
@@ -1123,34 +1077,21 @@
                             <div style="background-color: #1a3a5f; color: white; padding: 8px 15px; border-radius: 6px; font-weight: bold; margin-bottom: 8px; width: 270px; text-align: left;">Fuera de Servicio: ${totalAscensores > 0 ? ((cRojo/totalAscensores)*100).toFixed(1) : 0}% (${cRojo})</div>
                             <div style="background-color: #1a3a5f; color: white; padding: 8px 15px; border-radius: 6px; font-weight: bold; margin-bottom: 8px; width: 270px; text-align: left;">Con Ascensorista: ${totalAscensores > 0 ? ((cMixto/totalAscensores)*100).toFixed(1) : 0}% (${cMixto})</div>
                         </div>
-                        <div style="width: 220px; height: 220px;">
-                            <canvas id="graficoEstadoAscensoresVivo"></canvas>
-                        </div>
+                        <div style="width: 220px; height: 220px;"><canvas id="graficoEstadoAscensoresVivo"></canvas></div>
                     </div>`;
 
                 visor.innerHTML = html;
-
                 setTimeout(() => {
                     const ctx = document.getElementById('graficoEstadoAscensoresVivo')?.getContext('2d');
                     if (ctx) {
                         if (typeof chartAscVivo !== 'undefined' && chartAscVivo) chartAscVivo.destroy();
                         window.chartAscVivo = new Chart(ctx, {
                             type: 'pie',
-                            data: { 
-                                labels: ['Funcionando', 'Mantenimiento', 'Fuera de Servicio', 'Ascensoristas'], 
-                                datasets: [{ 
-                                    data: [cVerde, cAmarillo, cRojo, cMixto], 
-                                    backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#007bff'] 
-                                }] 
-                            },
-                            options: { 
-                                responsive: true, 
-                                plugins: { legend: { position: 'bottom' } } 
-                            }
+                            data: { labels: ['Funcionando', 'Mantenimiento', 'Fuera de Servicio', 'Ascensoristas'], datasets: [{ data: [cVerde, cAmarillo, cRojo, cMixto], backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#007bff'] }] },
+                            options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
                         });
                     }
                 }, 50);
-
             } catch (err) {
                 console.error("Error al obtener estado actual de ascensores:", err);
                 visor.innerHTML = '<p style="text-align:center; color: red;">Error al cargar los datos de ascensores y escaleras.</p>';
@@ -1162,7 +1103,6 @@
             const turno = document.getElementById('turno-destino-' + id).value;
             const supElem = document.getElementById('supervisor-destino-' + id);
             const supVal = supElem ? supElem.value : '';
-            
             let textoSup = supVal ? ` | Supervisor Destino: ${supVal}` : '';
             document.getElementById('print-header-' + id).innerText = `Dirigido a: ${depto} | Turno: ${turno}${textoSup}`;
         }
@@ -1200,12 +1140,11 @@
                 listaArchivos = primerArchivo ? [primerArchivo] : [];
             }
 
-            if (!textoEscrito.trim() && listaArchivos.length === 0 && !archivosMultiplesNovedades.length && !archivosMultiplesMemos.length) {
+            if (!textoEscrito.trim() && listaArchivos.length === 0) {
                 alert("Escriba un texto o adjunte algún archivo antes de guardar y enviar.");
                 return;
             }
 
-            // Normalización estricta utilizando el departamento real del usuario logueado como origen
             const deptoOrigenNormalizado = departamentoAgenteLogueado;
             const deptoDestinoNormalizado = toKebabCase(destinoVisual);
             const supervisorOrigenVal = nombreAgenteLogueado;
@@ -1226,7 +1165,6 @@
             const prefijoClave = id === 'novedades' ? 'comunicado_novedades' : 'comunicado_memos';
             const claveUnica = `${prefijoClave}_${deptoDestinoNormalizado}_${turno}${sufijoSupervisor}_${Date.now()}`;
             
-            // Inserción en Supabase mapeando correctamente el origen real y destino normalizado (incluyendo supervisor_origen)
             const { error } = await db
                 .from('comunicados_memos')
                 .upsert(
@@ -1288,7 +1226,6 @@
                         }
                     });
                 }
-                
                 if (p+a+l === 0) { visor.innerHTML = "No hay datos para esta selección."; return; }
                 visor.innerHTML = `<h3>Asistencia (${deptoSeleccionado}) ${mes}/${anio}</h3><div style="width:300px; height:300px; margin:auto;"><canvas id="graficoMes"></canvas></div><p><b>Presentismo:</b> ${((p/(p+a+l))*100).toFixed(1)}%</p>`;
                 new Chart(document.getElementById('graficoMes'), { type: 'doughnut', data: { labels: ['Presentes', 'Ausentes', 'Licencias'], datasets: [{ data: [p, a, l], backgroundColor: ['#28a745', '#dc3545', '#ffc107'] }] } });
@@ -1310,7 +1247,6 @@
                         }
                     });
                 }
-
                 if (func+falla === 0) { visor.innerHTML = "No hay registros para esta selección."; return; }
                 visor.innerHTML = `<h3>Estado Ascensores (${deptoSeleccionado}) ${mes}/${anio}</h3><div style="width:300px; height:300px; margin:auto;"><canvas id="graficoMes"></canvas></div><p><b>% Funcionamiento:</b> ${((func/(func+falla))*100).toFixed(1)}%</p>`;
                 new Chart(document.getElementById('graficoMes'), { type: 'pie', data: { labels: ['En Servicio', 'En Falla'], datasets: [{ data: [func, falla], backgroundColor: ['#28a745', '#dc3545'] }] } });
@@ -1332,20 +1268,11 @@
             }
 
             visor.innerHTML = "<p>Buscando en la base de datos...</p>";
-            
             let deptoFiltro = obtenerNombreDepartamentoLargo(depto);
             if (!deptoFiltro) deptoFiltro = depto;
             
-            let queryReg = db
-                .from('cierres_jornada')
-                .select('*')
-                .eq('fecha_cierre', fechaBusqueda)
-                .eq('turno', turno)
-                .eq('departamento', deptoFiltro);
-
-            if (supervisorSeleccionado) {
-                queryReg = queryReg.eq('supervisor', supervisorSeleccionado);
-            }
+            let queryReg = db.from('cierres_jornada').select('*').eq('fecha_cierre', fechaBusqueda).eq('turno', turno).eq('departamento', deptoFiltro);
+            if (supervisorSeleccionado) queryReg = queryReg.eq('supervisor', supervisorSeleccionado);
 
             const { data: reg, error } = await queryReg.maybeSingle();
             
@@ -1357,26 +1284,17 @@
 
                 const jsonAsistencia = reg.asistencia_personal;
                 const legajos = Object.keys(jsonAsistencia);
-
                 if (legajos.length === 0) {
                     visor.innerHTML = "<p style='color: red; font-weight: bold;'>El registro de asistencia está vacío.</p>";
                     return;
                 }
 
                 let tablaPersonal = 'intendencia_personal';
-                if (deptoFiltro === 'Ascensores') {
-                    tablaPersonal = 'ascensores_personal';
-                } else if (deptoFiltro === 'Camilleros') {
-                    tablaPersonal = 'camilleros_personal';
-                } else if (deptoFiltro === 'Lavadero Central') {
-                    tablaPersonal = 'lavadero_personal';
-                }
+                if (deptoFiltro === 'Ascensores') tablaPersonal = 'ascensores_personal';
+                else if (deptoFiltro === 'Camilleros') tablaPersonal = 'camilleros_personal';
+                else if (deptoFiltro === 'Lavadero Central') tablaPersonal = 'lavadero_personal';
 
-                const { data: resPersonal, error: errPers } = await db
-                    .from(tablaPersonal)
-                    .select('legajo, apellido_y_nombre')
-                    .in('legajo', legajos);
-
+                const { data: resPersonal } = await db.from(tablaPersonal).select('legajo, apellido_y_nombre').in('legajo', legajos);
                 const mapaNombres = {};
                 if (resPersonal) {
                     resPersonal.forEach(p => {
@@ -1425,7 +1343,6 @@
                 });
                 
                 html += `</tbody></table>`;
-                
                 html += `
                     <div style="margin-top: 30px; text-align: center; color: #1a3a5f; font-weight: bold; font-size: 20px; margin-bottom: 10px;">Estadísticas de Presentismo</div>
                     <div style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #ddd; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; justify-content: center; align-items: center; gap: 50px; flex-wrap: wrap;">
@@ -1434,30 +1351,18 @@
                             <div style="background-color: #1a3a5f; color: white; padding: 8px 15px; border-radius: 6px; font-weight: bold; margin-bottom: 8px; width: 270px; text-align: left;">Ausentismo: ${total > 0 ? ((ausentes/total)*100).toFixed(1) : 0}% (${ausentes})</div>
                             <div style="background-color: #1a3a5f; color: white; padding: 8px 15px; border-radius: 6px; font-weight: bold; margin-bottom: 8px; width: 270px; text-align: left;">Licencias: ${total > 0 ? ((licencias/total)*100).toFixed(1) : 0}% (${licencias})</div>
                         </div>
-                        <div style="width: 220px; height: 220px;">
-                            <canvas id="graficoRrhh"></canvas>
-                        </div>
+                        <div style="width: 220px; height: 220px;"><canvas id="graficoRrhh"></canvas></div>
                     </div>`;
 
                 visor.innerHTML = html;
-
                 setTimeout(() => {
                     const ctx = document.getElementById('graficoRrhh')?.getContext('2d');
                     if (ctx) {
                         if (typeof chartRrhh !== 'undefined' && chartRrhh) chartRrhh.destroy();
                         window.chartRrhh = new Chart(ctx, {
                             type: 'pie',
-                            data: { 
-                                labels: ['Presentes', 'Ausentes', 'Licencias'], 
-                                datasets: [{ 
-                                    data: [presentes, ausentes, licencias], 
-                                    backgroundColor: ['#28a745', '#dc3545', '#ffc107'] 
-                                }] 
-                            },
-                            options: { 
-                                responsive: true, 
-                                plugins: { legend: { position: 'bottom' } } 
-                            }
+                            data: { labels: ['Presentes', 'Ausentes', 'Licencias'], datasets: [{ data: [presentes, ausentes, licencias], backgroundColor: ['#28a745', '#dc3545', '#ffc107'] }] },
+                            options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
                         });
                     }
                 }, 50);
@@ -1465,7 +1370,6 @@
             } else if (tipo === 'planillas') {
                 if (deptoFiltro === 'Ascensores') {
                     const { data: dispData } = await db.from('registros_ascensores').select('*').eq('fecha_cierre', fechaBusqueda).eq('turno', turno);
-
                     let tablaDinamica = `<table style="width: 100%; border-collapse: collapse; margin-top: 15px;"><thead><tr><th style="border: 1px solid #333; padding: 10px; background-color: #1a3a5f; color: white;">N° de Ascensor</th><th style="border: 1px solid #333; padding: 10px; background-color: #1a3a5f; color: white;">Estado</th><th style="border: 1px solid #333; padding: 10px; background-color: #1a3a5f; color: white;">Uso Asignado</th><th style="border: 1px solid #333; padding: 10px; background-color: #1a3a5f; color: white;">Observaciones / Detalle</th></tr></thead><tbody>`;
                     
                     let cVerde = 0, cAmarillo = 0, cRojo = 0, cMixto = 0;
@@ -1485,17 +1389,11 @@
                             }
 
                             let estLower = estadoNormalizado.toLowerCase();
-                            if (estLower.includes('funcionando') && !estLower.includes('ascensorista')) {
-                                cVerde++;
-                            } else if (estLower.includes('mantenimiento')) {
-                                cAmarillo++;
-                            } else if (estLower.includes('fuera') || estLower.includes('servicio')) {
-                                cRojo++;
-                            } else if (estLower.includes('ascensorista') || estLower.includes('mixto')) {
-                                cMixto++;
-                            } else {
-                                cVerde++;
-                            }
+                            if (estLower.includes('funcionando') && !estLower.includes('ascensorista')) cVerde++;
+                            else if (estLower.includes('mantenimiento')) cAmarillo++;
+                            else if (estLower.includes('fuera') || estLower.includes('servicio')) cRojo++;
+                            else if (estLower.includes('ascensorista') || estLower.includes('mixto')) cMixto++;
+                            else cVerde++;
 
                             tablaDinamica += `<tr><td style="border: 1px solid #333; padding: 8px; text-align: center;">${item.identificador_dispositivo}</td><td style="border: 1px solid #333; padding: 8px; text-align: center;">${estadoNormalizado}</td><td style="border: 1px solid #333; padding: 8px; text-align: center;">${usoAsignado}</td><td style="border: 1px solid #333; padding: 8px; text-align: center;">${detalleObs}</td></tr>`;
                         });
@@ -1503,7 +1401,6 @@
                         tablaDinamica += `<tr><td colspan="4" style="border: 1px solid #333; padding: 12px; text-align: center;">No hay registros detallados de ascensores para esta fecha.</td></tr>`;
                     }
                     tablaDinamica += `</tbody></table>`;
-
                     tablaDinamica += `
                         <div style="margin-top: 30px; text-align: center; color: #1a3a5f; font-weight: bold; font-size: 20px; margin-bottom: 10px;">Estadísticas de Funcionalidad</div>
                         <div style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #ddd; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; justify-content: center; align-items: center; gap: 50px; flex-wrap: wrap;">
@@ -1513,30 +1410,18 @@
                                 <div style="background-color: #1a3a5f; color: white; padding: 8px 15px; border-radius: 6px; font-weight: bold; margin-bottom: 8px; width: 270px; text-align: left;">Fuera de Servicio: ${totalAscensores > 0 ? ((cRojo/totalAscensores)*100).toFixed(1) : 0}% (${cRojo})</div>
                                 <div style="background-color: #1a3a5f; color: white; padding: 8px 15px; border-radius: 6px; font-weight: bold; margin-bottom: 8px; width: 270px; text-align: left;">Con Ascensorista: ${totalAscensores > 0 ? ((cMixto/totalAscensores)*100).toFixed(1) : 0}% (${cMixto})</div>
                             </div>
-                            <div style="width: 220px; height: 220px;">
-                                <canvas id="graficoAscensores"></canvas>
-                            </div>
+                            <div style="width: 220px; height: 220px;"><canvas id="graficoAscensores"></canvas></div>
                         </div>`;
 
                     visor.innerHTML = tablaDinamica;
-
                     setTimeout(() => {
                         const ctx = document.getElementById('graficoAscensores')?.getContext('2d');
                         if (ctx) {
                             if (typeof chartAsc !== 'undefined' && chartAsc) chartAsc.destroy();
                             window.chartAsc = new Chart(ctx, {
                                 type: 'pie',
-                                data: { 
-                                    labels: ['Funcionando', 'Mantenimiento', 'Fuera de Servicio', 'Ascensoristas'], 
-                                    datasets: [{ 
-                                        data: [cVerde, cAmarillo, cRojo, cMixto], 
-                                        backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#007bff'] 
-                                    }] 
-                                },
-                                options: { 
-                                    responsive: true, 
-                                    plugins: { legend: { position: 'bottom' } } 
-                                }
+                                data: { labels: ['Funcionando', 'Mantenimiento', 'Fuera de Servicio', 'Ascensoristas'], datasets: [{ data: [cVerde, cAmarillo, cRojo, cMixto], backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#007bff'] }] },
+                                options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
                             });
                         }
                     }, 50);
@@ -1594,7 +1479,6 @@
 
                 } else if (deptoFiltro === 'Camilleros') {
                     const { data: camData } = await db.from('registros_camilleros').select('*').eq('fecha_cierre', fechaBusqueda).eq('turno', turno);
-
                     let tablaDinamica = `
                         <div style="background: #fff; width: 100%; box-sizing: border-box;">
                             <div style="font-size: 16px; font-weight: bold; color: #1a3a5f; margin-bottom: 10px;">Planilla Operativa - Camilleros</div>
@@ -1644,7 +1528,6 @@
                             <p style="margin: 0; padding: 0; white-space: pre-wrap;">${obsCamilleros || 'Sin observaciones registradas.'}</p>
                         </div>
                     </div>`;
-
                     visor.innerHTML = tablaDinamica;
 
                 } else {
@@ -1652,7 +1535,6 @@
                         visor.innerHTML = `<p style='color: red; font-weight: bold;'>No se encontraron registros para ${deptoFiltro} en el turno ${turno} (${fechaBusqueda}).</p>`;
                         return;
                     }
-
                     let tablaDinamica = `
                         <div style="background: #fff; width: 100%; box-sizing: border-box;">
                             <div style="font-size: 16px; font-weight: bold; color: #1a3a5f; margin-bottom: 10px;">Planilla Operativa (${reg.departamento})</div>
@@ -1673,6 +1555,7 @@
                 visor.innerHTML = `<h3>Reporte Diario - Vista de Auditoría</h3><style>.hoja-modelo-limpio { width: 100% !important; background-color: #fff !important; border: 1px solid #ccc !important; padding: 30px !important; position: relative !important; min-height: 800px !important; font-family: 'Courier New', Courier, monospace !important; font-size: 16px !important; line-height: 30px !important; box-sizing: border-box !important; background-image: linear-gradient(to right, transparent 0px, transparent 0px), linear-gradient(#e0e0e0 1px, transparent 1px) !important; background-size: 100% 30px !important; white-space: pre-wrap !important; }</style><div class="hoja-modelo-limpio">${reg.reporte_diario || 'No hay contenido de reporte.'}</div>`;
             }
         }
+
         document.getElementById('reportes').classList.add('activo');
         cargarNovedades();
         cargarMemos();
