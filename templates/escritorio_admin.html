@@ -307,12 +307,9 @@
                     actualizarTituloBienvenida(nombreAgenteLogueado);
                 }
                 
-                // Novedades: chequeo inicial contra comunicados_lecturas + suscripción en tiempo real (Supabase Realtime)
-                verificarNotificacionesNovedades();
-                suscribirNovedadesRealtime();
-
-                // Memos: se mantiene el chequeo por sondeo (localStorage), sin cambios
+                // Una vez obtenido el perfil, inicializamos la verificación de notificaciones no leídas
                 verificarNotificacionesPendientes();
+                // Opcional: configurar un intervalo de sondeo cada 60 segundos
                 setInterval(verificarNotificacionesPendientes, 60000);
             }
 
@@ -436,9 +433,9 @@
                     document.write(`
                         <div id="novedades" class="seccion">
                             <div class="header-logos">
-                                <img src="{{ url_for('static', filename='logo_hospi.png') }}" alt="Logo" onerror="this.src='https://via.placeholder.com/150?text=Hospital'">
+                                <img src="/static/logo_hospi.png" alt="Logo" onerror="this.src='https://via.placeholder.com/150?text=Hospital'">
                                 <h1 style="margin: 0; text-align: center; flex: 1;">Novedades</h1>
-                                <img src="{{ url_for('static', filename='logo_dsg.png') }}" alt="Logo DSG" style="height: 135px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
+                                <img src="/static/logo_dsg.png" alt="Logo DSG" style="height: 135px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
                             </div>
                             
                             <!-- Filtros y Controles de Envío -->
@@ -496,9 +493,9 @@
                     document.write(`
                         <div id="memos" class="seccion">
                             <div class="header-logos">
-                                <img src="{{ url_for('static', filename='logo_hospi.png') }}" alt="Logo" onerror="this.src='https://via.placeholder.com/150?text=Hospital'">
+                                <img src="/static/logo_hospi.png" alt="Logo" onerror="this.src='https://via.placeholder.com/150?text=Hospital'">
                                 <h1 style="margin: 0; text-align: center; flex: 1;">Memos y Resoluciones</h1>
-                                <img src="{{ url_for('static', filename='logo_dsg.png') }}" alt="Logo DSG" style="height: 135px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
+                                <img src="/static/logo_dsg.png" alt="Logo DSG" style="height: 135px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
                             </div>
                             
                             <!-- Filtros y Controles de Envío -->
@@ -556,9 +553,9 @@
                     document.write(`
                         <div id="${id}" class="seccion">
                             <div class="header-logos">
-                                <img src="{{ url_for('static', filename='logo_hospi.png') }}" alt="Logo">
+                                <img src="/static/logo_hospi.png" alt="Logo">
                                 <h1 style="margin: 0; text-align: center; flex: 1;">${titulo}</h1>
-                                <img src="{{ url_for('static', filename='logo_dsg.png') }}" alt="Logo DSG" style="height: 135px;">
+                                <img src="/static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
                             </div>
                             <div class="filtros-historicos">
                                 ${tipoContenido === 'auditoria' ? `
@@ -637,9 +634,9 @@
         <!-- SECCIÓN ESTADÍSTICAS -->
         <div id="estadisticas" class="seccion">
             <div class="header-logos">
-                <img src="{{ url_for('static', filename='logo_hospi.png') }}" alt="Logo">
+                <img src="/static/logo_hospi.png" alt="Logo">
                 <h1 style="margin: 0; text-align: center; flex: 1;" class="titulo-caja">Estadísticas Mensuales</h1>
-                <img src="{{ url_for('static', filename='logo_dsg.png') }}" alt="Logo DSG" style="height: 135px;">
+                <img src="/static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
             <div class="filtros-historicos">
                 <select id="est-tipo" class="input-select">
@@ -684,135 +681,51 @@
         let archivosMultiplesNovedades = [];
         let archivosMultiplesMemos = [];
 
-        // Determina si un registro de comunicados_memos es una novedad relevante para el usuario logueado
-        // (dirigida a su departamento o a "todos", y que no haya sido enviada por él mismo)
-        function esNovedadRelevante(item) {
-            if (!item || typeof item.id_clave !== 'string' || !item.id_clave.startsWith('comunicado_novedades_')) return false;
-            const deptoActual = departamentoAgenteLogueado;
-            const nombreActual = nombreAgenteLogueado;
-            const contenidoObj = item.contenido || {};
-            const deptoDestino = (item.departamento_destino || contenidoObj.departamento || '').trim().toLowerCase();
-            const origenDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
-
-            const esParaMiDepto = (deptoDestino === deptoActual || deptoDestino === 'todos' || deptoDestino === 'todos-los-departamentos');
-            const esPropio = (origenDepto === deptoActual && (contenidoObj.supervisor_origen === nombreActual || !contenidoObj.supervisor_origen));
-
-            return esParaMiDepto && !esPropio;
-        }
-
-        // Novedades: contador del badge basado en comunicados_lecturas (persistente por usuario, no localStorage)
-        async function verificarNotificacionesNovedades() {
+        // Sistema de Notificaciones / Badges Pendientes en tiempo real
+        async function verificarNotificacionesPendientes() {
             try {
+                const deptoActual = departamentoAgenteLogueado;
                 const nombreActual = nombreAgenteLogueado;
 
+                // Clave en localStorage para guardar los IDs o marca de tiempo ya leídos por el usuario
+                const leidosNovedades = JSON.parse(localStorage.getItem('leidos_novedades') || '[]');
+                const leidosMemos = JSON.parse(localStorage.getItem('leidos_memos') || '[]');
+
+                // Consultar comunicados de novedades
                 const { data: novData, error: errNov } = await db
                     .from('comunicados_memos')
                     .select('*')
                     .ilike('id_clave', 'comunicado_novedades_%');
 
-                if (errNov) throw errNov;
+                if (!errNov && novData) {
+                    let countNov = 0;
+                    novData.forEach(item => {
+                        const contenidoObj = item.contenido || {};
+                        const deptoDestino = (item.departamento_destino || contenidoObj.departamento || '').trim().toLowerCase();
+                        const origenDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
+                        const supDestino = item.supervisor_destino || contenidoObj.supervisor || '';
 
-                const idsNovedades = (novData || []).map(item => item.id);
+                        // Determinar si el mensaje va dirigido al departamento o usuario actual y no es propio
+                        const esParaMiDepto = (deptoDestino === deptoActual || deptoDestino === 'todos' || deptoDestino === 'todos-los-departamentos');
+                        const esPropio = (origenDepto === deptoActual && (contenidoObj.supervisor_origen === nombreActual || !contenidoObj.supervisor_origen));
 
-                const { data: leidosData, error: errLeidos } = await db
-                    .from('comunicados_lecturas')
-                    .select('comunicado_id')
-                    .eq('user_id', nombreActual)
-                    .in('comunicado_id', idsNovedades.length > 0 ? idsNovedades : [-1]);
+                        if (esParaMiDepto && !esPropio) {
+                            if (!leidosNovedades.includes(item.id_clave)) {
+                                countNov++;
+                            }
+                        }
+                    });
 
-                if (errLeidos) throw errLeidos;
-                const leidosSet = new Set((leidosData || []).map(r => r.comunicado_id));
-
-                let countNov = 0;
-                (novData || []).forEach(item => {
-                    if (esNovedadRelevante(item) && !leidosSet.has(item.id)) {
-                        countNov++;
-                    }
-                });
-
-                const badgeNov = document.getElementById('badge-novedades');
-                if (badgeNov) {
-                    if (countNov > 0) {
-                        badgeNov.innerText = countNov;
-                        badgeNov.classList.remove('hidden');
-                    } else {
-                        badgeNov.classList.add('hidden');
-                    }
-                }
-            } catch (e) {
-                console.error("Error verificando notificaciones de novedades:", e);
-            }
-        }
-
-        // Novedades: suscripción en tiempo real a nuevos INSERT en comunicados_memos (Supabase Realtime)
-        function suscribirNovedadesRealtime() {
-            db.channel('novedades-realtime')
-                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'comunicados_memos' }, (payload) => {
-                    if (!esNovedadRelevante(payload.new)) return;
-                    verificarNotificacionesNovedades();
-                    const seccionNovedades = document.getElementById('novedades');
-                    if (seccionNovedades && seccionNovedades.classList.contains('activo')) {
-                        cargarNovedades();
-                    }
-                })
-                .subscribe();
-        }
-
-        // Novedades: marca como leídas en comunicados_lecturas (persistente, por usuario)
-        // No usa upsert (no hay unique constraint confirmada): lee lo ya leído e inserta solo lo que falta.
-        async function marcarNovedadesComoLeidas() {
-            try {
-                const nombreActual = nombreAgenteLogueado;
-
-                const { data, error } = await db
-                    .from('comunicados_memos')
-                    .select('id, id_clave, departamento_destino, departamento_origen, contenido')
-                    .ilike('id_clave', 'comunicado_novedades_%');
-
-                if (error) throw error;
-
-                const relevantes = (data || []).filter(esNovedadRelevante);
-                if (relevantes.length > 0) {
-                    const idsRelevantes = relevantes.map(item => item.id);
-
-                    const { data: yaLeidas, error: errYaLeidas } = await db
-                        .from('comunicados_lecturas')
-                        .select('comunicado_id')
-                        .eq('user_id', nombreActual)
-                        .in('comunicado_id', idsRelevantes);
-
-                    if (errYaLeidas) throw errYaLeidas;
-                    const yaLeidasSet = new Set((yaLeidas || []).map(r => r.comunicado_id));
-
-                    const filasNuevas = idsRelevantes
-                        .filter(id => !yaLeidasSet.has(id))
-                        .map(id => ({
-                            comunicado_id: id,
-                            user_id: nombreActual,
-                            leido_at: new Date().toISOString()
-                        }));
-
-                    if (filasNuevas.length > 0) {
-                        const { error: errInsert } = await db
-                            .from('comunicados_lecturas')
-                            .insert(filasNuevas);
-                        if (errInsert) throw errInsert;
+                    const badgeNov = document.getElementById('badge-novedades');
+                    if (badgeNov) {
+                        if (countNov > 0) {
+                            badgeNov.innerText = countNov;
+                            badgeNov.classList.remove('hidden');
+                        } else {
+                            badgeNov.classList.add('hidden');
+                        }
                     }
                 }
-
-                const badgeElem = document.getElementById('badge-novedades');
-                if (badgeElem) badgeElem.classList.add('hidden');
-            } catch (e) {
-                console.error("Error al marcar novedades como leídas:", e);
-            }
-        }
-
-        // Sistema de Notificaciones / Badge de Memos (sin cambios: sigue usando localStorage y sondeo)
-        async function verificarNotificacionesPendientes() {
-            try {
-                const deptoActual = departamentoAgenteLogueado;
-                const nombreActual = nombreAgenteLogueado;
-                const leidosMemos = JSON.parse(localStorage.getItem('leidos_memos') || '[]');
 
                 // Consultar comunicados de memos
                 const { data: memoData, error: errMemo } = await db
@@ -853,12 +766,12 @@
             }
         }
 
-        // Marcar notificaciones de memos como leídas al abrir la sección (sin cambios: localStorage)
+        // Marcar notificaciones como leídas al abrir la sección correspondiente
         async function marcarComoLeidas(tipo) {
             try {
-                const ilikeFiltro = 'comunicado_memos_%';
-                const storageKey = 'leidos_memos';
-
+                const ilikeFiltro = tipo === 'novedades' ? 'comunicado_novedades_%' : 'comunicado_memos_%';
+                const storageKey = tipo === 'novedades' ? 'leidos_novedades' : 'leidos_memos';
+                
                 const { data, error } = await db
                     .from('comunicados_memos')
                     .select('id_clave, departamento_destino, departamento_origen, contenido')
@@ -892,7 +805,7 @@
             if (id === 'novedades') {
                 cargarNovedades();
                 manejarCambioDepto('destino-novedades');
-                marcarNovedadesComoLeidas();
+                marcarComoLeidas('novedades');
             }
             if (id === 'memos') {
                 cargarMemos();
