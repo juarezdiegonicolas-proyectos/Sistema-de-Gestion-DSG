@@ -479,9 +479,9 @@
                     document.write(`
                         <div id="novedades" class="seccion">
                             <div class="header-logos">
-                                <img src="{{ url_for('static', filename='logo_hospi.png') }}" alt="Logo" onerror="this.src='https://via.placeholder.com/150?text=Hospital'">
+                                <img src="/static/logo_hospi.png" alt="Logo" onerror="this.src='https://via.placeholder.com/150?text=Hospital'">
                                 <h1 style="margin: 0; text-align: center; flex: 1;">Novedades</h1>
-                                <img src="{{ url_for('static', filename='logo_dsg.png') }}" alt="Logo DSG" style="height: 135px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
+                                <img src="/static/logo_dsg.png" alt="Logo DSG" style="height: 135px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
                             </div>
                             
                             <div class="filtros-historicos">
@@ -537,9 +537,9 @@
                     document.write(`
                         <div id="memos" class="seccion">
                             <div class="header-logos">
-                                <img src="{{ url_for('static', filename='logo_hospi.png') }}" alt="Logo" onerror="this.src='https://via.placeholder.com/150?text=Hospital'">
+                                <img src="/static/logo_hospi.png" alt="Logo" onerror="this.src='https://via.placeholder.com/150?text=Hospital'">
                                 <h1 style="margin: 0; text-align: center; flex: 1;">Memos y Resoluciones</h1>
-                                <img src="{{ url_for('static', filename='logo_dsg.png') }}" alt="Logo DSG" style="height: 135px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
+                                <img src="/static/logo_dsg.png" alt="Logo DSG" style="height: 135px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
                             </div>
                             
                             <div class="filtros-historicos">
@@ -595,9 +595,9 @@
                     document.write(`
                         <div id="${id}" class="seccion">
                             <div class="header-logos">
-                                <img src="{{ url_for('static', filename='logo_hospi.png') }}" alt="Logo">
+                                <img src="/static/logo_hospi.png" alt="Logo">
                                 <h1 style="margin: 0; text-align: center; flex: 1;">${titulo}</h1>
-                                <img src="{{ url_for('static', filename='logo_dsg.png') }}" alt="Logo DSG" style="height: 135px;">
+                                <img src="/static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
                             </div>
                             <div class="filtros-historicos">
                                 ${tipoContenido === 'auditoria' ? `
@@ -676,9 +676,9 @@
         <!-- SECCIÓN ESTADÍSTICAS -->
         <div id="estadisticas" class="seccion">
             <div class="header-logos">
-                <img src="{{ url_for('static', filename='logo_hospi.png') }}" alt="Logo">
+                <img src="/static/logo_hospi.png" alt="Logo">
                 <h1 style="margin: 0; text-align: center; flex: 1;" class="titulo-caja">Estadísticas Mensuales</h1>
-                <img src="{{ url_for('static', filename='logo_dsg.png') }}" alt="Logo DSG" style="height: 135px;">
+                <img src="/static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
             <div class="filtros-historicos">
                 <select id="est-tipo" class="input-select">
