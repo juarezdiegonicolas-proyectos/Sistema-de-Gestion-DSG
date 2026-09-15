@@ -309,7 +309,7 @@
                 
                 // Una vez obtenido el perfil, inicializamos la verificación de notificaciones no leídas
                 verificarNotificacionesPendientes();
-                // Configurar sondeo periódico cada 60 segundos
+                // Opcional: configurar un intervalo de sondeo cada 60 segundos
                 setInterval(verificarNotificacionesPendientes, 60000);
             }
 
@@ -687,6 +687,7 @@
                 const deptoActual = departamentoAgenteLogueado;
                 const nombreActual = nombreAgenteLogueado;
 
+                // Clave en localStorage para guardar los IDs o marca de tiempo ya leídos por el usuario
                 const leidosNovedades = JSON.parse(localStorage.getItem('leidos_novedades') || '[]');
                 const leidosMemos = JSON.parse(localStorage.getItem('leidos_memos') || '[]');
 
@@ -702,7 +703,9 @@
                         const contenidoObj = item.contenido || {};
                         const deptoDestino = (item.departamento_destino || contenidoObj.departamento || '').trim().toLowerCase();
                         const origenDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
+                        const supDestino = item.supervisor_destino || contenidoObj.supervisor || '';
 
+                        // Determinar si el mensaje va dirigido al departamento o usuario actual y no es propio
                         const esParaMiDepto = (deptoDestino === deptoActual || deptoDestino === 'todos' || deptoDestino === 'todos-los-departamentos');
                         const esPropio = (origenDepto === deptoActual && (contenidoObj.supervisor_origen === nombreActual || !contenidoObj.supervisor_origen));
 
@@ -783,6 +786,7 @@
                     });
                     localStorage.setItem(storageKey, JSON.stringify(leidos));
                     
+                    // Ocultar badge visualmente de inmediato
                     const badgeElem = document.getElementById('badge-' + tipo);
                     if (badgeElem) badgeElem.classList.add('hidden');
                 }
@@ -809,7 +813,6 @@
                 marcarComoLeidas('memos');
             }
         }
-
         function limpiarPantalla(id) {
             document.getElementById('txt-' + id).value = '';
             document.getElementById('print-' + id).innerText = '';
@@ -914,6 +917,7 @@
                     const remitenteDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
                     const deptoDestinoValor = item.departamento_destino || contenidoObj.departamento || 'Todos';
 
+                    // Lógica mapeada dinámicamente según el departamento del usuario activo
                     const deptoUsuarioActual = departamentoAgenteLogueado;
 
                     let tipoBadge = '';
@@ -1201,6 +1205,7 @@
                 return;
             }
 
+            // Normalización estricta utilizando el departamento real del usuario logueado como origen
             const deptoOrigenNormalizado = departamentoAgenteLogueado;
             const deptoDestinoNormalizado = toKebabCase(destinoVisual);
             const supervisorOrigenVal = nombreAgenteLogueado;
@@ -1221,6 +1226,7 @@
             const prefijoClave = id === 'novedades' ? 'comunicado_novedades' : 'comunicado_memos';
             const claveUnica = `${prefijoClave}_${deptoDestinoNormalizado}_${turno}${sufijoSupervisor}_${Date.now()}`;
             
+            // Inserción en Supabase mapeando correctamente el origen real y destino normalizado (incluyendo supervisor_origen)
             const { error } = await db
                 .from('comunicados_memos')
                 .upsert(
@@ -1673,4 +1679,5 @@
     </script>
 </body>
 </html>
+
 
