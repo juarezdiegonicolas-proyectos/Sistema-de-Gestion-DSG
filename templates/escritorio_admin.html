@@ -266,12 +266,14 @@
             // Variables globales mapeadas para el usuario activo logueado
             let nombreAgenteLogueado = "Administrador";
             let departamentoAgenteLogueado = "direccion-servicios-generales";
+            let usuarioIdLogueado = null;
 
             // Obtener perfil completo del usuario logueado al iniciar (nombre y departamento real)
             async function obtenerPerfilLogueado() {
                 try {
                     const { data: { session } } = await db.auth.getSession();
                     if (session && session.user) {
+                        usuarioIdLogueado = session.user.id;
                         const { data, error } = await db
                             .from('usuarios')
                             .select('nombre_completo, departamento')
@@ -307,7 +309,7 @@
                     actualizarTituloBienvenida(nombreAgenteLogueado);
                 }
                 
-                // Una vez obtenido el perfil, inicializamos la verificación de notificaciones no leídas (solo en novedades)
+                // Una vez obtenido el perfil, inicializamos la verificación de notificaciones no leídas (sincronizadas con comunicados_lecturas)
                 verificarNotificacionesPendientes();
                 setInterval(verificarNotificacionesPendientes, 60000);
             }
@@ -680,45 +682,61 @@
         let archivosMultiplesNovedades = [];
         let archivosMultiplesMemos = [];
 
-        // Sistema de Notificaciones / Badges Pendientes en tiempo real (Únicamente para Novedades)
+        // Sistema de Notificaciones / Badges Pendientes sincronizados con la tabla comunicados_lecturas
         async function verificarNotificacionesPendientes() {
             try {
                 const deptoActual = departamentoAgenteLogueado;
                 const nombreActual = nombreAgenteLogueado;
 
-                const leidosNovedades = JSON.parse(localStorage.getItem('leidos_novedades') || '[]');
-
+                // 1. Obtener todos los comunicados/novedades
                 const { data: novData, error: errNov } = await db
                     .from('comunicados_memos')
                     .select('*')
                     .ilike('id_clave', 'comunicado_novedades_%');
 
-                if (!errNov && novData) {
-                    let countNov = 0;
-                    novData.forEach(item => {
-                        const contenidoObj = item.contenido || {};
-                        const deptoDestino = (item.departamento_destino || contenidoObj.departamento || '').trim().toLowerCase();
-                        const origenDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
-                        const supDestino = item.supervisor_destino || contenidoObj.supervisor || '';
+                if (errNov || !novData) return;
 
-                        const esParaMiDepto = (deptoDestino === deptoActual || deptoDestino === 'todos' || deptoDestino === 'todos-los-departamentos');
-                        const esPropio = (origenDepto === deptoActual && (contenidoObj.supervisor_origen === nombreActual || !contenidoObj.supervisor_origen));
+                // 2. Obtener los registros de lecturas del usuario actual desde la tabla comunicados_lecturas
+                let idsLeidosBD = [];
+                if (usuarioIdLogueado) {
+                    const { data: lecturasData, error: errLect } = await db
+                        .from('comunicados_lecturas')
+                        .select('id_clave')
+                        .eq('usuario_id', usuarioIdLogueado);
+                    
+                    if (!errLect && lecturasData) {
+                        idsLeidosBD = lecturasData.map(l => l.id_clave);
+                    }
+                }
+                
+                // Fallback local por si el usuario ID aún no está disponible en sesión estricta
+                const leidosLocal = JSON.parse(localStorage.getItem('leidos_novedades') || '[]');
+                const setLeidos = new Set([...idsLeidosBD, ...leidosLocal]);
 
-                        if (esParaMiDepto && !esPropio) {
-                            if (!leidosNovedades.includes(item.id_clave)) {
-                                countNov++;
-                            }
+                let countNov = 0;
+                novData.forEach(item => {
+                    const contenidoObj = item.contenido || {};
+                    const deptoDestino = (item.departamento_destino || contenidoObj.departamento || '').trim().toLowerCase();
+                    const origenDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
+                    const supDestino = item.supervisor_destino || contenidoObj.supervisor || '';
+
+                    const esParaMiDepto = (deptoDestino === deptoActual || deptoDestino === 'todos' || deptoDestino === 'todos-los-departamentos');
+                    const esPropio = (origenDepto === deptoActual && (contenidoObj.supervisor_origen === nombreActual || !contenidoObj.supervisor_origen));
+
+                    if (esParaMiDepto && !esPropio) {
+                        if (!setLeidos.has(item.id_clave)) {
+                            countNov++;
                         }
-                    });
+                    }
+                });
 
-                    const badgeNov = document.getElementById('badge-novedades');
-                    if (badgeNov) {
-                        if (countNov > 0) {
-                            badgeNov.innerText = countNov;
-                            badgeNov.classList.remove('hidden');
-                        } else {
-                            badgeNov.classList.add('hidden');
-                        }
+                const badgeNov = document.getElementById('badge-novedades');
+                if (badgeNov) {
+                    if (countNov > 0) {
+                        badgeNov.innerText = countNov;
+                        badgeNov.classList.remove('hidden');
+                    } else {
+                        badgeNov.classList.add('hidden');
                     }
                 }
             } catch (e) {
@@ -730,7 +748,6 @@
             if (tipo !== 'novedades') return;
             try {
                 const ilikeFiltro = 'comunicado_novedades_%';
-                const storageKey = 'leidos_novedades';
                 
                 const { data, error } = await db
                     .from('comunicados_memos')
@@ -738,13 +755,24 @@
                     .ilike('id_clave', ilikeFiltro);
 
                 if (!error && data) {
-                    let leidos = JSON.parse(localStorage.getItem(storageKey) || '[]');
-                    data.forEach(item => {
-                        if (!leidos.includes(item.id_clave)) {
-                            leidos.push(item.id_clave);
+                    let leidosLocal = JSON.parse(localStorage.getItem('leidos_novedades') || '[]');
+                    
+                    for (const item of data) {
+                        // Guardar en localStorage de respaldo
+                        if (!leidosLocal.includes(item.id_clave)) {
+                            leidosLocal.push(item.id_clave);
                         }
-                    });
-                    localStorage.setItem(storageKey, JSON.stringify(leidos));
+
+                        // Sincronizar y registrar formalmente en la tabla comunicados_lecturas en Supabase
+                        if (usuarioIdLogueado) {
+                            await db.from('comunicados_lecturas').upsert({
+                                id_clave: item.id_clave,
+                                usuario_id: usuarioIdLogueado,
+                                leido_at: new Date().toISOString()
+                            }, { onConflict: 'id_clave,usuario_id' });
+                        }
+                    }
+                    localStorage.setItem('leidos_novedades', JSON.stringify(leidosLocal));
                     
                     const badgeElem = document.getElementById('badge-' + tipo);
                     if (badgeElem) badgeElem.classList.add('hidden');
@@ -1634,4 +1662,3 @@
     </script>
 </body>
 </html>
-
