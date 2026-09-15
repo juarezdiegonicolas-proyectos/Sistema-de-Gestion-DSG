@@ -307,7 +307,7 @@
                 }
                 
                 // Inicializar verificación de notificaciones pendientes y sondeo periódico
-                verificarNotificacionesPendientes();
+                await verificarNotificacionesPendientes();
                 setInterval(verificarNotificacionesPendientes, 60000);
             }
 
@@ -1616,4 +1616,3 @@
     </script>
 </body>
 </html>
-
