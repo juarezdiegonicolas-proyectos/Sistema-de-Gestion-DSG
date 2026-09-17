@@ -68,6 +68,7 @@
         }
         .menu-item:hover { background-color: #5d8dbb; color: white; }
 
+        /* Estilos para el sistema de notificación (badge contador) en el menú */
         .menu-badge {
             background-color: #dc3545;
             color: white;
@@ -211,33 +212,27 @@
             const SUPABASE_KEY = 'sb_publishable_EvvZ8n7Ve2cF9FB4SXA0Ug_7q6qWh9f';
             const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+            // Variables globales mapeadas para el usuario activo logueado
             let nombreAgenteLogueado = "Administrador";
             let departamentoAgenteLogueado = "direccion-servicios-generales";
-            let usuarioIdLogueado = null;
 
+            // 1. DECLARACIÓN PRIMARIA DE FUNCIONES CRÍTICAS (PARA EVITAR ERRORES DE ORDEN DE CARGA)
             async function verificarNotificacionesPendientes() {
                 try {
                     const deptoActual = departamentoAgenteLogueado;
                     const nombreActual = nombreAgenteLogueado;
 
+                    const leidosNovedades = JSON.parse(localStorage.getItem('leidos_novedades') || '[]');
+                    const leidosMemos = JSON.parse(localStorage.getItem('leidos_memos') || '[]');
+
                     // Consultar comunicados de novedades
                     const { data: novData, error: errNov } = await db
                         .from('comunicados_memos')
-                        .select('id_clave, departamento_destino, departamento_origen, contenido')
+                        .select('*')
                         .ilike('id_clave', 'comunicado_novedades_%');
 
-                    if (!errNov && novData && novData.length > 0) {
-                        const idsNov = novData.map(i => i.id_clave);
-                        // Consultar lecturas desde la base de datos (comunicados_lecturas)
-                        const { data: lectNovData } = await db
-                            .from('comunicados_lecturas')
-                            .select('id_clave')
-                            .eq('usuario_id', usuarioIdLogueado)
-                            .in('id_clave', idsNov);
-
-                        const leidosSet = new Set((lectNovData || []).map(l => l.id_clave));
+                    if (!errNov && novData) {
                         let countNov = 0;
-
                         novData.forEach(item => {
                             const contenidoObj = item.contenido || {};
                             const deptoDestino = (item.departamento_destino || contenidoObj.departamento || '').trim().toLowerCase();
@@ -247,7 +242,7 @@
                             const esPropio = (origenDepto === deptoActual && (contenidoObj.supervisor_origen === nombreActual || !contenidoObj.supervisor_origen));
 
                             if (esParaMiDepto && !esPropio) {
-                                if (!leidosSet.has(item.id_clave)) {
+                                if (!leidosNovedades.includes(item.id_clave)) {
                                     countNov++;
                                 }
                             }
@@ -267,20 +262,11 @@
                     // Consultar comunicados de memos
                     const { data: memoData, error: errMemo } = await db
                         .from('comunicados_memos')
-                        .select('id_clave, departamento_destino, departamento_origen, contenido')
+                        .select('*')
                         .ilike('id_clave', 'comunicado_memos_%');
 
-                    if (!errMemo && memoData && memoData.length > 0) {
-                        const idsMemo = memoData.map(i => i.id_clave);
-                        const { data: lectMemoData } = await db
-                            .from('comunicados_lecturas')
-                            .select('id_clave')
-                            .eq('usuario_id', usuarioIdLogueado)
-                            .in('id_clave', idsMemo);
-
-                        const leidosSetMemo = new Set((lectMemoData || []).map(l => l.id_clave));
+                    if (!errMemo && memoData) {
                         let countMemo = 0;
-
                         memoData.forEach(item => {
                             const contenidoObj = item.contenido || {};
                             const deptoDestino = (item.departamento_destino || contenidoObj.departamento || '').trim().toLowerCase();
@@ -290,7 +276,7 @@
                             const esPropio = (origenDepto === deptoActual && (contenidoObj.supervisor_origen === nombreActual || !contenidoObj.supervisor_origen));
 
                             if (esParaMiDepto && !esPropio) {
-                                if (!leidosSetMemo.has(item.id_clave)) {
+                                if (!leidosMemos.includes(item.id_clave)) {
                                     countMemo++;
                                 }
                             }
@@ -314,23 +300,22 @@
 
             async function marcarComoLeidas(tipo) {
                 try {
-                    if (!usuarioIdLogueado) return;
                     const ilikeFiltro = tipo === 'novedades' ? 'comunicado_novedades_%' : 'comunicado_memos_%';
+                    const storageKey = tipo === 'novedades' ? 'leidos_novedades' : 'leidos_memos';
                     
                     const { data, error } = await db
                         .from('comunicados_memos')
-                        .select('id_clave')
+                        .select('id_clave, departamento_destino, departamento_origen, contenido')
                         .ilike('id_clave', ilikeFiltro);
 
-                    if (!error && data && data.length > 0) {
-                        const inserts = data.map(item => ({
-                            id_clave: item.id_clave,
-                            usuario_id: usuarioIdLogueado,
-                            leido_at: new Date().toISOString()
-                        }));
-
-                        // Inserción masiva en comunicados_lecturas ignorando duplicados si existe restricción única
-                        await db.from('comunicados_lecturas').upsert(inserts, { onConflict: 'id_clave,usuario_id' });
+                    if (!error && data) {
+                        let leidos = JSON.parse(localStorage.getItem(storageKey) || '[]');
+                        data.forEach(item => {
+                            if (!leidos.includes(item.id_clave)) {
+                                leidos.push(item.id_clave);
+                            }
+                        });
+                        localStorage.setItem(storageKey, JSON.stringify(leidos));
                         
                         const badgeElem = document.getElementById('badge-' + tipo);
                         if (badgeElem) badgeElem.classList.add('hidden');
@@ -340,11 +325,11 @@
                 }
             }
 
+            // Obtener perfil completo del usuario logueado al iniciar (nombre y departamento real)
             async function obtenerPerfilLogueado() {
                 try {
                     const { data: { session } } = await db.auth.getSession();
                     if (session && session.user) {
-                        usuarioIdLogueado = session.user.id;
                         const { data, error } = await db
                             .from('usuarios')
                             .select('nombre_completo, departamento')
@@ -362,11 +347,24 @@
                             }
                         }
                     }
+                    
+                    if (nombreAgenteLogueado === "Administrador") {
+                        const storedName = localStorage.getItem('nombre_completo') || localStorage.getItem('usuario_nombre');
+                        if (storedName) {
+                            nombreAgenteLogueado = storedName;
+                            actualizarTituloBienvenida(nombreAgenteLogueado);
+                            const elSidebar = document.getElementById('nombre-supervisor-sidebar');
+                            if (elSidebar) elSidebar.innerText = nombreAgenteLogueado;
+                        } else {
+                            actualizarTituloBienvenida(nombreAgenteLogueado);
+                        }
+                    }
                 } catch(e) {
                     console.error("Error obteniendo perfil logueado:", e);
                     actualizarTituloBienvenida(nombreAgenteLogueado);
                 }
                 
+                // Ejecutamos las notificaciones de manera segura
                 verificarNotificacionesPendientes();
                 setInterval(verificarNotificacionesPendientes, 60000);
             }
@@ -384,6 +382,7 @@
                 }
             }
 
+            // Iniciar perfil
             obtenerPerfilLogueado();
 
             function toKebabCase(nombreVisual) {
@@ -416,6 +415,11 @@
             }
 
             const agentesGlobal = [{"legajo":"120369", "nombre":"VEGA JUAN CARLOS"},{"legajo":"122011", "nombre":"GONZALEZ CARLOS HECTOR"},{"legajo":"128217", "nombre":"CARLOTTO GABRIEL HORACIO"},{"legajo":"130087", "nombre":"GARAY LEONARDO EMILIO"},{"legajo":"130187", "nombre":"CISNEROS NESTOR EDUARDO"},{"legajo":"131954", "nombre":"GORENA JORGE RICARDO"},{"legajo":"132059", "nombre":"BUSTO JUAN MANUEL"},{"legajo":"132831", "nombre":"GORT PEDRO ALBERTO"},{"legajo":"144694", "nombre":"LEDESMA HECTOR CARLOS"},{"legajo":"145765", "nombre":"BARRAZA CRISTIAN JAVIER"},{"legajo":"147812", "nombre":"RODRIGUEZ GONZALO LEANDRO"},{"legajo":"147944", "nombre":"MORENO FERNANDO DANIEL"},{"legajo":"147946", "nombre":"ALVAREZ ANTONIO OSCAR"},{"legajo":"151978", "nombre":"LUZI CHRISTIAN DARIO"},{"legajo":"151979", "nombre":"ALMEIDA CARLOS ALBERTO"},{"legajo":"151980", "nombre":"GONZALEZ PATRICIO ALBERTO"},{"legajo":"151982", "nombre":"VARELA EDUARDO JOSE"},{"legajo":"151983", "nombre":"MARCIANO MARCELO DANIEL"},{"legajo":"151996", "nombre":"FIDEL RUBEN DARIO"},{"legajo":"152016", "nombre":"PAPINI JUAN JOSE"},{"legajo":"152301", "nombre":"CISNEROS LEONARDO SEBASTIAN"},{"legajo":"152302", "nombre":"BAZAN DIEGO ANTONIO"},{"legajo":"153090", "nombre":"OLIVA CRISTIAN RUBEN"},{"legajo":"153572", "nombre":"CANABIDEZ CRISTIAN ALBERTO"},{"legajo":"154334", "nombre":"VAZQUEZ JORGE OSVALDO"},{"legajo":"154335", "nombre":"SANTORO CHRISTIAN RODRIGO"},{"legajo":"154973", "nombre":"HIDALGO SEBASTIAN ARIEL"},{"legajo":"164370", "nombre":"VASCONCELLO SERGIO EDUARDO"},{"legajo":"164669", "nombre":"DIAZ BELFOR ALBERTO"},{"legajo":"166919", "nombre":"BARRAGAN MARIANO JAVIER"},{"legajo":"167190", "nombre":"MORALES EREZUMA LEONARDO AND"},{"legajo":"168007", "nombre":"ICAÑO MARTIN FABIAN"},{"legajo":"169981", "nombre":"KAMINOVICH LEONARDO MARTIN"},{"legajo":"176828", "nombre":"REYNA SANCHEZ EDUARDO GASTON"},{"legajo":"195446", "nombre":"VASQUEZ JORGE ALFREDO"},{"legajo":"195452", "nombre":"FLORES RODRIGO NICOLAS"},{"legajo":"216727", "nombre":"MIRANDA NORBERTO MATIAS"},{"legajo":"235008", "nombre":"BARROCA GERARDO EZEQUIEL"},{"legajo":"243734", "nombre":"VARGAS AXEL BRIAN"},{"legajo":"249665", "nombre":"SANSOGNE MATIAS MAURICIO"},{"legajo":"250625", "nombre":"SOTO NAHUEL MARCELO"},{"legajo":"251466", "nombre":"DOMINGUEZ HECTOR OMAR CIRO"},{"legajo":"261471", "nombre":"VERON NORBERTO MARIO MANUEL"},{"legajo":"259586", "nombre":"LOPEZ VICTOR HUGO"},{"legajo":"244105", "nombre":"REA JUAN GABRIEL"},{"legajo":"242264", "nombre":"ELIAS GUSTAVO DANIEL"},{"legajo":"195453", "nombre":"BARROCA FRANCO DANIEL"}];
+
+            async function apiGuardar(key, data) {
+                const { error } = await db.from('comunicados_memos').upsert({ id_clave: key, contenido: data });
+                if (error) console.error("Error al guardar en Supabase:", error);
+            }
 
             function obtenerNombreDepartamentoLargo(val) {
                 switch(val) {
@@ -669,6 +673,7 @@
             crearSeccion('memos', 'Memos y Resoluciones', 'redaccion');
         </script>
 
+        <!-- SECCIÓN ESTADÍSTICAS -->
         <div id="estadisticas" class="seccion">
             <div class="header-logos">
                 <img src="/static/logo_hospi.png" alt="Logo">
@@ -1595,4 +1600,6 @@
     </script>
 </body>
 </html>
+
+
 
