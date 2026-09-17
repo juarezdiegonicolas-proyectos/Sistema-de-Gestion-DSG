@@ -215,6 +215,7 @@
             // Variables globales mapeadas para el usuario activo logueado
             let nombreAgenteLogueado = "Administrador";
             let departamentoAgenteLogueado = "direccion-servicios-generales";
+            let usuarioIdLogueado = null;
 
             // 1. DECLARACIÓN PRIMARIA DE FUNCIONES CRÍTICAS (PARA EVITAR ERRORES DE ORDEN DE CARGA)
             async function verificarNotificacionesPendientes() {
@@ -222,8 +223,21 @@
                     const deptoActual = departamentoAgenteLogueado;
                     const nombreActual = nombreAgenteLogueado;
 
-                    const leidosNovedades = JSON.parse(localStorage.getItem('leidos_novedades') || '[]');
-                    const leidosMemos = JSON.parse(localStorage.getItem('leidos_memos') || '[]');
+                    // Consultar lecturas previas del usuario en la tabla comunicados_lecturas
+                    let idsLeidosSupabase = [];
+                    if (usuarioIdLogueado) {
+                        const { data: lecturasData } = await db
+                            .from('comunicados_lecturas')
+                            .select('id_clave')
+                            .eq('usuario_id', usuarioIdLogueado);
+                        if (lecturasData) {
+                            idsLeidosSupabase = lecturasData.map(l => l.id_clave);
+                        }
+                    }
+
+                    // Fallback / soporte local con localStorage si no hay ID de usuario conectado aún
+                    const leidosNovedadesLocal = JSON.parse(localStorage.getItem('leidos_novedades') || '[]');
+                    const leidosMemosLocal = JSON.parse(localStorage.getItem('leidos_memos') || '[]');
 
                     // Consultar comunicados de novedades
                     const { data: novData, error: errNov } = await db
@@ -242,7 +256,8 @@
                             const esPropio = (origenDepto === deptoActual && (contenidoObj.supervisor_origen === nombreActual || !contenidoObj.supervisor_origen));
 
                             if (esParaMiDepto && !esPropio) {
-                                if (!leidosNovedades.includes(item.id_clave)) {
+                                const yaLeido = idsLeidosSupabase.includes(item.id_clave) || leidosNovedadesLocal.includes(item.id_clave);
+                                if (!yaLeido) {
                                     countNov++;
                                 }
                             }
@@ -276,7 +291,8 @@
                             const esPropio = (origenDepto === deptoActual && (contenidoObj.supervisor_origen === nombreActual || !contenidoObj.supervisor_origen));
 
                             if (esParaMiDepto && !esPropio) {
-                                if (!leidosMemos.includes(item.id_clave)) {
+                                const yaLeido = idsLeidosSupabase.includes(item.id_clave) || leidosMemosLocal.includes(item.id_clave);
+                                if (!yaLeido) {
                                     countMemo++;
                                 }
                             }
@@ -309,13 +325,36 @@
                         .ilike('id_clave', ilikeFiltro);
 
                     if (!error && data) {
-                        let leidos = JSON.parse(localStorage.getItem(storageKey) || '[]');
-                        data.forEach(item => {
-                            if (!leidos.includes(item.id_clave)) {
-                                leidos.push(item.id_clave);
+                        let leidosLocal = JSON.parse(localStorage.getItem(storageKey) || '[]');
+                        
+                        for (const item of data) {
+                            const contenidoObj = item.contenido || {};
+                            const deptoDestino = (item.departamento_destino || contenidoObj.departamento || '').trim().toLowerCase();
+                            const origenDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
+                            
+                            const esParaMiDepto = (deptoDestino === departamentoAgenteLogueado || deptoDestino === 'todos' || deptoDestino === 'todos-los-departamentos');
+                            const esPropio = (origenDepto === departamentoAgenteLogueado && (contenidoObj.supervisor_origen === nombreAgenteLogueado || !contenidoObj.supervisor_origen));
+
+                            if (esParaMiDepto && !esPropio) {
+                                // Agregar a localStorage
+                                if (!leidosLocal.includes(item.id_clave)) {
+                                    leidosLocal.push(item.id_clave);
+                                }
+
+                                // Registrar en la tabla comunicados_lecturas en Supabase
+                                if (usuarioIdLogueado) {
+                                    await db.from('comunicados_lecturas').upsert({
+                                        id_clave: item.id_clave,
+                                        usuario_id: usuarioIdLogueado,
+                                        nombre_agente: nombreAgenteLogueado,
+                                        departamento: departamentoAgenteLogueado,
+                                        leido_at: new Date().toISOString()
+                                    }, { onConflict: 'id_clave,usuario_id' });
+                                }
                             }
-                        });
-                        localStorage.setItem(storageKey, JSON.stringify(leidos));
+                        }
+
+                        localStorage.setItem(storageKey, JSON.stringify(leidosLocal));
                         
                         const badgeElem = document.getElementById('badge-' + tipo);
                         if (badgeElem) badgeElem.classList.add('hidden');
@@ -330,6 +369,7 @@
                 try {
                     const { data: { session } } = await db.auth.getSession();
                     if (session && session.user) {
+                        usuarioIdLogueado = session.user.id;
                         const { data, error } = await db
                             .from('usuarios')
                             .select('nombre_completo, departamento')
