@@ -221,7 +221,7 @@
             async function verificarNotificacionesPendientes() {
                 try {
                     const deptoActual = departamentoAgenteLogueado;
-                    const nombreActual = nombreAgenteLogueado;
+                    const nombreActual = (nombreAgenteLogueado || "").trim().toLowerCase();
 
                     // Consultar lecturas previas del usuario en la tabla comunicados_lecturas usando comunicado_id y user_id
                     let idsLeidosSupabase = [];
@@ -251,11 +251,18 @@
                             const contenidoObj = item.contenido || {};
                             const deptoDestino = (item.departamento_destino || contenidoObj.departamento || '').trim().toLowerCase();
                             const origenDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
+                            
+                            const supervisorDestinoRaw = (item.supervisor_destino || contenidoObj.supervisor || '').trim().toLowerCase();
+                            const supervisorOrigenRaw = (item.supervisor_origen || contenidoObj.supervisor_origen || '').trim().toLowerCase();
 
                             const esParaMiDepto = (deptoDestino === deptoActual || deptoDestino === 'todos' || deptoDestino === 'todos-los-departamentos');
-                            const esPropio = (origenDepto === deptoActual && (contenidoObj.supervisor_origen === nombreActual || !contenidoObj.supervisor_origen));
+                            
+                            // Validación específica por supervisor destino (si se especificó uno)
+                            const esParaMiSupervisor = (!supervisorDestinoRaw || supervisorDestinoRaw.includes('general') || supervisorDestinoRaw.includes('todos') || supervisorDestinoRaw === nombreActual);
 
-                            if (esParaMiDepto && !esPropio) {
+                            const esPropio = (origenDepto === deptoActual && (supervisorOrigenRaw === nombreActual || !supervisorOrigenRaw));
+
+                            if (esParaMiDepto && esParaMiSupervisor && !esPropio) {
                                 const yaLeido = idsLeidosSupabase.includes(item.id) || idsLeidosSupabase.includes(item.id_clave) || leidosNovedadesLocal.includes(item.id_clave);
                                 if (!yaLeido) {
                                     countNov++;
@@ -286,11 +293,15 @@
                             const contenidoObj = item.contenido || {};
                             const deptoDestino = (item.departamento_destino || contenidoObj.departamento || '').trim().toLowerCase();
                             const origenDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
+                            
+                            const supervisorDestinoRaw = (item.supervisor_destino || contenidoObj.supervisor || '').trim().toLowerCase();
+                            const supervisorOrigenRaw = (item.supervisor_origen || contenidoObj.supervisor_origen || '').trim().toLowerCase();
 
                             const esParaMiDepto = (deptoDestino === deptoActual || deptoDestino === 'todos' || deptoDestino === 'todos-los-departamentos');
-                            const esPropio = (origenDepto === deptoActual && (contenidoObj.supervisor_origen === nombreActual || !contenidoObj.supervisor_origen));
+                            const esParaMiSupervisor = (!supervisorDestinoRaw || supervisorDestinoRaw.includes('general') || supervisorDestinoRaw.includes('todos') || supervisorDestinoRaw === nombreActual);
+                            const esPropio = (origenDepto === deptoActual && (supervisorOrigenRaw === nombreActual || !supervisorOrigenRaw));
 
-                            if (esParaMiDepto && !esPropio) {
+                            if (esParaMiDepto && esParaMiSupervisor && !esPropio) {
                                 const yaLeido = idsLeidosSupabase.includes(item.id) || idsLeidosSupabase.includes(item.id_clave) || leidosMemosLocal.includes(item.id_clave);
                                 if (!yaLeido) {
                                     countMemo++;
@@ -318,10 +329,11 @@
                 try {
                     const ilikeFiltro = tipo === 'novedades' ? 'comunicado_novedades_%' : 'comunicado_memos_%';
                     const storageKey = tipo === 'novedades' ? 'leidos_novedades' : 'leidos_memos';
+                    const nombreActual = (nombreAgenteLogueado || "").trim().toLowerCase();
                     
                     const { data, error } = await db
                         .from('comunicados_memos')
-                        .select('id, id_clave, departamento_destino, departamento_origen, contenido')
+                        .select('id, id_clave, departamento_destino, departamento_origen, supervisor_destino, contenido')
                         .ilike('id_clave', ilikeFiltro);
 
                     if (!error && data) {
@@ -332,10 +344,14 @@
                             const deptoDestino = (item.departamento_destino || contenidoObj.departamento || '').trim().toLowerCase();
                             const origenDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
                             
-                            const esParaMiDepto = (deptoDestino === departamentoAgenteLogueado || deptoDestino === 'todos' || deptoDestino === 'todos-los-departamentos');
-                            const esPropio = (origenDepto === departamentoAgenteLogueado && (contenidoObj.supervisor_origen === nombreAgenteLogueado || !contenidoObj.supervisor_origen));
+                            const supervisorDestinoRaw = (item.supervisor_destino || contenidoObj.supervisor || '').trim().toLowerCase();
+                            const supervisorOrigenRaw = (item.supervisor_origen || contenidoObj.supervisor_origen || '').trim().toLowerCase();
 
-                            if (esParaMiDepto && !esPropio) {
+                            const esParaMiDepto = (deptoDestino === departamentoAgenteLogueado || deptoDestino === 'todos' || deptoDestino === 'todos-los-departamentos');
+                            const esParaMiSupervisor = (!supervisorDestinoRaw || supervisorDestinoRaw.includes('general') || supervisorDestinoRaw.includes('todos') || supervisorDestinoRaw === nombreActual);
+                            const esPropio = (origenDepto === departamentoAgenteLogueado && (supervisorOrigenRaw === nombreActual || !supervisorOrigenRaw));
+
+                            if (esParaMiDepto && esParaMiSupervisor && !esPropio) {
                                 // Agregar a localStorage
                                 if (!leidosLocal.includes(item.id_clave)) {
                                     leidosLocal.push(item.id_clave);
