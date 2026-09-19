@@ -10,7 +10,7 @@
         body { margin: 0; font-family: 'Roboto', sans-serif; display: flex; height: 100vh; background-color: #f8fafc; overflow: hidden; }
         .sidebar { width: 260px; background-color: #1a3a5f; color: white; padding: 15px 15px; display: flex; flex-direction: column; flex-shrink: 0; height: 100vh; box-sizing: border-box; overflow: hidden; }
         
-        .bienvenida-box { background-color: #2d5a8e; padding: 10px; border-radius: 8px; margin-bottom: 12px; text-align: center; border: 1px solid #5d8dbb; flex-shrink: 0; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+        .bienvenida-box { background-color: #2d5a8e; padding: 10px; border-radius: 8px; margin-bottom: 12px; text-align: center; border: 1px solid #5d8dbb; flex-shrink: 0; }
         .bienvenida-box h3 { margin: 0; font-size: 13px; font-weight: 300; color: #cce7ff; }
         .bienvenida-box p { margin: 3px 0 0 0; font-size: 15px; font-weight: bold; }
         
@@ -24,21 +24,23 @@
         .badge-novedades { background-color: #dc3545; color: white; font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 10px; display: none; }
 
         .sidebar-footer { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; padding-top: 5px; }
-        /* Botón de cierre de jornada fijo en un solo tono sin efectos de luz o destello */
-        .btn-accion-global { width: 100%; padding: 10px; background: #1a3a5f; color: white; border: 1px solid #2d5a8e; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; gap: 6px; }
-        .btn-accion-global:hover { background: #1a3a5f; }
         
-        .btn-cerrar { width: 100%; padding: 10px; background: #c62828; color: white; text-align: center; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); box-sizing: border-box; display: flex; align-items: center; justify-content: center; gap: 6px; border: none; cursor: pointer; }
-        .btn-cerrar:hover { background: #b71c1c; }
+        /* Botón de Cerrar Jornada modificado a color verde */
+        .btn-accion-global { width: 100%; padding: 10px; background: linear-gradient(135deg, #2e7d32, #1b5e20); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .btn-accion-global:hover { opacity: 0.9; }
+        
+        .btn-cerrar { width: 100%; padding: 10px; background: linear-gradient(135deg, #d32f2f, #c62828); color: white; text-align: center; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); box-sizing: border-box; display: flex; align-items: center; justify-content: center; gap: 6px; transition: opacity 0.2s; border: none; cursor: pointer; }
+        .btn-cerrar:hover { opacity: 0.9; }
 
         .contenido { flex: 1; padding: 40px; overflow-y: auto; height: 100vh; box-sizing: border-box; background-color: #f8fafc; }
         
-        /* Diseño de recuadro con efecto de delineado grisáceo y sombras sutiles en secciones operativas */
+        /* Estructura unificada para todas las solapas/secciones */
         .seccion { display: none; background: #ffffff; padding: 40px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
         .seccion.activo { display: block; } 
+        
         .info-hoja { display: flex; justify-content: space-between; margin-bottom: 15px; font-weight: bold; color: #1a3a5f; align-items: center;}
         
-        .hoja { background-color: #fff; padding: 0 40px; border: 1px solid #e2e8f0; min-height: 900px; position: relative; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.02); }
+        .hoja { background-color: #fff; padding: 0 40px; border: 1px solid #e2e8f0; min-height: 900px; position: relative; border-radius: 8px; }
         
         #editor-reporte { 
             width: 100%; 
@@ -55,12 +57,13 @@
             padding-top: 30px;
         }
 
-        .contenedor-observaciones { margin-top: 20px; width: 100%; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.01); }
-        .titulo-observaciones { background: #1a3a5f; color: white; padding: 8px 12px; font-weight: 500; font-size: 14px; border-radius: 5px 5px 0 0; }
+        .contenedor-observaciones { margin-top: 20px; width: 100%; box-sizing: border-box; }
+        .titulo-observaciones { background: #1a3a5f; color: white; padding: 8px 12px; font-weight: 500; font-size: 14px; border-radius: 6px 6px 0 0; }
         #editor-observaciones { 
             width: 100%; 
             min-height: 180px; 
-            border: none; 
+            border: 1px solid #cbd5e1; 
+            border-top: none; 
             font-size: 18px; 
             line-height: 30px; 
             outline: none; 
@@ -78,13 +81,13 @@
             background-color: #f8fafc;
         }
         
-        .tabla-camilleros { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; table-layout: fixed; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+        .tabla-camilleros { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; table-layout: fixed; }
         .tabla-camilleros th, .tabla-camilleros td { border: 1px solid #cbd5e1; padding: 8px 6px; text-align: center; word-wrap: break-word; vertical-align: middle; }
         .tabla-camilleros th { background-color: #1a3a5f; color: white; height: 40px; font-size: 13px; }
         .col-hora { width: 95px; }
         
         .input-c { width: 95%; border: none; text-align: center; background: transparent; outline: none; font-family: inherit; font-size: 13px; color: #334155; }
-        .input-fecha, .input-select { border: 1px solid #cbd5e1; padding: 10px 14px; border-radius: 6px; font-family: inherit; cursor: pointer; background: #f8fafc; color: #334155; transition: all 0.2s ease; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
+        .input-fecha, .input-select { border: 1px solid #cbd5e1; padding: 10px 14px; border-radius: 6px; font-family: inherit; cursor: pointer; background: #f8fafc; color: #334155; transition: all 0.2s ease; }
         .input-fecha:focus, .input-select:focus { border-color: #1a3a5f; outline: none; box-shadow: 0 0 0 3px rgba(26, 58, 95, 0.1); }
         
         .tabla-camilleros select.input-movilidad, 
@@ -116,10 +119,16 @@
         .btn-gestion:hover { background: #2d5a8e; }
         .btn-imprimir { background: #1a3a5f; color: white; }
         .btn-imprimir:hover { background: #2d5a8e; }
-        #info-supervisor { margin-bottom: 20px; color: #1a3a5f; font-weight: bold; border: 1px solid #e2e8f0; padding: 12px 15px; border-radius: 8px; background: #f8fafc; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
-        .header-logos { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px; }
+        
+        #info-supervisor { margin-bottom: 20px; color: #1a3a5f; font-weight: bold; border: 1px solid #e2e8f0; padding: 12px 15px; border-radius: 8px; background: #f8fafc; }
+        
+        /* Estilos unificados de Cabeceras con Logos */
+        .header-logos { display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px; background: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.02); border: 1px solid #edf2f7; }
         .header-logos img { height: 110px; width: auto; object-fit: contain; }
-        .filtros-historicos { display: flex; gap: 15px; background: #f8fafc; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e2e8f0; align-items: center; box-shadow: 0 2px 6px rgba(0,0,0,0.02); }
+        
+        /* Estilos unificados para Filtros */
+        .filtros-historicos { display: flex; gap: 12px; background: #ffffff; padding: 18px 22px; border-radius: 10px; margin-bottom: 25px; border: 1px solid #e2e8f0; align-items: center; flex-wrap: wrap; box-shadow: 0 2px 4px rgba(0,0,0,0.01); }
+        
         .celda-asistencia { cursor: pointer; width: 25px; height: 25px; border: 2px solid #cbd5e1; display: inline-block; transition: background 0.3s; margin: auto; border-radius: 4px; }
         .estado-P { background-color: #28a745 !important; border-color: #28a745 !important; }
         .estado-A { background-color: #dc3545 !important; border-color: #dc3545 !important; }
@@ -135,7 +144,7 @@
             body, html, .contenido, .seccion.activo, .hoja { background-color: white !important; margin: 0 !important; padding: 0 !important; width: 100% !important; height: auto !important; overflow: visible !important; box-shadow: none !important; display: block !important; }
             .seccion { display: none !important; border: none !important; box-shadow: none !important; }
             .seccion.activo { display: block !important; } 
-            .hoja { border: none !important; min-height: auto !important; box-shadow: none !important; }
+            .hoja { border: none !important; min-height: auto !important; }
             #editor-reporte, #editor-observaciones { 
                 background-image: linear-gradient(#e0e0e0 1px, transparent 1px);
                 background-size: 100% 30px;
@@ -179,6 +188,7 @@
     </div>
 
     <div class="contenido">
+        <!-- SOLAPA 1: REPORTES -->
         <div id="reportes" class="seccion activo">
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo Hospital">
@@ -196,6 +206,7 @@
             <div class="area-acciones"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button></div>
         </div>
 
+        <!-- SOLAPA 2: PLANILLAS -->
         <div id="planillas" class="seccion">
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo Hospital">
@@ -218,6 +229,7 @@
             <div class="area-acciones"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button></div>
         </div>
 
+        <!-- SOLAPA 3: HISTÓRICOS -->
         <div id="historicos" class="seccion">
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo Hospital">
@@ -241,16 +253,17 @@
                 <input type="date" id="filtro-fecha-hist" class="input-fecha">
                 <button class="btn-gestion no-imprimir" onclick="cargarHistoricos()">Buscar Registros</button>
             </div>
-            <div id="contenedor-historicos" style="border: 1px solid #cbd5e1; padding: 20px; border-radius: 8px; background: #f8fafc; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+            <div id="contenedor-historicos" style="border: 1px solid #cbd5e1; padding: 20px; border-radius: 8px; background: #f8fafc;">
                 <p>Selecciona filtros y presiona "Buscar" para visualizar registros.</p>
             </div>
             <div class="area-acciones"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir Resultados</button></div>
         </div>
         
+        <!-- SOLAPA 4: NOVEDADES -->
         <div id="novedades" class="seccion">
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo Hospital">
-                <h1 style="margin: 0; text-align: center; flex: 1;">Novedades y Comunicados</h1>
+                <h1 style="margin: 0; text-align: center; flex: 1; color: #1a3a5f;">Novedades y Comunicados</h1>
                 <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
             <div id="contenedor-novedades" style="margin-top: 20px;">
@@ -259,21 +272,23 @@
             <div class="area-acciones" style="margin-top: 20px;"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button></div>
         </div>
 
+        <!-- SOLAPA 5: ASCENSORES -->
         <div id="ascensores" class="seccion">
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo Hospital">
-                <h1 style="margin: 0; text-align: center; flex: 1;">Estado Actual de Ascensores</h1>
+                <h1 style="margin: 0; text-align: center; flex: 1; color: #1a3a5f;">Estado Actual de Ascensores</h1>
                 <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
-            <div id="info-supervisor" style="margin-bottom: 20px; color: #1a3a5f; font-weight: bold; border: 1px solid #e2e8f0; padding: 10px; border-radius: 6px; background: #f9f9f9; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+            <div id="info-supervisor" style="margin-bottom: 20px; color: #1a3a5f; font-weight: bold; border: 1px solid #ddd; padding: 10px; border-radius: 6px; background: #f9f9f9;">
                 Supervisor: <span id="display-nombre-asc">---</span> | Turno: <span id="display-turno-asc">---</span> | Depto: <span id="display-depto-asc">---</span>
             </div>
-            <div id="contenedor-ascensores" style="border: 1px solid #cbd5e1; padding: 20px; border-radius: 8px; background: #fafafa; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+            <div id="contenedor-ascensores" style="border: 1px solid #ccc; padding: 20px; border-radius: 8px; background: #fafafa;">
                 <p>Cargando estado actual de ascensores...</p>
             </div>
             <div class="area-acciones"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button></div>
         </div>
 
+        <!-- SOLAPA 6: RR.HH. -->
         <div id="rrhh" class="seccion">
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo Hospital">
@@ -299,10 +314,11 @@
             </div>
         </div>
 
+        <!-- SOLAPA 7: RESOLUCIONES -->
         <div id="resoluciones" class="seccion">
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo Hospital">
-                <h1 style="margin: 0; text-align: center; flex: 1;">Resoluciones</h1>
+                <h1 style="margin: 0; text-align: center; flex: 1; color: #1a3a5f;">Resoluciones</h1>
                 <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
         </div>
@@ -519,12 +535,7 @@
                         <div style="background: #fff; border-left: 5px solid #1a3a5f; border-top: 1px solid #ddd; border-right: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 20px; border-radius: 6px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 8px; flex-wrap: wrap; gap: 8px;">
                                 <strong style="color: #1a3a5f; font-size: 16px;">📢 Comunicado Oficial</strong>
-                                <div style="display: flex; align-items: center; gap: 15px;">
-                                    <div style="font-size: 0.8rem; color: #64748b; white-space: nowrap; font-weight: 500;">
-                                        🕒 ${fecha}
-                                    </div>
-                                    <span style="font-size: 12px; color: #666; background: #f1f1f1; padding: 4px 10px; border-radius: 4px;">Turno: ${turnoMsg} | <strong>Enviado por:</strong> Dirección de Servicios Generales</span>
-                                </div>
+                                <span style="font-size: 12px; color: #666; background: #f1f1f1; padding: 4px 10px; border-radius: 4px;">Turno: ${turnoMsg} | Fecha: ${fecha} | <strong>Enviado por:</strong> Dirección de Servicios Generales</span>
                             </div>
                             <div style="font-size: 15px; color: #333; white-space: pre-wrap; line-height: 1.5; font-family: inherit;">${texto}</div>
                             ${archivosHtml}
