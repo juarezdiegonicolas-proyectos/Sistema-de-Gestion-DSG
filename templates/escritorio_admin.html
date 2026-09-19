@@ -6,7 +6,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { margin: 0; font-family: 'Roboto', sans-serif; display: flex; height: 100vh; background-color: #f4f1ea; box-sizing: border-box; overflow: hidden; }
+        body { margin: 0; font-family: 'Roboto', sans-serif; display: flex; height: 100vh; background-color: #f8fafc; box-sizing: border-box; overflow: hidden; }
         
         /* Sidebar rediseñado */
         .sidebar { 
@@ -120,18 +120,112 @@
         .btn-cerrar:hover { opacity: 0.9; }
 
         .contenido { flex: 1; padding: 40px; overflow-y: auto; height: 100vh; box-sizing: border-box; }
-        .seccion { display: none; background: white; padding: 40px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        
+        /* SECCIONES UNIFICADAS CON LA MISMA ESTÉTICA */
+        .seccion { 
+            display: none; 
+            background: #ffffff; 
+            padding: 40px; 
+            border-radius: 12px; 
+            margin-bottom: 30px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05); 
+            border: 1px solid #e2e8f0;
+        }
         .seccion.activo { display: block; } 
-        .filtros-historicos { display: flex; gap: 10px; background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #eee; align-items: center; flex-wrap: wrap; }
-        .input-select, .input-fecha { border: 1px solid #ccc; padding: 10px; border-radius: 4px; font-family: inherit; cursor: pointer; }
-        .header-logos { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+
+        .header-logos { 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            margin-bottom: 25px; 
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+            border: 1px solid #edf2f7;
+        }
         .header-logos img { height: 110px; width: auto; object-fit: contain; }
+        .header-logos h1 {
+            color: #1e293b;
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin: 0; 
+            text-align: center; 
+            flex: 1;
+        }
+
+        .filtros-historicos { 
+            display: flex; 
+            gap: 12px; 
+            background: #ffffff; 
+            padding: 18px 22px; 
+            border-radius: 10px; 
+            margin-bottom: 25px; 
+            border: 1px solid #e2e8f0; 
+            align-items: center; 
+            flex-wrap: wrap; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.01);
+        }
+
+        .input-select, .input-fecha { 
+            background-color: #f8fafc;
+            border: 1px solid #cbd5e1;
+            color: #334155;
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            font-family: inherit; 
+            cursor: pointer; 
+            transition: all 0.2s ease;
+        }
+        .input-select:focus, .input-fecha:focus {
+            outline: none;
+            border-color: #1a3a5f;
+            box-shadow: 0 0 0 3px rgba(26, 58, 95, 0.1);
+            background-color: #fff;
+        }
+
         .area-acciones { margin-top: 20px; display: flex; gap: 10px; }
-        .btn-gestion { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; }
+        
+        .btn-gestion { 
+            border-radius: 6px;
+            padding: 10px 16px;
+            font-size: 13px;
+            font-weight: bold;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+        }
         .btn-adjuntar { background: #1a3a5f; color: white; }
+        .btn-adjuntar:hover { background: #2d5a8e; }
         .btn-imprimir { background: #1a3a5f; color: white; }
-        textarea { width: 100%; height: 350px; padding: 10px 15px; border: 1px solid #ccc; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 16px; box-sizing: border-box; line-height: 2.0em; background-image: linear-gradient(#ccc 1px, transparent 1px); background-size: 100% 2.0em; resize: none; }
-        .preview-adjunto { margin-top: 10px; padding: 10px; border: 1px dashed #aaa; display: none; }
+        .btn-imprimir:hover { background: #2d5a8e; }
+
+        textarea { 
+            width: 100%; 
+            height: 350px; 
+            padding: 18px; 
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            font-family: 'Roboto', sans-serif; 
+            font-size: 14px; 
+            box-sizing: border-box; 
+            line-height: 1.6; 
+            resize: none; 
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);
+            transition: border-color 0.2s;
+        }
+        textarea:focus {
+            outline: none;
+            border-color: #1a3a5f;
+            box-shadow: 0 0 0 3px rgba(26, 58, 95, 0.1), inset 0 1px 2px rgba(0,0,0,0.02);
+        }
+
+        .preview-adjunto { margin-top: 10px; padding: 15px; border: 2px dashed #cbd5e1 !important; border-radius: 8px; display: none; background: #ffffff; color: #475569; font-size: 13px; }
         
         .print-only { display: none; }
         .print-header { display: none; font-weight: bold; margin-bottom: 20px; border-bottom: 2px solid #333; padding-bottom: 10px; }
@@ -140,101 +234,6 @@
         .box-P { background-color: #28a745; }
         .box-A { background-color: #dc3545; }
         .box-L { background-color: #ffc107; }
-
-        /* ==========================================
-           NUEVO DISEÑO Y ESTÉTICA DE NOVEDADES
-           ================================---------- */
-        #novedades {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-        }
-
-        #novedades .header-logos {
-            background: #ffffff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
-            border: 1px solid #edf2f7;
-            margin-bottom: 25px;
-        }
-
-        #novedades .header-logos h1 {
-            color: #1e293b;
-            font-size: 26px;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-        }
-
-        #novedades .filtros-historicos {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 18px 22px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.01);
-            gap: 12px;
-        }
-
-        #novedades .input-select {
-            background-color: #f8fafc;
-            border: 1px solid #cbd5e1;
-            color: #334155;
-            padding: 10px 14px;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: 500;
-            transition: all 0.2s ease;
-        }
-
-        #novedades .input-select:focus {
-            outline: none;
-            border-color: #1a3a5f;
-            box-shadow: 0 0 0 3px rgba(26, 58, 95, 0.1);
-            background-color: #fff;
-        }
-
-        #novedades .btn-gestion {
-            border-radius: 6px;
-            padding: 10px 16px;
-            font-size: 13px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-            transition: all 0.2s ease;
-        }
-
-        #novedades .btn-adjuntar {
-            background: #1a3a5f;
-            color: white;
-        }
-        #novedades .btn-adjuntar:hover {
-            background: #2d5a8e;
-        }
-
-        #novedades textarea {
-            background-color: #ffffff;
-            border: 1px solid #cbd5e1;
-            border-radius: 10px;
-            padding: 18px;
-            font-family: 'Roboto', sans-serif;
-            font-size: 14px;
-            line-height: 1.6;
-            background-image: none;
-            box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);
-            transition: border-color 0.2s;
-        }
-
-        #novedades textarea:focus {
-            outline: none;
-            border-color: #1a3a5f;
-            box-shadow: 0 0 0 3px rgba(26, 58, 95, 0.1), inset 0 1px 2px rgba(0,0,0,0.02);
-        }
-
-        #preview-novedades {
-            background: #ffffff;
-            border: 2px dashed #cbd5e1 !important;
-            border-radius: 8px;
-            padding: 15px;
-            color: #475569;
-            font-size: 13px;
-        }
 
         .historial-muro-container { 
             margin-top: 35px; 
@@ -576,7 +575,7 @@
                         <div id="novedades" class="seccion">
                             <div class="header-logos">
                                 <img src="/static/logo_hospi.png" alt="Logo" onerror="this.src='https://via.placeholder.com/150?text=Hospital'">
-                                <h1 style="margin: 0; text-align: center; flex: 1;">Novedades</h1>
+                                <h1>Novedades</h1>
                                 <img src="/static/logo_dsg.png" alt="Logo DSG" style="height: 135px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
                             </div>
                             
@@ -633,7 +632,7 @@
                         <div id="${id}" class="seccion">
                             <div class="header-logos">
                                 <img src="/static/logo_hospi.png" alt="Logo">
-                                <h1 style="margin: 0; text-align: center; flex: 1;">${titulo}</h1>
+                                <h1>${titulo}</h1>
                                 <img src="/static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
                             </div>
                             <div class="filtros-historicos">
@@ -667,8 +666,8 @@
                                 ` : ``}
                             </div>
                             
-                            ${tipoContenido === 'auditoria' ? `<div id="visor-${id}" style="border: 1px solid #ccc; padding: 20px; min-height: 200px;">Seleccione filtros para auditar.</div>` : 
-                              tipoContenido === 'estado-ascensores-vivo' ? `<div id="visor-${id}" style="border: 1px solid #ccc; padding: 20px; min-height: 200px; background: #fff;">Cargando datos actuales...</div>` : ``}
+                            ${tipoContenido === 'auditoria' ? `<div id="visor-${id}" style="border: 1px solid #cbd5e1; border-radius: 8px; padding: 20px; min-height: 200px; background: #fff;">Seleccione filtros para auditar.</div>` : 
+                              tipoContenido === 'estado-ascensores-vivo' ? `<div id="visor-${id}" style="border: 1px solid #cbd5e1; border-radius: 8px; padding: 20px; min-height: 200px; background: #fff;">Cargando datos actuales...</div>` : ``}
                             
                             <div class="area-acciones">
                                 <button id="btn-print-${id}" class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
@@ -689,7 +688,7 @@
         <div id="estadisticas" class="seccion">
             <div class="header-logos">
                 <img src="/static/logo_hospi.png" alt="Logo">
-                <h1 style="margin: 0; text-align: center; flex: 1;" class="titulo-caja">Estadísticas Mensuales</h1>
+                <h1 class="titulo-caja">Estadísticas Mensuales</h1>
                 <img src="/static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
             <div class="filtros-historicos">
@@ -724,7 +723,7 @@
                 <input type="number" id="est-anio" class="input-fecha" value="2026" style="width:100px;">
                 <button class="btn-gestion" style="background: #1a3a5f; color: white;" onclick="generarReporteMensual()">Generar Reporte</button>
             </div>
-            <div id="visor-estadisticas" style="padding: 20px; border: 1px solid #eee; text-align: center;">
+            <div id="visor-estadisticas" style="padding: 20px; border: 1px solid #cbd5e1; border-radius: 8px; text-align: center; background: #fff;">
                 <p>Seleccione tipo de reporte, mes y año para consolidar.</p>
             </div>
         </div>
@@ -990,7 +989,7 @@
                 let totalAscensores = data.length;
 
                 let html = '<table style="width:100%; border-collapse: collapse; text-align: left;">';
-                html += '<thead><tr style="background: #1a3a5f; color: white;"><th style="padding: 10px; border: 1px solid #ddd; text-align: center; width: 15%;">Dispositivo</th><th style="padding: 10px; border: 1px solid #ddd; width: 25%;">Estado</th><th style="padding: 10px; border: 1px solid #ddd; width: 30%;">Uso Asignado</th><th style="padding: 10px; border: 1px solid #ddd; width: 30%;">Observaciones / Detalles</th></tr></thead><tbody>';
+                html += '<thead><tr style="background: #1a3a5f; color: white;"><th style="padding: 10px; border: 1px solid #cbd5e1; text-align: center; width: 15%;">Dispositivo</th><th style="padding: 10px; border: 1px solid #cbd5e1; width: 25%;">Estado</th><th style="padding: 10px; border: 1px solid #cbd5e1; width: 30%;">Uso Asignado</th><th style="padding: 10px; border: 1px solid #cbd5e1; width: 30%;">Observaciones / Detalles</th></tr></thead><tbody>';
 
                 data.forEach(item => {
                     let dispositivo = item.identificador_dispositivo || `Dispositivo ${item.id}`;
@@ -1012,10 +1011,10 @@
                     }
 
                     html += `<tr>
-                        <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold; text-align: center;">${dispositivo}</td>
-                        <td style="padding: 10px; border: 1px solid #ddd;">${estado}</td>
-                        <td style="padding: 10px; border: 1px solid #ddd;">${uso}</td>
-                        <td style="padding: 10px; border: 1px solid #ddd;">${observaciones}</td>
+                        <td style="padding: 10px; border: 1px solid #cbd5e1; font-weight: bold; text-align: center;">${dispositivo}</td>
+                        <td style="padding: 10px; border: 1px solid #cbd5e1;">${estado}</td>
+                        <td style="padding: 10px; border: 1px solid #cbd5e1;">${uso}</td>
+                        <td style="padding: 10px; border: 1px solid #cbd5e1;">${observaciones}</td>
                     </tr>`;
                 });
 
@@ -1023,7 +1022,7 @@
 
                 html += `
                     <div style="margin-top: 30px; text-align: center; color: #1a3a5f; font-weight: bold; font-size: 20px; margin-bottom: 10px;">Estadísticas de Funcionalidad</div>
-                    <div style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #ddd; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; justify-content: center; align-items: center; gap: 50px; flex-wrap: wrap;">
+                    <div style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #cbd5e1; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; justify-content: center; align-items: center; gap: 50px; flex-wrap: wrap;">
                         <div style="font-weight:bold; color: #1a3a5f; font-size: 16px; line-height: 2.0; display: flex; flex-direction: column;">
                             <div style="background-color: #1a3a5f; color: white; padding: 8px 15px; border-radius: 6px; font-weight: bold; margin-bottom: 8px; width: 270px; text-align: left;">Funcionando: ${totalAscensores > 0 ? ((cVerde/totalAscensores)*100).toFixed(1) : 0}% (${cVerde})</div>
                             <div style="background-color: #1a3a5f; color: white; padding: 8px 15px; border-radius: 6px; font-weight: bold; margin-bottom: 8px; width: 270px; text-align: left;">En Mantenimiento: ${totalAscensores > 0 ? ((cAmarillo/totalAscensores)*100).toFixed(1) : 0}% (${cAmarillo})</div>
@@ -1279,11 +1278,11 @@
                 let html = `<table style="width: 100%; border-collapse: collapse; font-size: 13px;">
                     <thead>
                         <tr>
-                            <th style="border: 1px solid #000; padding: 8px; background-color: #1a3a5f; color: white;">LEGAJO</th>
-                            <th style="border: 1px solid #000; padding: 8px; background-color: #1a3a5f; color: white;">APELLIDO Y NOMBRE</th>
-                            <th style="border: 1px solid #000; padding: 8px; background-color: #1a3a5f; color: white; width: 80px;">PRESENTE</th>
-                            <th style="border: 1px solid #000; padding: 8px; background-color: #1a3a5f; color: white; width: 80px;">AUSENTE</th>
-                            <th style="border: 1px solid #000; padding: 8px; background-color: #1a3a5f; color: white; width: 80px;">LICENCIA</th>
+                            <th style="border: 1px solid #cbd5e1; padding: 8px; background-color: #1a3a5f; color: white;">LEGAJO</th>
+                            <th style="border: 1px solid #cbd5e1; padding: 8px; background-color: #1a3a5f; color: white;">APELLIDO Y NOMBRE</th>
+                            <th style="border: 1px solid #cbd5e1; padding: 8px; background-color: #1a3a5f; color: white; width: 80px;">PRESENTE</th>
+                            <th style="border: 1px solid #cbd5e1; padding: 8px; background-color: #1a3a5f; color: white; width: 80px;">AUSENTE</th>
+                            <th style="border: 1px solid #cbd5e1; padding: 8px; background-color: #1a3a5f; color: white; width: 80px;">LICENCIA</th>
                         </tr>
                     </thead>
                     <tbody>`;
@@ -1305,11 +1304,11 @@
                     else if (estadoChar === 'L') licencias++;
 
                     html += `<tr>
-                        <td style="border: 1px solid #000; padding: 8px; text-align: center;">${legTrim}</td>
-                        <td style="border: 1px solid #000; padding: 8px; text-align: center;">${nombre}</td>
-                        <td style="border: 1px solid #000; padding: 8px; text-align: center;"><div class="box-estado ${estadoChar === 'P' ? 'box-P' : ''}"></div></td>
-                        <td style="border: 1px solid #000; padding: 8px; text-align: center;"><div class="box-estado ${estadoChar === 'A' ? 'box-A' : ''}"></div></td>
-                        <td style="border: 1px solid #000; padding: 8px; text-align: center;"><div class="box-estado ${estadoChar === 'L' ? 'box-L' : ''}"></div></td>
+                        <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;">${legTrim}</td>
+                        <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;">${nombre}</td>
+                        <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;"><div class="box-estado ${estadoChar === 'P' ? 'box-P' : ''}"></div></td>
+                        <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;"><div class="box-estado ${estadoChar === 'A' ? 'box-A' : ''}"></div></td>
+                        <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;"><div class="box-estado ${estadoChar === 'L' ? 'box-L' : ''}"></div></td>
                     </tr>`;
                 });
                 
@@ -1317,7 +1316,7 @@
                 
                 html += `
                     <div style="margin-top: 30px; text-align: center; color: #1a3a5f; font-weight: bold; font-size: 20px; margin-bottom: 10px;">Estadísticas de Presentismo</div>
-                    <div style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #ddd; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; justify-content: center; align-items: center; gap: 50px; flex-wrap: wrap;">
+                    <div style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #cbd5e1; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; justify-content: center; align-items: center; gap: 50px; flex-wrap: wrap;">
                         <div style="font-weight:bold; color: #1a3a5f; font-size: 16px; line-height: 2.0; display: flex; flex-direction: column;">
                             <div style="background-color: #1a3a5f; color: white; padding: 8px 15px; border-radius: 6px; font-weight: bold; margin-bottom: 8px; width: 270px; text-align: left;">Presentismo: ${total > 0 ? ((presentes/total)*100).toFixed(1) : 0}% (${presentes})</div>
                             <div style="background-color: #1a3a5f; color: white; padding: 8px 15px; border-radius: 6px; font-weight: bold; margin-bottom: 8px; width: 270px; text-align: left;">Ausentismo: ${total > 0 ? ((ausentes/total)*100).toFixed(1) : 0}% (${ausentes})</div>
@@ -1355,7 +1354,7 @@
                 if (deptoFiltro === 'Ascensores') {
                     const { data: dispData } = await db.from('registros_ascensores').select('*').eq('fecha_cierre', fechaBusqueda).eq('turno', turno);
 
-                    let tablaDinamica = `<table style="width: 100%; border-collapse: collapse; margin-top: 15px;"><thead><tr><th style="border: 1px solid #333; padding: 10px; background-color: #1a3a5f; color: white;">N° de Ascensor</th><th style="border: 1px solid #333; padding: 10px; background-color: #1a3a5f; color: white;">Estado</th><th style="border: 1px solid #333; padding: 10px; background-color: #1a3a5f; color: white;">Uso Asignado</th><th style="border: 1px solid #333; padding: 10px; background-color: #1a3a5f; color: white;">Observaciones / Detalle</th></tr></thead><tbody>`;
+                    let tablaDinamica = `<table style="width: 100%; border-collapse: collapse; margin-top: 15px;"><thead><tr><th style="border: 1px solid #cbd5e1; padding: 10px; background-color: #1a3a5f; color: white;">N° de Ascensor</th><th style="border: 1px solid #cbd5e1; padding: 10px; background-color: #1a3a5f; color: white;">Estado</th><th style="border: 1px solid #cbd5e1; padding: 10px; background-color: #1a3a5f; color: white;">Uso Asignado</th><th style="border: 1px solid #cbd5e1; padding: 10px; background-color: #1a3a5f; color: white;">Observaciones / Detalle</th></tr></thead><tbody>`;
                     
                     let cVerde = 0, cAmarillo = 0, cRojo = 0, cMixto = 0;
                     let totalAscensores = dispData ? dispData.length : 0;
@@ -1386,16 +1385,16 @@
                                 cVerde++;
                             }
 
-                            tablaDinamica += `<tr><td style="border: 1px solid #333; padding: 8px; text-align: center;">${item.identificador_dispositivo}</td><td style="border: 1px solid #333; padding: 8px; text-align: center;">${estadoNormalizado}</td><td style="border: 1px solid #333; padding: 8px; text-align: center;">${usoAsignado}</td><td style="border: 1px solid #333; padding: 8px; text-align: center;">${detalleObs}</td></tr>`;
+                            tablaDinamica += `<tr><td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;">${item.identificador_dispositivo}</td><td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;">${estadoNormalizado}</td><td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;">${usoAsignado}</td><td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;">${detalleObs}</td></tr>`;
                         });
                     } else {
-                        tablaDinamica += `<tr><td colspan="4" style="border: 1px solid #333; padding: 12px; text-align: center;">No hay registros detallados de ascensores para esta fecha.</td></tr>`;
+                        tablaDinamica += `<tr><td colspan="4" style="border: 1px solid #cbd5e1; padding: 12px; text-align: center;">No hay registros detallados de ascensores para esta fecha.</td></tr>`;
                     }
                     tablaDinamica += `</tbody></table>`;
 
                     tablaDinamica += `
                         <div style="margin-top: 30px; text-align: center; color: #1a3a5f; font-weight: bold; font-size: 20px; margin-bottom: 10px;">Estadísticas de Funcionalidad</div>
-                        <div style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #ddd; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; justify-content: center; align-items: center; gap: 50px; flex-wrap: wrap;">
+                        <div style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #cbd5e1; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; justify-content: center; align-items: center; gap: 50px; flex-wrap: wrap;">
                             <div style="font-weight:bold; color: #1a3a5f; font-size: 16px; line-height: 2.0; display: flex; flex-direction: column;">
                                 <div style="background-color: #1a3a5f; color: white; padding: 8px 15px; border-radius: 6px; font-weight: bold; margin-bottom: 8px; width: 270px; text-align: left;">Funcionando: ${totalAscensores > 0 ? ((cVerde/totalAscensores)*100).toFixed(1) : 0}% (${cVerde})</div>
                                 <div style="background-color: #1a3a5f; color: white; padding: 8px 15px; border-radius: 6px; font-weight: bold; margin-bottom: 8px; width: 270px; text-align: left;">En Mantenimiento: ${totalAscensores > 0 ? ((cAmarillo/totalAscensores)*100).toFixed(1) : 0}% (${cAmarillo})</div>
@@ -1441,13 +1440,13 @@
                             <table style="width: 100%; border-collapse: collapse; margin-bottom: 0;">
                                 <thead>
                                     <tr style="background-color: #1a3a5f; color: white;">
-                                        <th style="border: 1px solid #333; padding: 10px; text-align: center;" rowspan="2">SECTOR</th>
-                                        <th style="border: 1px solid #333; padding: 10px; text-align: center;" rowspan="2">AGENTES ASIGNADOS</th>
-                                        <th style="border: 1px solid #333; padding: 8px; text-align: center;" colspan="2">HORARIO</th>
+                                        <th style="border: 1px solid #cbd5e1; padding: 10px; text-align: center;" rowspan="2">SECTOR</th>
+                                        <th style="border: 1px solid #cbd5e1; padding: 10px; text-align: center;" rowspan="2">AGENTES ASIGNADOS</th>
+                                        <th style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;" colspan="2">HORARIO</th>
                                     </tr>
                                     <tr style="background-color: #1a3a5f; color: white;">
-                                        <th style="border: 1px solid #333; padding: 8px; text-align: center; width: 100px;">DESDE</th>
-                                        <th style="border: 1px solid #333; padding: 8px; text-align: center; width: 100px;">HASTA</th>
+                                        <th style="border: 1px solid #cbd5e1; padding: 8px; text-align: center; width: 100px;">DESDE</th>
+                                        <th style="border: 1px solid #cbd5e1; padding: 8px; text-align: center; width: 100px;">HASTA</th>
                                     </tr>
                                 </thead>
                                <tbody>`;
@@ -1455,14 +1454,14 @@
                     if (intData && intData.length > 0) {
                         intData.forEach(row => {
                             tablaDinamica += `<tr>
-                                <td style="border: 1px solid #333; padding: 10px; text-align: center;">${row.sector || ''}</td>
-                                <td style="border: 1px solid #333; padding: 10px; text-align: center;">${row.agentes_asignados || ''}</td>
-                                <td style="border: 1px solid #333; padding: 10px; text-align: center;">${row.hora_desde || ''}</td>
-                                <td style="border: 1px solid #333; padding: 10px; text-align: center;">${row.hora_hasta || ''}</td>
+                                <td style="border: 1px solid #cbd5e1; padding: 10px; text-align: center;">${row.sector || ''}</td>
+                                <td style="border: 1px solid #cbd5e1; padding: 10px; text-align: center;">${row.agentes_asignados || ''}</td>
+                                <td style="border: 1px solid #cbd5e1; padding: 10px; text-align: center;">${row.hora_desde || ''}</td>
+                                <td style="border: 1px solid #cbd5e1; padding: 10px; text-align: center;">${row.hora_hasta || ''}</td>
                             </tr>`;
                         });
                     } else {
-                        tablaDinamica += `<tr><td colspan="4" style="border: 1px solid #333; padding: 12px; text-align: center;">No hay registros detallados de Intendencia para esta fecha y turno con este supervisor.</td></tr>`;
+                        tablaDinamica += `<tr><td colspan="4" style="border: 1px solid #cbd5e1; padding: 12px; text-align: center;">No hay registros detallados de Intendencia para esta fecha y turno con este supervisor.</td></tr>`;
                     }
                     tablaDinamica += `</tbody></table>`;
                     
@@ -1474,8 +1473,8 @@
                     }
 
                     tablaDinamica += `
-                        <div style="background-color: #1a3a5f; color: white; padding: 8px 12px; font-weight: bold; font-size: 14px; margin-top: 15px; border: 1px solid #333;">Observaciones:</div>
-                        <div style="padding: 10px 15px; min-height: 120px; background: #fff; border: 1px solid #333; border-top: none; font-family: 'Courier New', Courier, monospace; font-size: 16px; line-height: 30px; background-image: linear-gradient(#e0e0e0 1px, transparent 1px); background-size: 100% 30px;">
+                        <div style="background-color: #1a3a5f; color: white; padding: 8px 12px; font-weight: bold; font-size: 14px; margin-top: 15px; border: 1px solid #cbd5e1;">Observaciones:</div>
+                        <div style="padding: 10px 15px; min-height: 120px; background: #fff; border: 1px solid #cbd5e1; border-top: none; font-family: 'Courier New', Courier, monospace; font-size: 16px; line-height: 30px; background-image: linear-gradient(#e0e0e0 1px, transparent 1px); background-size: 100% 30px;">
                             <p style="margin: 0; padding: 0; white-space: pre-wrap;">${obsFinal || 'Sin observaciones registradas.'}</p>
                         </div>
                     </div>`;
@@ -1490,14 +1489,14 @@
                             <table style="width: 100%; border-collapse: collapse; margin-bottom: 0; font-size: 12px;">
                                 <thead>
                                     <tr style="background-color: #1a3a5f; color: white;">
-                                        <th style="border: 1px solid #333; padding: 8px 4px; text-align: center; width: 10%;">HORA</th>
-                                        <th style="border: 1px solid #333; padding: 8px 4px; text-align: center; width: 15%;">PISO/SALA/CAMA</th>
-                                        <th style="border: 1px solid #333; padding: 8px 4px; text-align: center; width: 20%;">APELLIDO Y NOMBRE</th>
-                                        <th style="border: 1px solid #333; padding: 8px 4px; text-align: center; width: 15%;">DESTINO</th>
-                                        <th style="border: 1px solid #333; padding: 8px 4px; text-align: center; width: 10%;">HORA ESTADÍA</th>
-                                        <th style="border: 1px solid #333; padding: 8px 4px; text-align: center; width: 10%;">MOVILIDAD</th>
-                                        <th style="border: 1px solid #333; padding: 8px 4px; text-align: center; width: 11%;">CAMILLERO</th>
-                                        <th style="border: 1px solid #333; padding: 8px 4px; text-align: center; width: 9%;">HORA DE FINALIZACION</th>
+                                        <th style="border: 1px solid #cbd5e1; padding: 8px 4px; text-align: center; width: 10%;">HORA</th>
+                                        <th style="border: 1px solid #cbd5e1; padding: 8px 4px; text-align: center; width: 15%;">PISO/SALA/CAMA</th>
+                                        <th style="border: 1px solid #cbd5e1; padding: 8px 4px; text-align: center; width: 20%;">APELLIDO Y NOMBRE</th>
+                                        <th style="border: 1px solid #cbd5e1; padding: 8px 4px; text-align: center; width: 15%;">DESTINO</th>
+                                        <th style="border: 1px solid #cbd5e1; padding: 8px 4px; text-align: center; width: 10%;">HORA ESTADÍA</th>
+                                        <th style="border: 1px solid #cbd5e1; padding: 8px 4px; text-align: center; width: 10%;">MOVILIDAD</th>
+                                        <th style="border: 1px solid #cbd5e1; padding: 8px 4px; text-align: center; width: 11%;">CAMILLERO</th>
+                                        <th style="border: 1px solid #cbd5e1; padding: 8px 4px; text-align: center; width: 9%;">HORA DE FINALIZACION</th>
                                     </tr>
                                 </thead>
                                 <tbody>`;
@@ -1505,18 +1504,18 @@
                     if (camData && camData.length > 0) {
                         camData.forEach((row) => {
                             tablaDinamica += `<tr>
-                                <td style="border: 1px solid #333; padding: 6px 4px; text-align: center;">${row.hora || ''}</td>
-                                <td style="border: 1px solid #333; padding: 6px 4px; text-align: center;">${row.numero_cama || ''}</td>
-                                <td style="border: 1px solid #333; padding: 6px 4px; text-align: center;">${row.nombre_paciente || ''}</td>
-                                <td style="border: 1px solid #333; padding: 6px 4px; text-align: center;">${row.destino || ''}</td>
-                                <td style="border: 1px solid #333; padding: 6px 4px; text-align: center;">${row.duracion_estancia || ''}</td>
-                                <td style="border: 1px solid #333; padding: 6px 4px; text-align: center;">${row.tipo_movilidad || ''}</td>
-                                <td style="border: 1px solid #333; padding: 6px 4px; text-align: center;">${row.personal_asignado || ''}</td>
-                                <td style="border: 1px solid #333; padding: 6px 4px; text-align: center;">${row.hora_finalizacion || ''}</td>
+                                <td style="border: 1px solid #cbd5e1; padding: 6px 4px; text-align: center;">${row.hora || ''}</td>
+                                <td style="border: 1px solid #cbd5e1; padding: 6px 4px; text-align: center;">${row.numero_cama || ''}</td>
+                                <td style="border: 1px solid #cbd5e1; padding: 6px 4px; text-align: center;">${row.nombre_paciente || ''}</td>
+                                <td style="border: 1px solid #cbd5e1; padding: 6px 4px; text-align: center;">${row.destino || ''}</td>
+                                <td style="border: 1px solid #cbd5e1; padding: 6px 4px; text-align: center;">${row.duracion_estancia || ''}</td>
+                                <td style="border: 1px solid #cbd5e1; padding: 6px 4px; text-align: center;">${row.tipo_movilidad || ''}</td>
+                                <td style="border: 1px solid #cbd5e1; padding: 6px 4px; text-align: center;">${row.personal_asignado || ''}</td>
+                                <td style="border: 1px solid #cbd5e1; padding: 6px 4px; text-align: center;">${row.hora_finalizacion || ''}</td>
                             </tr>`;
                         });
                     } else {
-                        tablaDinamica += `<tr><td colspan="8" style="border: 1px solid #333; padding: 12px; text-align: center;">No hay registros de movimientos de camilleros para esta fecha.</td></tr>`;
+                        tablaDinamica += `<tr><td colspan="8" style="border: 1px solid #cbd5e1; padding: 12px; text-align: center;">No hay registros de movimientos de camilleros para esta fecha.</td></tr>`;
                     }
                     tablaDinamica += `</tbody></table>`;
 
@@ -1528,8 +1527,8 @@
                     }
 
                     tablaDinamica += `
-                        <div style="background-color: #1a3a5f; color: white; padding: 8px 12px; font-weight: bold; font-size: 14px; margin-top: 15px; border: 1px solid #333;">Observaciones de la Jornada:</div>
-                        <div style="padding: 0px 15px; min-height: 120px; background: #fff; border: 1px solid #333; border-top: none; font-family: 'Courier New', Courier, monospace; font-size: 16px; line-height: 30px; background-image: linear-gradient(#e0e0e0 1px, transparent 1px); background-size: 100% 30px;">
+                        <div style="background-color: #1a3a5f; color: white; padding: 8px 12px; font-weight: bold; font-size: 14px; margin-top: 15px; border: 1px solid #cbd5e1;">Observaciones de la Jornada:</div>
+                        <div style="padding: 0px 15px; min-height: 120px; background: #fff; border: 1px solid #cbd5e1; border-top: none; font-family: 'Courier New', Courier, monospace; font-size: 16px; line-height: 30px; background-image: linear-gradient(#e0e0e0 1px, transparent 1px); background-size: 100% 30px;">
                             <p style="margin: 0; padding: 0; white-space: pre-wrap;">${obsCamilleros || 'Sin observaciones registradas.'}</p>
                         </div>
                     </div>`;
@@ -1545,8 +1544,8 @@
                     let tablaDinamica = `
                         <div style="background: #fff; width: 100%; box-sizing: border-box;">
                             <div style="font-size: 16px; font-weight: bold; color: #1a3a5f; margin-bottom: 10px;">Planilla Operativa (${reg.departamento})</div>
-                            <div style="background-color: #1a3a5f; color: white; padding: 8px 12px; font-weight: bold; font-size: 14px; margin-top: 15px; border: 1px solid #333;">Observaciones y Contenido:</div>
-                            <div style="padding: 0px 15px; min-height: 100px; background: #fff; border: 1px solid #333; border-top: none; font-family: 'Courier New', Courier, monospace; font-size: 16px; line-height: 30px; background-image: linear-gradient(#e0e0e0 1px, transparent 1px); background-size: 100% 30px;">
+                            <div style="background-color: #1a3a5f; color: white; padding: 8px 12px; font-weight: bold; font-size: 14px; margin-top: 15px; border: 1px solid #cbd5e1;">Observaciones y Contenido:</div>
+                            <div style="padding: 0px 15px; min-height: 100px; background: #fff; border: 1px solid #cbd5e1; border-top: none; font-family: 'Courier New', Courier, monospace; font-size: 16px; line-height: 30px; background-image: linear-gradient(#e0e0e0 1px, transparent 1px); background-size: 100% 30px;">
                                 <p style="margin: 0; padding: 0; white-space: pre-wrap;">${reg.observaciones || 'Sin datos adicionales.'}</p>
                             </div>
                         </div>
@@ -1559,7 +1558,7 @@
                     visor.innerHTML = `<p style='color: red; font-weight: bold;'>No se encontraron registros para ${deptoFiltro} en el turno ${turno} (${fechaBusqueda}).</p>`;
                     return;
                 }
-                visor.innerHTML = `<h3>Reporte Diario - Vista de Auditoría</h3><style>.hoja-modelo-limpio { width: 100% !important; background-color: #fff !important; border: 1px solid #ccc !important; padding: 30px !important; position: relative !important; min-height: 800px !important; font-family: 'Courier New', Courier, monospace !important; font-size: 16px !important; line-height: 30px !important; box-sizing: border-box !important; background-image: linear-gradient(to right, transparent 0px, transparent 0px), linear-gradient(#e0e0e0 1px, transparent 1px) !important; background-size: 100% 30px !important; white-space: pre-wrap !important; }</style><div class="hoja-modelo-limpio">${reg.reporte_diario || 'No hay contenido de reporte.'}</div>`;
+                visor.innerHTML = `<h3>Reporte Diario - Vista de Auditoría</h3><style>.hoja-modelo-limpio { width: 100% !important; background-color: #fff !important; border: 1px solid #cbd5e1 !important; padding: 30px !important; position: relative !important; min-height: 800px !important; font-family: 'Courier New', Courier, monospace !important; font-size: 16px !important; line-height: 30px !important; box-sizing: border-box !important; background-image: linear-gradient(to right, transparent 0px, transparent 0px), linear-gradient(#e0e0e0 1px, transparent 1px) !important; background-size: 100% 30px !important; white-space: pre-wrap !important; }</style><div class="hoja-modelo-limpio">${reg.reporte_diario || 'No hay contenido de reporte.'}</div>`;
             }
         }
         
