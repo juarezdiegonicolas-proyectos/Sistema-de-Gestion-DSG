@@ -143,25 +143,143 @@
         .box-A { background-color: #dc3545; }
         .box-L { background-color: #ffc107; }
 
-        .historial-muro-container { margin-top: 30px; border-top: 2px solid #dee2e6; padding-top: 20px; }
-        .historial-muro-titulo { font-size: 16px; font-weight: bold; color: #1a3a5f; margin-bottom: 15px; }
+        /* ==========================================
+           NUEVO DISEÑO Y ESTÉTICA DE NOVEDADES
+           ================================---------- */
+        #novedades {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+        }
 
-        .muro-item { background: #fff; border: 1px solid #d1d8df; border-left: 5px solid #007bff; padding: 15px; border-radius: 6px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .muro-item.recibido { border-left-color: #17a2b8; }
-        .muro-item.enviado { border-left-color: #28a745; }
-        .muro-item.terceros { border-left-color: #6c757d; }
+        #novedades .header-logos {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+            border: 1px solid #edf2f7;
+            margin-bottom: 25px;
+        }
 
-        .muro-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; flex-wrap: wrap; gap: 10px; }
-        .novedad-meta { font-size: 0.85rem; color: #495057; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; line-height: 1.5; }
-        .novedad-texto { font-size: 0.95rem; color: #212529; white-space: pre-wrap; word-break: break-word; line-height: 1.5; margin-top: 8px; font-family: inherit; }
-        .muro-adjuntos { margin-top: 10px; font-size: 13px; }
-        .muro-adjuntos a { display: inline-block; margin-right: 10px; color: #1a3a5f; text-decoration: none; font-weight: 500; }
-        .muro-adjuntos a:hover { text-decoration: underline; }
+        #novedades .header-logos h1 {
+            color: #1e293b;
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
 
-        .badge-estado { font-size: 0.75rem; padding: 4px 8px; border-radius: 4px; font-weight: bold; color: white; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; display: inline-block; vertical-align: middle; }
-        .badge-recibido { background-color: #17a2b8; }
-        .badge-enviado { background-color: #28a745; }
-        .badge-terceros { background-color: #6c757d; }
+        #novedades .filtros-historicos {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 18px 22px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.01);
+            gap: 12px;
+        }
+
+        #novedades .input-select {
+            background-color: #f8fafc;
+            border: 1px solid #cbd5e1;
+            color: #334155;
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        #novedades .input-select:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            background-color: #fff;
+        }
+
+        #novedades .btn-gestion {
+            border-radius: 6px;
+            padding: 10px 16px;
+            font-size: 13px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            transition: all 0.2s ease;
+        }
+
+        #novedades .btn-adjuntar {
+            background: #3b82f6;
+        }
+        #novedades .btn-adjuntar:hover {
+            background: #2563eb;
+        }
+
+        #novedades textarea {
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 18px;
+            font-family: 'Roboto', sans-serif;
+            font-size: 14px;
+            line-height: 1.6;
+            background-image: none;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);
+            transition: border-color 0.2s;
+        }
+
+        #novedades textarea:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1), inset 0 1px 2px rgba(0,0,0,0.02);
+        }
+
+        #preview-novedades {
+            background: #ffffff;
+            border: 2px dashed #cbd5e1 !important;
+            border-radius: 8px;
+            padding: 15px;
+            color: #475569;
+            font-size: 13px;
+        }
+
+        .historial-muro-container { 
+            margin-top: 35px; 
+            border-top: 2px solid #e2e8f0; 
+            padding-top: 25px; 
+        }
+        .historial-muro-titulo { 
+            font-size: 18px; 
+            font-weight: 700; 
+            color: #1e293b; 
+            margin-bottom: 20px; 
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .muro-item { 
+            background: #ffffff; 
+            border: 1px solid #e2e8f0; 
+            border-left: 6px solid #3b82f6; 
+            padding: 22px; 
+            border-radius: 10px; 
+            margin-bottom: 20px; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); 
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .muro-item:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+        }
+        .muro-item.recibido { border-left-color: #06b6d4; }
+        .muro-item.enviado { border-left-color: #10b981; }
+        .muro-item.terceros { border-left-color: #64748b; }
+
+        .muro-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px; }
+        .novedad-meta { font-size: 0.85rem; color: #475569; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; line-height: 1.6; }
+        .novedad-texto { font-size: 0.95rem; color: #1e293b; white-space: pre-wrap; word-break: break-word; line-height: 1.6; margin-top: 12px; font-family: inherit; }
+        .muro-adjuntos { margin-top: 15px; font-size: 13px; }
+        .muro-adjuntos a { display: inline-flex; align-items: center; gap: 6px; margin-right: 10px; color: #2563eb; text-decoration: none; font-weight: 600; background: #eff6ff; padding: 6px 12px; border-radius: 6px; border: 1px solid #dbeafe; transition: background 0.2s; }
+        .muro-adjuntos a:hover { background: #dbeafe; text-decoration: none; }
+
+        .badge-estado { font-size: 0.7rem; padding: 5px 10px; border-radius: 6px; font-weight: 700; color: white; text-transform: uppercase; letter-spacing: 0.8px; white-space: nowrap; display: inline-block; vertical-align: middle; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .badge-recibido { background-color: #06b6d4; }
+        .badge-enviado { background-color: #10b981; }
+        .badge-terceros { background-color: #64748b; }
 
         @media print {
             .sidebar, .filtros-historicos, .btn-cerrar, .area-acciones, .btn-adjuntar, textarea, .btn-limpiar, .historial-muro-container { display: none !important; }
@@ -211,18 +329,15 @@
             const SUPABASE_KEY = 'sb_publishable_EvvZ8n7Ve2cF9FB4SXA0Ug_7q6qWh9f';
             const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-            // Variables globales mapeadas para el usuario activo logueado
             let nombreAgenteLogueado = "Administrador";
             let departamentoAgenteLogueado = "direccion-servicios-generales";
             let usuarioIdLogueado = null;
 
-            // 1. DECLARACIÓN PRIMARIA DE FUNCIONES CRÍTICAS (PARA EVITAR ERRORES DE ORDEN DE CARGA)
             async function verificarNotificacionesPendientes() {
                 try {
                     const deptoActual = departamentoAgenteLogueado;
                     const nombreActual = (nombreAgenteLogueado || "").trim().toLowerCase();
 
-                    // Consultar lecturas previas del usuario en la tabla comunicados_lecturas usando comunicado_id y user_id
                     let idsLeidosSupabase = [];
                     if (nombreAgenteLogueado) {
                         const { data: lecturasData } = await db
@@ -234,10 +349,8 @@
                         }
                     }
 
-                    // Fallback / soporte local con localStorage si no hay ID de usuario conectado aún
                     const leidosNovedadesLocal = JSON.parse(localStorage.getItem('leidos_novedades') || '[]');
 
-                    // Consultar comunicados de novedades
                     const { data: novData, error: errNov } = await db
                         .from('comunicados_memos')
                         .select('*')
@@ -254,10 +367,7 @@
                             const supervisorOrigenRaw = (item.supervisor_origen || contenidoObj.supervisor_origen || '').trim().toLowerCase();
 
                             const esParaMiDepto = (deptoDestino === deptoActual || deptoDestino === 'todos' || deptoDestino === 'todos-los-departamentos');
-                            
-                            // Validación específica por supervisor destino (si se especificó uno)
                             const esParaMiSupervisor = (!supervisorDestinoRaw || supervisorDestinoRaw.includes('general') || supervisorDestinoRaw.includes('todos') || supervisorDestinoRaw === nombreActual);
-
                             const esPropio = (origenDepto === deptoActual && (supervisorOrigenRaw === nombreActual || !supervisorOrigenRaw));
 
                             if (esParaMiDepto && esParaMiSupervisor && !esPropio) {
@@ -311,12 +421,10 @@
                             const esPropio = (origenDepto === departamentoAgenteLogueado && (supervisorOrigenRaw === nombreActual || !supervisorOrigenRaw));
 
                             if (esParaMiDepto && esParaMiSupervisor && !esPropio) {
-                                // Agregar a localStorage
                                 if (!leidosLocal.includes(item.id_clave)) {
                                     leidosLocal.push(item.id_clave);
                                 }
 
-                                // Registrar en la tabla comunicados_lecturas en Supabase usando comunicado_id y user_id
                                 if (nombreAgenteLogueado) {
                                     await db.from('comunicados_lecturas').upsert({
                                         comunicado_id: item.id,
@@ -337,7 +445,6 @@
                 }
             }
 
-            // Obtener perfil completo del usuario logueado al iniciar (nombre y departamento real)
             async function obtenerPerfilLogueado() {
                 try {
                     const { data: { session } } = await db.auth.getSession();
@@ -377,7 +484,6 @@
                     actualizarTituloBienvenida(nombreAgenteLogueado);
                 }
                 
-                // Ejecutamos las notificaciones de manera segura
                 verificarNotificacionesPendientes();
                 setInterval(verificarNotificacionesPendientes, 60000);
             }
@@ -395,7 +501,6 @@
                 }
             }
 
-            // Iniciar perfil
             obtenerPerfilLogueado();
 
             function toKebabCase(nombreVisual) {
@@ -506,17 +611,17 @@
                                 
                                 <button class="btn-gestion btn-adjuntar" onclick="document.getElementById('file-novedades').click()">📎 Adjuntar Archivos</button>
                                 <input type="file" id="file-novedades" style="display:none" multiple onchange="previsualizarMultiples(this, 'novedades')">
-                                <button class="btn-gestion" style="background: #28a745; color: white;" onclick="guardarRedaccion('novedades')">Guardar y Enviar</button>
+                                <button class="btn-gestion" style="background: #10b981; color: white;" onclick="guardarRedaccion('novedades')">Guardar y Enviar</button>
                             </div>
                             
                             <div id="print-header-novedades" class="print-header">Dirigido a: Todos los departamentos | Turno: Todos los turnos</div>
-                            <textarea id="txt-novedades" oninput="document.getElementById('print-novedades').innerText = this.value" placeholder="Escriba aquí el contenido..."></textarea>
+                            <textarea id="txt-novedades" oninput="document.getElementById('print-novedades').innerText = this.value" placeholder="Escriba aquí el contenido de la novedad..."></textarea>
                             <div id="print-novedades" class="print-only"></div>
                             <div id="preview-novedades" class="preview-adjunto"></div>
                             
                             <div class="area-acciones">
                                 <button id="btn-print-novedades" class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
-                                <button class="btn-gestion btn-imprimir" style="background: #dc3545;" onclick="limpiarPantalla('novedades')">🧹 Limpiar Pantalla</button>
+                                <button class="btn-gestion btn-imprimir" style="background: #ef4444;" onclick="limpiarPantalla('novedades')">🧹 Limpiar Pantalla</button>
                             </div>
 
                             <div class="historial-muro-container">
@@ -762,11 +867,11 @@
 
                     let infoDetalleCabecera = `
                         <div>
-                            <span class="badge-estado ${claseBadgeEstado}">${tipoBadge}</span> <strong>Origen:</strong> ${remitenteDepto} &rarr; 
+                            <span class="badge-estado ${claseBadgeEstado}">${tipoBadge}</span> &nbsp;<strong>Origen:</strong> ${remitenteDepto} &rarr; 
                             <strong>Destino:</strong> ${deptoDestinoValor} | 
                             <strong>Turno:</strong> ${turnoMsg} | 
-                            <strong>Supervisor Origen:</strong> ${supervisorOrigenMsg} | 
-                            <strong>Supervisor Destino:</strong> ${supervisorDestinoMsg}
+                            <strong>Sup. Origen:</strong> ${supervisorOrigenMsg} | 
+                            <strong>Sup. Destino:</strong> ${supervisorDestinoMsg}
                         </div>`;
 
                     let archivosArr = [];
@@ -778,7 +883,7 @@
 
                     let archivosHtml = "";
                     if (archivosArr.length > 0) {
-                        archivosHtml = '<div class="muro-adjuntos" style="margin-top: 15px; display: flex; flex-direction: column; gap: 10px;"><b>Archivos Adjuntos:</b>';
+                        archivosHtml = '<div class="muro-adjuntos" style="margin-top: 15px; display: flex; flex-direction: column; gap: 10px;"><b style="color: #334155; font-size: 13px;">Archivos Adjuntos:</b>';
                         archivosArr.forEach(arch => {
                             if (!arch || !arch.data) return;
                             let base64Data = arch.data;
@@ -787,9 +892,9 @@
 
                             if (esImagen) {
                                 archivosHtml += `
-                                    <div style="text-align: center; background: #fafafa; border: 1px solid #ddd; padding: 10px; border-radius: 6px;">
+                                    <div style="text-align: center; background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px; border-radius: 8px;">
                                         <div style="margin-bottom: 8px;">
-                                            <img src="${base64Data}" alt="Archivo adjunto" style="max-width: 100%; max-height: 350px; border-radius: 4px; border: 1px solid #ddd; object-fit: contain;" />
+                                            <img src="${base64Data}" alt="Archivo adjunto" style="max-width: 100%; max-height: 350px; border-radius: 6px; border: 1px solid #cbd5e1; object-fit: contain;" />
                                         </div>
                                         <a href="${base64Data}" download="${nombreArchivo}">
                                             📥 Descargar Imagen (${nombreArchivo})
@@ -798,12 +903,12 @@
                                 `;
                             } else {
                                 archivosHtml += `
-                                    <div style="background: #f8f9fa; border: 1px solid #ddd; padding: 10px 14px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 10px 14px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
                                         <div style="display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1;">
-                                            <span style="font-size: 26px; flex-shrink: 0; line-height: 1;">📄</span>
+                                            <span style="font-size: 24px; flex-shrink: 0; line-height: 1;">📄</span>
                                             <div style="min-width: 0; display: flex; flex-direction: column; gap: 2px;">
-                                                <strong style="font-size: 13px; color: #333; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${nombreArchivo}">${nombreArchivo}</strong>
-                                                <span style="font-size: 11px; color: #666; display: block;">Documento adjunto</span>
+                                                <strong style="font-size: 13px; color: #1e293b; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${nombreArchivo}">${nombreArchivo}</strong>
+                                                <span style="font-size: 11px; color: #64748b; display: block;">Documento adjunto</span>
                                             </div>
                                         </div>
                                         <a href="${base64Data}" download="${nombreArchivo}">
@@ -820,8 +925,8 @@
                         <div class="muro-item ${claseMuroItem}">
                             <div class="muro-header">
                                 <div class="novedad-meta">${infoDetalleCabecera}</div>
-                                <div style="font-size: 0.85rem; color: #6c757d; white-space: nowrap;">
-                                    <i class="far fa-clock"></i> ${fecha}
+                                <div style="font-size: 0.8rem; color: #64748b; white-space: nowrap; font-weight: 500;">
+                                    🕒 ${fecha}
                                 </div>
                             </div>
                             <div class="novedad-texto">${texto}</div>
