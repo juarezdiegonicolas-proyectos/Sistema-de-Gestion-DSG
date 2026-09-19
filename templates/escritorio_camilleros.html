@@ -157,7 +157,6 @@
 
         #rrhh .tabla-camilleros { width: 99.5% !important; border-right: 1px solid #cbd5e1 !important; }
 
-        /* Estilos específicos añadidos para la sección de Novedades mejorada */
         .input-select, .input-fecha { 
             background-color: #f8fafc;
             border: 1px solid #cbd5e1;
@@ -398,7 +397,7 @@
             <div class="area-acciones"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir Resultados</button></div>
         </div>
         
-        <!-- SOLAPA 5: NOVEDADES (ACTUALIZADA) -->
+        <!-- SOLAPA 5: NOVEDADES (CAMILLEROS CENTRAL) -->
         <div id="novedades" class="seccion">
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo Hospital" onerror="this.src='https://via.placeholder.com/150?text=Hospital'">
@@ -503,7 +502,7 @@
         const SUPABASE_URL = 'https://ydcbdvosxbwcutddxaze.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_EvvZ8n7Ve2cF9FB4SXA0Ug_7q6qWh9f';
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        const db = supabaseClient; // Alias requerido para funciones de novedades
+        const db = supabaseClient;
 
         const cuerpoTabla = document.getElementById('cuerpo-tabla');
         const editorReporte = document.getElementById('editor-reporte');
@@ -647,7 +646,7 @@
                     const turnoMsg = (contenidoObj.turno || "").toLowerCase();
 
                     const esParaTodos = clave.includes('todos') || clave.includes('general') || turnoMsg === 'todos' || turnoMsg === 'general';
-                    const esParaDepto = clave.includes('camilleros');
+                    const esParaDepto = clave.includes('camilleros-central') || clave.includes('camilleros');
 
                     if (!esParaDepto && !esParaTodos) return false;
                     if (esParaTodos) return true;
@@ -686,6 +685,23 @@
             }
         }
 
+        async function registrarLecturaNovedades(comunicadoId) {
+            try {
+                const usuarioActual = localStorage.getItem('usuario_nombre') || "Anónimo";
+                const legajoActual = localStorage.getItem('usuario_legajo') || "S/L";
+                const deptoActual = "camilleros-central";
+
+                await supabaseClient.from('comunicados_lectura').insert({
+                    comunicado_id: comunicadoId,
+                    leido_por: usuarioActual,
+                    legajo: legajoActual,
+                    departamento: deptoActual
+                });
+            } catch (err) {
+                console.error("Error al insertar en comunicados_lectura:", err);
+            }
+        }
+
         async function cargarNovedades() {
             const contenedorNov = document.getElementById('contenedor-novedades');
             if (!contenedorNov) return;
@@ -704,6 +720,15 @@
                 if (!data || data.length === 0) {
                     contenedorNov.innerHTML = '<p style="color: #666; font-style: italic;">No hay registros disponibles en el muro.</p>';
                     return;
+                }
+
+                // Registrar lectura del elemento más reciente en la tabla comunicados_lectura
+                if (data.length > 0) {
+                    await registrarLecturaNovedades(data[0].id);
+                    const usuarioActual = (localStorage.getItem('usuario_nombre') || "invitado").trim().toLowerCase();
+                    localStorage.setItem(`dsg_camilleros_ultimo_novedad_leida_${usuarioActual}`, String(data[0].id));
+                    const badge = document.getElementById('badge-novedades');
+                    if (badge) badge.style.display = 'none';
                 }
 
                 let html = '';
@@ -729,17 +754,17 @@
                     const remitenteDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
                     const deptoDestinoValor = item.departamento_destino || contenidoObj.departamento || 'Todos';
 
-                    const deptoUsuarioActual = "camilleros";
+                    const deptoUsuarioActual = "camilleros-central";
 
                     let tipoBadge = '';
                     let claseMuroItem = '';
                     let claseBadgeEstado = '';
 
-                    if (remitenteDepto === deptoUsuarioActual) {
+                    if (remitenteDepto === deptoUsuarioActual || remitenteDepto === 'camilleros') {
                         tipoBadge = 'ENVIADO';
                         claseMuroItem = 'enviado';
                         claseBadgeEstado = 'badge-enviado';
-                    } else if (deptoDestinoValor === deptoUsuarioActual || deptoDestinoValor === 'todos' || deptoDestinoValor === 'todos los departamentos') {
+                    } else if (deptoDestinoValor === deptoUsuarioActual || deptoDestinoValor === 'camilleros' || deptoDestinoValor === 'todos' || deptoDestinoValor === 'todos los departamentos') {
                         tipoBadge = 'RECIBIDO';
                         claseMuroItem = 'recibido';
                         claseBadgeEstado = 'badge-recibido';
@@ -833,7 +858,7 @@
                 return;
             }
 
-            const deptoOrigenNormalizado = "camilleros";
+            const deptoOrigenNormalizado = "camilleros-central";
             const deptoDestinoNormalizado = toKebabCase(destinoVisual);
             const supervisorOrigenVal = localStorage.getItem('usuario_nombre') || 'Administrador';
 
@@ -1007,7 +1032,7 @@
             const body = document.getElementById('cuerpo-rrhh');
             const nombreActual = localStorage.getItem('usuario_nombre') || "Invitado";
             const turnoActual = localStorage.getItem('usuario_turno') || "Mañana";
-            const deptoActual = "Camilleros";
+            const deptoActual = "Camilleros Central";
 
             document.getElementById('display-nombre-rrhh').innerText = nombreActual;
             document.getElementById('display-turno-rrhh').innerText = turnoActual;
@@ -1083,7 +1108,7 @@
 
             const fechaActual = inputFecha.value;
             const supervisorActual = localStorage.getItem('usuario_nombre') || "Sistema";
-            const departamentoActual = "Camilleros";
+            const departamentoActual = "camilleros-central";
 
             for (const a of agentesTurno) {
                 const estadoVal = registro[a.legajo];
@@ -1104,7 +1129,7 @@
                  <div class="botonera-porcentaje">Ausentismo: ${pA}% (${ausentes})</div>
                  <div class="botonera-porcentaje">Licencias: ${pL}% (${licencias})</div>`;
             actualizarGrafico(presentes, ausentes, licencias);
-            alert(`¡Asistencia completa y guardada en Supabase!\nSupervisor: ${supervisorActual}\nDepartamento: ${departamentoActual}\nPresentismo: ${pP}%\nAusentismo: ${pA}%\nLicencias: ${pL}%`);
+            alert(`¡Asistencia completa y guardada en Supabase!\nSupervisor: ${supervisorActual}\nDepartamento: Camilleros Central\nPresentismo: ${pP}%\nAusentismo: ${pA}%\nLicencias: ${pL}%`);
         }
 
         function guardarDatos() {
@@ -1130,7 +1155,7 @@
         async function cerrarJornadaGlobal() {
             const fechaVal = inputFecha.value;
             const turnoVal = localStorage.getItem('usuario_turno') || "Mañana";
-            const deptoVal = "Camilleros";
+            const deptoVal = "camilleros-central";
             const supervisorVal = localStorage.getItem('usuario_nombre') || "Sistema";
 
             const { data: existente, error: errExistente } = await supabaseClient
@@ -1245,7 +1270,7 @@
                 .select('*')
                 .eq('fecha_cierre', f)
                 .eq('turno', t)
-                .eq('departamento', 'Camilleros')
+                .eq('departamento', 'camilleros-central')
                 .maybeSingle();
 
             let reg = regSupabase ? {
@@ -1260,7 +1285,7 @@
 
             if (!reg) {
                 const hist = JSON.parse(localStorage.getItem('historial_jornadas') || "[]");
-                reg = hist.find(r => r.fecha === f && r.turno === t && r.depto === "Camilleros");
+                reg = hist.find(r => r.fecha === f && r.turno === t && r.depto === "camilleros-central");
             }
             
             if (!reg) {
@@ -1350,7 +1375,7 @@
         window.onload = async () => {
             const nombre = localStorage.getItem('usuario_nombre') || "Invitado"; 
             const turno = localStorage.getItem('usuario_turno') || "Mañana"; 
-            const depto = "Camilleros";
+            const depto = "Camilleros Central";
             
             document.getElementById('nombre-supervisor-sidebar').innerText = nombre;
             document.getElementById('display-nombre').innerText = nombre; 
@@ -1369,7 +1394,7 @@
                 const { count, error } = await supabaseClient
                     .from('cierres_jornada')
                     .select('*', { count: 'exact', head: true })
-                    .eq('departamento', depto);
+                    .eq('departamento', 'camilleros-central');
 
                 if (!error && count !== null) {
                     numeroHojaReal = count + 1;
@@ -1514,4 +1539,3 @@
     </script>
 </body>
 </html>
-
