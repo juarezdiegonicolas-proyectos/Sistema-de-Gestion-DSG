@@ -398,7 +398,7 @@
             <div class="area-acciones"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir Resultados</button></div>
         </div>
         
-        <!-- SOLAPA 5: NOVEDADES (ACTUALIZADA) -->
+        <!-- SOLAPA 5: NOVEDADES (ORIGINAL) -->
         <div id="novedades" class="seccion">
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo Hospital" onerror="this.src='https://via.placeholder.com/150?text=Hospital'">
@@ -661,7 +661,6 @@
 
                 if (novedadesFiltradas.length === 0) return;
 
-                // Consultar las lecturas registradas en la tabla comunicado_lecturas para este departamento
                 const { data: lecturasData, error: lecturasError } = await supabaseClient
                     .from('comunicado_lecturas')
                     .select('id_clave')
@@ -752,7 +751,6 @@
                     return;
                 }
 
-                // Filtrar las recibidas que no son propias para marcarlas como leídas automáticamente al visualizarlas
                 const recibidasNoPropias = dataFiltrada.filter(item => {
                     const contenidoObj = item.contenido || {};
                     const remitenteDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
@@ -1305,7 +1303,7 @@
                 depto: regSupabase.departamento,
                 reporte: regSupabase.reporte_diario,
                 tabla: regSupabase.tabla_operativa,
-                observaciones: regSupabase.detalles_operativos,
+                observaciones: regSupabase.detalles_operativos?.texto || regSupabase.detalles_operativos || "",
                 asistencia: regSupabase.asistencia_personal
             } : null;
 
@@ -1565,4 +1563,3 @@
     </script>
 </body>
 </html>
-
