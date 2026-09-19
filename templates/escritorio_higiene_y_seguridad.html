@@ -8,7 +8,20 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body { margin: 0; font-family: 'Roboto', sans-serif; display: flex; height: 100vh; background-color: #f4f1ea; }
-        .sidebar { width: 260px; background-color: #1a3a5f; color: white; padding: 25px 20px; display: flex; flex-direction: column; }
+        
+        /* Ancho y diseño del Sidebar ajustado exactamente a 260px */
+        .sidebar { 
+            width: 260px; 
+            background-color: #1a3a5f; 
+            color: white; 
+            padding: 15px 15px; 
+            display: flex; 
+            flex-direction: column; 
+            flex-shrink: 0; 
+            height: 100vh; 
+            box-sizing: border-box; 
+            overflow: hidden; 
+        }
         
         .bienvenida-box { background-color: #2d5a8e; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; border: 1px solid #5d8dbb; }
         .bienvenida-box h3 { margin: 0; font-size: 14px; font-weight: 300; color: #cce7ff; }
@@ -25,7 +38,7 @@
 
         .btn-accion-global { width: 100%; padding: 15px; margin-bottom: 10px; background: #28a745; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
         .btn-cerrar { margin-top: 10px; padding: 15px; background: #d32f2f; color: white; text-align: center; text-decoration: none; border-radius: 6px; font-weight: bold; border: none; cursor: pointer; width: 100%; box-sizing: border-box; }
-        .contenido { flex: 1; padding: 40px; overflow-y: auto; }
+        .contenido { flex: 1; padding: 40px; overflow-y: auto; background-color: #f4f1ea; }
         .seccion { display: none; background: white; padding: 40px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         .seccion.activo { display: block; } 
         .info-hoja { display: flex; justify-content: space-between; margin-bottom: 15px; font-weight: bold; color: #1a3a5f; align-items: center;}
@@ -47,18 +60,76 @@
             padding-top: 30px;
         }
         
-        .input-fecha { border: 1px solid #ccc; padding: 8px; border-radius: 4px; font-family: inherit; cursor: pointer; }
+        .input-fecha { 
+            background-color: #f8fafc;
+            border: 1px solid #cbd5e1;
+            color: #334155;
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            font-family: inherit; 
+            cursor: pointer; 
+            transition: all 0.2s ease;
+        }
+        
         .area-acciones { margin-top: 20px; display: flex; gap: 10px; }
-        .btn-gestion { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; }
-        .btn-imprimir { background: #6c757d; color: white; }
+        
+        /* Estilos de Botones de Gestión idénticos a los solicitados */
+        .btn-gestion { 
+            border-radius: 6px;
+            padding: 10px 16px;
+            font-size: 13px;
+            font-weight: bold;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-imprimir { background: #1a3a5f; color: white; }
+        .btn-imprimir:hover { background: #2d5a8e; }
+        
         #info-supervisor { margin-bottom: 20px; color: #1a3a5f; font-weight: bold; border: 1px solid #ddd; padding: 10px; border-radius: 6px; background: #f9f9f9; }
         .header-logos { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
         .header-logos img { height: 110px; width: auto; object-fit: contain; }
 
-        /* Estilos específicos para sección Novedades y Muro (Alineados con admin) */
-        .filtros-historicos { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 20px; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #ddd; }
-        .input-select { padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; font-size: 13px; background: white; cursor: pointer; }
-        .btn-adjuntar { background: #17a2b8; color: white; }
+        /* Estilos específicos para sección Novedades actualizados con el nuevo contenedor de filtros */
+        .filtros-historicos { 
+            display: flex; 
+            gap: 12px; 
+            background: #ffffff; 
+            padding: 18px 22px; 
+            border-radius: 10px; 
+            margin-bottom: 25px; 
+            border: 1px solid #e2e8f0; 
+            align-items: center; 
+            flex-wrap: wrap; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.01);
+        }
+        
+        .input-select { 
+            background-color: #f8fafc;
+            border: 1px solid #cbd5e1;
+            color: #334155;
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            font-family: inherit; 
+            cursor: pointer; 
+            transition: all 0.2s ease;
+        }
+        
+        .input-select:focus, .input-fecha:focus {
+            outline: none;
+            border-color: #1a3a5f;
+            box-shadow: 0 0 0 3px rgba(26, 58, 95, 0.1);
+            background-color: #fff;
+        }
+
+        .btn-adjuntar { background: #1a3a5f; color: white; }
+        .btn-adjuntar:hover { background: #2d5a8e; }
+
         .preview-adjunto { display: none; margin-top: 10px; padding: 10px; background: #e9ecef; border-radius: 6px; font-size: 13px; border: 1px solid #ced4da; }
         .print-header { display: none; font-weight: bold; margin-bottom: 10px; }
         .print-only { display: none; }
@@ -817,7 +888,6 @@
             const turno = localStorage.getItem('usuario_turno') || "Mañana"; 
             const depto = "Higiene y Seguridad";
             
-            // Validación específica para cambiar el título de bienvenida si ingresa RODRIGUEZ ADRIAN
             if (nombre.trim().toUpperCase() === "RODRIGUEZ ADRIAN") {
                 document.getElementById('titulo-bienvenida').innerText = "Bienvenido Sr. Director:";
             }
@@ -853,5 +923,4 @@
     </script>
 </body>
 </html>
-
 
