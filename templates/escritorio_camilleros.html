@@ -10,7 +10,7 @@
         body { margin: 0; font-family: 'Roboto', sans-serif; display: flex; height: 100vh; background-color: #f8fafc; overflow: hidden; }
         .sidebar { width: 260px; background-color: #1a3a5f; color: white; padding: 15px 15px; display: flex; flex-direction: column; flex-shrink: 0; height: 100vh; box-sizing: border-box; overflow: hidden; }
         
-        .bienvenida-box { background-color: #2d5a8e; padding: 10px; border-radius: 8px; margin-bottom: 12px; text-align: center; border: 1px solid #5d8dbb; flex-shrink: 0; }
+        .bienvenida-box { background-color: #2d5a8e; padding: 10px; border-radius: 8px; margin-bottom: 12px; text-align: center; border: 1px solid #5d8dbb; flex-shrink: 0; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
         .bienvenida-box h3 { margin: 0; font-size: 13px; font-weight: 300; color: #cce7ff; }
         .bienvenida-box p { margin: 3px 0 0 0; font-size: 15px; font-weight: bold; }
         
@@ -24,47 +24,21 @@
         .badge-novedades { background-color: #dc3545; color: white; font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 10px; display: none; }
 
         .sidebar-footer { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; padding-top: 5px; }
+        /* Botón de cierre de jornada fijo en un solo tono sin efectos de luz o destello */
+        .btn-accion-global { width: 100%; padding: 10px; background: #1a3a5f; color: white; border: 1px solid #2d5a8e; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .btn-accion-global:hover { background: #1a3a5f; }
         
-        /* Botón de Cerrar Jornada Destacado en Verde con Animación */
-        @keyframes parpadeoVerde {
-            0% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.6); }
-            70% { box-shadow: 0 0 0 10px rgba(40, 167, 69, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); }
-        }
-        .btn-accion-global { 
-            width: 100%; 
-            padding: 12px 10px; 
-            background: linear-gradient(135deg, #28a745, #218838); 
-            color: white; 
-            border: 2px solid #5ffe84; 
-            border-radius: 8px; 
-            font-weight: 800; 
-            cursor: pointer; 
-            font-size: 14px; 
-            letter-spacing: 0.5px;
-            box-shadow: 0 4px 10px rgba(40, 167, 69, 0.4); 
-            transition: all 0.2s ease; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 6px; 
-            animation: parpadeoVerde 2.5s infinite;
-        }
-        .btn-accion-global:hover { 
-            background: linear-gradient(135deg, #218838, #1e7e34); 
-            transform: translateY(-1px);
-            box-shadow: 0 6px 14px rgba(40, 167, 69, 0.6);
-        }
-
-        .btn-cerrar { width: 100%; padding: 10px; background: linear-gradient(135deg, #d32f2f, #c62828); color: white; text-align: center; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); box-sizing: border-box; display: flex; align-items: center; justify-content: center; gap: 6px; transition: opacity 0.2s; border: none; cursor: pointer; }
-        .btn-cerrar:hover { opacity: 0.9; }
+        .btn-cerrar { width: 100%; padding: 10px; background: #c62828; color: white; text-align: center; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); box-sizing: border-box; display: flex; align-items: center; justify-content: center; gap: 6px; border: none; cursor: pointer; }
+        .btn-cerrar:hover { background: #b71c1c; }
 
         .contenido { flex: 1; padding: 40px; overflow-y: auto; height: 100vh; box-sizing: border-box; background-color: #f8fafc; }
+        
+        /* Diseño de recuadro con efecto de delineado grisáceo y sombras sutiles en secciones operativas */
         .seccion { display: none; background: #ffffff; padding: 40px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
         .seccion.activo { display: block; } 
         .info-hoja { display: flex; justify-content: space-between; margin-bottom: 15px; font-weight: bold; color: #1a3a5f; align-items: center;}
         
-        .hoja { background-color: #fff; padding: 0 40px; border: 1px solid #e2e8f0; min-height: 900px; position: relative; border-radius: 8px; }
+        .hoja { background-color: #fff; padding: 0 40px; border: 1px solid #e2e8f0; min-height: 900px; position: relative; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.02); }
         
         #editor-reporte { 
             width: 100%; 
@@ -81,13 +55,12 @@
             padding-top: 30px;
         }
 
-        .contenedor-observaciones { margin-top: 20px; width: 100%; box-sizing: border-box; }
-        .titulo-observaciones { background: #1a3a5f; color: white; padding: 8px 12px; font-weight: 500; font-size: 14px; border-radius: 6px 6px 0 0; }
+        .contenedor-observaciones { margin-top: 20px; width: 100%; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.01); }
+        .titulo-observaciones { background: #1a3a5f; color: white; padding: 8px 12px; font-weight: 500; font-size: 14px; border-radius: 5px 5px 0 0; }
         #editor-observaciones { 
             width: 100%; 
             min-height: 180px; 
-            border: 1px solid #cbd5e1; 
-            border-top: none; 
+            border: none; 
             font-size: 18px; 
             line-height: 30px; 
             outline: none; 
@@ -105,13 +78,13 @@
             background-color: #f8fafc;
         }
         
-        .tabla-camilleros { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; table-layout: fixed; }
+        .tabla-camilleros { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; table-layout: fixed; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
         .tabla-camilleros th, .tabla-camilleros td { border: 1px solid #cbd5e1; padding: 8px 6px; text-align: center; word-wrap: break-word; vertical-align: middle; }
         .tabla-camilleros th { background-color: #1a3a5f; color: white; height: 40px; font-size: 13px; }
         .col-hora { width: 95px; }
         
         .input-c { width: 95%; border: none; text-align: center; background: transparent; outline: none; font-family: inherit; font-size: 13px; color: #334155; }
-        .input-fecha, .input-select { border: 1px solid #cbd5e1; padding: 10px 14px; border-radius: 6px; font-family: inherit; cursor: pointer; background: #f8fafc; color: #334155; transition: all 0.2s ease; }
+        .input-fecha, .input-select { border: 1px solid #cbd5e1; padding: 10px 14px; border-radius: 6px; font-family: inherit; cursor: pointer; background: #f8fafc; color: #334155; transition: all 0.2s ease; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
         .input-fecha:focus, .input-select:focus { border-color: #1a3a5f; outline: none; box-shadow: 0 0 0 3px rgba(26, 58, 95, 0.1); }
         
         .tabla-camilleros select.input-movilidad, 
@@ -143,10 +116,10 @@
         .btn-gestion:hover { background: #2d5a8e; }
         .btn-imprimir { background: #1a3a5f; color: white; }
         .btn-imprimir:hover { background: #2d5a8e; }
-        #info-supervisor { margin-bottom: 20px; color: #1a3a5f; font-weight: bold; border: 1px solid #e2e8f0; padding: 12px 15px; border-radius: 8px; background: #f8fafc; }
-        .header-logos { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+        #info-supervisor { margin-bottom: 20px; color: #1a3a5f; font-weight: bold; border: 1px solid #e2e8f0; padding: 12px 15px; border-radius: 8px; background: #f8fafc; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+        .header-logos { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px; }
         .header-logos img { height: 110px; width: auto; object-fit: contain; }
-        .filtros-historicos { display: flex; gap: 15px; background: #f8fafc; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e2e8f0; align-items: center; }
+        .filtros-historicos { display: flex; gap: 15px; background: #f8fafc; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e2e8f0; align-items: center; box-shadow: 0 2px 6px rgba(0,0,0,0.02); }
         .celda-asistencia { cursor: pointer; width: 25px; height: 25px; border: 2px solid #cbd5e1; display: inline-block; transition: background 0.3s; margin: auto; border-radius: 4px; }
         .estado-P { background-color: #28a745 !important; border-color: #28a745 !important; }
         .estado-A { background-color: #dc3545 !important; border-color: #dc3545 !important; }
@@ -162,7 +135,7 @@
             body, html, .contenido, .seccion.activo, .hoja { background-color: white !important; margin: 0 !important; padding: 0 !important; width: 100% !important; height: auto !important; overflow: visible !important; box-shadow: none !important; display: block !important; }
             .seccion { display: none !important; border: none !important; box-shadow: none !important; }
             .seccion.activo { display: block !important; } 
-            .hoja { border: none !important; min-height: auto !important; }
+            .hoja { border: none !important; min-height: auto !important; box-shadow: none !important; }
             #editor-reporte, #editor-observaciones { 
                 background-image: linear-gradient(#e0e0e0 1px, transparent 1px);
                 background-size: 100% 30px;
@@ -268,7 +241,7 @@
                 <input type="date" id="filtro-fecha-hist" class="input-fecha">
                 <button class="btn-gestion no-imprimir" onclick="cargarHistoricos()">Buscar Registros</button>
             </div>
-            <div id="contenedor-historicos" style="border: 1px solid #cbd5e1; padding: 20px; border-radius: 8px; background: #f8fafc;">
+            <div id="contenedor-historicos" style="border: 1px solid #cbd5e1; padding: 20px; border-radius: 8px; background: #f8fafc; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
                 <p>Selecciona filtros y presiona "Buscar" para visualizar registros.</p>
             </div>
             <div class="area-acciones"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir Resultados</button></div>
@@ -292,10 +265,10 @@
                 <h1 style="margin: 0; text-align: center; flex: 1;">Estado Actual de Ascensores</h1>
                 <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
-            <div id="info-supervisor" style="margin-bottom: 20px; color: #1a3a5f; font-weight: bold; border: 1px solid #ddd; padding: 10px; border-radius: 6px; background: #f9f9f9;">
+            <div id="info-supervisor" style="margin-bottom: 20px; color: #1a3a5f; font-weight: bold; border: 1px solid #e2e8f0; padding: 10px; border-radius: 6px; background: #f9f9f9; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
                 Supervisor: <span id="display-nombre-asc">---</span> | Turno: <span id="display-turno-asc">---</span> | Depto: <span id="display-depto-asc">---</span>
             </div>
-            <div id="contenedor-ascensores" style="border: 1px solid #ccc; padding: 20px; border-radius: 8px; background: #fafafa;">
+            <div id="contenedor-ascensores" style="border: 1px solid #cbd5e1; padding: 20px; border-radius: 8px; background: #fafafa; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
                 <p>Cargando estado actual de ascensores...</p>
             </div>
             <div class="area-acciones"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button></div>
@@ -546,7 +519,12 @@
                         <div style="background: #fff; border-left: 5px solid #1a3a5f; border-top: 1px solid #ddd; border-right: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 20px; border-radius: 6px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 8px; flex-wrap: wrap; gap: 8px;">
                                 <strong style="color: #1a3a5f; font-size: 16px;">📢 Comunicado Oficial</strong>
-                                <span style="font-size: 12px; color: #666; background: #f1f1f1; padding: 4px 10px; border-radius: 4px;">Turno: ${turnoMsg} | Fecha: ${fecha} | <strong>Enviado por:</strong> Dirección de Servicios Generales</span>
+                                <div style="display: flex; align-items: center; gap: 15px;">
+                                    <div style="font-size: 0.8rem; color: #64748b; white-space: nowrap; font-weight: 500;">
+                                        🕒 ${fecha}
+                                    </div>
+                                    <span style="font-size: 12px; color: #666; background: #f1f1f1; padding: 4px 10px; border-radius: 4px;">Turno: ${turnoMsg} | <strong>Enviado por:</strong> Dirección de Servicios Generales</span>
+                                </div>
                             </div>
                             <div style="font-size: 15px; color: #333; white-space: pre-wrap; line-height: 1.5; font-family: inherit;">${texto}</div>
                             ${archivosHtml}
