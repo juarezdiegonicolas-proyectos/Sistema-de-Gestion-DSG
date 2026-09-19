@@ -25,9 +25,28 @@
 
         .sidebar-footer { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; padding-top: 5px; }
         
-        /* Botón de Cerrar Jornada modificado a color verde */
-        .btn-accion-global { width: 100%; padding: 10px; background: linear-gradient(135deg, #2e7d32, #1b5e20); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 6px; }
-        .btn-accion-global:hover { opacity: 0.9; }
+        /* Botón de Cerrar Jornada ajustado con degradado verde y efectos de sombra */
+        .btn-accion-global { 
+            width: 100%; 
+            padding: 12px; 
+            margin-bottom: 0px; 
+            background: linear-gradient(135deg, #28a745, #218838); 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            font-size: 14px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.15); 
+            transition: all 0.2s ease; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 8px; 
+        }
+        .btn-accion-global:hover { 
+            background: linear-gradient(135deg, #218838, #1e7e34); 
+        }
         
         .btn-cerrar { width: 100%; padding: 10px; background: linear-gradient(135deg, #d32f2f, #c62828); color: white; text-align: center; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); box-sizing: border-box; display: flex; align-items: center; justify-content: center; gap: 6px; transition: opacity 0.2s; border: none; cursor: pointer; }
         .btn-cerrar:hover { opacity: 0.9; }
