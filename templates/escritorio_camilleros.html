@@ -398,7 +398,7 @@
             <div class="area-acciones"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir Resultados</button></div>
         </div>
         
-        <!-- SOLAPA 5: NOVEDADES (ORIGINAL) -->
+        <!-- SOLAPA 5: NOVEDADES (ACTUALIZADA) -->
         <div id="novedades" class="seccion">
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo Hospital" onerror="this.src='https://via.placeholder.com/150?text=Hospital'">
@@ -640,7 +640,7 @@
                 if (error || !data) return;
 
                 const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim();
-                const deptoUsuarioActual = "camilleros-central";
+                const usuarioActual = (localStorage.getItem('usuario_nombre') || "invitado").trim().toLowerCase();
 
                 const novedadesFiltradas = data.filter(item => {
                     const clave = (item.id_clave || '').toLowerCase();
@@ -649,7 +649,7 @@
                     const deptoDestinoItem = (item.departamento_destino || contenidoObj.departamento || '').toLowerCase();
 
                     const esParaTodos = clave.includes('todos') || clave.includes('general') || turnoMsg === 'todos' || turnoMsg === 'general';
-                    const esParaDepto = deptoDestinoItem.includes(deptoUsuarioActual) || clave.includes(deptoUsuarioActual);
+                    const esParaDepto = deptoDestinoItem.includes('camilleros-central') || clave.includes('camilleros-central');
 
                     if (!esParaDepto && !esParaTodos) return false;
                     if (esParaTodos) return true;
@@ -661,22 +661,18 @@
 
                 if (novedadesFiltradas.length === 0) return;
 
-                const { data: lecturasData, error: lecturasError } = await supabaseClient
-                    .from('comunicado_lecturas')
-                    .select('id_clave')
-                    .eq('departamento', deptoUsuarioActual);
-
-                let idsLeidos = new Set();
-                if (!lecturasError && lecturasData) {
-                    lecturasData.forEach(l => idsLeidos.add(l.id_clave));
-                }
-
+                const claveStorage = `dsg_camilleros_ultimo_novedad_leida_${usuarioActual}`;
+                const ultimoIdLeido = localStorage.getItem(claveStorage);
                 let noLeidasCount = 0;
-                novedadesFiltradas.forEach(item => {
-                    if (!idsLeidos.has(item.id_clave)) {
+
+                if (!ultimoIdLeido) {
+                    noLeidasCount = novedadesFiltradas.length;
+                } else {
+                    for (let item of novedadesFiltradas) {
+                        if (String(item.id) === String(ultimoIdLeido)) break;
                         noLeidasCount++;
                     }
-                });
+                }
 
                 const badge = document.getElementById('badge-novedades');
                 if (badge) {
@@ -690,26 +686,6 @@
             } catch (err) {
                 console.error("Error al verificar novedades no leídas:", err);
             }
-        }
-
-        async function marcarNovedadesComoLeidas(novedadesArr) {
-            const deptoUsuarioActual = "camilleros-central";
-            const usuarioActual = localStorage.getItem('usuario_nombre') || "Sistema";
-
-            for (let item of novedadesArr) {
-                if (!item.id_clave) continue;
-                try {
-                    await supabaseClient.from('comunicado_lecturas').upsert({
-                        id_clave: item.id_clave,
-                        departamento: deptoUsuarioActual,
-                        leido_por: usuarioActual,
-                        updated_at: new Date().toISOString()
-                    }, { onConflict: 'id_clave, departamento' });
-                } catch (e) {
-                    console.error("Error al registrar lectura en Supabase:", e);
-                }
-            }
-            verificarNovedadesNoLeidas();
         }
 
         async function cargarNovedades() {
@@ -733,8 +709,8 @@
                 }
 
                 const deptoUsuarioActual = "camilleros-central";
-                const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim();
 
+                // Filtrar estrictamente para excluir comunicaciones entre terceros ajenos al departamento actual
                 const dataFiltrada = data.filter(item => {
                     const contenidoObj = item.contenido || {};
                     const remitenteDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
@@ -749,16 +725,6 @@
                 if (dataFiltrada.length === 0) {
                     contenedorNov.innerHTML = '<p style="color: #666; font-style: italic;">No hay registros disponibles en el muro para este departamento.</p>';
                     return;
-                }
-
-                const recibidasNoPropias = dataFiltrada.filter(item => {
-                    const contenidoObj = item.contenido || {};
-                    const remitenteDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
-                    return remitenteDepto !== deptoUsuarioActual;
-                });
-
-                if (recibidasNoPropias.length > 0) {
-                    marcarNovedadesComoLeidas(recibidasNoPropias);
                 }
 
                 let html = '';
@@ -1303,7 +1269,7 @@
                 depto: regSupabase.departamento,
                 reporte: regSupabase.reporte_diario,
                 tabla: regSupabase.tabla_operativa,
-                observaciones: regSupabase.detalles_operativos?.texto || regSupabase.detalles_operativos || "",
+                observaciones: regSupabase.detalles_operativos,
                 asistencia: regSupabase.asistencia_personal
             } : null;
 
@@ -1563,3 +1529,6 @@
     </script>
 </body>
 </html>
+
+
+
