@@ -7,38 +7,34 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        @keyframes titilar {
-            0% { opacity: 1; }
-            50% { opacity: 0.4; }
-            100% { opacity: 1; }
-        }
-
         body { margin: 0; font-family: 'Roboto', sans-serif; display: flex; height: 100vh; background-color: #f8fafc; }
         .sidebar { width: 260px; background-color: #1a3a5f; color: white; padding: 25px 20px; display: flex; flex-direction: column; }
         
-        .bienvenida-box { background-color: #2d5a8e; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; border: 1px solid #5d8dbb; }
-        .bienvenida-box h3 { margin: 0; font-size: 14px; font-weight: 300; color: #cce7ff; }
-        .bienvenida-box p { margin: 5px 0 0 0; font-size: 16px; font-weight: bold; }
+        .bienvenida-box { background-color: #f8fafc; padding: 12px 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; border: 1px solid #e2e8f0; }
+        .bienvenida-box h3 { margin: 0; font-size: 13px; font-weight: normal; color: #1a3a5f; }
+        .bienvenida-box p { margin: 5px 0 0 0; font-size: 15px; font-weight: bold; color: #1a3a5f; }
         .sidebar-header-title { min-height: 50px; margin-bottom: 15px; display: flex; align-items: center; }
         .sidebar-header-title h2 { font-size: 20px; margin: 0; }
 
         .menu-links { flex: 1; }
-        .menu-item { display: flex; justify-content: space-between; align-items: center; color: #ddd; padding: 15px; text-decoration: none; border-bottom: 1px solid rgba(93, 141, 187, 0.3); font-weight: 500; cursor: pointer; border-radius: 4px; }
+        .menu-item { display: flex; justify-content: space-between; align-items: center; color: #ddd; padding: 15px; text-decoration: none; border-bottom: 1px solid #5d8dbb; font-weight: 500; cursor: pointer; }
         .menu-item:hover { background-color: #5d8dbb; color: white; }
         
         /* Badge para Novedades */
         .badge-novedades { background-color: #dc3545; color: white; font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 10px; display: none; }
 
-        .btn-accion-global { width: 100%; padding: 15px; margin-bottom: 10px; background: #1a3a5f; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .btn-accion-global { width: 100%; padding: 10px; margin-bottom: 10px; background: #1a3a5f; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: all 0.2s ease; }
         .btn-accion-global:hover { background: #2d5a8e; }
-        .btn-cerrar { margin-top: 10px; padding: 15px; background: linear-gradient(135deg, #d32f2f, #c62828); color: white; text-align: center; text-decoration: none; border-radius: 6px; font-weight: bold; border: none; cursor: pointer; width: 100%; box-sizing: border-box; font-size: 13px; animation: titilar 1.5s infinite ease-in-out; }
         
-        .contenido { flex: 1; padding: 40px; overflow-y: auto; background-color: #f8fafc; }
-        .seccion { display: none; background: white; padding: 40px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
+        .btn-cerrar { margin-top: 10px; padding: 10px; background: linear-gradient(135deg, #d32f2f, #c62828); color: white; text-align: center; text-decoration: none; border-radius: 6px; font-weight: bold; border: none; cursor: pointer; width: 100%; box-sizing: border-box; font-size: 13px; opacity: 1; transition: 0.2s; }
+        .btn-cerrar:hover { opacity: 0.9; }
+
+        .contenido { flex: 1; padding: 40px; overflow-y: auto; }
+        .seccion { display: none; background: #ffffff; padding: 40px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
         .seccion.activo { display: block; } 
         .info-hoja { display: flex; justify-content: space-between; margin-bottom: 15px; font-weight: bold; color: #1a3a5f; align-items: center;}
         
-        .hoja { background-color: #fff; padding: 0 40px; border: 1px solid #ccc; min-height: 900px; position: relative; }
+        .hoja { background-color: #fff; padding: 0 40px; border: 1px solid #e2e8f0; border-radius: 8px; min-height: 900px; position: relative; }
         
         #editor-reporte { 
             width: 100%; 
@@ -55,31 +51,39 @@
             padding-top: 30px;
         }
         
-        .input-fecha { border: 1px solid #cbd5e1; padding: 8px; border-radius: 6px; font-family: inherit; cursor: pointer; background: #f8fafc; color: #334155; }
+        .input-fecha { border: 1px solid #cbd5e1; padding: 10px 14px; border-radius: 6px; font-family: inherit; cursor: pointer; background: #f8fafc; color: #334155; }
         .area-acciones { margin-top: 20px; display: flex; gap: 10px; }
-        .btn-gestion { padding: 10px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px; }
-        .btn-imprimir { background: #6c757d; color: white; }
-        #info-supervisor { margin-bottom: 20px; color: #1a3a5f; font-weight: bold; border: 1px solid #cbd5e1; padding: 10px; border-radius: 6px; background: #f9f9f9; }
+        
+        .btn-gestion { padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px; background: #1a3a5f; color: white; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .btn-gestion:hover { background: #2d5a8e; }
+        .btn-imprimir { background: #1a3a5f; color: white; }
+        
+        #info-supervisor { margin-bottom: 20px; color: #1a3a5f; font-weight: bold; border: 1px solid #e2e8f0; padding: 12px 15px; border-radius: 8px; background: #f8fafc; }
         .header-logos { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
         .header-logos img { height: 110px; width: auto; object-fit: contain; }
 
         /* Estilos específicos para sección Novedades y Muro */
-        .filtros-historicos { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 20px; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #ddd; }
-        .input-select { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; font-size: 13px; background: white; cursor: pointer; color: #334155; }
-        .btn-adjuntar { background: #17a2b8; color: white; }
-        .preview-adjunto { display: none; margin-top: 10px; padding: 10px; background: #e9ecef; border-radius: 6px; font-size: 13px; border: 1px solid #ced4da; }
+        .filtros-historicos { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 20px; background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; }
+        
+        .input-select { padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; font-size: 13px; background: #f8fafc; color: #334155; cursor: pointer; }
+        .input-select:focus { outline: none; box-shadow: 0 0 0 3px rgba(26, 58, 95, 0.1); border-color: #1a3a5f; }
+
+        .btn-adjuntar { background: #1a3a5f; color: white; }
+        .preview-adjunto { display: none; margin-top: 10px; padding: 10px; background: #f8fafc; border-radius: 6px; font-size: 13px; border: 1px solid #cbd5e1; }
         .print-header { display: none; font-weight: bold; margin-bottom: 10px; }
         .print-only { display: none; }
-        #txt-novedades { width: 100%; min-height: 150px; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; font-size: 15px; resize: vertical; box-sizing: border-box; background: #f8fafc; color: #334155; }
         
-        .historial-muro-container { margin-top: 30px; border-top: 2px solid #dee2e6; padding-top: 20px; }
+        #txt-novedades { width: 100%; min-height: 150px; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 15px; resize: vertical; box-sizing: border-box; background: #f8fafc; }
+        #txt-novedades:focus { outline: none; box-shadow: 0 0 0 3px rgba(26, 58, 95, 0.1); border-color: #1a3a5f; }
+        
+        .historial-muro-container { margin-top: 30px; border-top: 2px solid #e2e8f0; padding-top: 20px; }
         .historial-muro-titulo { font-size: 16px; font-weight: bold; color: #1a3a5f; margin-bottom: 15px; }
         
-        .muro-item { background: #fff; border: 1px solid #d1d8df; border-left: 5px solid #1a3a5f; padding: 15px; border-radius: 6px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
+        .muro-item { background: #fff; border: 1px solid #e2e8f0; border-left: 5px solid #1a3a5f; padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
         .muro-item.recibido { border-left-color: #17a2b8; }
         .muro-item.enviado { border-left-color: #28a745; }
 
-        .muro-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+        .muro-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; flex-wrap: wrap; gap: 10px; }
         .novedad-meta { font-size: 0.85rem; color: #495057; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; line-height: 1.8; }
         .novedad-texto { font-size: 0.95rem; color: #212529; white-space: pre-wrap; word-break: break-word; line-height: 1.5; margin-top: 8px; font-family: inherit; }
         .muro-adjuntos { margin-top: 10px; font-size: 13px; }
@@ -93,7 +97,7 @@
         @media print {
             .sidebar, .btn-accion-global, .btn-cerrar, .menu-item, .no-imprimir, .btn-imprimir, .filtros-historicos, .area-acciones { display: none !important; }
             body, html, .contenido, .seccion.activo, .hoja { background-color: white !important; margin: 0 !important; padding: 0 !important; width: 100% !important; height: auto !important; overflow: visible !important; box-shadow: none !important; display: block !important; }
-            .seccion { display: none !important; }
+            .seccion { display: none !important; border: none !important; box-shadow: none !important; }
             .seccion.activo { display: block !important; } 
             .hoja { border: none !important; min-height: auto !important; }
             #editor-reporte { 
@@ -136,7 +140,7 @@
         <div id="reportes" class="seccion activo">
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo Hospital" onerror="this.src='https://via.placeholder.com/150?text=Hospital'">
-                <h1 style="margin: 0; text-align: center; flex: 1;">Reportes</h1>
+                <h1 style="margin: 0; text-align: center; flex: 1; color: #1a3a5f;">Reportes</h1>
                 <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
             </div>
             <div id="info-supervisor">Supervisor: <span id="display-nombre-rep">---</span> | Turno: <span id="display-turno-rep">---</span> | Depto: <span id="display-depto-rep">---</span></div>
@@ -153,13 +157,13 @@
         <div id="ascensores" class="seccion">
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo Hospital" onerror="this.src='https://via.placeholder.com/150?text=Hospital'">
-                <h1 style="margin: 0; text-align: center; flex: 1;">Estado Actual de Ascensores</h1>
+                <h1 style="margin: 0; text-align: center; flex: 1; color: #1a3a5f;">Estado Actual de Ascensores</h1>
                 <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
             </div>
-            <div id="info-supervisor" style="margin-bottom: 20px; color: #1a3a5f; font-weight: bold; border: 1px solid #cbd5e1; padding: 10px; border-radius: 6px; background: #f9f9f9;">
+            <div id="info-supervisor" style="margin-bottom: 20px; color: #1a3a5f; font-weight: bold; border: 1px solid #e2e8f0; padding: 12px 15px; border-radius: 8px; background: #f8fafc;">
                 Supervisor: <span id="display-nombre-asc">---</span> | Turno: <span id="display-turno-asc">---</span> | Depto: <span id="display-depto-asc">---</span>
             </div>
-            <div id="contenedor-ascensores" style="border: 1px solid #ccc; padding: 20px; border-radius: 8px; background: #fafafa;">
+            <div id="contenedor-ascensores" style="border: 1px solid #e2e8f0; padding: 20px; border-radius: 8px; background: #f8fafc;">
                 <p>Cargando estado actual de ascensores...</p>
             </div>
             <div class="area-acciones"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button></div>
@@ -168,7 +172,7 @@
         <div id="novedades" class="seccion">
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo Hospital" onerror="this.src='https://via.placeholder.com/150?text=Hospital'">
-                <h1 style="margin: 0; text-align: center; flex: 1;">Novedades</h1>
+                <h1 style="margin: 0; text-align: center; flex: 1; color: #1a3a5f;">Novedades</h1>
                 <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
             </div>
             <div class="filtros-historicos">
@@ -198,7 +202,7 @@
                 </select>
                 <button class="btn-gestion btn-adjuntar" onclick="document.getElementById('file-novedades').click()">📎 Adjuntar Archivos</button>
                 <input type="file" id="file-novedades" style="display:none" multiple onchange="previsualizarMultiples(this, 'novedades')">
-                <button class="btn-gestion" style="background: #28a745; color: white;" onclick="guardarRedaccion('novedades')">Guardar y Enviar</button>
+                <button class="btn-gestion" style="background: #1a3a5f; color: white;" onclick="guardarRedaccion('novedades')">Guardar y Enviar</button>
             </div>
             
             <div id="print-header-novedades" class="print-header">Dirigido a: Todos los departamentos | Turno: Todos los turnos</div>
@@ -208,7 +212,7 @@
             
             <div class="area-acciones">
                 <button id="btn-print-novedades" class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
-                <button class="btn-gestion btn-imprimir" style="background: #dc3545;" onclick="limpiarPantalla('novedades')">🧹 Limpiar Pantalla</button>
+                <button class="btn-gestion btn-imprimir" style="background: #c62828;" onclick="limpiarPantalla('novedades')">🧹 Limpiar Pantalla</button>
             </div>
 
             <div class="historial-muro-container">
@@ -763,8 +767,8 @@
                 let htmlTabla = `
                     <style>
                         .tabla-ascensores { width: 100%; border-collapse: collapse; text-align: left; }
-                        .tabla-ascensores th, .tabla-ascensores td { padding: 10px; border: 1px solid #cbd5e1; }
-                        .tabla-ascensores th { background: #1a3a5f; color: white; height: 40px; }
+                        .tabla-ascensores th, .tabla-ascensores td { padding: 10px; border: 1px solid #ddd; }
+                        .tabla-ascensores th { background: #1a3a5f; color: white; }
                         @media (max-width: 768px) {
                             .tabla-ascensores, .tabla-ascensores tbody, .tabla-ascensores tr, .tabla-ascensores td, .tabla-ascensores th { display: block; width: 100%; box-sizing: border-box; }
                             .tabla-ascensores tr { margin-bottom: 15px; border: 1px solid #ccc; background: white; border-radius: 6px; padding: 8px; }
@@ -860,4 +864,3 @@
     </script>
 </body>
 </html>
-
