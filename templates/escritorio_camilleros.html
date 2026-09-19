@@ -193,11 +193,11 @@
         <div class="menu-links">
             <div class="menu-item" onclick="mostrar('reportes', 'Reportes')"><span>📊 Reportes</span></div>
             <div class="menu-item" onclick="mostrar('planillas', 'Planillas (Operativa)')"><span>🛠 Planillas (Operativa)</span></div>
+            <div class="menu-item" onclick="mostrar('ascensores', 'Estado de Ascensores')"><span>🛗 Estado de Ascensores</span></div>
             <div class="menu-item" onclick="mostrar('historicos', 'Registros Históricos')"><span>📂 Registros Históricos</span></div>
             <div class="menu-item" onclick="mostrar('novedades', 'Novedades')"><span>📢 Novedades</span><span id="badge-novedades" class="badge-novedades">0</span></div>
-            <div class="menu-item" onclick="mostrar('ascensores', 'Estado de Ascensores')"><span>🛗 Estado de Ascensores</span></div>
             <div class="menu-item" onclick="mostrar('rrhh', '👥 RR.HH.')"><span>👥 RR.HH.</span></div>
-            <div class="menu-item" onclick="mostrar('resoluciones', 'Resoluciones')"><span>⚖️ Resoluciones</span></div>
+            <div class="menu-item" onclick="mostrar('resoluciones', 'Formularios Licencias')"><span>⚖️ Formularios Licencias</span></div>
         </div>
 
         <div class="sidebar-footer">
@@ -248,7 +248,23 @@
             <div class="area-acciones"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button></div>
         </div>
 
-        <!-- SOLAPA 3: HISTÓRICOS -->
+        <!-- SOLAPA 3: ASCENSORES -->
+        <div id="ascensores" class="seccion">
+            <div class="header-logos">
+                <img src="static/logo_hospi.png" alt="Logo Hospital">
+                <h1 style="margin: 0; text-align: center; flex: 1; color: #1a3a5f;">Estado Actual de Ascensores</h1>
+                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+            </div>
+            <div id="info-supervisor" style="margin-bottom: 20px; color: #1a3a5f; font-weight: bold; border: 1px solid #ddd; padding: 10px; border-radius: 6px; background: #f9f9f9;">
+                Supervisor: <span id="display-nombre-asc">---</span> | Turno: <span id="display-turno-asc">---</span> | Depto: <span id="display-depto-asc">---</span>
+            </div>
+            <div id="contenedor-ascensores" style="border: 1px solid #ccc; padding: 20px; border-radius: 8px; background: #fafafa;">
+                <p>Cargando estado actual de ascensores...</p>
+            </div>
+            <div class="area-acciones"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button></div>
+        </div>
+
+        <!-- SOLAPA 4: HISTÓRICOS -->
         <div id="historicos" class="seccion">
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo Hospital">
@@ -278,7 +294,7 @@
             <div class="area-acciones"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir Resultados</button></div>
         </div>
         
-        <!-- SOLAPA 4: NOVEDADES -->
+        <!-- SOLAPA 5: NOVEDADES -->
         <div id="novedades" class="seccion">
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo Hospital">
@@ -289,22 +305,6 @@
                 <p>Cargando novedades desde la base de datos...</p>
             </div>
             <div class="area-acciones" style="margin-top: 20px;"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button></div>
-        </div>
-
-        <!-- SOLAPA 5: ASCENSORES -->
-        <div id="ascensores" class="seccion">
-            <div class="header-logos">
-                <img src="static/logo_hospi.png" alt="Logo Hospital">
-                <h1 style="margin: 0; text-align: center; flex: 1; color: #1a3a5f;">Estado Actual de Ascensores</h1>
-                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
-            </div>
-            <div id="info-supervisor" style="margin-bottom: 20px; color: #1a3a5f; font-weight: bold; border: 1px solid #ddd; padding: 10px; border-radius: 6px; background: #f9f9f9;">
-                Supervisor: <span id="display-nombre-asc">---</span> | Turno: <span id="display-turno-asc">---</span> | Depto: <span id="display-depto-asc">---</span>
-            </div>
-            <div id="contenedor-ascensores" style="border: 1px solid #ccc; padding: 20px; border-radius: 8px; background: #fafafa;">
-                <p>Cargando estado actual de ascensores...</p>
-            </div>
-            <div class="area-acciones"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button></div>
         </div>
 
         <!-- SOLAPA 6: RR.HH. -->
@@ -333,11 +333,11 @@
             </div>
         </div>
 
-        <!-- SOLAPA 7: RESOLUCIONES -->
+        <!-- SOLAPA 7: RESOLUCIONES (FORMULARIOS LICENCIAS) -->
         <div id="resoluciones" class="seccion">
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo Hospital">
-                <h1 style="margin: 0; text-align: center; flex: 1; color: #1a3a5f;">Resoluciones</h1>
+                <h1 style="margin: 0; text-align: center; flex: 1; color: #1a3a5f;">Formularios Licencias</h1>
                 <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
         </div>
