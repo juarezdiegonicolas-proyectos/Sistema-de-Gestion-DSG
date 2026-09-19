@@ -446,7 +446,6 @@
                     return;
                 }
 
-                // Marcar como leído el último elemento (el más reciente) exclusivamente para este usuario
                 if (filtrados.length > 0) {
                     const usuarioActual = (localStorage.getItem('usuario_nombre') || "invitado").trim().toLowerCase();
                     localStorage.setItem(`dsg_camilleros_ultimo_novedad_leida_${usuarioActual}`, filtrados[0].id);
@@ -832,7 +831,6 @@
                 const inputHora = tr.querySelector('.input-hora');
                 
                 if (inputHora && inputHora.value.trim() !== '') {
-                    // MODIFICACIÓN REALIZADA AQUÍ: Extrae los nombres reales de los checkboxes tildados
                     let personalSeleccionadosArr = [];
                     tr.querySelectorAll('.custom-multiselect input[type="checkbox"]:checked').forEach(chk => {
                         personalSeleccionadosArr.push(chk.value);
@@ -848,7 +846,7 @@
                         destino: tr.querySelector('.input-destino')?.value || '',
                         duracion_estancia: tr.querySelector('.input-estancia')?.value || '',
                         tipo_movilidad: tr.querySelector('.input-movilidad')?.value || '',
-                        personal_asignado: personalSeleccionadoStr, // Se guardan los nombres reales separados por coma
+                        personal_asignado: personalSeleccionadoStr,
                         hora_finalizacion: tr.querySelector('.input-finalizacion')?.value || '',
                         observaciones: observacionesVal
                     });
@@ -1132,7 +1130,7 @@
         function borrarFila(btn) { const tr = btn.closest('tr'); if (cuerpoTabla.getElementsByTagName('tr').length > 1) tr.remove(); else { tr.querySelectorAll('input, select').forEach(i => { i.value = ''; i.removeAttribute('readonly'); }); } guardarDatos(); }
         function detectarEnter(e) { if (e.key === 'Enter') { e.preventDefault(); const tr = document.createElement('tr'); tr.innerHTML = crearFilaHTML(); cuerpoTabla.appendChild(tr); tr.querySelectorAll('input')[1].focus(); } }
         
-        function mostrar(id, titulo) { 
+        fn mostrar(id, titulo) { 
             document.querySelectorAll('.seccion').forEach(s => s.classList.remove('activo')); 
             document.getElementById(id).classList.add('activo'); 
             document.getElementById('titulo-panel').innerText = titulo; 
