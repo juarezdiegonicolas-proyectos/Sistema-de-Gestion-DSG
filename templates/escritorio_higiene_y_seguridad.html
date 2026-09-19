@@ -7,39 +7,26 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { margin: 0; font-family: 'Roboto', sans-serif; display: flex; height: 100vh; background-color: #e2e8f0; }
-        
-        /* Ancho estricto del Sidebar a 260px */
-        .sidebar { width: 260px !important; min-width: 260px !important; flex-shrink: 0; background-color: #1a3a5f; color: white; padding: 25px 20px; display: flex; flex-direction: column; box-sizing: border-box; }
+        body { margin: 0; font-family: 'Roboto', sans-serif; display: flex; height: 100vh; background-color: #f8fafc; }
+        .sidebar { width: 260px; background-color: #1a3a5f; color: white; padding: 15px; display: flex; flex-direction: column; box-sizing: border-box; }
         
         .bienvenida-box { background-color: #2d5a8e; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; border: 1px solid #5d8dbb; }
-        .bienvenida-box h3 { margin: 0; font-size: 14px; font-weight: 300; color: #cce7ff; }
-        .bienvenida-box p { margin: 5px 0 0 0; font-size: 16px; font-weight: bold; }
+        .bienvenida-box h3 { margin: 0; font-size: 13px; font-weight: 300; color: #cce7ff; }
+        .bienvenida-box p { margin: 5px 0 0 0; font-size: 15px; font-weight: bold; }
         .sidebar-header-title { min-height: 50px; margin-bottom: 15px; display: flex; align-items: center; }
         .sidebar-header-title h2 { font-size: 20px; margin: 0; }
 
         .menu-links { flex: 1; }
-        .menu-item { display: flex; justify-content: space-between; align-items: center; color: #ddd; padding: 15px; text-decoration: none; border-bottom: 1px solid #5d8dbb; font-weight: 500; cursor: pointer; }
+        .menu-item { display: flex; justify-content: space-between; align-items: center; color: #ddd; padding: 10px 12px; text-decoration: none; border-bottom: 1px solid rgba(93, 141, 187, 0.3); font-weight: 500; font-size: 14px; cursor: pointer; border-radius: 4px; transition: background 0.2s, color 0.2s; }
         .menu-item:hover { background-color: #5d8dbb; color: white; }
         
         /* Badge para Novedades */
         .badge-novedades { background-color: #dc3545; color: white; font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 10px; display: none; }
 
-        /* Animación de titileo para Cerrar Jornada */
-        @keyframes titilarVerde {
-            0% { background-color: #16a34a; transform: scale(1); }
-            50% { background-color: #22c55e; transform: scale(1.02); box-shadow: 0 0 12px rgba(34, 197, 94, 0.6); }
-            100% { background-color: #16a34a; transform: scale(1); }
-        }
-
-        .btn-accion-global { width: 100%; padding: 16px; margin-bottom: 12px; background: #16a34a; color: white; border: none; border-radius: 6px; font-weight: bold; font-size: 14px; cursor: pointer; animation: titilarVerde 1.8s infinite ease-in-out; }
-        .btn-accion-global:hover { background: #15803d; animation: none; }
-
-        .btn-cerrar { margin-top: 10px; padding: 14px; background: #dc3545; color: white; text-align: center; text-decoration: none; border-radius: 6px; font-weight: bold; border: none; cursor: pointer; width: 100%; box-sizing: border-box; font-size: 14px; }
-        .btn-cerrar:hover { background: #b02a37; }
-
-        .contenido { flex: 1; padding: 40px; overflow-y: auto; background-color: #e2e8f0; }
-        .seccion { display: none; background: #ffffff; padding: 40px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
+        .btn-accion-global { width: 100%; padding: 15px; margin-bottom: 10px; background: #28a745; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .btn-cerrar { margin-top: 10px; padding: 10px; background: linear-gradient(135deg, #d32f2f, #c62828); color: white; text-align: center; text-decoration: none; border-radius: 6px; font-weight: bold; border: none; cursor: pointer; width: 100%; box-sizing: border-box; }
+        .contenido { flex: 1; padding: 40px; overflow-y: auto; }
+        .seccion { display: none; background: white; padding: 40px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
         .seccion.activo { display: block; } 
         .info-hoja { display: flex; justify-content: space-between; margin-bottom: 15px; font-weight: bold; color: #1a3a5f; align-items: center;}
         
@@ -62,55 +49,47 @@
         
         .input-fecha { border: 1px solid #cbd5e1; padding: 10px 14px; border-radius: 6px; font-family: inherit; cursor: pointer; background: #f8fafc; color: #334155; font-size: 13px; font-weight: 500; }
         .area-acciones { margin-top: 20px; display: flex; gap: 10px; }
-        .btn-gestion { padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px; background: #1a3a5f; color: white; }
-        .btn-gestion:hover { background: #2d5a8e; }
-        .btn-imprimir { background: #1a3a5f; color: white; }
+        .btn-gestion { padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px; }
+        .btn-imprimir { background: #6c757d; color: white; }
         #info-supervisor { margin-bottom: 20px; color: #1a3a5f; font-weight: bold; border: 1px solid #ddd; padding: 10px; border-radius: 6px; background: #f9f9f9; }
-        .header-logos { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+        .header-logos { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; background: #ffffff; padding: 20px; border-radius: 10px; border: 1px solid #edf2f7; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
         .header-logos img { height: 110px; width: auto; object-fit: contain; }
+        .header-logos h1 { color: #1e293b; font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
 
-        /* Estilos específicos para sección Novedades y Muro Original */
-        .filtros-historicos { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 20px; background: #ffffff; padding: 18px 22px; border-radius: 10px; border: 1px solid #e2e8f0; }
+        /* Estilos específicos para sección Novedades y Muro (Alineados con admin) */
+        .filtros-historicos { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 20px; background: #ffffff; padding: 18px 22px; border-radius: 10px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
         .input-select { padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; font-size: 13px; font-weight: 500; background: #f8fafc; color: #334155; cursor: pointer; }
+        .input-select:focus { border-color: #1a3a5f; box-shadow: 0 0 0 3px rgba(26, 58, 95, 0.1); outline: none; }
         .btn-adjuntar { background: #1a3a5f; color: white; }
+        .btn-adjuntar:hover { background: #2d5a8e; }
         .preview-adjunto { display: none; margin-top: 10px; padding: 10px; background: #e9ecef; border-radius: 6px; font-size: 13px; border: 1px solid #ced4da; }
         .print-header { display: none; font-weight: bold; margin-bottom: 10px; }
         .print-only { display: none; }
-        
-        #txt-novedades { 
-            width: 100%; 
-            min-height: 250px; 
-            padding: 12px; 
-            border: 1px solid #cbd5e1; 
-            border-radius: 10px; 
-            font-family: 'Roboto', sans-serif; 
-            font-size: 14px; 
-            line-height: 1.6;
-            resize: vertical; 
-            box-sizing: border-box; 
-            background: #ffffff;
-        }
-        #txt-novedades:focus {
-            border-color: #1a3a5f;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(26, 58, 95, 0.1);
-        }
+        #txt-novedades { width: 100%; min-height: 350px; padding: 18px; border: 1px solid #cbd5e1; border-radius: 10px; font-family: 'Roboto', sans-serif; font-size: 14px; line-height: 1.6; resize: vertical; box-sizing: border-box; background: #ffffff; outline: none; }
+        #txt-novedades:focus { border-color: #1a3a5f; box-shadow: 0 0 0 3px rgba(26, 58, 95, 0.1); }
         
         .historial-muro-container { margin-top: 30px; border-top: 2px solid #dee2e6; padding-top: 20px; }
-        .historial-muro-titulo { font-size: 16px; font-weight: bold; color: #1a3a5f; margin-bottom: 15px; }
+        .historial-muro-titulo { font-size: 18px; font-weight: 700; color: #1e293b; margin-bottom: 15px; }
         
-        /* Estilo clásico/original del muro */
-        .muro-item { background: #f8f9fa; border: 1px solid #ced4da; padding: 15px; border-radius: 6px; margin-bottom: 15px; }
-        .muro-header { font-size: 0.85rem; color: #495057; margin-bottom: 8px; border-bottom: 1px solid #dee2e6; padding-bottom: 5px; display: flex; justify-content: space-between; flex-wrap: wrap; }
-        .novedad-texto { font-size: 0.95rem; color: #212529; white-space: pre-wrap; word-break: break-word; line-height: 1.5; }
+        .muro-item { background: #fff; border: 1px solid #e2e8f0; border-left: 6px solid #1a3a5f; padding: 22px; border-radius: 10px; margin-bottom: 15px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+        .muro-item.recibido { border-left-color: #06b6d4; }
+        .muro-item.enviado { border-left-color: #1a3a5f; }
+
+        .muro-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px; }
+        .novedad-meta { font-size: 0.85rem; color: #495057; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; line-height: 1.8; }
+        .novedad-texto { font-size: 0.95rem; color: #212529; white-space: pre-wrap; word-break: break-word; line-height: 1.5; margin-top: 8px; font-family: inherit; }
         .muro-adjuntos { margin-top: 10px; font-size: 13px; }
-        .muro-adjuntos a { color: #1a3a5f; text-decoration: none; font-weight: bold; }
-        .muro-adjuntos a:hover { text-decoration: underline; }
+        .muro-adjuntos a { display: inline-block; margin-right: 10px; color: #1a3a5f; text-decoration: none; font-weight: 500; background: #f1f5f9; padding: 6px 12px; border-radius: 6px; }
+        .muro-adjuntos a:hover { text-decoration: underline; background: #e2e8f0; }
+
+        .badge-estado { font-size: 0.7rem; padding: 5px 10px; border-radius: 6px; font-weight: bold; color: white; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; display: inline-block; vertical-align: middle; margin-right: 4px; }
+        .badge-recibido { background-color: #06b6d4; }
+        .badge-enviado { background-color: #1a3a5f; }
 
         @media print {
             .sidebar, .btn-accion-global, .btn-cerrar, .menu-item, .no-imprimir, .btn-imprimir, .filtros-historicos, .area-acciones { display: none !important; }
             body, html, .contenido, .seccion.activo, .hoja { background-color: white !important; margin: 0 !important; padding: 0 !important; width: 100% !important; height: auto !important; overflow: visible !important; box-shadow: none !important; display: block !important; }
-            .seccion { display: none !important; }
+            .seccion { display: none !important; border: none !important; box-shadow: none !important; }
             .seccion.activo { display: block !important; } 
             .hoja { border: none !important; min-height: auto !important; }
             #editor-reporte { 
@@ -199,9 +178,6 @@
                     <option value="conmutador">Conmutador</option>
                     <option value="dalo">DALO</option>
                     <option value="higiene-y-seguridad">Higiene y Seguridad</option>
-                    <option value="mantenimiento">Mantenimiento</option>
-                    <option value="roperia">Ropería</option>
-                    <option value="talleres">Talleres</option>
                 </select>
                 <div id="contenedor-supervisor-destino-novedades" style="display: none;">
                     <select id="supervisor-destino-novedades" class="input-select" onchange="actualizarPrint('novedades')">
@@ -218,7 +194,7 @@
                 </select>
                 <button class="btn-gestion btn-adjuntar" onclick="document.getElementById('file-novedades').click()">📎 Adjuntar Archivos</button>
                 <input type="file" id="file-novedades" style="display:none" multiple onchange="previsualizarMultiples(this, 'novedades')">
-                <button class="btn-gestion" onclick="guardarRedaccion('novedades')">Guardar y Enviar</button>
+                <button class="btn-gestion" style="background: #1a3a5f; color: white;" onclick="guardarRedaccion('novedades')">Guardar y Enviar</button>
             </div>
             
             <div id="print-header-novedades" class="print-header">Dirigido a: Todos los departamentos | Turno: Todos los turnos</div>
@@ -228,6 +204,7 @@
             
             <div class="area-acciones">
                 <button id="btn-print-novedades" class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
+                <button class="btn-gestion btn-imprimir" style="background: #dc3545;" onclick="limpiarPantalla('novedades')">🧹 Limpiar Pantalla</button>
             </div>
 
             <div class="historial-muro-container">
@@ -396,6 +373,21 @@
             }
         }
 
+        function limpiarPantalla(id) {
+            document.getElementById('txt-' + id).value = '';
+            document.getElementById('print-' + id).innerText = '';
+            const prev = document.getElementById('preview-' + id);
+            if (prev) {
+                prev.innerHTML = '';
+                prev.style.display = 'none';
+            }
+            if (id === 'novedades') {
+                archivosMultiplesNovedades = [];
+                const fileInput = document.getElementById('file-novedades');
+                if (fileInput) fileInput.value = '';
+            }
+        }
+
         async function verificarNovedadesNoLeidas() {
             try {
                 const { data, error } = await supabaseClient
@@ -509,16 +501,7 @@
                 alert("Error al enviar a la base de datos: " + error.message);
             } else {
                 alert("Novedad enviada y guardada correctamente.");
-                document.getElementById('txt-' + id).value = '';
-                document.getElementById('print-' + id).innerText = '';
-                const prev = document.getElementById('preview-' + id);
-                if (prev) {
-                    prev.innerHTML = '';
-                    prev.style.display = 'none';
-                }
-                archivosMultiplesNovedades = [];
-                const fileInput = document.getElementById('file-novedades');
-                if (fileInput) fileInput.value = '';
+                limpiarPantalla(id);
                 cargarNovedades();
             }
         }
@@ -607,16 +590,22 @@
                     const remitenteDepto = (item.departamento_origen || '').trim().toLowerCase();
                     const deptoDestinoValor = item.departamento_destino || 'Todos';
 
+                    const esEnviado = remitenteDepto === 'higiene-y-seguridad';
+                    const claseMuroItem = esEnviado ? 'enviado' : 'recibido';
+                    const tipoBadge = esEnviado ? 'ENVIADO' : 'RECIBIDO';
+                    const claseBadgeEstado = esEnviado ? 'badge-enviado' : 'badge-recibido';
+
                     const supervisorOrigenFinal = item.supervisor_origen || contenidoObj.supervisor_origen || 'No especificado';
                     const supervisorDestinoFinal = item.supervisor_destino || contenidoObj.supervisor || 'General (Todos)';
 
                     let infoDetalleCabecera = `
                         <div>
+                            <span class="badge-estado ${claseBadgeEstado}">${tipoBadge}</span>
                             <strong>Origen:</strong> ${remitenteDepto} &rarr; 
                             <strong>Destino:</strong> ${deptoDestinoValor} | 
                             <strong>Turno:</strong> ${turnoMsg} | 
-                            <strong>Sup. Origen:</strong> ${supervisorOrigenFinal} | 
-                            <strong>Sup. Destino:</strong> ${supervisorDestinoFinal}
+                            <strong>Supervisor Origen:</strong> ${supervisorOrigenFinal} | 
+                            <strong>Supervisor Destino:</strong> ${supervisorDestinoFinal}
                         </div>`;
 
                     let archivosArr = [];
@@ -628,19 +617,53 @@
 
                     let archivosHtml = "";
                     if (archivosArr.length > 0) {
-                        archivosHtml = '<div class="muro-adjuntos"><b>Archivos Adjuntos:</b><ul style="margin: 5px 0 0 20px; padding:0;">';
+                        archivosHtml = '<div class="muro-adjuntos" style="margin-top: 15px; display: flex; flex-direction: column; gap: 10px;"><b>Archivos Adjuntos:</b>';
                         archivosArr.forEach(arch => {
                             if (!arch || !arch.data) return;
-                            archivosHtml += `<li><a href="${arch.data}" download="${arch.name || 'adjunto'}">📥 ${arch.name || 'Descargar archivo'}</a></li>`;
+                            let base64Data = arch.data;
+                            let nombreArchivo = arch.name || "adjunto_descargable";
+                            let esImagen = base64Data.startsWith('data:image/') || /\.(jpg|jpeg|png|gif|webp)$/i.test(nombreArchivo);
+
+                            if (esImagen) {
+                                archivosHtml += `
+                                    <div style="text-align: center; background: #fafafa; border: 1px solid #ddd; padding: 10px; border-radius: 6px;">
+                                        <div style="margin-bottom: 8px;">
+                                            <img src="${base64Data}" alt="Archivo adjunto" style="max-width: 100%; max-height: 350px; border-radius: 4px; border: 1px solid #ddd; object-fit: contain;" />
+                                        </div>
+                                        <a href="${base64Data}" download="${nombreArchivo}">
+                                            📥 Descargar Imagen (${nombreArchivo})
+                                        </a>
+                                    </div>
+                                `;
+                            } else {
+                                archivosHtml += `
+                                    <div style="background: #f8f9fa; border: 1px solid #ddd; padding: 10px 14px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                                        <div style="display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1;">
+                                            <span style="font-size: 26px; flex-shrink: 0; line-height: 1;">📄</span>
+                                            <div style="min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+                                                <strong style="font-size: 13px; color: #333; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${nombreArchivo}">${nombreArchivo}</strong>
+                                                <span style="font-size: 11px; color: #666; display: block;">Documento adjunto</span>
+                                            </div>
+                                        </div>
+                                        <a href="${base64Data}" download="${nombreArchivo}">
+                                            📥 Descargar Archivo
+                                        </a>
+                                    </div>
+                                `;
+                            }
                         });
-                        archivosHtml += '</ul></div>';
+                        archivosHtml += '</div>';
                     }
 
                     html += `
-                        <div class="muro-item">
+                        <div class="muro-item ${claseMuroItem}">
                             <div class="muro-header">
-                                <div>${infoDetalleCabecera}</div>
-                                <div><i class="far fa-clock"></i> ${fecha}</div>
+                                <div class="novedad-meta">
+                                    ${infoDetalleCabecera}
+                                </div>
+                                <div style="font-size: 0.85rem; color: #6c757d; white-space: nowrap; padding-top: 2px;">
+                                    <i class="far fa-clock"></i> ${fecha}
+                                </div>
                             </div>
                             <div class="novedad-texto">${texto}</div>
                             ${archivosHtml}
@@ -798,6 +821,7 @@
             const turno = localStorage.getItem('usuario_turno') || "Mañana"; 
             const depto = "Higiene y Seguridad";
             
+            // Validación específica para cambiar el título de bienvenida si ingresa RODRIGUEZ ADRIAN
             if (nombre.trim().toUpperCase() === "RODRIGUEZ ADRIAN") {
                 document.getElementById('titulo-bienvenida').innerText = "Bienvenido Sr. Director:";
             }
