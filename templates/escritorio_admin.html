@@ -68,7 +68,6 @@
         }
         .menu-item:hover { background-color: #5d8dbb; color: white; }
 
-        /* Estilos para el sistema de notificación (badge contador) en el menú */
         .menu-badge {
             background-color: #dc3545;
             color: white;
@@ -130,8 +129,7 @@
         .area-acciones { margin-top: 20px; display: flex; gap: 10px; }
         .btn-gestion { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; }
         .btn-adjuntar { background: #1a3a5f; color: white; }
-        .btn-imprimir { background: #6c757d; color: white; }
-        .btn-limpiar { background: #ff9800; color: white; }
+        .btn-imprimir { background: #1a3a5f; color: white; }
         textarea { width: 100%; height: 350px; padding: 10px 15px; border: 1px solid #ccc; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 16px; box-sizing: border-box; line-height: 2.0em; background-image: linear-gradient(#ccc 1px, transparent 1px); background-size: 100% 2.0em; resize: none; }
         .preview-adjunto { margin-top: 10px; padding: 10px; border: 1px dashed #aaa; display: none; }
         
@@ -158,13 +156,6 @@
             box-shadow: 0 2px 6px rgba(0,0,0,0.02);
             border: 1px solid #edf2f7;
             margin-bottom: 25px;
-            align-items: center; /* Alineación vertical consistente */
-        }
-
-        #novedades .header-logos img {
-            height: 110px; /* Consistencia de tamaño de logos superior */
-            width: auto;
-            object-fit: contain;
         }
 
         #novedades .header-logos h1 {
@@ -172,9 +163,6 @@
             font-size: 26px;
             font-weight: 700;
             letter-spacing: -0.5px;
-            margin: 0; 
-            text-align: center; 
-            flex: 1;
         }
 
         #novedades .filtros-historicos {
@@ -184,7 +172,6 @@
             padding: 18px 22px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.01);
             gap: 12px;
-            align-items: center; /* Alineación vertical de controles */
         }
 
         #novedades .input-select {
@@ -196,38 +183,29 @@
             font-size: 13px;
             font-weight: 500;
             transition: all 0.2s ease;
-            height: 40px; /* Altura unificada */
-            box-sizing: border-box;
         }
 
         #novedades .input-select:focus {
             outline: none;
-            border-color: #2563eb;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            border-color: #1a3a5f;
+            box-shadow: 0 0 0 3px rgba(26, 58, 95, 0.1);
             background-color: #fff;
         }
 
         #novedades .btn-gestion {
             border-radius: 6px;
-            padding: 0 16px; /* Padding horizontal estandarizado */
-            height: 40px; /* Altura unificada con inputs */
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
+            padding: 10px 16px;
             font-size: 13px;
             box-shadow: 0 1px 2px rgba(0,0,0,0.05);
             transition: all 0.2s ease;
-            cursor: pointer;
-            border: none;
-            font-weight: bold;
         }
 
         #novedades .btn-adjuntar {
-            background: #3b82f6;
+            background: #1a3a5f;
             color: white;
         }
         #novedades .btn-adjuntar:hover {
-            background: #2563eb;
+            background: #2d5a8e;
         }
 
         #novedades textarea {
@@ -245,8 +223,8 @@
 
         #novedades textarea:focus {
             outline: none;
-            border-color: #2563eb;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1), inset 0 1px 2px rgba(0,0,0,0.02);
+            border-color: #1a3a5f;
+            box-shadow: 0 0 0 3px rgba(26, 58, 95, 0.1), inset 0 1px 2px rgba(0,0,0,0.02);
         }
 
         #preview-novedades {
@@ -276,7 +254,7 @@
         .muro-item { 
             background: #ffffff; 
             border: 1px solid #e2e8f0; 
-            border-left: 6px solid #3b82f6; 
+            border-left: 6px solid #1a3a5f; 
             padding: 22px; 
             border-radius: 10px; 
             margin-bottom: 20px; 
@@ -287,56 +265,23 @@
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
         }
         .muro-item.recibido { border-left-color: #06b6d4; }
-        .muro-item.enviado { border-left-color: #10b981; }
+        .muro-item.enviado { border-left-color: #1a3a5f; }
         .muro-item.terceros { border-left-color: #64748b; }
 
         .muro-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px; }
         .novedad-meta { font-size: 0.85rem; color: #475569; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; line-height: 1.6; }
         .novedad-texto { font-size: 0.95rem; color: #1e293b; white-space: pre-wrap; word-break: break-word; line-height: 1.6; margin-top: 12px; font-family: inherit; }
         .muro-adjuntos { margin-top: 15px; font-size: 13px; }
-        .muro-adjuntos a { display: inline-flex; align-items: center; gap: 6px; margin-right: 10px; color: #2563eb; text-decoration: none; font-weight: 600; background: #eff6ff; padding: 6px 12px; border-radius: 6px; border: 1px solid #dbeafe; transition: background 0.2s; }
-        .muro-adjuntos a:hover { background: #dbeafe; text-decoration: none; }
+        .muro-adjuntos a { display: inline-flex; align-items: center; gap: 6px; margin-right: 10px; color: #1a3a5f; text-decoration: none; font-weight: 600; background: #f1f5f9; padding: 6px 12px; border-radius: 6px; border: 1px solid #cbd5e1; transition: background 0.2s; }
+        .muro-adjuntos a:hover { background: #e2e8f0; text-decoration: none; }
 
         .badge-estado { font-size: 0.7rem; padding: 5px 10px; border-radius: 6px; font-weight: 700; color: white; text-transform: uppercase; letter-spacing: 0.8px; white-space: nowrap; display: inline-block; vertical-align: middle; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
         .badge-recibido { background-color: #06b6d4; }
-        .badge-enviado { background-color: #10b981; }
+        .badge-enviado { background-color: #1a3a5f; }
         .badge-terceros { background-color: #64748b; }
 
-        /* Estilos generales para consistencia de cabeceras y botones en otras secciones */
-        .seccion .header-logos {
-            align-items: center;
-        }
-        .seccion .header-logos img {
-            height: 110px;
-            width: auto;
-            object-fit: contain;
-        }
-        .seccion .header-logos h1 {
-            margin: 0; 
-            text-align: center; 
-            flex: 1;
-        }
-        .seccion .filtros-historicos {
-            align-items: center;
-        }
-        .seccion .input-select, 
-        .seccion .input-fecha {
-            height: 40px;
-            box-sizing: border-box;
-            display: inline-flex;
-            align-items: center;
-        }
-        .seccion .btn-gestion {
-            height: 40px;
-            padding: 0 16px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            box-sizing: border-box;
-        }
-
         @media print {
-            .sidebar, .filtros-historicos, .btn-cerrar, .area-acciones, .btn-adjuntar, textarea, .btn-limpiar, .historial-muro-container { display: none !important; }
+            .sidebar, .filtros-historicos, .btn-cerrar, .area-acciones, .btn-adjuntar, textarea, .historial-muro-container { display: none !important; }
             .seccion { display: none !important; }
             .seccion.activo { display: block !important; box-shadow: none !important; padding: 0 !important; background: white !important; margin: 0 !important; width: 100% !important; max-width: 100% !important; border: none !important; box-sizing: border-box !important; }
             html, body { background: white !important; height: auto !important; overflow: visible !important; margin: 0 !important; padding: 0 !important; width: 100% !important; }
@@ -632,7 +577,7 @@
                             <div class="header-logos">
                                 <img src="/static/logo_hospi.png" alt="Logo" onerror="this.src='https://via.placeholder.com/150?text=Hospital'">
                                 <h1 style="margin: 0; text-align: center; flex: 1;">Novedades</h1>
-                                <img src="/static/logo_dsg.png" alt="Logo DSG" style="height: 110px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
+                                <img src="/static/logo_dsg.png" alt="Logo DSG" style="height: 135px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
                             </div>
                             
                             <div class="filtros-historicos">
@@ -665,7 +610,7 @@
                                 
                                 <button class="btn-gestion btn-adjuntar" onclick="document.getElementById('file-novedades').click()">📎 Adjuntar Archivos</button>
                                 <input type="file" id="file-novedades" style="display:none" multiple onchange="previsualizarMultiples(this, 'novedades')">
-                                <button class="btn-gestion" style="background: #10b981; color: white;" onclick="guardarRedaccion('novedades')">Guardar y Enviar</button>
+                                <button class="btn-gestion" style="background: #1a3a5f; color: white;" onclick="guardarRedaccion('novedades')">Guardar y Enviar</button>
                             </div>
                             
                             <div id="print-header-novedades" class="print-header">Dirigido a: Todos los departamentos | Turno: Todos los turnos</div>
@@ -675,7 +620,6 @@
                             
                             <div class="area-acciones">
                                 <button id="btn-print-novedades" class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
-                                <button class="btn-gestion btn-imprimir" style="background: #ef4444;" onclick="limpiarPantalla('novedades')">🧹 Limpiar Pantalla</button>
                             </div>
 
                             <div class="historial-muro-container">
@@ -690,7 +634,7 @@
                             <div class="header-logos">
                                 <img src="/static/logo_hospi.png" alt="Logo">
                                 <h1 style="margin: 0; text-align: center; flex: 1;">${titulo}</h1>
-                                <img src="/static/logo_dsg.png" alt="Logo DSG" style="height: 110px;">
+                                <img src="/static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
                             </div>
                             <div class="filtros-historicos">
                                 ${tipoContenido === 'auditoria' ? `
@@ -746,7 +690,7 @@
             <div class="header-logos">
                 <img src="/static/logo_hospi.png" alt="Logo">
                 <h1 style="margin: 0; text-align: center; flex: 1;" class="titulo-caja">Estadísticas Mensuales</h1>
-                <img src="/static/logo_dsg.png" alt="Logo DSG" style="height: 110px;">
+                <img src="/static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
             <div class="filtros-historicos">
                 <select id="est-tipo" class="input-select">
@@ -802,24 +746,6 @@
                 manejarCambioDepto('destino-novedades');
                 marcarComoLeidas('novedades');
             }
-        }
-
-        function limpiarPantalla(id) {
-            document.getElementById('txt-' + id).value = '';
-            document.getElementById('print-' + id).innerText = '';
-            document.getElementById('preview-' + id).style.display = 'none';
-            document.getElementById('preview-' + id).innerHTML = '';
-            document.getElementById('depto-destino-' + id).value = 'Todos';
-            document.getElementById('turno-destino-' + id).value = 'Todos';
-            if (id === 'novedades') {
-                const supElem = document.getElementById('supervisor-destino-' + id);
-                if (supElem) supElem.value = '';
-                const contSup = document.getElementById('contenedor-supervisor-destino-' + id);
-                if (contSup) contSup.style.display = 'none';
-            }
-            actualizarPrint(id);
-            delete archivoData[id];
-            if (id === 'novedades') archivosMultiplesNovedades = [];
         }
 
         async function previsualizarMultiples(input, id) {
@@ -1208,8 +1134,17 @@
                 alert("Error al enviar a la base de datos: " + error.message);
             } else {
                 alert("Novedad enviada y guardada correctamente.");
-                limpiarPantalla(id);
+                document.getElementById('txt-' + id).value = '';
+                document.getElementById('print-' + id).innerText = '';
+                document.getElementById('preview-' + id).style.display = 'none';
+                document.getElementById('preview-' + id).innerHTML = '';
+                document.getElementById('depto-destino-' + id).value = 'Todos';
+                document.getElementById('turno-destino-' + id).value = 'Todos';
                 if (id === 'novedades') {
+                    const supElem = document.getElementById('supervisor-destino-' + id);
+                    if (supElem) supElem.value = '';
+                    const contSup = document.getElementById('contenedor-supervisor-destino-' + id);
+                    if (contSup) contSup.style.display = 'none';
                     cargarNovedades();
                     archivosMultiplesNovedades = [];
                 }
