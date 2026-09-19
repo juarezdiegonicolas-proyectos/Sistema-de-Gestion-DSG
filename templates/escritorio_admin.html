@@ -222,20 +222,18 @@
                     const deptoActual = departamentoAgenteLogueado;
                     const nombreActual = (nombreAgenteLogueado || "").trim().toLowerCase();
 
-                    // Consultar lecturas previas del usuario en la tabla comunicados_lecturas usando comunicado_id y user_id
-                    let idsLeidosSupabase = [];
-                    if (nombreAgenteLogueado) {
-                        const { data: lecturasData } = await db
-                            .from('comunicados_lecturas')
-                            .select('comunicado_id')
-                            .eq('user_id', nombreAgenteLogueado);
-                        if (lecturasData) {
-                            idsLeidosSupabase = lecturasData.map(l => l.comunicado_id);
-                        }
-                    }
+                    if (!nombreAgenteLogueado) return;
 
-                    // Fallback / soporte local con localStorage si no hay ID de usuario conectado aún
-                    const leidosNovedadesLocal = JSON.parse(localStorage.getItem('leidos_novedades') || '[]');
+                    // Consultar exclusivas lecturas de ESTE usuario en la tabla comunicados_lecturas usando su nombre/ID
+                    let idsLeidosSupabase = [];
+                    const { data: lecturasData } = await db
+                        .from('comunicados_lecturas')
+                        .select('comunicado_id')
+                        .eq('user_id', nombreAgenteLogueado);
+                    
+                    if (lecturasData) {
+                        idsLeidosSupabase = lecturasData.map(l => l.comunicado_id);
+                    }
 
                     // Consultar comunicados de novedades
                     const { data: novData, error: errNov } = await db
@@ -261,7 +259,8 @@
                             const esPropio = (origenDepto === deptoActual && (supervisorOrigenRaw === nombreActual || !supervisorOrigenRaw));
 
                             if (esParaMiDepto && esParaMiSupervisor && !esPropio) {
-                                const yaLeido = idsLeidosSupabase.includes(item.id) || idsLeidosSupabase.includes(item.id_clave) || leidosNovedadesLocal.includes(item.id_clave);
+                                // Se valida estrictamente por el ID numérico/único del comunicado en la tabla de lecturas del usuario
+                                const yaLeido = idsLeidosSupabase.includes(item.id);
                                 if (!yaLeido) {
                                     countNov++;
                                 }
@@ -287,8 +286,8 @@
             async function marcarComoLeidas(tipo) {
                 try {
                     const ilikeFiltro = 'comunicado_novedades_%';
-                    const storageKey = 'leidos_novedades';
-                    const nombreActual = (nombreAgenteLogueado || "").trim().toLowerCase();
+                    const nombreActual = (nombreAgenteLogueado || "").trim();
+                    if (!nombreActual) return;
                     
                     const { data, error } = await db
                         .from('comunicados_memos')
@@ -296,8 +295,6 @@
                         .ilike('id_clave', ilikeFiltro);
 
                     if (!error && data) {
-                        let leidosLocal = JSON.parse(localStorage.getItem(storageKey) || '[]');
-                        
                         for (const item of data) {
                             const contenidoObj = item.contenido || {};
                             const deptoDestino = (item.departamento_destino || contenidoObj.departamento || '').trim().toLowerCase();
@@ -307,30 +304,24 @@
                             const supervisorOrigenRaw = (item.supervisor_origen || contenidoObj.supervisor_origen || '').trim().toLowerCase();
 
                             const esParaMiDepto = (deptoDestino === departamentoAgenteLogueado || deptoDestino === 'todos' || deptoDestino === 'todos-los-departamentos');
-                            const esParaMiSupervisor = (!supervisorDestinoRaw || supervisorDestinoRaw.includes('general') || supervisorDestinoRaw.includes('todos') || supervisorDestinoRaw === nombreActual);
-                            const esPropio = (origenDepto === departamentoAgenteLogueado && (supervisorOrigenRaw === nombreActual || !supervisorOrigenRaw));
+                            const esParaMiSupervisor = (!supervisorDestinoRaw || supervisorDestinoRaw.includes('general') || supervisorDestinoRaw.includes('todos') || supervisorDestinoRaw === nombreActual.toLowerCase());
+                            const esPropio = (origenDepto === departamentoAgenteLogueado && (supervisorOrigenRaw === nombreActual.toLowerCase() || !supervisorOrigenRaw));
 
                             if (esParaMiDepto && esParaMiSupervisor && !esPropio) {
-                                // Agregar a localStorage
-                                if (!leidosLocal.includes(item.id_clave)) {
-                                    leidosLocal.push(item.id_clave);
-                                }
-
-                                // Registrar en la tabla comunicados_lecturas en Supabase usando comunicado_id y user_id
-                                if (nombreAgenteLogueado) {
-                                    await db.from('comunicados_lecturas').upsert({
-                                        comunicado_id: item.id,
-                                        user_id: nombreAgenteLogueado,
-                                        leido_at: new Date().toISOString()
-                                    }, { onConflict: 'comunicado_id,user_id' });
-                                }
+                                // Inserta en la tabla comunicados_lecturas asociando el ID del comunicado EXCLUSIVAMENTE al usuario actual logueado
+                                await db.from('comunicados_lecturas').upsert({
+                                    comunicado_id: item.id,
+                                    user_id: nombreActual,
+                                    leido_at: new Date().toISOString()
+                                }, { onConflict: 'comunicado_id,user_id' });
                             }
                         }
-
-                        localStorage.setItem(storageKey, JSON.stringify(leidosLocal));
                         
                         const badgeElem = document.getElementById('badge-' + tipo);
                         if (badgeElem) badgeElem.classList.add('hidden');
+                        
+                        // Refrescar contador para asegurar sincronización visual
+                        verificarNotificacionesPendientes();
                     }
                 } catch (e) {
                     console.error("Error al marcar como leídas:", e);
