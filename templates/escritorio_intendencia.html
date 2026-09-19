@@ -9,48 +9,48 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { margin: 0; font-family: 'Roboto', sans-serif; display: flex; height: 100vh; background-color: #f4f1ea; overflow: hidden; }
-        .sidebar { width: 260px; background-color: #1a3a5f; color: white; padding: 15px 15px; display: flex; flex-direction: column; flex-shrink: 0; height: 100vh; box-sizing: border-box; overflow: hidden; }
+        .sidebar { width: 260px; background-color: #1a3a5f; color: white; padding: 15px 15px; display: flex; flex-direction: column; flex-shrink: 0; height: 100vh; box-sizing: border-box; overflow: hidden; box-shadow: 4px 0 10px rgba(0,0,0,0.15); }
         
-        .bienvenida-box { background-color: #2d5a8e; padding: 10px; border-radius: 8px; margin-bottom: 12px; text-align: center; border: 1px solid #5d8dbb; flex-shrink: 0; }
+        .bienvenida-box { background-color: #2d5a8e; padding: 10px; border-radius: 8px; margin-bottom: 12px; text-align: center; border: 1px solid #5d8dbb; flex-shrink: 0; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .bienvenida-box h3 { margin: 0; font-size: 13px; font-weight: 300; color: #cce7ff; }
         .bienvenida-box p { margin: 3px 0 0 0; font-size: 15px; font-weight: bold; }
 
-        .sidebar-header-title { min-height: 40px; margin-bottom: 8px; display: flex; align-items: center; flex-shrink: 0; }
+        .sidebar-header-title { min-height: 40px; margin-bottom: 8px; display: flex; align-items: center; flex-shrink: 0; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .sidebar-header-title h2 { font-size: 18px; margin: 0; line-height: 1.2; }
 
         .menu-links { flex: 1; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; margin-bottom: 8px; }
-        .menu-item { display: flex; align-items: center; justify-content: space-between; color: #ddd; padding: 10px 12px; text-decoration: none; border-bottom: 1px solid rgba(93, 141, 187, 0.3); font-weight: 500; cursor: pointer; font-size: 15px; transition: background 0.2s, color 0.2s; border-radius: 4px; }
-        .menu-item:hover { background-color: #5d8dbb; color: white; }
+        .menu-item { display: flex; align-items: center; justify-content: space-between; color: #ddd; padding: 10px 12px; text-decoration: none; border-bottom: 1px solid rgba(93, 141, 187, 0.3); font-weight: 500; cursor: pointer; font-size: 15px; transition: background 0.2s, color 0.2s; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .menu-item:hover { background-color: #5d8dbb; color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.15); }
 
         /* Estilo para la notificación / badge de novedades */
         .badge-novedades { background-color: #dc3545; color: white; font-size: 12px; font-weight: bold; padding: 2px 7px; border-radius: 10px; display: none; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 
         .sidebar-footer { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; padding-top: 5px; }
-        .btn-accion-global { width: 100%; padding: 10px; background: linear-gradient(135deg, #28a745, #218838); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: opacity 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .btn-accion-global { width: 100%; padding: 10px; background: linear-gradient(135deg, #28a745, #218838); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; box-shadow: 0 4px 6px rgba(0,0,0,0.15); transition: opacity 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
         .btn-accion-global:hover { opacity: 0.9; }
-        .btn-cerrar { width: 100%; padding: 10px; background: linear-gradient(135deg, #d32f2f, #c62828); color: white; text-align: center; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); box-sizing: border-box; display: flex; align-items: center; justify-content: center; gap: 6px; transition: opacity 0.2s; }
+        .btn-cerrar { width: 100%; padding: 10px; background: linear-gradient(135deg, #d32f2f, #c62828); color: white; text-align: center; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 13px; box-shadow: 0 4px 6px rgba(0,0,0,0.15); box-sizing: border-box; display: flex; align-items: center; justify-content: center; gap: 6px; transition: opacity 0.2s; }
         .btn-cerrar:hover { opacity: 0.9; }
 
-        .contenido { flex: 1; padding: 40px; overflow-y: auto; }
-        .seccion { display: none; background: white; padding: 40px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .contenido { flex: 1; padding: 40px; overflow-y: auto; background-color: #f8fafc; }
+        .seccion { display: none; background: white; padding: 40px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
         .seccion.activo { display: block; } 
-        .info-hoja { display: flex; justify-content: space-between; margin-bottom: 15px; font-weight: bold; color: #1a3a5f; align-items: center;}
+        .info-hoja { display: flex; justify-content: space-between; margin-bottom: 15px; font-weight: bold; color: #1a3a5f; align-items: center; background: #f9f9f9; padding: 10px 15px; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         
-        .hoja { background-color: #fff; padding: 0 40px; border: 1px solid #ccc; min-height: 900px; position: relative; }
+        .hoja { background-color: #fff; padding: 0 40px; border: 1px solid #ccc; min-height: 900px; position: relative; border-radius: 6px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         
         #editor-reporte { 
             width: 100%; min-height: 900px; border: none; font-size: 18px; line-height: 30px; outline: none; font-family: 'Courier New', Courier, monospace; white-space: pre-wrap; word-wrap: break-word; 
             background-image: linear-gradient(#e0e0e0 1px, transparent 1px); background-size: 100% 30px; padding-top: 30px;
         }
 
-        .contenedor-observaciones { margin-top: 20px; width: 100%; box-sizing: border-box; }
-        .titulo-observaciones { background: #1a3a5f; color: white; padding: 8px 12px; font-weight: 500; font-size: 14px; border-radius: 6px 6px 0 0; }
+        .contenedor-observaciones { margin-top: 20px; width: 100%; box-sizing: border-box; border-radius: 6px; box-shadow: 0 4px 8px rgba(0,0,0,0.05); }
+        .titulo-observaciones { background: #1a3a5f; color: white; padding: 8px 12px; font-weight: 500; font-size: 14px; border-radius: 6px 6px 0 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         #editor-observaciones { 
             width: 100%; min-height: 180px; border: 1px solid #000; border-top: none; font-size: 18px; line-height: 30px; outline: none; font-family: 'Courier New', Courier, monospace; white-space: pre-wrap; word-wrap: break-word; 
             background-image: linear-gradient(#e0e0e0 1px, transparent 1px); background-size: 100% 30px; padding-top: 30px; padding-left: 10px; padding-right: 10px; border-radius: 0 0 6px 6px; box-sizing: border-box; overflow-y: auto;
         }
         
-        .tabla-intendencia { width: 100%; border-collapse: collapse; margin-top: 10px; table-layout: fixed; }
+        .tabla-intendencia { width: 100%; border-collapse: collapse; margin-top: 10px; table-layout: fixed; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .tabla-intendencia th, .tabla-intendencia td { border: 1px solid #000; padding: 6px; text-align: center; word-wrap: break-word; overflow: hidden; }
         
         .tabla-intendencia th { background-color: #1a3a5f; color: white; height: 22px; font-size: 14px; font-weight: 500; letter-spacing: 0.5px; }
@@ -63,26 +63,27 @@
         .input-select-tabla { width: 100%; border: none; text-align: center; font-family: inherit; font-size: 13px; background: transparent; outline: none; box-sizing: border-box; cursor: pointer; padding: 2px; }
         .input-c { width: 100%; border: none; text-align: center; font-family: inherit; font-size: 13px; background: transparent; outline: none; box-sizing: border-box; cursor: pointer; }
         
-        .input-fecha, .input-select { border: 1px solid #ccc; padding: 8px; border-radius: 4px; font-family: inherit; cursor: pointer; }
-        .btn-borrar { background: red; color: white; border: none; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; }
+        .input-fecha, .input-select { border: 1px solid #ccc; padding: 8px; border-radius: 4px; font-family: inherit; cursor: pointer; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); }
+        .btn-borrar { background: red; color: white; border: none; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
         .area-acciones { margin-top: 20px; display: flex; gap: 10px; }
-        .btn-gestion { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; }
+        .btn-gestion { padding: 10px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: opacity 0.2s; }
+        .btn-gestion:hover { opacity: 0.9; }
         .btn-imprimir { background: #6c757d; color: white; }
-        #info-supervisor { margin-bottom: 20px; color: #1a3a5f; font-weight: bold; border: 1px solid #ddd; padding: 10px; border-radius: 6px; background: #f9f9f9; }
-        .header-logos { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+        #info-supervisor { margin-bottom: 20px; color: #1a3a5f; font-weight: bold; border: 1px solid #ddd; padding: 12px; border-radius: 6px; background: #f9f9f9; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .header-logos { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; background: #fff; padding: 10px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
         .header-logos img { height: 110px; width: auto; object-fit: contain; }
-        .filtros-historicos { display: flex; gap: 15px; background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #eee; align-items: center; flex-wrap: wrap; }
-        .celda-asistencia { cursor: pointer; width: 25px; height: 25px; border: 2px solid #333; display: inline-block; transition: background 0.3s; margin: auto; }
+        .filtros-historicos { display: flex; gap: 15px; background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #eee; align-items: center; flex-wrap: wrap; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .celda-asistencia { cursor: pointer; width: 25px; height: 25px; border: 2px solid #333; display: inline-block; transition: background 0.3s; margin: auto; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         .estado-P { background-color: #28a745 !important; }
         .estado-A { background-color: #dc3545 !important; }
         .estado-L { background-color: #ffc107 !important; }
-        .botonera-porcentaje { background-color: #1a3a5f; color: white; padding: 12px 20px; border-radius: 8px; font-weight: bold; margin-bottom: 10px; display: inline-block; width: 250px; text-align: left; }
+        .botonera-porcentaje { background-color: #1a3a5f; color: white; padding: 12px 20px; border-radius: 8px; font-weight: bold; margin-bottom: 10px; display: inline-block; width: 250px; text-align: left; box-shadow: 0 2px 5px rgba(0,0,0,0.15); }
 
         /* Estilos para el Muro de Novedades sincronizado */
         .historial-muro-container { margin-top: 30px; border-top: 2px solid #dee2e6; padding-top: 20px; }
         .historial-muro-titulo { font-size: 16px; font-weight: bold; color: #1a3a5f; margin-bottom: 15px; }
 
-        .muro-item { background: #fff; border: 1px solid #d1d8df; border-left: 5px solid #007bff; padding: 15px; border-radius: 6px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .muro-item { background: #fff; border: 1px solid #d1d8df; border-left: 5px solid #007bff; padding: 15px; border-radius: 6px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .muro-item.recibido { border-left-color: #17a2b8; }   /* Celeste: Mensaje recibido */
         .muro-item.enviado { border-left-color: #28a745; }    /* Verde: Mensaje enviado por el depto */
         .muro-item.terceros { border-left-color: #6c757d; }   /* Gris: Terceros / Cruzados */
@@ -92,7 +93,7 @@
         .novedad-texto { font-size: 0.95rem; color: #212529; white-space: pre-wrap; word-break: break-word; line-height: 1.5; margin-top: 8px; font-family: inherit; }
 
         /* Badges de Estado y Corrección de solapamiento con la línea superior/inferior */
-        .badge-estado { font-size: 0.75rem; padding: 4px 8px; border-radius: 4px; font-weight: bold; color: white; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; display: inline-block; vertical-align: middle; }
+        .badge-estado { font-size: 0.75rem; padding: 4px 8px; border-radius: 4px; font-weight: bold; color: white; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; display: inline-block; vertical-align: middle; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         .badge-recibido { background-color: #17a2b8; }
         .badge-enviado { background-color: #28a745; }
         .badge-terceros { background-color: #6c757d; }
@@ -128,7 +129,7 @@
             <div class="menu-item" onclick="mostrar('historicos', 'Registros Históricos')"><span>📂 Registros Históricos</span></div>
             <div class="menu-item" onclick="mostrar('novedades', 'Novedades')"><span>📢 Novedades</span><span id="badge-novedades" class="badge-novedades">0</span></div>
             <div class="menu-item" onclick="mostrar('rrhh', 'RR.HH.')"><span>👥 RR.HH.</span></div>
-            <div class="menu-item" onclick="mostrar('resoluciones', 'Resoluciones')"><span>⚖️ Resoluciones</span></div>
+            <div class="menu-item" onclick="mostrar('resoluciones', 'Formularios Licencias')"><span>⚖️ Formularios Licencias</span></div>
         </div>
         <div class="sidebar-footer">
             <button class="btn-accion-global" onclick="cerrarJornadaGlobal()">📥 CERRAR JORNADA</button>
@@ -147,7 +148,7 @@
         <div id="reportes" class="seccion activo">
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo Hospital">
-                <h1 style="margin: 0; text-align: center; flex: 1;">Reportes</h1>
+                <h1 style="margin: 0; text-align: center; flex: 1; color: #1a3a5f;">Reportes</h1>
                 <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
             <div id="info-supervisor">Supervisor: <span id="display-nombre-rep">---</span> | Turno: <span id="display-turno-rep">---</span> | Depto: <span id="display-depto-rep">---</span></div>
@@ -164,7 +165,7 @@
         <div id="planillas" class="seccion">
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo Hospital">
-                <h1 style="margin: 0; text-align: center; flex: 1; font-size: 26px;">Planilla Funciones del Día</h1>
+                <h1 style="margin: 0; text-align: center; flex: 1; font-size: 26px; color: #1a3a5f;">Planilla Funciones del Día</h1>
                 <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
             <div id="info-supervisor">Supervisor: <span id="display-nombre">---</span> | Turno: <span id="display-turno">---</span> | Depto: <span id="display-depto">---</span></div>
@@ -200,14 +201,14 @@
         <div id="estado-ascensores" class="seccion">
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo">
-                <h1 style="margin: 0; text-align: center; flex: 1;">Estado Actual de Ascensores</h1>
+                <h1 style="margin: 0; text-align: center; flex: 1; color: #1a3a5f;">Estado Actual de Ascensores</h1>
                 <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
             <div class="filtros-historicos">
                 <span style="font-weight: bold; color: #1a3a5f;">Estado en tiempo real de la tabla estado_actual_ascensores</span>
                 <button class="btn-gestion" style="background: #1a3a5f; color: white; margin-left: auto;" onclick="cargarEstadoAscensoresVivo()">Actualizar Datos</button>
             </div>
-            <div id="visor-estado-ascensores" style="border: 1px solid #ccc; padding: 20px; min-height: 200px; background: #fff;">Cargando datos actuales...</div>
+            <div id="visor-estado-ascensores" style="border: 1px solid #ccc; padding: 20px; min-height: 200px; background: #fff; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">Cargando datos actuales...</div>
             <div class="area-acciones">
                 <button id="btn-print-estado-ascensores" class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
             </div>
@@ -216,7 +217,7 @@
         <div id="historicos" class="seccion">
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo Hospital">
-                <h1 style="margin: 0; text-align: center; flex: 1;">Registros Históricos</h1>
+                <h1 style="margin: 0; text-align: center; flex: 1; color: #1a3a5f;">Registros Históricos</h1>
                 <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
             <div id="info-supervisor">Departamento: <span id="depto-hist-label">---</span></div>
@@ -239,7 +240,7 @@
                 <input type="date" id="filtro-fecha-hist" class="input-fecha">
                 <button class="btn-gestion no-imprimir" style="background: #1a3a5f; color: white;" onclick="cargarHistoricos()">Buscar Registros</button>
             </div>
-            <div id="contenedor-historicos" style="border: 1px solid #ccc; padding: 20px; border-radius: 8px;">
+            <div id="contenedor-historicos" style="border: 1px solid #ccc; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); background: #fff;">
                 <p>Selecciona filtros y presiona "Buscar" para visualizar registros.</p>
             </div>
             <div class="area-acciones"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir Resultados</button></div>
@@ -248,7 +249,7 @@
         <div id="novedades" class="seccion">
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo Hospital">
-                <h1 style="margin: 0; text-align: center; flex: 1;">Novedades - Intendencia</h1>
+                <h1 style="margin: 0; text-align: center; flex: 1; color: #1a3a5f;">Novedades - Intendencia</h1>
                 <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
             
@@ -287,7 +288,7 @@
             </div>
             
             <div id="print-header-novedades-intendencia" class="print-header">Dirigido a: Todos los departamentos | Turno: Todos los turnos</div>
-            <textarea id="txt-novedades-intendencia" oninput="document.getElementById('print-novedades-intendencia').innerText = this.value" placeholder="Escriba aquí el contenido de novedades..." style="width: 100%; min-height: 150px; border: 1px solid #ccc; padding: 12px; border-radius: 6px; font-family: inherit; font-size: 15px; box-sizing: border-box; outline: none; resize: vertical;"></textarea>
+            <textarea id="txt-novedades-intendencia" oninput="document.getElementById('print-novedades-intendencia').innerText = this.value" placeholder="Escriba aquí el contenido de novedades..." style="width: 100%; min-height: 150px; border: 1px solid #ccc; padding: 12px; border-radius: 6px; font-family: inherit; font-size: 15px; box-sizing: border-box; outline: none; resize: vertical; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);"></textarea>
             <div id="print-novedades-intendencia" class="print-only"></div>
             <div id="preview-novedades-intendencia" class="preview-adjunto"></div>
             
@@ -306,7 +307,7 @@
         <div id="rrhh" class="seccion">
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo Hospital">
-                <h1 style="margin: 0; text-align: center; flex: 1;">Personal - Turno: <span id="display-turno-rrhh">---</span></h1>
+                <h1 style="margin: 0; text-align: center; flex: 1; color: #1a3a5f;">Personal - Turno: <span id="display-turno-rrhh">---</span></h1>
                 <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
             <table class="tabla-intendencia" style="table-layout: auto;">
@@ -330,7 +331,7 @@
         <div id="resoluciones" class="seccion">
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo Hospital">
-                <h1 style="margin: 0; text-align: center; flex: 1;">Resoluciones</h1>
+                <h1 style="margin: 0; text-align: center; flex: 1; color: #1a3a5f;">Formularios Licencias</h1>
                 <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
         </div>
@@ -1189,7 +1190,6 @@
                     const turnoValido = (!turnoDestino || turnoDestino === 'todos' || turnoDestino === turnoActual);
                     if (!turnoValido) return false;
 
-                    // Filtro estricto por supervisor: solo se muestra si es general/todos o si el nombre coincide con el supervisor destino
                     const esGeneral = (!supervisorDestino || supervisorDestino === 'todos' || supervisorDestino === 'general (todos)');
                     const supervisorCoincide = supervisorDestino && (supervisorDestino.toLowerCase().includes(usuarioActual) || usuarioActual.includes(supervisorDestino.toLowerCase()));
 
@@ -1248,30 +1248,24 @@
                 const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim().toLowerCase();
                 const usuarioActual = (localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario') || "invitado").trim().toLowerCase();
 
-                // Filtrar el muro para que cada supervisor solo vea lo suyo, lo general o lo enviado por ellos mismos
                 const dataFiltradaSupervisor = data.filter(item => {
                     const deptoDestino = (item.departamento_destino || "").trim().toLowerCase();
                     const origenMsg = (item.departamento_origen || (item.contenido && item.contenido.origen) || "").trim().toLowerCase();
                     const supervisorDestino = (item.supervisor_destino || (item.contenido && item.contenido.supervisor) || "").trim().toLowerCase();
                     const supervisorOrigen = (item.supervisor_origen || (item.contenido && item.contenido.supervisor_origen) || "").trim().toLowerCase();
 
-                    // Si el mensaje fue enviado por el propio departamento de Intendencia, permitimos que el supervisor lo vea en su muro
                     if (origenMsg === 'intendencia') {
-                        // Opcional: restringir para que cada supervisor vea sus propios envíos o los generales de intendencia
                         if (!supervisorOrigen || supervisorOrigen === 'todos' || supervisorOrigen === 'general (todos)') return true;
                         return supervisorOrigen.includes(usuarioActual) || usuarioActual.includes(supervisorOrigen);
                     }
 
-                    // Validar departamento destino
                     const deptoValido = (deptoDestino === 'intendencia' || deptoDestino === 'todos' || deptoDestino === '');
                     if (!deptoValido) return false;
 
-                    // Si es para todos los supervisores, se muestra
                     if (supervisorDestino === 'todos' || supervisorDestino === 'general (todos)' || !supervisorDestino) {
                         return true;
                     }
 
-                    // Si está dirigido a un supervisor específico, evaluar si coincide con el usuario logueado actual
                     const matchDirecto = supervisorDestino.includes(usuarioActual) || usuarioActual.includes(supervisorDestino);
                     return matchDirecto;
                 });
@@ -1309,7 +1303,6 @@
                     const remitenteDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
                     const deptoDestinoValor = item.departamento_destino || contenidoObj.departamento || 'Todos';
 
-                    // Tomar el supervisor origen y destino desde las columnas de la base de datos (con fallback al contenido)
                     const supervisorOrigenVal = item.supervisor_origen || contenidoObj.supervisor_origen || 'General';
                     const supervisorDestinoVal = item.supervisor_destino || contenidoObj.supervisor || 'General (Todos)';
 
