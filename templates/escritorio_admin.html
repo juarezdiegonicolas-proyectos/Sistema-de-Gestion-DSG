@@ -158,6 +158,13 @@
             box-shadow: 0 2px 6px rgba(0,0,0,0.02);
             border: 1px solid #edf2f7;
             margin-bottom: 25px;
+            align-items: center; /* Alineación vertical consistente */
+        }
+
+        #novedades .header-logos img {
+            height: 110px; /* Consistencia de tamaño de logos superior */
+            width: auto;
+            object-fit: contain;
         }
 
         #novedades .header-logos h1 {
@@ -165,6 +172,9 @@
             font-size: 26px;
             font-weight: 700;
             letter-spacing: -0.5px;
+            margin: 0; 
+            text-align: center; 
+            flex: 1;
         }
 
         #novedades .filtros-historicos {
@@ -174,6 +184,7 @@
             padding: 18px 22px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.01);
             gap: 12px;
+            align-items: center; /* Alineación vertical de controles */
         }
 
         #novedades .input-select {
@@ -185,6 +196,8 @@
             font-size: 13px;
             font-weight: 500;
             transition: all 0.2s ease;
+            height: 40px; /* Altura unificada */
+            box-sizing: border-box;
         }
 
         #novedades .input-select:focus {
@@ -196,14 +209,22 @@
 
         #novedades .btn-gestion {
             border-radius: 6px;
-            padding: 10px 16px;
+            padding: 0 16px; /* Padding horizontal estandarizado */
+            height: 40px; /* Altura unificada con inputs */
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             font-size: 13px;
             box-shadow: 0 1px 2px rgba(0,0,0,0.05);
             transition: all 0.2s ease;
+            cursor: pointer;
+            border: none;
+            font-weight: bold;
         }
 
         #novedades .btn-adjuntar {
             background: #3b82f6;
+            color: white;
         }
         #novedades .btn-adjuntar:hover {
             background: #2563eb;
@@ -280,6 +301,39 @@
         .badge-recibido { background-color: #06b6d4; }
         .badge-enviado { background-color: #10b981; }
         .badge-terceros { background-color: #64748b; }
+
+        /* Estilos generales para consistencia de cabeceras y botones en otras secciones */
+        .seccion .header-logos {
+            align-items: center;
+        }
+        .seccion .header-logos img {
+            height: 110px;
+            width: auto;
+            object-fit: contain;
+        }
+        .seccion .header-logos h1 {
+            margin: 0; 
+            text-align: center; 
+            flex: 1;
+        }
+        .seccion .filtros-historicos {
+            align-items: center;
+        }
+        .seccion .input-select, 
+        .seccion .input-fecha {
+            height: 40px;
+            box-sizing: border-box;
+            display: inline-flex;
+            align-items: center;
+        }
+        .seccion .btn-gestion {
+            height: 40px;
+            padding: 0 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+        }
 
         @media print {
             .sidebar, .filtros-historicos, .btn-cerrar, .area-acciones, .btn-adjuntar, textarea, .btn-limpiar, .historial-muro-container { display: none !important; }
@@ -578,7 +632,7 @@
                             <div class="header-logos">
                                 <img src="/static/logo_hospi.png" alt="Logo" onerror="this.src='https://via.placeholder.com/150?text=Hospital'">
                                 <h1 style="margin: 0; text-align: center; flex: 1;">Novedades</h1>
-                                <img src="/static/logo_dsg.png" alt="Logo DSG" style="height: 135px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
+                                <img src="/static/logo_dsg.png" alt="Logo DSG" style="height: 110px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
                             </div>
                             
                             <div class="filtros-historicos">
@@ -636,7 +690,7 @@
                             <div class="header-logos">
                                 <img src="/static/logo_hospi.png" alt="Logo">
                                 <h1 style="margin: 0; text-align: center; flex: 1;">${titulo}</h1>
-                                <img src="/static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+                                <img src="/static/logo_dsg.png" alt="Logo DSG" style="height: 110px;">
                             </div>
                             <div class="filtros-historicos">
                                 ${tipoContenido === 'auditoria' ? `
@@ -692,7 +746,7 @@
             <div class="header-logos">
                 <img src="/static/logo_hospi.png" alt="Logo">
                 <h1 style="margin: 0; text-align: center; flex: 1;" class="titulo-caja">Estadísticas Mensuales</h1>
-                <img src="/static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+                <img src="/static/logo_dsg.png" alt="Logo DSG" style="height: 110px;">
             </div>
             <div class="filtros-historicos">
                 <select id="est-tipo" class="input-select">
