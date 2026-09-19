@@ -7,28 +7,26 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { margin: 0; font-family: 'Roboto', sans-serif; display: flex; height: 100vh; background-color: #f4f1ea; }
+        body { margin: 0; font-family: 'Roboto', sans-serif; display: flex; height: 100vh; background-color: #f8fafc; }
+        .sidebar { width: 260px; background-color: #1a3a5f; color: white; padding: 15px; display: flex; flex-direction: column; box-sizing: border-box; }
         
-        /* Modificación del tamaño del slide bar y separación entre los ítems */
-        .sidebar { width: 300px; background-color: #1a3a5f; color: white; padding: 30px 20px; display: flex; flex-direction: column; }
-        
-        .bienvenida-box { background-color: #2d5a8e; padding: 15px; border-radius: 8px; margin-bottom: 25px; text-align: center; border: 1px solid #5d8dbb; }
-        .bienvenida-box h3 { margin: 0; font-size: 14px; font-weight: 300; color: #cce7ff; }
-        .bienvenida-box p { margin: 5px 0 0 0; font-size: 16px; font-weight: bold; }
-        .sidebar-header-title { min-height: 40px; margin-bottom: 20px; display: flex; align-items: center; }
+        .bienvenida-box { background-color: #2d5a8e; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; border: 1px solid #5d8dbb; }
+        .bienvenida-box h3 { margin: 0; font-size: 13px; font-weight: 300; color: #cce7ff; }
+        .bienvenida-box p { margin: 5px 0 0 0; font-size: 15px; font-weight: bold; }
+        .sidebar-header-title { min-height: 50px; margin-bottom: 15px; display: flex; align-items: center; }
         .sidebar-header-title h2 { font-size: 20px; margin: 0; }
 
-        .menu-links { flex: 1; display: flex; flex-direction: column; gap: 12px; }
-        .menu-item { display: flex; justify-content: space-between; align-items: center; color: #ddd; padding: 14px 16px; text-decoration: none; border-bottom: 1px solid #5d8dbb; border-radius: 6px; font-weight: 500; cursor: pointer; transition: background 0.2s; }
+        .menu-links { flex: 1; }
+        .menu-item { display: flex; justify-content: space-between; align-items: center; color: #ddd; padding: 10px 12px; text-decoration: none; border-bottom: 1px solid rgba(93, 141, 187, 0.3); font-weight: 500; font-size: 14px; cursor: pointer; border-radius: 4px; transition: background 0.2s, color 0.2s; }
         .menu-item:hover { background-color: #5d8dbb; color: white; }
         
         /* Badge para Novedades */
         .badge-novedades { background-color: #dc3545; color: white; font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 10px; display: none; }
 
         .btn-accion-global { width: 100%; padding: 15px; margin-bottom: 10px; background: #28a745; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        .btn-cerrar { margin-top: 10px; padding: 15px; background: #d32f2f; color: white; text-align: center; text-decoration: none; border-radius: 6px; font-weight: bold; border: none; cursor: pointer; width: 100%; box-sizing: border-box; }
+        .btn-cerrar { margin-top: 10px; padding: 10px; background: linear-gradient(135deg, #d32f2f, #c62828); color: white; text-align: center; text-decoration: none; border-radius: 6px; font-weight: bold; border: none; cursor: pointer; width: 100%; box-sizing: border-box; }
         .contenido { flex: 1; padding: 40px; overflow-y: auto; }
-        .seccion { display: none; background: white; padding: 40px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .seccion { display: none; background: white; padding: 40px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
         .seccion.activo { display: block; } 
         .info-hoja { display: flex; justify-content: space-between; margin-bottom: 15px; font-weight: bold; color: #1a3a5f; align-items: center;}
         
@@ -49,45 +47,49 @@
             padding-top: 30px;
         }
         
-        .input-fecha { border: 1px solid #ccc; padding: 8px; border-radius: 4px; font-family: inherit; cursor: pointer; }
+        .input-fecha { border: 1px solid #cbd5e1; padding: 10px 14px; border-radius: 6px; font-family: inherit; cursor: pointer; background: #f8fafc; color: #334155; font-size: 13px; font-weight: 500; }
         .area-acciones { margin-top: 20px; display: flex; gap: 10px; }
-        .btn-gestion { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; }
+        .btn-gestion { padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px; }
         .btn-imprimir { background: #6c757d; color: white; }
         #info-supervisor { margin-bottom: 20px; color: #1a3a5f; font-weight: bold; border: 1px solid #ddd; padding: 10px; border-radius: 6px; background: #f9f9f9; }
-        .header-logos { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+        .header-logos { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; background: #ffffff; padding: 20px; border-radius: 10px; border: 1px solid #edf2f7; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
         .header-logos img { height: 110px; width: auto; object-fit: contain; }
+        .header-logos h1 { color: #1e293b; font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
 
-        /* Estilos específicos para sección Novedades y Muro replicados en todas las solapas */
-        .filtros-historicos { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 20px; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #ddd; }
-        .input-select { padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; font-size: 13px; background: white; cursor: pointer; }
-        .btn-adjuntar { background: #17a2b8; color: white; }
+        /* Estilos específicos para sección Novedades y Muro (Alineados con admin) */
+        .filtros-historicos { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 20px; background: #ffffff; padding: 18px 22px; border-radius: 10px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+        .input-select { padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; font-size: 13px; font-weight: 500; background: #f8fafc; color: #334155; cursor: pointer; }
+        .input-select:focus { border-color: #1a3a5f; box-shadow: 0 0 0 3px rgba(26, 58, 95, 0.1); outline: none; }
+        .btn-adjuntar { background: #1a3a5f; color: white; }
+        .btn-adjuntar:hover { background: #2d5a8e; }
         .preview-adjunto { display: none; margin-top: 10px; padding: 10px; background: #e9ecef; border-radius: 6px; font-size: 13px; border: 1px solid #ced4da; }
         .print-header { display: none; font-weight: bold; margin-bottom: 10px; }
         .print-only { display: none; }
-        .txt-novedades-clase { width: 100%; min-height: 150px; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-family: inherit; font-size: 15px; resize: vertical; box-sizing: border-box; }
+        #txt-novedades { width: 100%; min-height: 350px; padding: 18px; border: 1px solid #cbd5e1; border-radius: 10px; font-family: 'Roboto', sans-serif; font-size: 14px; line-height: 1.6; resize: vertical; box-sizing: border-box; background: #ffffff; outline: none; }
+        #txt-novedades:focus { border-color: #1a3a5f; box-shadow: 0 0 0 3px rgba(26, 58, 95, 0.1); }
         
         .historial-muro-container { margin-top: 30px; border-top: 2px solid #dee2e6; padding-top: 20px; }
-        .historial-muro-titulo { font-size: 16px; font-weight: bold; color: #1a3a5f; margin-bottom: 15px; }
+        .historial-muro-titulo { font-size: 18px; font-weight: 700; color: #1e293b; margin-bottom: 15px; }
         
-        .muro-item { background: #fff; border: 1px solid #d1d8df; border-left: 5px solid #007bff; padding: 15px; border-radius: 6px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .muro-item.recibido { border-left-color: #17a2b8; }
-        .muro-item.enviado { border-left-color: #28a745; }
+        .muro-item { background: #fff; border: 1px solid #e2e8f0; border-left: 6px solid #1a3a5f; padding: 22px; border-radius: 10px; margin-bottom: 15px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+        .muro-item.recibido { border-left-color: #06b6d4; }
+        .muro-item.enviado { border-left-color: #1a3a5f; }
 
-        .muro-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; flex-wrap: wrap; gap: 10px; }
+        .muro-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px; }
         .novedad-meta { font-size: 0.85rem; color: #495057; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; line-height: 1.8; }
         .novedad-texto { font-size: 0.95rem; color: #212529; white-space: pre-wrap; word-break: break-word; line-height: 1.5; margin-top: 8px; font-family: inherit; }
         .muro-adjuntos { margin-top: 10px; font-size: 13px; }
-        .muro-adjuntos a { display: inline-block; margin-right: 10px; color: #1a3a5f; text-decoration: none; font-weight: 500; }
-        .muro-adjuntos a:hover { text-decoration: underline; }
+        .muro-adjuntos a { display: inline-block; margin-right: 10px; color: #1a3a5f; text-decoration: none; font-weight: 500; background: #f1f5f9; padding: 6px 12px; border-radius: 6px; }
+        .muro-adjuntos a:hover { text-decoration: underline; background: #e2e8f0; }
 
-        .badge-estado { font-size: 0.75rem; padding: 4px 8px; border-radius: 4px; font-weight: bold; color: white; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; display: inline-block; vertical-align: middle; margin-right: 4px; }
-        .badge-recibido { background-color: #17a2b8; }
-        .badge-enviado { background-color: #28a745; }
+        .badge-estado { font-size: 0.7rem; padding: 5px 10px; border-radius: 6px; font-weight: bold; color: white; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; display: inline-block; vertical-align: middle; margin-right: 4px; }
+        .badge-recibido { background-color: #06b6d4; }
+        .badge-enviado { background-color: #1a3a5f; }
 
         @media print {
             .sidebar, .btn-accion-global, .btn-cerrar, .menu-item, .no-imprimir, .btn-imprimir, .filtros-historicos, .area-acciones { display: none !important; }
             body, html, .contenido, .seccion.activo, .hoja { background-color: white !important; margin: 0 !important; padding: 0 !important; width: 100% !important; height: auto !important; overflow: visible !important; box-shadow: none !important; display: block !important; }
-            .seccion { display: none !important; }
+            .seccion { display: none !important; border: none !important; box-shadow: none !important; }
             .seccion.activo { display: block !important; } 
             .hoja { border: none !important; min-height: auto !important; }
             #editor-reporte { 
@@ -103,7 +105,7 @@
             }
             .print-header { display: block !important; }
             .print-only { display: block !important; white-space: pre-wrap; font-family: inherit; }
-            .txt-novedades-clase { display: none !important; }
+            #txt-novedades { display: none !important; }
         }
         @page { size: auto; margin: 1cm; }
     </style>
@@ -134,59 +136,14 @@
                 <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
             </div>
             <div id="info-supervisor">Supervisor: <span id="display-nombre-rep">---</span> | Turno: <span id="display-turno-rep">---</span> | Depto: <span id="display-depto-rep">---</span></div>
-            
-            <!-- Botonera replicada en Reportes -->
-            <div class="filtros-historicos">
-                <select id="depto-destino-reportes" class="input-select" onchange="manejarCambioDepto('destino-reportes'); actualizarPrint('reportes');">
-                    <option value="Todos">Todos los departamentos</option>
-                    <option value="direccion-servicios-generales">Dirección Servicios Generales</option>
-                    <option value="intendencia">Intendencia</option>
-                    <option value="division-ascensores">Ascensores</option>
-                    <option value="lavadero-central">Lavadero Central</option>
-                    <option value="camilleros-central">Camilleros</option>
-                    <option value="conmutador">Conmutador</option>
-                    <option value="dalo">DALO</option>
-                    <option value="higiene-y-seguridad">Higiene y Seguridad</option>
-                </select>
-                <div id="contenedor-supervisor-destino-reportes" style="display: none;">
-                    <select id="supervisor-destino-reportes" class="input-select" onchange="actualizarPrint('reportes')">
-                        <option value="">-- Todos los supervisores --</option>
-                    </select>
-                </div>
-                <select id="turno-destino-reportes" class="input-select" onchange="actualizarPrint('reportes')">
-                    <option value="Todos">Todos los turnos</option>
-                    <option value="Mañana">Mañana</option>
-                    <option value="Tarde">Tarde</option>
-                    <option value="Noche A">Noche A</option>
-                    <option value="Noche B">Noche B</option>
-                    <option value="Sadofe">Sadofe</option>
-                </select>
-                <button class="btn-gestion btn-adjuntar" onclick="document.getElementById('file-reportes').click()">📎 Adjuntar Archivos</button>
-                <input type="file" id="file-reportes" style="display:none" multiple onchange="previsualizarMultiples(this, 'reportes')">
-                <button class="btn-gestion" style="background: #28a745; color: white;" onclick="guardarRedaccion('reportes')">Guardar y Enviar</button>
-            </div>
-            <div id="print-header-reportes" class="print-header">Dirigido a: Todos los departamentos | Turno: Todos los turnos</div>
-            <textarea id="txt-reportes" class="txt-novedades-clase" oninput="document.getElementById('print-reportes').innerText = this.value" placeholder="Escriba aquí el contenido..." style="display:none;"></textarea>
-            <div id="print-reportes" class="print-only"></div>
-            <div id="preview-reportes" class="preview-adjunto"></div>
-
-            <div class="info-hoja" style="margin-top: 20px;">
+            <div class="info-hoja">
                 <span>Fecha: <input type="date" id="fecha-reporte" class="input-fecha" onchange="guardarDatos()"></span>
                 <span>Hoja N°: <span id="numero-hoja">001</span></span>
             </div>
             <div class="hoja">
                 <div id="editor-reporte" contenteditable="true" oninput="guardarDatos()"></div>
             </div>
-            <div class="area-acciones">
-                <button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
-                <button class="btn-gestion btn-imprimir" style="background: #dc3545;" onclick="limpiarPantalla('reportes')">🧹 Limpiar Pantalla</button>
-            </div>
-
-            <!-- Muro replicado en Reportes -->
-            <div class="historial-muro-container">
-                <div class="historial-muro-titulo">📌 Historial de Envíos en Muro (Reportes)</div>
-                <div id="contenedor-reportes">Cargando registros históricos...</div>
-            </div>
+            <div class="area-acciones"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button></div>
         </div>
         
         <div id="ascensores" class="seccion">
@@ -198,55 +155,10 @@
             <div id="info-supervisor" style="margin-bottom: 20px; color: #1a3a5f; font-weight: bold; border: 1px solid #ddd; padding: 10px; border-radius: 6px; background: #f9f9f9;">
                 Supervisor: <span id="display-nombre-asc">---</span> | Turno: <span id="display-turno-asc">---</span> | Depto: <span id="display-depto-asc">---</span>
             </div>
-            
-            <!-- Botonera replicada en Ascensores -->
-            <div class="filtros-historicos">
-                <select id="depto-destino-ascensores" class="input-select" onchange="manejarCambioDepto('destino-ascensores'); actualizarPrint('ascensores');">
-                    <option value="Todos">Todos los departamentos</option>
-                    <option value="direccion-servicios-generales">Dirección Servicios Generales</option>
-                    <option value="intendencia">Intendencia</option>
-                    <option value="division-ascensores">Ascensores</option>
-                    <option value="lavadero-central">Lavadero Central</option>
-                    <option value="camilleros-central">Camilleros</option>
-                    <option value="conmutador">Conmutador</option>
-                    <option value="dalo">DALO</option>
-                    <option value="higiene-y-seguridad">Higiene y Seguridad</option>
-                </select>
-                <div id="contenedor-supervisor-destino-ascensores" style="display: none;">
-                    <select id="supervisor-destino-ascensores" class="input-select" onchange="actualizarPrint('ascensores')">
-                        <option value="">-- Todos los supervisores --</option>
-                    </select>
-                </div>
-                <select id="turno-destino-ascensores" class="input-select" onchange="actualizarPrint('ascensores')">
-                    <option value="Todos">Todos los turnos</option>
-                    <option value="Mañana">Mañana</option>
-                    <option value="Tarde">Tarde</option>
-                    <option value="Noche A">Noche A</option>
-                    <option value="Noche B">Noche B</option>
-                    <option value="Sadofe">Sadofe</option>
-                </select>
-                <button class="btn-gestion btn-adjuntar" onclick="document.getElementById('file-ascensores').click()">📎 Adjuntar Archivos</button>
-                <input type="file" id="file-ascensores" style="display:none" multiple onchange="previsualizarMultiples(this, 'ascensores')">
-                <button class="btn-gestion" style="background: #28a745; color: white;" onclick="guardarRedaccion('ascensores')">Guardar y Enviar</button>
-            </div>
-            <div id="print-header-ascensores" class="print-header">Dirigido a: Todos los departamentos | Turno: Todos los turnos</div>
-            <textarea id="txt-ascensores" class="txt-novedades-clase" oninput="document.getElementById('print-ascensores').innerText = this.value" placeholder="Escriba aquí el contenido..." style="display:none;"></textarea>
-            <div id="print-ascensores" class="print-only"></div>
-            <div id="preview-ascensores" class="preview-adjunto"></div>
-
-            <div id="contenedor-ascensores" style="border: 1px solid #ccc; padding: 20px; border-radius: 8px; background: #fafafa; margin-top: 20px;">
+            <div id="contenedor-ascensores" style="border: 1px solid #ccc; padding: 20px; border-radius: 8px; background: #fafafa;">
                 <p>Cargando estado actual de ascensores...</p>
             </div>
-            <div class="area-acciones">
-                <button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
-                <button class="btn-gestion btn-imprimir" style="background: #dc3545;" onclick="limpiarPantalla('ascensores')">🧹 Limpiar Pantalla</button>
-            </div>
-
-            <!-- Muro replicado en Ascensores -->
-            <div class="historial-muro-container">
-                <div class="historial-muro-titulo">📌 Historial de Envíos en Muro (Ascensores)</div>
-                <div id="contenedor-ascensores-muro">Cargando registros históricos...</div>
-            </div>
+            <div class="area-acciones"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button></div>
         </div>
 
         <div id="novedades" class="seccion">
@@ -282,11 +194,11 @@
                 </select>
                 <button class="btn-gestion btn-adjuntar" onclick="document.getElementById('file-novedades').click()">📎 Adjuntar Archivos</button>
                 <input type="file" id="file-novedades" style="display:none" multiple onchange="previsualizarMultiples(this, 'novedades')">
-                <button class="btn-gestion" style="background: #28a745; color: white;" onclick="guardarRedaccion('novedades')">Guardar y Enviar</button>
+                <button class="btn-gestion" style="background: #1a3a5f; color: white;" onclick="guardarRedaccion('novedades')">Guardar y Enviar</button>
             </div>
             
             <div id="print-header-novedades" class="print-header">Dirigido a: Todos los departamentos | Turno: Todos los turnos</div>
-            <textarea id="txt-novedades" class="txt-novedades-clase" oninput="document.getElementById('print-novedades').innerText = this.value" placeholder="Escriba aquí el contenido..."></textarea>
+            <textarea id="txt-novedades" oninput="document.getElementById('print-novedades').innerText = this.value" placeholder="Escriba aquí el contenido..."></textarea>
             <div id="print-novedades" class="print-only"></div>
             <div id="preview-novedades" class="preview-adjunto"></div>
             
@@ -314,8 +226,6 @@
         const inputFecha = document.getElementById('fecha-reporte');
 
         let archivosMultiplesNovedades = [];
-        let archivosMultiplesReportes = [];
-        let archivosMultiplesAscensores = [];
 
         function obtenerFechaHoyISO() { return new Date().toISOString().split('T')[0]; }
         inputFecha.value = localStorage.getItem('hyc_fecha') || obtenerFechaHoyISO();
@@ -437,12 +347,7 @@
 
         async function previsualizarMultiples(input, id) {
             if (!input.files || input.files.length === 0) return;
-            
-            let arrRef;
-            if (id === 'novedades') arrRef = archivosMultiplesNovedades = [];
-            else if (id === 'reportes') arrRef = archivosMultiplesReportes = [];
-            else if (id === 'ascensores') arrRef = archivosMultiplesAscensores = [];
-
+            archivosMultiplesNovedades = [];
             const prev = document.getElementById('preview-' + id);
             prev.style.display = 'block';
             prev.innerHTML = '<b>Archivos seleccionados:</b><ul style="margin: 5px 0 0 20px; padding:0;"></ul>';
@@ -454,7 +359,7 @@
                 
                 (function(f) {
                     reader.onload = function(e) {
-                        arrRef.push({
+                        archivosMultiplesNovedades.push({
                             name: f.name,
                             type: f.type,
                             data: e.target.result
@@ -469,11 +374,8 @@
         }
 
         function limpiarPantalla(id) {
-            const txtArea = document.getElementById('txt-' + id);
-            if (txtArea) txtArea.value = '';
-            const printElem = document.getElementById('print-' + id);
-            if (printElem) printElem.innerText = '';
-            
+            document.getElementById('txt-' + id).value = '';
+            document.getElementById('print-' + id).innerText = '';
             const prev = document.getElementById('preview-' + id);
             if (prev) {
                 prev.innerHTML = '';
@@ -482,14 +384,6 @@
             if (id === 'novedades') {
                 archivosMultiplesNovedades = [];
                 const fileInput = document.getElementById('file-novedades');
-                if (fileInput) fileInput.value = '';
-            } else if (id === 'reportes') {
-                archivosMultiplesReportes = [];
-                const fileInput = document.getElementById('file-reportes');
-                if (fileInput) fileInput.value = '';
-            } else if (id === 'ascensores') {
-                archivosMultiplesAscensores = [];
-                const fileInput = document.getElementById('file-ascensores');
                 if (fileInput) fileInput.value = '';
             }
         }
@@ -558,27 +452,15 @@
             const turno = document.getElementById('turno-destino-' + id).value;
             const supervisorElem = document.getElementById('supervisor-destino-' + id);
             const supervisorDestinoVal = (supervisorElem && supervisorElem.value) ? supervisorElem.value : 'General (Todos)';
-            
-            let textoEscrito = '';
-            let listaArchivos = [];
+            const textoEscrito = document.getElementById('txt-' + id).value;
 
-            if (id === 'novedades') {
-                textoEscrito = document.getElementById('txt-novedades').value;
-                listaArchivos = archivosMultiplesNovedades;
-            } else if (id === 'reportes') {
-                textoEscrito = editorReporte.innerText || editorReporte.textContent || '';
-                listaArchivos = archivosMultiplesReportes;
-            } else if (id === 'ascensores') {
-                textoEscrito = "Comunicado desde solapa Estado de Ascensores";
-                listaArchivos = archivosMultiplesAscensores;
-            }
-
-            if (!textoEscrito.trim() && listaArchivos.length === 0) {
+            if (!textoEscrito.trim() && archivosMultiplesNovedades.length === 0) {
                 alert("Escriba un texto o adjunte algún archivo antes de guardar y enviar.");
                 return;
             }
 
-            let primerArchivo = listaArchivos.length > 0 ? listaArchivos[0] : null;
+            let listaArchivos = archivosMultiplesNovedades;
+            let primerArchivo = archivosMultiplesNovedades.length > 0 ? archivosMultiplesNovedades[0] : null;
 
             const deptoOrigenNormalizado = 'higiene-y-seguridad';
             const deptoDestinoNormalizado = toKebabCase(destinoVisual);
@@ -625,19 +507,14 @@
         }
 
         async function cargarNovedades() {
-            const contenedoresMuro = ['contenedor-novedades', 'contenedor-reportes', 'contenedor-ascensores-muro'];
+            const contenedorNov = document.getElementById('contenedor-novedades');
+            if (!contenedorNov) return;
             
-            contenedoresMuro.forEach(contId => {
-                const el = document.getElementById(contId);
-                if (el) el.innerHTML = "<p>Buscando comunicados y novedades en Supabase...</p>";
-            });
+            contenedorNov.innerHTML = "<p>Buscando comunicados y novedades en Supabase...</p>";
 
             try {
                 if (!supabaseClient) {
-                    contenedoresMuro.forEach(contId => {
-                        const el = document.getElementById(contId);
-                        if (el) el.innerHTML = '<p style="color: #666;">No hay conexión a Supabase.</p>';
-                    });
+                    contenedorNov.innerHTML = '<p style="color: #666;">No hay conexión a Supabase.</p>';
                     return;
                 }
 
@@ -650,10 +527,7 @@
                 if (error) throw error;
 
                 if (!data || data.length === 0) {
-                    contenedoresMuro.forEach(contId => {
-                        const el = document.getElementById(contId);
-                        if (el) el.innerHTML = '<p style="color: #666; font-style: italic;">No hay registros disponibles en el muro.</p>';
-                    });
+                    contenedorNov.innerHTML = '<p style="color: #666; font-style: italic;">No hay registros disponibles en el muro.</p>';
                     return;
                 }
 
@@ -680,10 +554,7 @@
                 });
 
                 if (filtrados.length === 0) {
-                    contenedoresMuro.forEach(contId => {
-                        const el = document.getElementById(contId);
-                        if (el) el.innerHTML = '<p style="color: #666; font-style: italic;">No hay comunicaciones dirigidas a este sector.</p>';
-                    });
+                    contenedorNov.innerHTML = '<p style="color: #666; font-style: italic;">No hay comunicaciones dirigidas a este sector.</p>';
                     return;
                 }
 
@@ -799,17 +670,11 @@
                         </div>`;
                 });
 
-                contenedoresMuro.forEach(contId => {
-                    const el = document.getElementById(contId);
-                    if (el) el.innerHTML = html;
-                });
+                contenedorNov.innerHTML = html;
 
             } catch (err) {
                 console.error("Error al cargar comunicados:", err);
-                contenedoresMuro.forEach(contId => {
-                    const el = document.getElementById(contId);
-                    if (el) el.innerHTML = '<p style="color: red;">Error al sincronizar con la base de datos.</p>';
-                });
+                contenedorNov.innerHTML = '<p style="color: red;">Error al sincronizar con la base de datos.</p>';
             }
         }
 
@@ -944,8 +809,9 @@
             document.getElementById(id).classList.add('activo');
             document.getElementById('titulo-panel').innerText = titulo;
 
-            cargarNovedades();
-            if (id === 'ascensores') {
+            if (id === 'novedades') {
+                cargarNovedades();
+            } else if (id === 'ascensores') {
                 cargarEstadoAscensores();
             }
         }
@@ -955,6 +821,7 @@
             const turno = localStorage.getItem('usuario_turno') || "Mañana"; 
             const depto = "Higiene y Seguridad";
             
+            // Validación específica para cambiar el título de bienvenida si ingresa RODRIGUEZ ADRIAN
             if (nombre.trim().toUpperCase() === "RODRIGUEZ ADRIAN") {
                 document.getElementById('titulo-bienvenida').innerText = "Bienvenido Sr. Director:";
             }
@@ -985,7 +852,6 @@
             editorReporte.innerHTML = localStorage.getItem('hyc_reporte') || "";
             
             cargarEstadoAscensores();
-            cargarNovedades();
             verificarNovedadesNoLeidas();
         };
     </script>
