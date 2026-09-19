@@ -8,7 +8,9 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body { margin: 0; font-family: 'Roboto', sans-serif; display: flex; height: 100vh; background-color: #e2e8f0; }
-        .sidebar { width: 260px; flex-shrink: 0; background-color: #1a3a5f; color: white; padding: 25px 20px; display: flex; flex-direction: column; }
+        
+        /* Ancho estricto del Sidebar a 260px */
+        .sidebar { width: 260px !important; min-width: 260px !important; flex-shrink: 0; background-color: #1a3a5f; color: white; padding: 25px 20px; display: flex; flex-direction: column; box-sizing: border-box; }
         
         .bienvenida-box { background-color: #2d5a8e; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; border: 1px solid #5d8dbb; }
         .bienvenida-box h3 { margin: 0; font-size: 14px; font-weight: 300; color: #cce7ff; }
@@ -23,8 +25,19 @@
         /* Badge para Novedades */
         .badge-novedades { background-color: #dc3545; color: white; font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 10px; display: none; }
 
-        .btn-accion-global { width: 100%; padding: 15px; margin-bottom: 10px; background: #1a3a5f; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        .btn-cerrar { margin-top: 10px; padding: 15px; background: #1a3a5f; color: white; text-align: center; text-decoration: none; border-radius: 6px; font-weight: bold; border: none; cursor: pointer; width: 100%; box-sizing: border-box; }
+        /* Animación de titileo para Cerrar Jornada */
+        @keyframes titilarVerde {
+            0% { background-color: #16a34a; transform: scale(1); }
+            50% { background-color: #22c55e; transform: scale(1.02); box-shadow: 0 0 12px rgba(34, 197, 94, 0.6); }
+            100% { background-color: #16a34a; transform: scale(1); }
+        }
+
+        .btn-accion-global { width: 100%; padding: 16px; margin-bottom: 12px; background: #16a34a; color: white; border: none; border-radius: 6px; font-weight: bold; font-size: 14px; cursor: pointer; animation: titilarVerde 1.8s infinite ease-in-out; }
+        .btn-accion-global:hover { background: #15803d; animation: none; }
+
+        .btn-cerrar { margin-top: 10px; padding: 14px; background: #dc3545; color: white; text-align: center; text-decoration: none; border-radius: 6px; font-weight: bold; border: none; cursor: pointer; width: 100%; box-sizing: border-box; font-size: 14px; }
+        .btn-cerrar:hover { background: #b02a37; }
+
         .contenido { flex: 1; padding: 40px; overflow-y: auto; background-color: #e2e8f0; }
         .seccion { display: none; background: #ffffff; padding: 40px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
         .seccion.activo { display: block; } 
@@ -56,7 +69,7 @@
         .header-logos { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
         .header-logos img { height: 110px; width: auto; object-fit: contain; }
 
-        /* Estilos específicos para sección Novedades y Muro (Alineados con admin) */
+        /* Estilos específicos para sección Novedades y Muro Original */
         .filtros-historicos { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 20px; background: #ffffff; padding: 18px 22px; border-radius: 10px; border: 1px solid #e2e8f0; }
         .input-select { padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; font-size: 13px; font-weight: 500; background: #f8fafc; color: #334155; cursor: pointer; }
         .btn-adjuntar { background: #1a3a5f; color: white; }
@@ -66,7 +79,7 @@
         
         #txt-novedades { 
             width: 100%; 
-            min-height: 350px; 
+            min-height: 250px; 
             padding: 12px; 
             border: 1px solid #cbd5e1; 
             border-radius: 10px; 
@@ -86,20 +99,13 @@
         .historial-muro-container { margin-top: 30px; border-top: 2px solid #dee2e6; padding-top: 20px; }
         .historial-muro-titulo { font-size: 16px; font-weight: bold; color: #1a3a5f; margin-bottom: 15px; }
         
-        .muro-item { background: #fff; border: 1px solid #e2e8f0; border-left: 6px solid #1a3a5f; padding: 15px; border-radius: 6px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .muro-item.recibido { border-left-color: #06b6d4; }
-        .muro-item.enviado { border-left-color: #1a3a5f; }
-
-        .muro-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; flex-wrap: wrap; gap: 10px; }
-        .novedad-meta { font-size: 0.85rem; color: #495057; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; line-height: 1.8; }
-        .novedad-texto { font-size: 0.95rem; color: #212529; white-space: pre-wrap; word-break: break-word; line-height: 1.5; margin-top: 8px; font-family: inherit; }
+        /* Estilo clásico/original del muro */
+        .muro-item { background: #f8f9fa; border: 1px solid #ced4da; padding: 15px; border-radius: 6px; margin-bottom: 15px; }
+        .muro-header { font-size: 0.85rem; color: #495057; margin-bottom: 8px; border-bottom: 1px solid #dee2e6; padding-bottom: 5px; display: flex; justify-content: space-between; flex-wrap: wrap; }
+        .novedad-texto { font-size: 0.95rem; color: #212529; white-space: pre-wrap; word-break: break-word; line-height: 1.5; }
         .muro-adjuntos { margin-top: 10px; font-size: 13px; }
-        .muro-adjuntos a { display: inline-block; margin-right: 10px; color: #1a3a5f; text-decoration: none; font-weight: 500; }
+        .muro-adjuntos a { color: #1a3a5f; text-decoration: none; font-weight: bold; }
         .muro-adjuntos a:hover { text-decoration: underline; }
-
-        .badge-estado { font-size: 0.75rem; padding: 5px 10px; border-radius: 6px; font-weight: 700; color: white; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; display: inline-block; vertical-align: middle; margin-right: 4px; }
-        .badge-recibido { background-color: #06b6d4; }
-        .badge-enviado { background-color: #1a3a5f; }
 
         @media print {
             .sidebar, .btn-accion-global, .btn-cerrar, .menu-item, .no-imprimir, .btn-imprimir, .filtros-historicos, .area-acciones { display: none !important; }
@@ -601,22 +607,16 @@
                     const remitenteDepto = (item.departamento_origen || '').trim().toLowerCase();
                     const deptoDestinoValor = item.departamento_destino || 'Todos';
 
-                    const esEnviado = remitenteDepto === 'higiene-y-seguridad';
-                    const claseMuroItem = esEnviado ? 'enviado' : 'recibido';
-                    const tipoBadge = esEnviado ? 'ENVIADO' : 'RECIBIDO';
-                    const claseBadgeEstado = esEnviado ? 'badge-enviado' : 'badge-recibido';
-
                     const supervisorOrigenFinal = item.supervisor_origen || contenidoObj.supervisor_origen || 'No especificado';
                     const supervisorDestinoFinal = item.supervisor_destino || contenidoObj.supervisor || 'General (Todos)';
 
                     let infoDetalleCabecera = `
                         <div>
-                            <span class="badge-estado ${claseBadgeEstado}">${tipoBadge}</span>
                             <strong>Origen:</strong> ${remitenteDepto} &rarr; 
                             <strong>Destino:</strong> ${deptoDestinoValor} | 
                             <strong>Turno:</strong> ${turnoMsg} | 
-                            <strong>Supervisor Origen:</strong> ${supervisorOrigenFinal} | 
-                            <strong>Supervisor Destino:</strong> ${supervisorDestinoFinal}
+                            <strong>Sup. Origen:</strong> ${supervisorOrigenFinal} | 
+                            <strong>Sup. Destino:</strong> ${supervisorDestinoFinal}
                         </div>`;
 
                     let archivosArr = [];
@@ -628,53 +628,19 @@
 
                     let archivosHtml = "";
                     if (archivosArr.length > 0) {
-                        archivosHtml = '<div class="muro-adjuntos" style="margin-top: 15px; display: flex; flex-direction: column; gap: 10px;"><b>Archivos Adjuntos:</b>';
+                        archivosHtml = '<div class="muro-adjuntos"><b>Archivos Adjuntos:</b><ul style="margin: 5px 0 0 20px; padding:0;">';
                         archivosArr.forEach(arch => {
                             if (!arch || !arch.data) return;
-                            let base64Data = arch.data;
-                            let nombreArchivo = arch.name || "adjunto_descargable";
-                            let esImagen = base64Data.startsWith('data:image/') || /\.(jpg|jpeg|png|gif|webp)$/i.test(nombreArchivo);
-
-                            if (esImagen) {
-                                archivosHtml += `
-                                    <div style="text-align: center; background: #fafafa; border: 1px solid #ddd; padding: 10px; border-radius: 6px;">
-                                        <div style="margin-bottom: 8px;">
-                                            <img src="${base64Data}" alt="Archivo adjunto" style="max-width: 100%; max-height: 350px; border-radius: 4px; border: 1px solid #ddd; object-fit: contain;" />
-                                        </div>
-                                        <a href="${base64Data}" download="${nombreArchivo}">
-                                            📥 Descargar Imagen (${nombreArchivo})
-                                        </a>
-                                    </div>
-                                `;
-                            } else {
-                                archivosHtml += `
-                                    <div style="background: #f8f9fa; border: 1px solid #ddd; padding: 10px 14px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
-                                        <div style="display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1;">
-                                            <span style="font-size: 26px; flex-shrink: 0; line-height: 1;">📄</span>
-                                            <div style="min-width: 0; display: flex; flex-direction: column; gap: 2px;">
-                                                <strong style="font-size: 13px; color: #333; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${nombreArchivo}">${nombreArchivo}</strong>
-                                                <span style="font-size: 11px; color: #666; display: block;">Documento adjunto</span>
-                                            </div>
-                                        </div>
-                                        <a href="${base64Data}" download="${nombreArchivo}">
-                                            📥 Descargar Archivo
-                                        </a>
-                                    </div>
-                                `;
-                            }
+                            archivosHtml += `<li><a href="${arch.data}" download="${arch.name || 'adjunto'}">📥 ${arch.name || 'Descargar archivo'}</a></li>`;
                         });
-                        archivosHtml += '</div>';
+                        archivosHtml += '</ul></div>';
                     }
 
                     html += `
-                        <div class="muro-item ${claseMuroItem}">
+                        <div class="muro-item">
                             <div class="muro-header">
-                                <div class="novedad-meta">
-                                    ${infoDetalleCabecera}
-                                </div>
-                                <div style="font-size: 0.85rem; color: #6c757d; white-space: nowrap; padding-top: 2px;">
-                                    <i class="far fa-clock"></i> ${fecha}
-                                </div>
+                                <div>${infoDetalleCabecera}</div>
+                                <div><i class="far fa-clock"></i> ${fecha}</div>
                             </div>
                             <div class="novedad-texto">${texto}</div>
                             ${archivosHtml}
