@@ -17,7 +17,7 @@
         .sidebar-header-title h2 { font-size: 20px; margin: 0; }
 
         .menu-links { flex: 1; }
-        .menu-item { display: flex; justify-content: space-between; align-items: center; color: #ddd; padding: 10px 12px; text-decoration: none; border-bottom: 1px solid rgba(93, 141, 187, 0.3); font-weight: 500; font-size: 14px; cursor: pointer; border-radius: 4px; transition: background 0.2s, color 0.2s; }
+        .menu-item { display: flex; justify-content: space-between; align-items: center; color: #ddd; padding: 12px 14px; text-decoration: none; border-bottom: 1px solid rgba(93, 141, 187, 0.3); font-weight: 500; font-size: 14px; cursor: pointer; border-radius: 4px; transition: background 0.2s, color 0.2s; min-height: 24px; box-sizing: content-box; }
         .menu-item:hover { background-color: #5d8dbb; color: white; }
         
         /* Badge para Novedades */
@@ -73,7 +73,7 @@
         
         .muro-item { background: #fff; border: 1px solid #e2e8f0; border-left: 6px solid #1a3a5f; padding: 22px; border-radius: 10px; margin-bottom: 15px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
         .muro-item.recibido { border-left-color: #06b6d4; }
-        .muro-item.enviado { border-left-color: #1a3a5f; }
+        .muro-item.enviado { border-left-color: #28a745; }
 
         .muro-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px; }
         .novedad-meta { font-size: 0.85rem; color: #495057; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; line-height: 1.8; }
@@ -84,7 +84,7 @@
 
         .badge-estado { font-size: 0.7rem; padding: 5px 10px; border-radius: 6px; font-weight: bold; color: white; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; display: inline-block; vertical-align: middle; margin-right: 4px; }
         .badge-recibido { background-color: #06b6d4; }
-        .badge-enviado { background-color: #1a3a5f; }
+        .badge-enviado { background-color: #28a745; }
 
         @media print {
             .sidebar, .btn-accion-global, .btn-cerrar, .menu-item, .no-imprimir, .btn-imprimir, .filtros-historicos, .area-acciones { display: none !important; }
@@ -204,7 +204,6 @@
             
             <div class="area-acciones">
                 <button id="btn-print-novedades" class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
-                <button class="btn-gestion btn-imprimir" style="background: #dc3545;" onclick="limpiarPantalla('novedades')">🧹 Limpiar Pantalla</button>
             </div>
 
             <div class="historial-muro-container">
