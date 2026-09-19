@@ -15,9 +15,6 @@
         .bienvenida-box h3 { margin: 0; font-size: 13px; font-weight: 300; color: #cce7ff; }
         .bienvenida-box p { margin: 3px 0 0 0; font-size: 15px; font-weight: bold; }
 
-        .sidebar-header-title { min-height: 40px; margin-bottom: 8px; display: flex; align-items: center; flex-shrink: 0; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .sidebar-header-title h2 { font-size: 18px; margin: 0; line-height: 1.2; }
-
         .menu-links { flex: 1; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; margin-bottom: 8px; }
         .menu-item { display: flex; align-items: center; justify-content: space-between; color: #ddd; padding: 10px 12px; text-decoration: none; border-bottom: 1px solid rgba(93, 141, 187, 0.3); font-weight: 500; cursor: pointer; font-size: 15px; transition: background 0.2s, color 0.2s; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .menu-item:hover { background-color: #5d8dbb; color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.15); }
@@ -118,9 +115,6 @@
         <div class="bienvenida-box">
             <h3>Bienvenido Agente:</h3>
             <p id="nombre-supervisor-sidebar">---</p>
-        </div>
-        <div class="sidebar-header-title">
-            <h2>Panel <span id="titulo-panel">Intendencia</span></h2>
         </div>
         <div class="menu-links">
             <div class="menu-item" onclick="mostrar('reportes', 'Reportes')"><span>📊 Reportes</span></div>
@@ -1480,8 +1474,6 @@
             document.querySelectorAll('.seccion').forEach(s => s.classList.remove('activo'));
             const sec = document.getElementById(idSeccion);
             if (sec) sec.classList.add('activo');
-            const tituloPanel = document.getElementById('titulo-panel');
-            if (tituloPanel) tituloPanel.innerText = titulo;
             if (idSeccion === 'estado-ascensores') {
                 cargarEstadoAscensoresVivo();
             } else if (idSeccion === 'novedades') {
