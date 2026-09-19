@@ -310,6 +310,7 @@
                 <h1 style="margin: 0; text-align: center; flex: 1; color: #1a3a5f;">Personal - Turno: <span id="display-turno-rrhh">---</span></h1>
                 <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
+            <div id="info-supervisor">Gestión de Asistencia de Personal</div>
             <table class="tabla-intendencia" style="table-layout: auto;">
                 <thead><tr><th>LEGAJO</th><th>APELLIDO Y NOMBRE</th><th>PRESENTE</th><th>AUSENTE</th><th>LICENCIA</th></tr></thead>
                 <tbody id="cuerpo-rrhh"></tbody>
@@ -319,11 +320,13 @@
                 <button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
             </div>
             
-            <div style="margin-top: 30px; text-align: center; color: #1a3a5f; font-weight: bold; font-size: 20px; margin-bottom: 10px;">Control de Asistencia</div>
-            <div style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #ddd; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; justify-content: center; align-items: center; gap: 50px;">
-                <div id="resumen-rrhh" style="font-weight:bold; color: #1a3a5f; font-size: 16px; line-height: 2.0; display: flex; flex-direction: column;"></div>
-                <div style="width: 220px; height: 220px;">
-                    <canvas id="graficoRRHH"></canvas>
+            <div class="contenedor-observaciones" style="margin-top: 30px;">
+                <div class="titulo-observaciones">Control de Asistencia y Estadísticas</div>
+                <div style="background: white; padding: 25px; border: 1px solid #000; border-top: none; border-radius: 0 0 6px 6px; display: flex; justify-content: center; align-items: center; gap: 50px;">
+                    <div id="resumen-rrhh" style="font-weight:bold; color: #1a3a5f; font-size: 16px; line-height: 2.0; display: flex; flex-direction: column;"></div>
+                    <div style="width: 220px; height: 220px;">
+                        <canvas id="graficoRRHH"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -359,24 +362,14 @@
             
             const nombreBusqueda = nombreEnPantalla.trim();
             
-            console.log("=== DEBUGGING FILTRO SECTORES Y PISOS ===");
-            console.log("Nombre en pantalla evaluado:", nombreBusqueda);
-
             try {
-                if (!nombreBusqueda) {
-                    console.error("No se encontró ningún nombre de usuario en el localStorage.");
-                    return;
-                }
+                if (!nombreBusqueda) return;
 
-                // 1. Consultar la tabla usuarios
                 const { data: todosLosUsuarios, error: errUsuario } = await db
                     .from('usuarios')
                     .select('*');
 
-                if (errUsuario) {
-                    console.error("Error al consultar la tabla usuarios:", errUsuario);
-                    return;
-                }
+                if (errUsuario) return;
 
                 let usuarioData = null;
                 if (todosLosUsuarios && todosLosUsuarios.length > 0) {
@@ -402,13 +395,9 @@
                     });
                     pisosSupervisor = Array.from(variantesPisos);
                 } else {
-                    console.warn("No se encontraron pisos asignados para este usuario.");
                     return;
                 }
 
-                console.log("Pisos estrictos para filtrar:", pisosSupervisor);
-
-                // 2. Consultar personal de intendencia
                 let queryPersonal = db
                     .from('intendencia_personal')
                     .select('*')
@@ -435,7 +424,6 @@
                     listaAgentes = ["- Seleccionar Agente -", ...agentesUnicos];
                 }
 
-                // 3. Consultar sectores de intendencia
                 let querySectores = db
                     .from('intendencia_sectores')
                     .select('*');
@@ -453,11 +441,8 @@
                     listaSectores = ["- Seleccionar Sector -", ...sectoresUnicos];
                 }
 
-                console.log("Lista final de sectores generada:", listaSectores);
-                console.log("Lista final de agentes generada:", listaAgentes);
-
             } catch (err) {
-                console.error("Excepción al conectar con Supabase para filtrar por pisos:", err);
+                console.error("Excepción al conectar con Supabase:", err);
             }
         }
 
@@ -647,7 +632,7 @@
                         return;
                     }
                 } catch (errCheck) {
-                    console.error("Error verificando duplicidad en Supabase:", errCheck);
+                    console.error("Error verificando duplicidad:", errCheck);
                 }
             }
             
@@ -764,7 +749,7 @@
             
             visor.innerHTML = "<p>Buscando en la nube...</p>";
 
-            const { data: reg, error } = await db
+            const { data: reg } = await db
                 .from('cierres_jornada')
                 .select('*')
                 .eq('fecha_cierre', f)
@@ -927,13 +912,8 @@
                     let f = new Date(ultimaFechaStr);
                     if (!isNaN(f.getTime())) {
                         fechaFormateada = f.toLocaleString('es-AR', {
-                            year: 'numeric',
-                            month: '2-digit',
-                            day: '2-digit',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            second: '2-digit',
-                            hour12: false
+                            year: 'numeric', month: '2-digit', day: '2-digit',
+                            hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
                         });
                     } else {
                         fechaFormateada = ultimaFechaStr;
@@ -945,11 +925,7 @@
                     tituloContenedor.innerHTML = `Última actualización: <b>${fechaFormateada}</b> | Registrado por: <b>${nombreSupervisor}</b>`;
                 }
 
-                data.sort((a, b) => {
-                    let idA = a.id || 0;
-                    let idB = b.id || 0;
-                    return idA - idB;
-                });
+                data.sort((a, b) => (a.id || 0) - (b.id || 0));
 
                 let html = '<table style="width:100%; border-collapse: collapse; text-align: left;">';
                 html += '<thead><tr style="background: #1a3a5f; color: white;"><th style="padding: 10px; border: 1px solid #ddd; text-align: center; width: 15%;">Dispositivo</th><th style="padding: 10px; border: 1px solid #ddd; width: 25%;">Estado</th><th style="padding: 10px; border: 1px solid #ddd; width: 30%;">Uso Asignado</th><th style="padding: 10px; border: 1px solid #ddd; width: 30%;">Observaciones / Detalles</th></tr></thead><tbody>';
@@ -971,23 +947,14 @@
                 html += '</tbody></table>';
                 visor.innerHTML = html;
             } catch (err) {
-                console.error("Error al obtener estado actual de ascensores:", err);
+                console.error("Error al obtener estado:", err);
                 visor.innerHTML = '<p style="text-align:center; color: red;">Error al cargar los datos de ascensores y escaleras.</p>';
             }
         }
 
-        // =========================================================================
-        // LÓGICA UNIFICADA DE NOVEDADES (REDACCIÓN, ADJUNTOS Y MURO CON 3 ESTADOS)
-        // =========================================================================
-
         function toKebabCase(nombreVisual) {
             if (!nombreVisual || nombreVisual === 'Todos') return 'Todos';
-            return nombreVisual
-                .toLowerCase()
-                .trim()
-                .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "")
-                .replace(/\s+/g, '-');
+            return nombreVisual.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-');
         }
 
         let archivosMultiplesNovedadesIntendencia = [];
@@ -1043,11 +1010,9 @@
             const deptoKebab = toKebabCase(deptoSeleccionado);
 
             try {
-                const { data, error } = await db
-                    .from('usuarios')
-                    .select('nombre_completo, usuario, departamento, pisos_asignados');
+                const { data } = await db.from('usuarios').select('nombre_completo, usuario, departamento, pisos_asignados');
 
-                if (!error && data) {
+                if (data) {
                     const filtrados = data.filter(u => {
                         if (!u.departamento) return false;
                         const depUsr = toKebabCase(u.departamento);
@@ -1055,7 +1020,6 @@
                     });
 
                     const listaFinal = filtrados.length > 0 ? filtrados : data;
-
                     const nombresUnicos = new Set();
                     listaFinal.forEach(u => {
                         const nombre = u.nombre_completo || u.usuario;
@@ -1116,38 +1080,29 @@
                 return;
             }
 
-            const deptoOrigenNormalizado = 'intendencia';
-            const deptoDestinoNormalizado = toKebabCase(destinoVisual);
-            const supervisorOrigenActual = (localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario') || "").trim();
-
             const dataPayload = {
                 texto: textoEscrito,
                 archivos: archivosMultiplesNovedadesIntendencia,
                 fecha: new Date().toLocaleString(),
-                departamento: deptoDestinoNormalizado,
-                origen: deptoOrigenNormalizado,
+                departamento: toKebabCase(destinoVisual),
+                origen: 'intendencia',
                 turno: turno,
                 supervisor: supervisor || 'General (Todos)',
-                supervisor_origen: supervisorOrigenActual
+                supervisor_origen: (localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario') || "").trim()
             };
 
             const sufijoSupervisor = supervisor ? `_${supervisor.replace(/\s+/g, '_')}` : '_todos';
-            const claveUnica = `comunicado_novedades_${deptoDestinoNormalizado}_${turno}${sufijoSupervisor}_${Date.now()}`;
+            const claveUnica = `comunicado_novedades_${toKebabCase(destinoVisual)}_${turno}${sufijoSupervisor}_${Date.now()}`;
             
-            const { error } = await db
-                .from('comunicados_memos')
-                .upsert(
-                    { 
-                        id_clave: claveUnica, 
-                        contenido: dataPayload,
-                        departamento_destino: deptoDestinoNormalizado,
-                        departamento_origen: deptoOrigenNormalizado,
-                        turno_destino: turno === 'Todos' ? 'Todos' : turno,
-                        supervisor_destino: supervisor || 'General (Todos)',
-                        supervisor_origen: supervisorOrigenActual
-                    },
-                    { onConflict: 'id_clave' }
-                );
+            const { error } = await db.from('comunicados_memos').upsert({ 
+                id_clave: claveUnica, 
+                contenido: dataPayload,
+                departamento_destino: toKebabCase(destinoVisual),
+                departamento_origen: 'intendencia',
+                turno_destino: turno === 'Todos' ? 'Todos' : turno,
+                supervisor_destino: supervisor || 'General (Todos)',
+                supervisor_origen: dataPayload.supervisor_origen
+            }, { onConflict: 'id_clave' });
 
             if (error) {
                 alert("Error al enviar a la base de datos: " + error.message);
@@ -1161,12 +1116,8 @@
 
         async function verificarNovedadesNoLeidas() {
             try {
-                const { data, error } = await db
-                    .from('comunicados_memos')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-
-                if (error || !data) return;
+                const { data } = await db.from('comunicados_memos').select('*').order('created_at', { ascending: false });
+                if (!data) return;
 
                 const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim().toLowerCase();
                 const usuarioActual = (localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario') || "invitado").trim().toLowerCase();
@@ -1176,26 +1127,15 @@
                     const deptoDestino = (item.departamento_destino || "").trim().toLowerCase();
                     const turnoDestino = (item.turno_destino || "").trim().toLowerCase();
                     const supervisorDestino = (item.supervisor_destino || "").trim().toLowerCase();
-                    const origenMsg = (item.departamento_origen || (item.contenido && item.contenido.origen) || "").trim().toLowerCase();
+                    const origenMsg = (item.departamento_origen || "").trim().toLowerCase();
 
                     if (origenMsg === 'intendencia') return false;
-
-                    const deptoValido = (deptoDestino === 'intendencia' || deptoDestino === 'todos' || deptoDestino === '');
-                    if (!deptoValido) return false;
-
-                    if (deptoDestino === 'todos' || deptoDestino === '') {
-                        return true;
-                    }
-
-                    const turnoValido = (!turnoDestino || turnoDestino === 'todos' || turnoDestino === turnoActual);
-                    if (!turnoValido) return false;
+                    if (deptoDestino !== 'intendencia' && deptoDestino !== 'todos' && deptoDestino !== '') return false;
+                    if (deptoDestino !== 'todos' && deptoDestino !== '' && (!turnoDestino || turnoDestino === 'todos' || turnoDestino === turnoActual) == false) return false;
 
                     const esGeneral = (!supervisorDestino || supervisorDestino === 'todos' || supervisorDestino === 'general (todos)');
-                    const supervisorCoincide = supervisorDestino && (supervisorDestino.toLowerCase().includes(usuarioActual) || usuarioActual.includes(supervisorDestino.toLowerCase()));
-
-                    if (!esGeneral && !supervisorCoincide) return false;
-
-                    return true;
+                    const supervisorCoincide = supervisorDestino && supervisorDestino.toLowerCase().includes(usuarioActual);
+                    return esGeneral || supervisorCoincide;
                 });
 
                 if (novedadesFiltradas.length === 0) return;
@@ -1213,16 +1153,12 @@
                 }
 
                 const badge = document.getElementById('badge-novedades');
-                if (badge) {
-                    if (noLeidasCount > 0) {
-                        badge.innerText = noLeidasCount;
-                        badge.style.display = 'inline-block';
-                    } else {
-                        badge.style.display = 'none';
-                    }
+                if (badge && noLeidasCount > 0) {
+                    badge.innerText = noLeidasCount;
+                    badge.style.display = 'inline-block';
                 }
             } catch (err) {
-                console.error("Error al verificar novedades no leídas:", err);
+                console.error("Error verificando novedades:", err);
             }
         }
 
@@ -1233,126 +1169,56 @@
             contenedorNov.innerHTML = "<p>Buscando registros históricos en el muro...</p>";
 
             try {
-                const { data, error } = await db
-                    .from('comunicados_memos')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-
-                if (error) throw error;
-
+                const { data } = await db.from('comunicados_memos').select('*').order('created_at', { ascending: false });
                 if (!data || data.length === 0) {
                     contenedorNov.innerHTML = '<p style="color: #666; font-style: italic;">No hay registros disponibles en el muro.</p>';
                     return;
                 }
 
-                const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim().toLowerCase();
                 const usuarioActual = (localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario') || "invitado").trim().toLowerCase();
-
                 const dataFiltradaSupervisor = data.filter(item => {
-                    const deptoDestino = (item.departamento_destino || "").trim().toLowerCase();
-                    const origenMsg = (item.departamento_origen || (item.contenido && item.contenido.origen) || "").trim().toLowerCase();
-                    const supervisorDestino = (item.supervisor_destino || (item.contenido && item.contenido.supervisor) || "").trim().toLowerCase();
-                    const supervisorOrigen = (item.supervisor_origen || (item.contenido && item.contenido.supervisor_origen) || "").trim().toLowerCase();
-
+                    const origenMsg = (item.departamento_origen || "").trim().toLowerCase();
+                    const supervisorOrigen = (item.supervisor_origen || "").trim().toLowerCase();
                     if (origenMsg === 'intendencia') {
-                        if (!supervisorOrigen || supervisorOrigen === 'todos' || supervisorOrigen === 'general (todos)') return true;
-                        return supervisorOrigen.includes(usuarioActual) || usuarioActual.includes(supervisorOrigen);
+                        return !supervisorOrigen || supervisorOrigen.includes(usuarioActual) || usuarioActual.includes(supervisorOrigen);
                     }
-
-                    const deptoValido = (deptoDestino === 'intendencia' || deptoDestino === 'todos' || deptoDestino === '');
-                    if (!deptoValido) return false;
-
-                    if (supervisorDestino === 'todos' || supervisorDestino === 'general (todos)' || !supervisorDestino) {
-                        return true;
-                    }
-
-                    const matchDirecto = supervisorDestino.includes(usuarioActual) || usuarioActual.includes(supervisorDestino);
-                    return matchDirecto;
+                    return true;
                 });
 
                 if (data.length > 0) {
-                    const claveStoragePersonal = `dsg_novedades_ultimo_id_${usuarioActual}`;
-                    localStorage.setItem(claveStoragePersonal, data[0].id_clave || data[0].id);
+                    localStorage.setItem(`dsg_novedades_ultimo_id_${usuarioActual}`, data[0].id_clave || data[0].id);
                     const badge = document.getElementById('badge-novedades');
                     if (badge) badge.style.display = 'none';
-                }
-
-                if (dataFiltradaSupervisor.length === 0) {
-                    contenedorNov.innerHTML = '<p style="color: #666; font-style: italic;">No hay novedades dirigidas a este usuario.</p>';
-                    return;
                 }
 
                 let html = '';
                 dataFiltradaSupervisor.forEach(item => {
                     const contenidoObj = item.contenido || {};
                     const texto = contenidoObj.texto || 'Sin contenido';
-                    let fecha = contenidoObj.fecha || item.created_at || 'Sin fecha';
-                    
-                    if (item.created_at) {
-                        try {
-                            let fObj = new Date(item.created_at);
-                            fecha = fObj.toLocaleString('es-AR', {
-                                day: '2-digit', month: '2-digit', year: 'numeric',
-                                hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
-                            });
-                        } catch(e) {}
-                    }
+                    let fecha = item.created_at ? new Date(item.created_at).toLocaleString('es-AR') : (contenidoObj.fecha || 'Sin fecha');
 
-                    const turnoMsg = item.turno_destino || contenidoObj.turno || 'Todos';
-                    const supervisorMsg = item.supervisor_destino || contenidoObj.supervisor || 'General (Todos)';
-                    const remitenteDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
-                    const deptoDestinoValor = item.departamento_destino || contenidoObj.departamento || 'Todos';
+                    const remitenteDepto = (item.departamento_origen || '').trim().toLowerCase();
+                    const deptoDestinoValor = item.departamento_destino || 'Todos';
 
-                    const supervisorOrigenVal = item.supervisor_origen || contenidoObj.supervisor_origen || 'General';
-                    const supervisorDestinoVal = item.supervisor_destino || contenidoObj.supervisor || 'General (Todos)';
-
-                    const deptoActual = 'intendencia';
-
-                    let tipoBadge = '';
-                    let claseMuroItem = '';
-                    let claseBadgeEstado = '';
-
-                    if (remitenteDepto === deptoActual) {
-                        tipoBadge = 'ENVIADO';
-                        claseMuroItem = 'enviado';
-                        claseBadgeEstado = 'badge-enviado';
-                    } else if (deptoDestinoValor === deptoActual || deptoDestinoValor === 'todos' || deptoDestinoValor === '') {
-                        tipoBadge = 'RECIBIDO';
-                        claseMuroItem = 'recibido';
-                        claseBadgeEstado = 'badge-recibido';
-                    } else {
-                        tipoBadge = 'ENVIADO DESDE';
-                        claseMuroItem = 'terceros';
-                        claseBadgeEstado = 'badge-terceros';
-                    }
+                    let tipoBadge = remitenteDepto === 'intendencia' ? 'ENVIADO' : 'RECIBIDO';
+                    let claseMuroItem = remitenteDepto === 'intendencia' ? 'enviado' : 'recibido';
+                    let claseBadgeEstado = remitenteDepto === 'intendencia' ? 'badge-enviado' : 'badge-recibido';
 
                     let infoDetalleCabecera = `
                         <div style="line-height: 1.8;">
-                            <span class="badge-estado ${claseBadgeEstado}">${tipoBadge}</span> <strong>Origen:</strong> ${remitenteDepto || 'DSG'} &rarr; 
+                            <span class="badge-estado ${claseBadgeEstado}">${tipoBadge}</span> <strong>Origen:</strong> ${remitenteDepto} &rarr; 
                             <strong>Destino:</strong> ${deptoDestinoValor} | 
-                            <strong>Turno:</strong> ${turnoMsg} | 
-                            <strong>Supervisor Origen:</strong> ${supervisorOrigenVal.toUpperCase()} | 
-                            <strong>Supervisor Destino:</strong> ${supervisorDestinoVal.toUpperCase()}
+                            <strong>Turno:</strong> ${item.turno_destino || 'Todos'} | 
+                            <strong>Supervisor:</strong> ${(item.supervisor_origen || 'General').toUpperCase()}
                         </div>`;
 
-                    let archivosArr = [];
-                    if (Array.isArray(contenidoObj.archivos)) {
-                        archivosArr = contenidoObj.archivos;
-                    } else if (contenidoObj.archivo && contenidoObj.archivo.data) {
-                        archivosArr = [contenidoObj.archivo];
-                    }
-
+                    let archivosArr = Array.isArray(contenidoObj.archivos) ? contenidoObj.archivos : [];
                     let archivosHtml = "";
                     if (archivosArr.length > 0) {
                         archivosHtml = '<div class="muro-adjuntos" style="margin-top: 15px; display: flex; flex-direction: column; gap: 10px;"><b>Archivos Adjuntos:</b>';
                         archivosArr.forEach(arch => {
                             if (!arch || !arch.data) return;
-                            let esImagen = arch.data.startsWith('data:image/') || /\.(jpg|jpeg|png|gif|webp)$/i.test(arch.name);
-                            if (esImagen) {
-                                archivosHtml += `<div style="text-align: center; background: #fafafa; border: 1px solid #ddd; padding: 10px; border-radius: 6px;"><img src="${arch.data}" style="max-width: 100%; max-height: 350px; border-radius: 4px;" /><br><a href="${arch.data}" download="${arch.name}">📥 Descargar Imagen</a></div>`;
-                            } else {
-                                archivosHtml += `<div style="background: #f8f9fa; border: 1px solid #ddd; padding: 10px; border-radius: 6px; display: flex; justify-content: space-between;"><span>📄 ${arch.name}</span><a href="${arch.data}" download="${arch.name}">📥 Descargar</a></div>`;
-                            }
+                            archivosHtml += `<div style="background: #f8f9fa; border: 1px solid #ddd; padding: 10px; border-radius: 6px; display: flex; justify-content: space-between;"><span>📄 ${arch.name}</span><a href="${arch.data}" download="${arch.name}">📥 Descargar</a></div>`;
                         });
                         archivosHtml += '</div>';
                     }
@@ -1361,7 +1227,7 @@
                         <div class="muro-item ${claseMuroItem}">
                             <div class="muro-header">
                                 <div class="novedad-meta">${infoDetalleCabecera}</div>
-                                <div style="font-size: 0.85rem; color: #6c757d;"><i class="far fa-clock"></i> ${fecha}</div>
+                                <div style="font-size: 0.85rem; color: #6c757d;">${fecha}</div>
                             </div>
                             <div class="novedad-texto">${texto}</div>
                             ${archivosHtml}
@@ -1370,7 +1236,7 @@
 
                 contenedorNov.innerHTML = html;
             } catch (err) {
-                console.error("Error al cargar muro de Intendencia:", err);
+                console.error("Error al cargar muro:", err);
                 contenedorNov.innerHTML = '<p style="color: red;">Error al sincronizar con la base de datos.</p>';
             }
         }
@@ -1380,62 +1246,27 @@
             const turno = localStorage.getItem('usuario_turno') || "Mañana"; 
             const depto = "Intendencia";
             
-            const elemSidebar = document.getElementById('nombre-supervisor-sidebar');
-            if (elemSidebar) elemSidebar.innerText = nombre;
-            
-            const elemDisplayNombre = document.getElementById('display-nombre');
-            if (elemDisplayNombre) elemDisplayNombre.innerText = nombre;
-            
-            const elemDisplayTurno = document.getElementById('display-turno');
-            if (elemDisplayTurno) elemDisplayTurno.innerText = turno;
-            
-            const elemDisplayDepto = document.getElementById('display-depto');
-            if (elemDisplayDepto) elemDisplayDepto.innerText = depto;
-            
-            const elemNombreRep = document.getElementById('display-nombre-rep');
-            if (elemNombreRep) elemNombreRep.innerText = nombre;
-            
-            const elemTurnoRep = document.getElementById('display-turno-rep');
-            if (elemTurnoRep) elemTurnoRep.innerText = turno;
-            
-            const elemDeptoRep = document.getElementById('display-depto-rep');
-            if (elemDeptoRep) elemDeptoRep.innerText = depto;
-            
-            const elemDeptoHist = document.getElementById('depto-hist-label');
-            if (elemDeptoHist) elemDeptoHist.innerText = depto;
+            document.getElementById('nombre-supervisor-sidebar').innerText = nombre;
+            document.getElementById('display-nombre').innerText = nombre;
+            document.getElementById('display-turno').innerText = turno;
+            document.getElementById('display-depto').innerText = depto;
+            document.getElementById('display-nombre-rep').innerText = nombre;
+            document.getElementById('display-turno-rep').innerText = turno;
+            document.getElementById('display-depto-rep').innerText = depto;
+            document.getElementById('depto-hist-label').innerText = depto;
             
             await cargarPersonalYSeccionesSupabase();
-            
             await verificarNovedadesNoLeidas();
             
             try {
-                const { data: cierresPrevios, error } = await db
-                    .from('cierres_jornada')
-                    .select('id')
-                    .eq('departamento', depto)
-                    .eq('turno', turno)
-                    .eq('supervisor', nombre);
-
-                const cantidadRegistros = (error || !cierresPrevios) ? 0 : cierresPrevios.length;
-                const numeroHojaReal = cantidadRegistros + 1;
-                const numeroHojaFormateado = String(numeroHojaReal).padStart(3, '0');
-                
-                const elementoHoja = document.getElementById('num-hoja') || document.getElementById('numero-reporte') || document.getElementById('nro-hoja') || document.getElementById('numero-hoja');
-                if (elementoHoja) {
-                    elementoHoja.innerText = numeroHojaFormateado;
-                }
-                window.numeroHojaActual = numeroHojaFormateado;
-            } catch (err) {
-                console.error("Error al obtener el contador:", err);
-            }
+                const { data: cierresPrevios } = await db.from('cierres_jornada').select('id').eq('departamento', depto).eq('turno', turno).eq('supervisor', nombre);
+                const numeroHojaReal = (cierresPrevios ? cierresPrevios.length : 0) + 1;
+                document.getElementById('numero-hoja').innerText = String(numeroHojaReal).padStart(3, '0');
+            } catch (err) {}
             
             const tablaGuardada = localStorage.getItem('dsg_intendencia_tabla');
             if (cuerpoTabla) {
-                if (tablaGuardada && tablaGuardada.trim() !== '') {
-                    cuerpoTabla.innerHTML = tablaGuardada;
-                } else {
-                    cuerpoTabla.innerHTML = '<tr>' + crearFilaHTML() + '</tr>';
-                }
+                cuerpoTabla.innerHTML = (tablaGuardada && tablaGuardada.trim() !== '') ? tablaGuardada : '<tr>' + crearFilaHTML() + '</tr>';
             }
 
             if (editorReporte) editorReporte.innerHTML = localStorage.getItem('dsg_intendencia_reporte') || "";
@@ -1477,21 +1308,31 @@
         }
 
         function mostrar(idSeccion, titulo) {
+            // Ocultar todas las secciones
             document.querySelectorAll('.seccion').forEach(s => s.classList.remove('activo'));
+            
+            // Mostrar la sección seleccionada
             const sec = document.getElementById(idSeccion);
             if (sec) sec.classList.add('activo');
+            
+            // Actualizar el título del panel superior y limpiar contenido anterior si corresponde
             const tituloPanel = document.getElementById('titulo-panel');
-            if (tituloPanel) tituloPanel.innerText = titulo;
+            if (tituloPanel) {
+                tituloPanel.innerText = titulo;
+            }
+
+            // Ejecutar acciones específicas según el menú seleccionado
             if (idSeccion === 'estado-ascensores') {
                 cargarEstadoAscensoresVivo();
             } else if (idSeccion === 'novedades') {
                 cargarNovedadesVivo();
+            } else if (idSeccion === 'rrhh') {
+                cargarRRHH();
             }
         }
     </script>
 </body>
 </html>
-
 
 
 
