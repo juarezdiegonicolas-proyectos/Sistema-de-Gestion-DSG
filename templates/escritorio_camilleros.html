@@ -708,8 +708,27 @@
                     return;
                 }
 
+                const deptoUsuarioActual = "camilleros-central";
+
+                // Filtrar estrictamente para excluir comunicaciones entre terceros ajenos al departamento actual
+                const dataFiltrada = data.filter(item => {
+                    const contenidoObj = item.contenido || {};
+                    const remitenteDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
+                    const deptoDestinoValor = (item.departamento_destino || contenidoObj.departamento || '').trim().toLowerCase();
+
+                    const esEnviadoPorMi = (remitenteDepto === deptoUsuarioActual);
+                    const esRecibidoParaMi = (deptoDestinoValor.includes(deptoUsuarioActual) || deptoDestinoValor === 'todos' || deptoDestinoValor === 'todos los departamentos');
+
+                    return esEnviadoPorMi || esRecibidoParaMi;
+                });
+
+                if (dataFiltrada.length === 0) {
+                    contenedorNov.innerHTML = '<p style="color: #666; font-style: italic;">No hay registros disponibles en el muro para este departamento.</p>';
+                    return;
+                }
+
                 let html = '';
-                data.forEach(item => {
+                dataFiltrada.forEach(item => {
                     const contenidoObj = item.contenido || {};
                     const texto = contenidoObj.texto || 'Sin contenido';
                     let fecha = contenidoObj.fecha || item.created_at || 'Sin fecha';
@@ -731,8 +750,6 @@
                     const remitenteDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
                     const deptoDestinoValor = (item.departamento_destino || contenidoObj.departamento || '').trim().toLowerCase();
 
-                    const deptoUsuarioActual = "camilleros-central";
-
                     let tipoBadge = '';
                     let claseMuroItem = '';
                     let claseBadgeEstado = '';
@@ -741,14 +758,10 @@
                         tipoBadge = 'ENVIADO';
                         claseMuroItem = 'enviado';
                         claseBadgeEstado = 'badge-enviado';
-                    } else if (deptoDestinoValor.includes(deptoUsuarioActual) || deptoDestinoValor === 'todos' || deptoDestinoValor === 'todos los departamentos') {
+                    } else {
                         tipoBadge = 'RECIBIDO';
                         claseMuroItem = 'recibido';
                         claseBadgeEstado = 'badge-recibido';
-                    } else {
-                        tipoBadge = `ENVIADO DESDE`;
-                        claseMuroItem = 'terceros';
-                        claseBadgeEstado = 'badge-terceros';
                     }
 
                     let infoDetalleCabecera = `
@@ -1516,4 +1529,5 @@
     </script>
 </body>
 </html>
+
 
