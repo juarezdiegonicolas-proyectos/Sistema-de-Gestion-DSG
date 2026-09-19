@@ -10,9 +10,9 @@
         body { margin: 0; font-family: 'Roboto', sans-serif; display: flex; height: 100vh; background-color: #f8fafc; }
         .sidebar { width: 260px; background-color: #1a3a5f; color: white; padding: 25px 20px; display: flex; flex-direction: column; }
         
-        .bienvenida-box { background-color: #f8fafc; padding: 12px 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; border: 1px solid #e2e8f0; }
-        .bienvenida-box h3 { margin: 0; font-size: 13px; font-weight: normal; color: #1a3a5f; }
-        .bienvenida-box p { margin: 5px 0 0 0; font-size: 15px; font-weight: bold; color: #1a3a5f; }
+        .bienvenida-box { background-color: #5d8dbb; padding: 12px 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; border: none; }
+        .bienvenida-box h3 { margin: 0; font-size: 13px; font-weight: normal; color: white; }
+        .bienvenida-box p { margin: 5px 0 0 0; font-size: 15px; font-weight: bold; color: white; }
         .sidebar-header-title { min-height: 50px; margin-bottom: 15px; display: flex; align-items: center; }
         .sidebar-header-title h2 { font-size: 20px; margin: 0; }
 
@@ -23,8 +23,8 @@
         /* Badge para Novedades */
         .badge-novedades { background-color: #dc3545; color: white; font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 10px; display: none; }
 
-        .btn-accion-global { width: 100%; padding: 10px; margin-bottom: 10px; background: #1a3a5f; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: all 0.2s ease; }
-        .btn-accion-global:hover { background: #2d5a8e; }
+        .btn-accion-global { width: 100%; padding: 10px; margin-bottom: 10px; background: #28a745; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: all 0.2s ease; }
+        .btn-accion-global:hover { background: #218838; }
         
         .btn-cerrar { margin-top: 10px; padding: 10px; background: linear-gradient(135deg, #d32f2f, #c62828); color: white; text-align: center; text-decoration: none; border-radius: 6px; font-weight: bold; border: none; cursor: pointer; width: 100%; box-sizing: border-box; font-size: 13px; opacity: 1; transition: 0.2s; }
         .btn-cerrar:hover { opacity: 0.9; }
@@ -212,7 +212,6 @@
             
             <div class="area-acciones">
                 <button id="btn-print-novedades" class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
-                <button class="btn-gestion btn-imprimir" style="background: #c62828;" onclick="limpiarPantalla('novedades')">🧹 Limpiar Pantalla</button>
             </div>
 
             <div class="historial-muro-container">
