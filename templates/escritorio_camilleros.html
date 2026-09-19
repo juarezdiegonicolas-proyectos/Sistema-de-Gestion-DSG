@@ -148,7 +148,6 @@
         .tabla-intendencia th, .tabla-intendencia td { border: 1px solid #000; padding: 6px; text-align: center; word-wrap: break-word; overflow: hidden; }
         .tabla-intendencia th { background-color: #1a3a5f; color: white; height: 22px; font-size: 14px; font-weight: 500; letter-spacing: 0.5px; }
 
-        /* Corrección aplicada: Se asegura que el borde negro se mantenga siempre independiente del estado */
         .celda-asistencia { cursor: pointer; width: 25px; height: 25px; border: 2px solid #333 !important; display: inline-block; transition: background 0.3s; margin: auto; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         .estado-P { background-color: #28a745 !important; border: 2px solid #333 !important; }
         .estado-A { background-color: #dc3545 !important; border: 2px solid #333 !important; }
@@ -188,9 +187,7 @@
             <p id="nombre-supervisor-sidebar">---</p>
         </div>
 
-        <div class="sidebar-header-title">
-            <h2 id="titulo-panel">Reportes</h2>
-        </div>
+        <!-- Se removió el selector desplegable de panel que mostraba el ítem del sidebar -->
 
         <div class="menu-links">
             <div class="menu-item" onclick="mostrar('reportes', 'Reportes')"><span>📊 Reportes</span></div>
