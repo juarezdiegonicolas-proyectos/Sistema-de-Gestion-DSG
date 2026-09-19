@@ -1131,7 +1131,7 @@
 
         function crearFilaHTML() { 
             return '<td><button class="btn-borrar" onclick="borrarFila(this)">X</button></td>' +
-                     '<td><input class="input-c input-hora" type="text" onclick="registrarHora(this)"></td>' +
+                     '<td><input class="input-c input-hora" type="time" onchange="guardarDatos()"></td>' +
                      '<td><input class="input-c input-cama" type="text" oninput="guardarDatos()"></td>' +
                      '<td><input class="input-c input-paciente" type="text" oninput="guardarDatos()"></td>' +
                      '<td><input class="input-c input-destino" type="text" oninput="guardarDatos()"></td>' +
@@ -1169,7 +1169,9 @@
                     '<td><input class="input-c input-finalizacion" type="time" onchange="guardarDatos()"></td>'; 
         }
 
-        function registrarHora(input) { if (input.value === "") { const ahora = new Date(); input.value = ahora.getHours().toString().padStart(2, '0') + ":" + ahora.getMinutes().toString().padStart(2, '0'); input.setAttribute('readonly', 'readonly'); guardarDatos(); } }
+        function registrarHora(input) { 
+            guardarDatos(); 
+        }
         function borrarFila(btn) { const tr = btn.closest('tr'); if (cuerpoTabla.getElementsByTagName('tr').length > 1) tr.remove(); else { tr.querySelectorAll('input, select').forEach(i => { i.value = ''; i.removeAttribute('readonly'); }); } guardarDatos(); }
         function detectarEnter(e) { if (e.key === 'Enter') { e.preventDefault(); const tr = document.createElement('tr'); tr.innerHTML = crearFilaHTML(); cuerpoTabla.appendChild(tr); tr.querySelectorAll('input')[1].focus(); } }
         
