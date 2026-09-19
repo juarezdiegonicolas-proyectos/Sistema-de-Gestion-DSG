@@ -7,7 +7,7 @@
     <!-- Incluir Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { margin: 0; font-family: 'Roboto', sans-serif; display: flex; height: 100vh; background-color: #f4f1ea; overflow: hidden; }
+        body { margin: 0; font-family: 'Roboto', sans-serif; display: flex; height: 100vh; background-color: #f8fafc; overflow: hidden; }
         .sidebar { width: 260px; background-color: #1a3a5f; color: white; padding: 15px 15px; display: flex; flex-direction: column; flex-shrink: 0; height: 100vh; box-sizing: border-box; overflow: hidden; }
         
         .bienvenida-box { background-color: #2d5a8e; padding: 10px; border-radius: 8px; margin-bottom: 12px; text-align: center; border: 1px solid #5d8dbb; flex-shrink: 0; }
@@ -24,17 +24,17 @@
         .badge-novedades { background-color: #dc3545; color: white; font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 10px; display: none; }
 
         .sidebar-footer { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; padding-top: 5px; }
-        .btn-accion-global { width: 100%; padding: 10px; background: linear-gradient(135deg, #28a745, #218838); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: opacity 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
-        .btn-accion-global:hover { opacity: 0.9; }
+        .btn-accion-global { width: 100%; padding: 10px; background: #1a3a5f; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .btn-accion-global:hover { background: #2d5a8e; }
         .btn-cerrar { width: 100%; padding: 10px; background: linear-gradient(135deg, #d32f2f, #c62828); color: white; text-align: center; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); box-sizing: border-box; display: flex; align-items: center; justify-content: center; gap: 6px; transition: opacity 0.2s; border: none; cursor: pointer; }
         .btn-cerrar:hover { opacity: 0.9; }
 
-        .contenido { flex: 1; padding: 40px; overflow-y: auto; height: 100vh; box-sizing: border-box; }
-        .seccion { display: none; background: white; padding: 40px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .contenido { flex: 1; padding: 40px; overflow-y: auto; height: 100vh; box-sizing: border-box; background-color: #f8fafc; }
+        .seccion { display: none; background: #ffffff; padding: 40px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
         .seccion.activo { display: block; } 
         .info-hoja { display: flex; justify-content: space-between; margin-bottom: 15px; font-weight: bold; color: #1a3a5f; align-items: center;}
         
-        .hoja { background-color: #fff; padding: 0 40px; border: 1px solid #ccc; min-height: 900px; position: relative; }
+        .hoja { background-color: #fff; padding: 0 40px; border: 1px solid #e2e8f0; min-height: 900px; position: relative; border-radius: 8px; }
         
         #editor-reporte { 
             width: 100%; 
@@ -56,7 +56,7 @@
         #editor-observaciones { 
             width: 100%; 
             min-height: 180px; 
-            border: 1px solid #000; 
+            border: 1px solid #cbd5e1; 
             border-top: none; 
             font-size: 18px; 
             line-height: 30px; 
@@ -72,15 +72,17 @@
             border-radius: 0 0 6px 6px; 
             box-sizing: border-box; 
             overflow-y: auto; 
+            background-color: #f8fafc;
         }
         
         .tabla-camilleros { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; table-layout: fixed; }
-        .tabla-camilleros th, .tabla-camilleros td { border: 1px solid #000; padding: 8px 6px; text-align: center; word-wrap: break-word; vertical-align: middle; }
+        .tabla-camilleros th, .tabla-camilleros td { border: 1px solid #cbd5e1; padding: 8px 6px; text-align: center; word-wrap: break-word; vertical-align: middle; }
         .tabla-camilleros th { background-color: #1a3a5f; color: white; height: 40px; font-size: 13px; }
         .col-hora { width: 95px; }
         
-        .input-c { width: 95%; border: none; text-align: center; background: transparent; outline: none; font-family: inherit; font-size: 13px; }
-        .input-fecha, .input-select { border: 1px solid #ccc; padding: 8px; border-radius: 4px; font-family: inherit; cursor: pointer; }
+        .input-c { width: 95%; border: none; text-align: center; background: transparent; outline: none; font-family: inherit; font-size: 13px; color: #334155; }
+        .input-fecha, .input-select { border: 1px solid #cbd5e1; padding: 10px 14px; border-radius: 6px; font-family: inherit; cursor: pointer; background: #f8fafc; color: #334155; transition: all 0.2s ease; }
+        .input-fecha:focus, .input-select:focus { border-color: #1a3a5f; outline: none; box-shadow: 0 0 0 3px rgba(26, 58, 95, 0.1); }
         
         .tabla-camilleros select.input-movilidad, 
         .tabla-camilleros select.input-personal {
@@ -88,9 +90,10 @@
             font-size: 13px;
             text-overflow: ellipsis;
             width: 100%;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            background: #fff;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            background: #f8fafc;
+            color: #334155;
         }
         
         .input-estancia, .input-finalizacion {
@@ -104,28 +107,30 @@
             text-align: center;
         }
 
-        .btn-borrar { background: red; color: white; border: none; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; }
+        .btn-borrar { background: #d32f2f; color: white; border: none; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; }
         .area-acciones { margin-top: 20px; display: flex; gap: 10px; }
-        .btn-gestion { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; }
-        .btn-imprimir { background: #6c757d; color: white; }
-        #info-supervisor { margin-bottom: 20px; color: #1a3a5f; font-weight: bold; border: 1px solid #ddd; padding: 10px; border-radius: 6px; background: #f9f9f9; }
+        .btn-gestion { padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px; background: #1a3a5f; color: white; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .btn-gestion:hover { background: #2d5a8e; }
+        .btn-imprimir { background: #1a3a5f; color: white; }
+        .btn-imprimir:hover { background: #2d5a8e; }
+        #info-supervisor { margin-bottom: 20px; color: #1a3a5f; font-weight: bold; border: 1px solid #e2e8f0; padding: 12px 15px; border-radius: 8px; background: #f8fafc; }
         .header-logos { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
         .header-logos img { height: 110px; width: auto; object-fit: contain; }
-        .filtros-historicos { display: flex; gap: 15px; background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #eee; align-items: center; }
-        .celda-asistencia { cursor: pointer; width: 25px; height: 25px; border: 2px solid #333; display: inline-block; transition: background 0.3s; margin: auto; }
-        .estado-P { background-color: #28a745 !important; }
-        .estado-A { background-color: #dc3545 !important; }
-        .estado-L { background-color: #ffc107 !important; }
-        .botonera-porcentaje { background-color: #1a3a5f; color: white; padding: 12px 20px; border-radius: 8px; font-weight: bold; margin-bottom: 10px; display: inline-block; width: 250px; text-align: left; }
+        .filtros-historicos { display: flex; gap: 15px; background: #f8fafc; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e2e8f0; align-items: center; }
+        .celda-asistencia { cursor: pointer; width: 25px; height: 25px; border: 2px solid #cbd5e1; display: inline-block; transition: background 0.3s; margin: auto; border-radius: 4px; }
+        .estado-P { background-color: #28a745 !important; border-color: #28a745 !important; }
+        .estado-A { background-color: #dc3545 !important; border-color: #dc3545 !important; }
+        .estado-L { background-color: #ffc107 !important; border-color: #ffc107 !important; }
+        .botonera-porcentaje { background-color: #1a3a5f; color: white; padding: 12px 20px; border-radius: 8px; font-weight: bold; margin-bottom: 10px; display: inline-block; width: 250px; text-align: left; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 
-        #rrhh .tabla-camilleros { width: 99.5% !important; border-right: 1px solid #000 !important; }
+        #rrhh .tabla-camilleros { width: 99.5% !important; border-right: 1px solid #cbd5e1 !important; }
 
         @media print {
             .sidebar, .btn-accion-global, .btn-cerrar, .menu-item, .no-imprimir, .btn-imprimir, .btn-borrar { display: none !important; }
             #planillas .tabla-camilleros th:first-child, 
             #planillas .tabla-camilleros td:first-child { display: none !important; }
             body, html, .contenido, .seccion.activo, .hoja { background-color: white !important; margin: 0 !important; padding: 0 !important; width: 100% !important; height: auto !important; overflow: visible !important; box-shadow: none !important; display: block !important; }
-            .seccion { display: none !important; }
+            .seccion { display: none !important; border: none !important; box-shadow: none !important; }
             .seccion.activo { display: block !important; } 
             .hoja { border: none !important; min-height: auto !important; }
             #editor-reporte, #editor-observaciones { 
@@ -174,7 +179,7 @@
         <div id="reportes" class="seccion activo">
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo Hospital">
-                <h1 style="margin: 0; text-align: center; flex: 1;">Reportes</h1>
+                <h1 style="margin: 0; text-align: center; flex: 1; color: #1a3a5f;">Reportes</h1>
                 <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
             <div id="info-supervisor">Supervisor: <span id="display-nombre-rep">---</span> | Turno: <span id="display-turno-rep">---</span> | Depto: <span id="display-depto-rep">---</span></div>
@@ -191,7 +196,7 @@
         <div id="planillas" class="seccion">
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo Hospital">
-                <h1 style="margin: 0; text-align: center; flex: 1; font-size: 30px;">Auxiliares Técnicos</h1>
+                <h1 style="margin: 0; text-align: center; flex: 1; font-size: 30px; color: #1a3a5f;">Auxiliares Técnicos</h1>
                 <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
             <div id="info-supervisor">Supervisor: <span id="display-nombre">---</span> | Turno: <span id="display-turno">---</span> | Depto: <span id="display-depto">---</span></div>
@@ -213,7 +218,7 @@
         <div id="historicos" class="seccion">
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo Hospital">
-                <h1 style="margin: 0; text-align: center; flex: 1;">Registros Históricos</h1>
+                <h1 style="margin: 0; text-align: center; flex: 1; color: #1a3a5f;">Registros Históricos</h1>
                 <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
             <div id="info-supervisor">Departamento: <span id="depto-hist-label">---</span></div>
@@ -231,9 +236,9 @@
                     <option value="Sadofe">Sadofe</option>
                 </select>
                 <input type="date" id="filtro-fecha-hist" class="input-fecha">
-                <button class="btn-gestion no-imprimir" style="background: #1a3a5f; color: white;" onclick="cargarHistoricos()">Buscar Registros</button>
+                <button class="btn-gestion no-imprimir" onclick="cargarHistoricos()">Buscar Registros</button>
             </div>
-            <div id="contenedor-historicos" style="border: 1px solid #ccc; padding: 20px; border-radius: 8px;">
+            <div id="contenedor-historicos" style="border: 1px solid #cbd5e1; padding: 20px; border-radius: 8px; background: #f8fafc;">
                 <p>Selecciona filtros y presiona "Buscar" para visualizar registros.</p>
             </div>
             <div class="area-acciones"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir Resultados</button></div>
@@ -269,7 +274,7 @@
         <div id="rrhh" class="seccion">
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo Hospital">
-                <h1 style="margin: 0; text-align: center; flex: 1;">Personal</h1>
+                <h1 style="margin: 0; text-align: center; flex: 1; color: #1a3a5f;">Personal</h1>
                 <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
             <div id="info-supervisor">Supervisor: <span id="display-nombre-rrhh">---</span> | Turno: <span id="display-turno-rrhh">---</span> | Depto: <span id="display-depto-rrhh">---</span></div>
@@ -278,12 +283,12 @@
                 <tbody id="cuerpo-rrhh"></tbody>
             </table>
             <div class="area-acciones">
-                <button class="btn-gestion no-imprimir" style="background: #28a745; color: white;" onclick="guardarAsistencia()">💾 Guardar Asistencia</button>
+                <button class="btn-gestion no-imprimir" onclick="guardarAsistencia()">💾 Guardar Asistencia</button>
                 <button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
             </div>
             
             <div style="margin-top: 30px; text-align: center; color: #1a3a5f; font-weight: bold; font-size: 20px; margin-bottom: 10px;">Control de Asistencia</div>
-            <div style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #ddd; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; justify-content: center; align-items: center; gap: 50px;">
+            <div style="background: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid #cbd5e1; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; justify-content: center; align-items: center; gap: 50px;">
                 <div id="resumen-rrhh" style="font-weight:bold; color: #1a3a5f; font-size: 16px; line-height: 2.0; display: flex; flex-direction: column;"></div>
                 <div style="width: 220px; height: 220px;">
                     <canvas id="graficoRRHH"></canvas>
@@ -446,7 +451,6 @@
                     return;
                 }
 
-                // Marcar como leído el último elemento (el más reciente) exclusivamente para este usuario
                 if (filtrados.length > 0) {
                     const usuarioActual = (localStorage.getItem('usuario_nombre') || "invitado").trim().toLowerCase();
                     localStorage.setItem(`dsg_camilleros_ultimo_novedad_leida_${usuarioActual}`, filtrados[0].id);
@@ -832,7 +836,6 @@
                 const inputHora = tr.querySelector('.input-hora');
                 
                 if (inputHora && inputHora.value.trim() !== '') {
-                    // MODIFICACIÓN REALIZADA AQUÍ: Extrae los nombres reales de los checkboxes tildados
                     let personalSeleccionadosArr = [];
                     tr.querySelectorAll('.custom-multiselect input[type="checkbox"]:checked').forEach(chk => {
                         personalSeleccionadosArr.push(chk.value);
@@ -848,7 +851,7 @@
                         destino: tr.querySelector('.input-destino')?.value || '',
                         duracion_estancia: tr.querySelector('.input-estancia')?.value || '',
                         tipo_movilidad: tr.querySelector('.input-movilidad')?.value || '',
-                        personal_asignado: personalSeleccionadoStr, // Se guardan los nombres reales separados por coma
+                        personal_asignado: personalSeleccionadoStr,
                         hora_finalizacion: tr.querySelector('.input-finalizacion')?.value || '',
                         observaciones: observacionesVal
                     });
@@ -1116,11 +1119,11 @@
                     '</td>' +
                     '<td style="position: relative; overflow: visible;">' +
                          '<div class="custom-multiselect" style="position: relative; width: 100%; text-align: left;">' +
-                             '<div class="multiselect-btn" onclick="toggleDropdown(this)" style="background: #fff; border: 1px solid #ccc; border-radius: 4px; padding: 4px 6px; font-size: 11px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; justify-content: space-between; align-items: center;">' +
+                             '<div class="multiselect-btn" onclick="toggleDropdown(this)" style="background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 8px; font-size: 11px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; justify-content: space-between; align-items: center;">' +
                                  '<span class="multiselect-label">Seleccionar...</span>' +
                                  '<span style="font-size: 9px; margin-left: 2px;">▼</span>' +
                              '</div>' +
-                             '<div class="multiselect-content" style="display: none; position: absolute; left: 0; top: 100%; z-index: 9999; background: #fff; border: 1px solid #1a3a5f; box-shadow: 0 4px 8px rgba(0,0,0,0.15); border-radius: 4px; max-height: 180px; overflow-y: auto; width: 220px; padding: 5px;">' +
+                             '<div class="multiselect-content" style="display: none; position: absolute; left: 0; top: 100%; z-index: 9999; background: #fff; border: 1px solid #1a3a5f; box-shadow: 0 4px 8px rgba(0,0,0,0.15); border-radius: 6px; max-height: 180px; overflow-y: auto; width: 220px; padding: 5px;">' +
                                  obtenerOpcionesCamillerosCheck() +
                              '</div>' +
                          '</div>' +
