@@ -7,19 +7,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { margin: 0; font-family: 'Roboto', sans-serif; display: flex; height: 100vh; background-color: #f4f1ea; }
-        
-        /* Sidebar con ancho fijo de 260px */
-        .sidebar { 
-            width: 260px; 
-            background-color: #1a3a5f; 
-            color: white; 
-            padding: 25px 20px; 
-            display: flex; 
-            flex-direction: column; 
-            flex-shrink: 0;
-            box-sizing: border-box;
-        }
+        body { margin: 0; font-family: 'Roboto', sans-serif; display: flex; height: 100vh; background-color: #e2e8f0; }
+        .sidebar { width: 260px; flex-shrink: 0; background-color: #1a3a5f; color: white; padding: 25px 20px; display: flex; flex-direction: column; }
         
         .bienvenida-box { background-color: #2d5a8e; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; border: 1px solid #5d8dbb; }
         .bienvenida-box h3 { margin: 0; font-size: 14px; font-weight: 300; color: #cce7ff; }
@@ -34,11 +23,10 @@
         /* Badge para Novedades */
         .badge-novedades { background-color: #dc3545; color: white; font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 10px; display: none; }
 
-        .btn-accion-global { width: 100%; padding: 15px; margin-bottom: 10px; background: #28a745; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        .btn-cerrar { margin-top: 10px; padding: 15px; background: #d32f2f; color: white; text-align: center; text-decoration: none; border-radius: 6px; font-weight: bold; border: none; cursor: pointer; width: 100%; box-sizing: border-box; }
-        
-        .contenido { flex: 1; padding: 40px; overflow-y: auto; background-color: #f4f1ea; }
-        .seccion { display: none; background: white; padding: 40px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .btn-accion-global { width: 100%; padding: 15px; margin-bottom: 10px; background: #1a3a5f; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .btn-cerrar { margin-top: 10px; padding: 15px; background: #1a3a5f; color: white; text-align: center; text-decoration: none; border-radius: 6px; font-weight: bold; border: none; cursor: pointer; width: 100%; box-sizing: border-box; }
+        .contenido { flex: 1; padding: 40px; overflow-y: auto; background-color: #e2e8f0; }
+        .seccion { display: none; background: #ffffff; padding: 40px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
         .seccion.activo { display: block; } 
         .info-hoja { display: flex; justify-content: space-between; margin-bottom: 15px; font-weight: bold; color: #1a3a5f; align-items: center;}
         
@@ -59,76 +47,48 @@
             padding-top: 30px;
         }
         
-        .input-fecha { border: 1px solid #ccc; padding: 8px; border-radius: 4px; font-family: inherit; cursor: pointer; }
+        .input-fecha { border: 1px solid #cbd5e1; padding: 10px 14px; border-radius: 6px; font-family: inherit; cursor: pointer; background: #f8fafc; color: #334155; font-size: 13px; font-weight: 500; }
         .area-acciones { margin-top: 20px; display: flex; gap: 10px; }
-        
-        /* Botones de gestión generales */
-        .btn-gestion { padding: 10px 18px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: background 0.2s; }
-        .btn-imprimir { background: #6c757d; color: white; }
-        .btn-imprimir:hover { background: #5a6268; }
-
+        .btn-gestion { padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px; background: #1a3a5f; color: white; }
+        .btn-gestion:hover { background: #2d5a8e; }
+        .btn-imprimir { background: #1a3a5f; color: white; }
         #info-supervisor { margin-bottom: 20px; color: #1a3a5f; font-weight: bold; border: 1px solid #ddd; padding: 10px; border-radius: 6px; background: #f9f9f9; }
         .header-logos { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
         .header-logos img { height: 110px; width: auto; object-fit: contain; }
 
-        /* Estilos exactos solicitados para la botonera, selectores y cuadro de novedades */
-        .filtros-historicos { 
-            display: flex; 
-            gap: 12px; 
-            flex-wrap: wrap; 
-            align-items: center; 
-            margin-bottom: 20px; 
-            background: #ffffff; 
-            padding: 18px 20px; 
-            border-radius: 8px; 
-            border: 1px solid #e2e8f0; 
-            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
-        }
-        
-        .input-select { 
-            padding: 10px 14px; 
-            border: 1px solid #cbd5e1; 
-            border-radius: 6px; 
-            font-family: inherit; 
-            font-size: 13px; 
-            background: #f8fafc; 
-            color: #334155;
-            cursor: pointer; 
-            outline: none;
-            transition: border-color 0.2s;
-        }
-        .input-select:focus { border-color: #1a3a5f; background: #fff; }
-
+        /* Estilos específicos para sección Novedades y Muro (Alineados con admin) */
+        .filtros-historicos { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 20px; background: #ffffff; padding: 18px 22px; border-radius: 10px; border: 1px solid #e2e8f0; }
+        .input-select { padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; font-size: 13px; font-weight: 500; background: #f8fafc; color: #334155; cursor: pointer; }
         .btn-adjuntar { background: #1a3a5f; color: white; }
-        .btn-adjuntar:hover { background: #2d5a8e; }
-
         .preview-adjunto { display: none; margin-top: 10px; padding: 10px; background: #e9ecef; border-radius: 6px; font-size: 13px; border: 1px solid #ced4da; }
         .print-header { display: none; font-weight: bold; margin-bottom: 10px; }
         .print-only { display: none; }
         
         #txt-novedades { 
             width: 100%; 
-            min-height: 160px; 
-            padding: 15px; 
+            min-height: 350px; 
+            padding: 12px; 
             border: 1px solid #cbd5e1; 
-            border-radius: 8px; 
-            font-family: inherit; 
+            border-radius: 10px; 
+            font-family: 'Roboto', sans-serif; 
             font-size: 14px; 
+            line-height: 1.6;
             resize: vertical; 
             box-sizing: border-box; 
             background: #ffffff;
-            color: #334155;
-            outline: none;
-            box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);
         }
-        #txt-novedades:focus { border-color: #1a3a5f; }
+        #txt-novedades:focus {
+            border-color: #1a3a5f;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(26, 58, 95, 0.1);
+        }
         
         .historial-muro-container { margin-top: 30px; border-top: 2px solid #dee2e6; padding-top: 20px; }
         .historial-muro-titulo { font-size: 16px; font-weight: bold; color: #1a3a5f; margin-bottom: 15px; }
         
-        .muro-item { background: #fff; border: 1px solid #d1d8df; border-left: 5px solid #007bff; padding: 15px; border-radius: 6px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .muro-item.recibido { border-left-color: #17a2b8; }
-        .muro-item.enviado { border-left-color: #28a745; }
+        .muro-item { background: #fff; border: 1px solid #e2e8f0; border-left: 6px solid #1a3a5f; padding: 15px; border-radius: 6px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .muro-item.recibido { border-left-color: #06b6d4; }
+        .muro-item.enviado { border-left-color: #1a3a5f; }
 
         .muro-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; flex-wrap: wrap; gap: 10px; }
         .novedad-meta { font-size: 0.85rem; color: #495057; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; line-height: 1.8; }
@@ -137,9 +97,9 @@
         .muro-adjuntos a { display: inline-block; margin-right: 10px; color: #1a3a5f; text-decoration: none; font-weight: 500; }
         .muro-adjuntos a:hover { text-decoration: underline; }
 
-        .badge-estado { font-size: 0.75rem; padding: 4px 8px; border-radius: 4px; font-weight: bold; color: white; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; display: inline-block; vertical-align: middle; margin-right: 4px; }
-        .badge-recibido { background-color: #17a2b8; }
-        .badge-enviado { background-color: #28a745; }
+        .badge-estado { font-size: 0.75rem; padding: 5px 10px; border-radius: 6px; font-weight: 700; color: white; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; display: inline-block; vertical-align: middle; margin-right: 4px; }
+        .badge-recibido { background-color: #06b6d4; }
+        .badge-enviado { background-color: #1a3a5f; }
 
         @media print {
             .sidebar, .btn-accion-global, .btn-cerrar, .menu-item, .no-imprimir, .btn-imprimir, .filtros-historicos, .area-acciones { display: none !important; }
@@ -222,8 +182,6 @@
                 <h1 style="margin: 0; text-align: center; flex: 1;">Novedades</h1>
                 <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
             </div>
-            
-            <!-- Estructura exacta de la botonera y filtros en Novedades -->
             <div class="filtros-historicos">
                 <select id="depto-destino-novedades" class="input-select" onchange="manejarCambioDepto('destino-novedades'); actualizarPrint('novedades');">
                     <option value="Todos">Todos los departamentos</option>
@@ -235,6 +193,9 @@
                     <option value="conmutador">Conmutador</option>
                     <option value="dalo">DALO</option>
                     <option value="higiene-y-seguridad">Higiene y Seguridad</option>
+                    <option value="mantenimiento">Mantenimiento</option>
+                    <option value="roperia">Ropería</option>
+                    <option value="talleres">Talleres</option>
                 </select>
                 <div id="contenedor-supervisor-destino-novedades" style="display: none;">
                     <select id="supervisor-destino-novedades" class="input-select" onchange="actualizarPrint('novedades')">
@@ -251,7 +212,7 @@
                 </select>
                 <button class="btn-gestion btn-adjuntar" onclick="document.getElementById('file-novedades').click()">📎 Adjuntar Archivos</button>
                 <input type="file" id="file-novedades" style="display:none" multiple onchange="previsualizarMultiples(this, 'novedades')">
-                <button class="btn-gestion" style="background: #28a745; color: white;" onclick="guardarRedaccion('novedades')">Guardar y Enviar</button>
+                <button class="btn-gestion" onclick="guardarRedaccion('novedades')">Guardar y Enviar</button>
             </div>
             
             <div id="print-header-novedades" class="print-header">Dirigido a: Todos los departamentos | Turno: Todos los turnos</div>
@@ -261,7 +222,6 @@
             
             <div class="area-acciones">
                 <button id="btn-print-novedades" class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
-                <button class="btn-gestion btn-imprimir" style="background: #dc3545;" onclick="limpiarPantalla('novedades')">🧹 Limpiar Pantalla</button>
             </div>
 
             <div class="historial-muro-container">
@@ -430,21 +390,6 @@
             }
         }
 
-        function limpiarPantalla(id) {
-            document.getElementById('txt-' + id).value = '';
-            document.getElementById('print-' + id).innerText = '';
-            const prev = document.getElementById('preview-' + id);
-            if (prev) {
-                prev.innerHTML = '';
-                prev.style.display = 'none';
-            }
-            if (id === 'novedades') {
-                archivosMultiplesNovedades = [];
-                const fileInput = document.getElementById('file-novedades');
-                if (fileInput) fileInput.value = '';
-            }
-        }
-
         async function verificarNovedadesNoLeidas() {
             try {
                 const { data, error } = await supabaseClient
@@ -558,7 +503,16 @@
                 alert("Error al enviar a la base de datos: " + error.message);
             } else {
                 alert("Novedad enviada y guardada correctamente.");
-                limpiarPantalla(id);
+                document.getElementById('txt-' + id).value = '';
+                document.getElementById('print-' + id).innerText = '';
+                const prev = document.getElementById('preview-' + id);
+                if (prev) {
+                    prev.innerHTML = '';
+                    prev.style.display = 'none';
+                }
+                archivosMultiplesNovedades = [];
+                const fileInput = document.getElementById('file-novedades');
+                if (fileInput) fileInput.value = '';
                 cargarNovedades();
             }
         }
