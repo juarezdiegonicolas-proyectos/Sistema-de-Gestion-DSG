@@ -8,7 +8,9 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body { margin: 0; font-family: 'Roboto', sans-serif; display: flex; height: 100vh; background-color: #f8fafc; }
-        .sidebar { width: 260px; background-color: #1a3a5f; color: white; padding: 25px 20px; display: flex; flex-direction: column; flex-shrink: 0; }
+        
+        /* Sidebar ajustado exactamente como se solicitó */
+        .sidebar { width: 260px; background-color: #1a3a5f; color: white; padding: 25px 20px; display: flex; flex-direction: column; }
         
         .bienvenida-box { background-color: #2d5a8e; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; border: 1px solid #5d8dbb; }
         .bienvenida-box h3 { margin: 0; font-size: 14px; font-weight: 300; color: #cce7ff; }
@@ -16,9 +18,9 @@
         .sidebar-header-title { min-height: 50px; margin-bottom: 15px; display: flex; align-items: center; }
         .sidebar-header-title h2 { font-size: 20px; margin: 0; }
 
-        .menu-links { flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
-        .menu-item { display: flex; justify-content: space-between; align-items: center; color: #ddd; padding: 10px 12px; text-decoration: none; border-bottom: 1px solid rgba(93, 141, 187, 0.3); font-weight: 500; cursor: pointer; border-radius: 4px; margin-bottom: 8px; }
-        .menu-item:hover { background-color: #5d8dbb; color: white; }
+        .menu-links { flex: 1; display: flex; flex-direction: column; }
+        .menu-item { display: flex; justify-content: space-between; align-items: center; color: #ddd; padding: 10px 12px; margin-bottom: 8px; text-decoration: none; border-bottom: 1px solid rgba(93, 141, 187, 0.3); font-weight: 500; cursor: pointer; }
+        .menu-item:hover, .menu-item.activo { background-color: #5d8dbb; color: white; }
         
         /* Badge para Novedades */
         .badge-novedades { background-color: #dc3545; color: white; font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 10px; display: none; }
@@ -26,7 +28,7 @@
         .btn-accion-global { width: 100%; padding: 15px; margin-bottom: 10px; background: #28a745; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
         .btn-cerrar { margin-top: 10px; padding: 15px; background: #d32f2f; color: white; text-align: center; text-decoration: none; border-radius: 6px; font-weight: bold; border: none; cursor: pointer; width: 100%; box-sizing: border-box; }
         .contenido { flex: 1; padding: 40px; overflow-y: auto; }
-        .seccion { display: none; background: #ffffff; padding: 40px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .seccion { display: none; background: white; padding: 40px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         .seccion.activo { display: block; } 
         .info-hoja { display: flex; justify-content: space-between; margin-bottom: 15px; font-weight: bold; color: #1a3a5f; align-items: center;}
         
@@ -49,28 +51,27 @@
         
         .input-fecha { border: 1px solid #ccc; padding: 8px; border-radius: 4px; font-family: inherit; cursor: pointer; }
         .area-acciones { margin-top: 20px; display: flex; gap: 10px; }
-        .btn-gestion { padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px; }
+        .btn-gestion { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; }
         .btn-imprimir { background: #6c757d; color: white; }
         #info-supervisor { margin-bottom: 20px; color: #1a3a5f; font-weight: bold; border: 1px solid #ddd; padding: 10px; border-radius: 6px; background: #f9f9f9; }
         .header-logos { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
         .header-logos img { height: 110px; width: auto; object-fit: contain; }
 
-        /* Estilos específicos para sección Novedades y Muro (Alineados con admin) */
-        .filtros-historicos { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 20px; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #ddd; }
-        .input-select { padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; font-size: 13px; color: #334155; background: #f8fafc; cursor: pointer; }
-        .btn-adjuntar { background: #1a3a5f; color: white; }
+        /* Estilos específicos para sección Novedades y Muro (Exactos del otro HTML) */
+        .filtros-historicos { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 20px; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #ddd; }
+        .input-select { padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; font-size: 13px; background: white; cursor: pointer; }
+        .btn-adjuntar { background: #17a2b8; color: white; }
         .preview-adjunto { display: none; margin-top: 10px; padding: 10px; background: #e9ecef; border-radius: 6px; font-size: 13px; border: 1px solid #ced4da; }
         .print-header { display: none; font-weight: bold; margin-bottom: 10px; }
         .print-only { display: none; }
-        #txt-novedades { width: 100%; min-height: 350px; padding: 18px; border: 1px solid #cbd5e1; border-radius: 10px; font-family: inherit; font-size: 14px; line-height: 1.6; resize: none; box-sizing: border-box; background-color: #ffffff; }
+        #txt-novedades { width: 100%; min-height: 150px; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-family: inherit; font-size: 15px; resize: vertical; box-sizing: border-box; }
         
         .historial-muro-container { margin-top: 30px; border-top: 2px solid #dee2e6; padding-top: 20px; }
         .historial-muro-titulo { font-size: 16px; font-weight: bold; color: #1a3a5f; margin-bottom: 15px; }
         
-        .muro-item { background: #fff; border: 1px solid #d1d8df; border-left: 5px solid #64748b; padding: 15px; border-radius: 6px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .muro-item.recibido { border-left-color: #06b6d4; }
-        .muro-item.enviado { border-left-color: #1a3a5f; }
-        .muro-item.terceros { border-left-color: #64748b; }
+        .muro-item { background: #ffffff; border: 1px solid #e2e8f0; border-left: 6px solid #1a3a5f; padding: 22px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+        .muro-item.recibido { border-left-color: #17a2b8; }
+        .muro-item.enviado { border-left-color: #28a745; }
 
         .muro-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; flex-wrap: wrap; gap: 10px; }
         .novedad-meta { font-size: 0.85rem; color: #495057; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; line-height: 1.8; }
@@ -80,9 +81,8 @@
         .muro-adjuntos a:hover { text-decoration: underline; }
 
         .badge-estado { font-size: 0.75rem; padding: 4px 8px; border-radius: 4px; font-weight: bold; color: white; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; display: inline-block; vertical-align: middle; margin-right: 4px; }
-        .badge-recibido { background-color: #06b6d4; }
-        .badge-enviado { background-color: #1a3a5f; }
-        .badge-terceros { background-color: #64748b; }
+        .badge-recibido { background-color: #17a2b8; }
+        .badge-enviado { background-color: #28a745; }
 
         @media print {
             .sidebar, .btn-accion-global, .btn-cerrar, .menu-item, .no-imprimir, .btn-imprimir, .filtros-historicos, .area-acciones { display: none !important; }
@@ -118,9 +118,9 @@
             <h2 id="titulo-panel">Reportes</h2>
         </div>
         <div class="menu-links">
-            <div class="menu-item" onclick="mostrar('reportes', 'Reportes')"><span>📊 Reportes</span></div>
-            <div class="menu-item" onclick="mostrar('ascensores', 'Estado de Ascensores')"><span>🛗 Estado de Ascensores</span></div>
-            <div class="menu-item" onclick="mostrar('novedades', 'Novedades')"><span>📢 Novedades</span> <span id="badge-novedades" class="badge-novedades">0</span></div>
+            <div class="menu-item" id="menu-reportes" onclick="mostrar('reportes', 'Reportes')"><span>📊 Reportes</span></div>
+            <div class="menu-item" id="menu-ascensores" onclick="mostrar('ascensores', 'Estado de Ascensores')"><span>🛗 Estado de Ascensores</span></div>
+            <div class="menu-item" id="menu-novedades" onclick="mostrar('novedades', 'Novedades')"><span>📢 Novedades</span> <span id="badge-novedades" class="badge-novedades">0</span></div>
         </div>
         <button class="btn-accion-global" onclick="cerrarJornadaGlobal()">📥 CERRAR JORNADA</button>
         <button class="btn-cerrar" onclick="cerrarSesion()">🚪 CERRAR SESIÓN</button>
@@ -161,9 +161,9 @@
 
         <div id="novedades" class="seccion">
             <div class="header-logos">
-                <img src="static/logo_hospi.png" alt="Logo Hospital" onerror="this.src='https://via.placeholder.com/150?text=Hospital'">
+                <img src="/static/logo_hospi.png" alt="Logo" onerror="this.src='https://via.placeholder.com/150?text=Hospital'">
                 <h1 style="margin: 0; text-align: center; flex: 1;">Novedades</h1>
-                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
+                <img src="/static/logo_dsg.png" alt="Logo DSG" style="height: 135px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
             </div>
             <div class="filtros-historicos">
                 <select id="depto-destino-novedades" class="input-select" onchange="manejarCambioDepto('destino-novedades'); actualizarPrint('novedades');">
@@ -177,11 +177,13 @@
                     <option value="dalo">DALO</option>
                     <option value="higiene-y-seguridad">Higiene y Seguridad</option>
                 </select>
+                
                 <div id="contenedor-supervisor-destino-novedades" style="display: none;">
                     <select id="supervisor-destino-novedades" class="input-select" onchange="actualizarPrint('novedades')">
                         <option value="">-- Todos los supervisores --</option>
                     </select>
                 </div>
+                
                 <select id="turno-destino-novedades" class="input-select" onchange="actualizarPrint('novedades')">
                     <option value="Todos">Todos los turnos</option>
                     <option value="Mañana">Mañana</option>
@@ -190,18 +192,20 @@
                     <option value="Noche B">Noche B</option>
                     <option value="Sadofe">Sadofe</option>
                 </select>
+                
                 <button class="btn-gestion btn-adjuntar" onclick="document.getElementById('file-novedades').click()">📎 Adjuntar Archivos</button>
                 <input type="file" id="file-novedades" style="display:none" multiple onchange="previsualizarMultiples(this, 'novedades')">
-                <button class="btn-gestion" style="background: #1a3a5f; color: white;" onclick="guardarRedaccion('novedades')">Guardar y Enviar</button>
+                <button class="btn-gestion" style="background: #28a745; color: white;" onclick="guardarRedaccion('novedades')">Guardar y Enviar</button>
             </div>
             
             <div id="print-header-novedades" class="print-header">Dirigido a: Todos los departamentos | Turno: Todos los turnos</div>
-            <textarea id="txt-novedades" oninput="document.getElementById('print-novedades').innerText = this.value" placeholder="Escriba aquí el contenido..."></textarea>
+            <textarea id="txt-novedades" oninput="document.getElementById('print-novedades').innerText = this.value" placeholder="Escriba aquí el contenido de la novedad..."></textarea>
             <div id="print-novedades" class="print-only"></div>
             <div id="preview-novedades" class="preview-adjunto"></div>
             
             <div class="area-acciones">
                 <button id="btn-print-novedades" class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
+                <button class="btn-gestion btn-imprimir" style="background: #dc3545;" onclick="limpiarPantalla('novedades')">🧹 Limpiar Pantalla</button>
             </div>
 
             <div class="historial-muro-container">
@@ -588,20 +592,9 @@
                     const deptoDestinoValor = item.departamento_destino || 'Todos';
 
                     const esEnviado = remitenteDepto === 'higiene-y-seguridad';
-                    
-                    let claseMuroItem = 'recibido';
-                    let tipoBadge = 'RECIBIDO';
-                    let claseBadgeEstado = 'badge-recibido';
-
-                    if (esEnviado) {
-                        claseMuroItem = 'enviado';
-                        tipoBadge = 'ENVIADO';
-                        claseBadgeEstado = 'badge-enviado';
-                    } else if (remitenteDepto && remitenteDepto !== 'higiene-y-seguridad') {
-                        claseMuroItem = 'terceros';
-                        tipoBadge = 'ENVIADO DESDE';
-                        claseBadgeEstado = 'badge-terceros';
-                    }
+                    const claseMuroItem = esEnviado ? 'enviado' : 'recibido';
+                    const tipoBadge = esEnviado ? 'ENVIADO' : 'RECIBIDO';
+                    const claseBadgeEstado = esEnviado ? 'badge-enviado' : 'badge-recibido';
 
                     const supervisorOrigenFinal = item.supervisor_origen || contenidoObj.supervisor_origen || 'No especificado';
                     const supervisorDestinoFinal = item.supervisor_destino || contenidoObj.supervisor || 'General (Todos)';
@@ -814,7 +807,12 @@
 
         function mostrar(id, titulo) {
             document.querySelectorAll('.seccion').forEach(s => s.classList.remove('activo'));
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('activo'));
+            
             document.getElementById(id).classList.add('activo');
+            const menuEl = document.getElementById('menu-' + id);
+            if (menuEl) menuEl.classList.add('activo');
+
             document.getElementById('titulo-panel').innerText = titulo;
 
             if (id === 'novedades') {
@@ -829,7 +827,6 @@
             const turno = localStorage.getItem('usuario_turno') || "Mañana"; 
             const depto = "Higiene y Seguridad";
             
-            // Validación específica para cambiar el título de bienvenida si ingresa RODRIGUEZ ADRIAN
             if (nombre.trim().toUpperCase() === "RODRIGUEZ ADRIAN") {
                 document.getElementById('titulo-bienvenida').innerText = "Bienvenido Sr. Director:";
             }
@@ -861,6 +858,7 @@
             
             cargarEstadoAscensores();
             verificarNovedadesNoLeidas();
+            mostrar('reportes', 'Reportes');
         };
     </script>
 </body>
