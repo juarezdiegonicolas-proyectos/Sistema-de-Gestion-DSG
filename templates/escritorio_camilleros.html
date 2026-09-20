@@ -397,7 +397,7 @@
             <div class="area-acciones"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir Resultados</button></div>
         </div>
         
-        <!-- SOLAPA 5: NOVEDADES -->
+        <!-- SOLAPA 5: NOVEDADES (ACTUALIZADA) -->
         <div id="novedades" class="seccion">
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo Hospital" onerror="this.src='https://via.placeholder.com/150?text=Hospital'">
@@ -487,7 +487,7 @@
             </div>
         </div>
 
-        <!-- SOLAPA 7: RESOLUCIONES -->
+        <!-- SOLAPA 7: RESOLUCIONES (FORMULARIOS LICENCIAS) -->
         <div id="resoluciones" class="seccion">
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo Hospital">
@@ -1331,28 +1331,32 @@
                         obsTexto = reg.observaciones;
                     }
                 }
-
+                
+                // Limpiamos y aseguramos que el HTML de la tabla renderice los valores y estados seleccionados exactamente igual
+                let tablaHtmlModificada = reg.tabla || '';
+                
                 cont.innerHTML = `
                     <style>
                         #contenedor-historicos .tabla-camilleros th:first-child, 
                         #contenedor-historicos .tabla-camilleros td:first-child { display: none !important; }
                         #contenedor-historicos input, #contenedor-historicos select { border: none !important; background: transparent !important; pointer-events: none !important; font-size: 13px !important; -webkit-appearance: none; -moz-appearance: none; appearance: none; }
-                        #contenedor-historicos .tabla-camilleros { table-layout: auto !important; font-size: 13px !important; width: 100% !important; border-collapse: collapse !important; }
+                        #contenedor-historicos .tabla-camilleros { table-layout: auto !important; font-size: 13px !important; }
                         #contenedor-historicos .tabla-camilleros th, 
-                        #contenedor-historicos .tabla-camilleros td { border: 1px solid #cbd5e1 !important; padding: 8px 6px !important; text-align: center !important; vertical-align: middle !important; font-size: 13px !important; color: #334155 !important; }
-                        #contenedor-historicos .tabla-camilleros th { background-color: #1a3a5f !important; color: white !important; height: 40px !important; }
+                        #contenedor-historicos .tabla-camilleros td { font-size: 13px !important; }
+                        #contenedor-historicos .custom-multiselect .multiselect-btn { border: none !important; background: transparent !important; padding: 0 !important; cursor: default !important; }
+                        #contenedor-historicos .custom-multiselect .multiselect-btn span:last-child { display: none !important; }
+                        #contenedor-historicos .multiselect-content { display: none !important; }
                     </style>
-                    <div style="background: #ffffff; padding: 25px; border-radius: 10px; border: 1px solid #cbd5e1; box-shadow: 0 2px 6px rgba(0,0,0,0.05);">
-                        <div style="font-size: 18px; font-weight: bold; color: #1a3a5f; margin-bottom: 15px;">Planilla Operativa - Camilleros</div>
-                        <table class="tabla-camilleros">
+                    <div style="border: 2px solid #1a3a5f; padding: 20px; font-size: 13px; background: #fff; border-radius: 8px;">
+                        <table class="tabla-camilleros" style="width: 100%; font-size: 13px;">
                             <thead>
-                                <tr><th></th><th>HORA</th><th>PISO/SALA/CAMA</th><th>APELLIDO Y NOMBRE</th><th>DESTINO</th><th>HORA ESTADÍA</th><th>MOVILIDAD</th><th>CAMILLERO</th><th>HORA DE FINALIZACION</th></tr>
+                                <tr><th></th><th>HORA</th><th>PISO/SALA/CAMA</th><th>APELLIDO Y NOMBRE</th><th>DESTINO</th><th>HORA ESTADÍA</th><th>MOVILIDAD</th><th>CAMILLERO</th><th>HORA FINALIZACIÓN</th></tr>
                             </thead>
-                            <tbody>${reg.tabla}</tbody>
+                            <tbody>${tablaHtmlModificada}</tbody>
                         </table>
-                        <div style="margin-top: 25px; border: 1px solid #cbd5e1; border-radius: 6px; overflow: hidden;">
-                            <div style="background-color: #1a3a5f; color: white; padding: 8px 12px; font-weight: 500; font-size: 14px;">Observaciones:</div>
-                            <div style="background-image: linear-gradient(#e0e0e0 1px, transparent 1px); background-size: 100% 30px; line-height: 30px; padding: 0 10px; min-height: 120px; white-space: pre-wrap; font-family: 'Courier New', Courier, monospace; font-size: 15px; background-color: #f8fafc; color: #334155;">${obsTexto}</div>
+                        <div style="margin-top: 20px; border: 1px solid #1a3a5f; border-radius: 4px; overflow: hidden;">
+                            <div style="background-color: #1a3a5f; color: white; padding: 8px 12px; font-weight: bold; font-size: 13px; letter-spacing: 0.5px;">Observaciones:</div>
+                            <div style="background-image: linear-gradient(#e0e0e0 1px, transparent 1px); background-size: 100% 30px; line-height: 30px; padding: 0 10px; min-height: 90px; white-space: pre-wrap; font-family: 'Courier New', Courier, monospace; font-size: 13px; background-color: #fafafa;">${obsTexto}</div>
                         </div>
                     </div>`;
             } else if (tipo === 'asistencia') {
