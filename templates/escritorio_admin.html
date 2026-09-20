@@ -684,7 +684,7 @@
             crearSeccion('novedades', 'Novedades', 'redaccion');
         </script>
 
-        <!-- SECCIÓN ESTADÍSTICAS MODIFICADA CON LOS 5 ÍTEMS SOLICITADOS -->
+        <!-- SECCIÓN ESTADÍSTICAS -->
         <div id="estadisticas" class="seccion">
             <div class="header-logos">
                 <img src="/static/logo_hospi.png" alt="Logo">
@@ -693,11 +693,9 @@
             </div>
             <div class="filtros-historicos">
                 <select id="est-tipo" class="input-select" onchange="manejarCambioTipoEstadistica()">
-                    <option value="rrhh">1. Presentismo y Asistencia (RRHH)</option>
-                    <option value="ascensores">2. Estado de Ascensores / Operatividad</option>
-                    <option value="camilleros">3. Traslados de Camilleros</option>
-                    <option value="insumos">4. Consumo y Auditoría de Insumos</option>
-                    <option value="novedades">5. Mapeo y Flujo de Novedades</option>
+                    <option value="rrhh">Asistencia (RRHH)</option>
+                    <option value="ascensores">Estado de Ascensores</option>
+                    <option value="camilleros">Traslados de Camilleros</option>
                 </select>
                 <select id="est-depto" class="input-select">
                     <option value="Todos">Todos los departamentos</option>
@@ -717,7 +715,7 @@
                     <option value="Noche B">Noche B</option>
                     <option value="Sadofe">Sadofe</option>
                 </select>
-                <select id="est-periodo" class="input-select" onchange="manejarCambioPeriodoEstadistica()">
+                <select id="est-periodo" class="input-select" style="display:none;" onchange="manejarCambioPeriodoEstadistica()">
                     <option value="semana">Semanal (últimos 7 días)</option>
                     <option value="mes" selected>Mensual</option>
                     <option value="anio">Anual</option>
@@ -732,7 +730,7 @@
                 <button class="btn-gestion" style="background: #1a3a5f; color: white;" onclick="generarReporteMensual()">Generar Reporte</button>
             </div>
             <div id="visor-estadisticas" style="padding: 20px; border: 1px solid #cbd5e1; border-radius: 8px; text-align: center; background: #fff;">
-                <p>Seleccione el tipo de estadística, periodo y parámetros para consolidar.</p>
+                <p>Seleccione tipo de reporte, mes y año para consolidar.</p>
             </div>
         </div>
     </div>
@@ -1158,7 +1156,7 @@
             }
         }
 
-        // Registro de instancias de Chart.js para destrucción previa y evitar conflictos
+        // Registro de instancias de Chart.js para poder destruirlas antes de regenerar (evita error "Canvas is already in use")
         let chartInstancesEstadisticas = {};
         function destruirGraficoEstadistica(idCanvas) {
             if (chartInstancesEstadisticas[idCanvas]) {
@@ -1171,11 +1169,12 @@
             const tipo = document.getElementById('est-tipo').value;
             const periodoSelect = document.getElementById('est-periodo');
             const deptoSelect = document.getElementById('est-depto');
-            
-            if (tipo === 'camilleros' || tipo === 'insumos' || tipo === 'novedades') {
+            if (tipo === 'camilleros') {
                 periodoSelect.style.display = 'inline-block';
+                deptoSelect.style.display = 'none'; // Camilleros es un único departamento, no aplica el filtro
             } else {
                 periodoSelect.style.display = 'none';
+                deptoSelect.style.display = 'inline-block';
             }
             manejarCambioPeriodoEstadistica();
         }
@@ -1183,28 +1182,24 @@
         function manejarCambioPeriodoEstadistica() {
             const tipo = document.getElementById('est-tipo').value;
             const mesSelect = document.getElementById('est-mes');
+            if (tipo !== 'camilleros') { mesSelect.style.display = 'inline-block'; return; }
             const periodo = document.getElementById('est-periodo').value;
-            
-            if (tipo === 'rrhh' || tipo === 'ascensores') {
-                mesSelect.style.display = 'inline-block';
-            } else {
-                mesSelect.style.display = (periodo === 'mes') ? 'inline-block' : 'none';
-            }
+            mesSelect.style.display = (periodo === 'mes') ? 'inline-block' : 'none';
         }
 
-        // --- LÓGICA CONSOLIDADA DE LOS 5 ÍTEMS DE ESTADÍSTICAS ---
-        async function generarReporteMensual() {
-            const tipo = document.getElementById('est-tipo').value;
-            const deptoSeleccionado = document.getElementById('est-depto').value;
-            const turnoSeleccionado = document.getElementById('est-turno').value;
+        async function renderEstadisticasCamilleros() {
             const periodo = document.getElementById('est-periodo').value;
+            const turnoSeleccionado = document.getElementById('est-turno').value;
             const mes = document.getElementById('est-mes').value;
             const anio = document.getElementById('est-anio').value;
             const visor = document.getElementById('visor-estadisticas');
-            
-            visor.innerHTML = "<p>Consolidando datos y generando estadísticas...</p>";
 
-            // Rango de fechas según periodo
+            const { data, error } = await db.from('registros_camilleros').select('*');
+            if (error) {
+                visor.innerHTML = "<p style='color:red;'>Error al consultar registros_camilleros: " + error.message + "</p>";
+                return;
+            }
+
             let fechaDesde, fechaHasta, etiquetaPeriodo;
             const hoy = new Date();
             if (periodo === 'semana') {
@@ -1223,21 +1218,148 @@
                 etiquetaPeriodo = `${document.getElementById('est-mes').selectedOptions[0].text} ${anio}`;
             }
 
+            const filtrados = (data || []).filter(row => {
+                if (!row.fecha_cierre) return false;
+                const f = new Date(row.fecha_cierre + 'T12:00:00');
+                const matchFecha = f >= fechaDesde && f <= fechaHasta;
+                const matchTurno = (turnoSeleccionado === 'Todos' || row.turno === turnoSeleccionado);
+                return matchFecha && matchTurno;
+            });
+
+            if (filtrados.length === 0) {
+                visor.innerHTML = `<p>No hay traslados registrados para ${etiquetaPeriodo}.</p>`;
+                return;
+            }
+
+            const totalTraslados = filtrados.length;
+
+            const porTurno = {};
+            filtrados.forEach(r => { const t = r.turno || 'Sin turno'; porTurno[t] = (porTurno[t] || 0) + 1; });
+
+            const porDestino = {};
+            filtrados.forEach(r => { const d = (r.destino || 'Sin destino').trim(); porDestino[d] = (porDestino[d] || 0) + 1; });
+            const topDestinos = Object.entries(porDestino).sort((a, b) => b[1] - a[1]).slice(0, 8);
+
+            let sillas = 0, camillas = 0, otrosMov = 0;
+            filtrados.forEach(r => {
+                const m = (r.tipo_movilidad || '').toLowerCase();
+                if (m.includes('silla')) sillas++;
+                else if (m.includes('camilla')) camillas++;
+                else otrosMov++;
+            });
+
+            const porAgente = {};
+            let trasladosEnEquipo = 0, trasladosSolitario = 0, sumaAgentesPorTraslado = 0;
+            filtrados.forEach(r => {
+                const raw = (r.personal_asignado || '').trim();
+                if (!raw) return;
+                const nombres = raw.split(',').map(n => n.trim()).filter(n => n.length > 0);
+                if (nombres.length >= 2) trasladosEnEquipo++;
+                else if (nombres.length === 1) trasladosSolitario++;
+                sumaAgentesPorTraslado += nombres.length;
+                nombres.forEach(n => { porAgente[n] = (porAgente[n] || 0) + 1; });
+            });
+            const rankingAgentes = Object.entries(porAgente).sort((a, b) => b[1] - a[1]).slice(0, 10);
+            const promedioAgentesPorTraslado = totalTraslados > 0 ? (sumaAgentesPorTraslado / totalTraslados).toFixed(2) : '0';
+
+            const diasDistintos = new Set(filtrados.map(r => r.fecha_cierre)).size;
+            const promedioDiario = diasDistintos > 0 ? (totalTraslados / diasDistintos).toFixed(1) : '0';
+
             const tarjeta = (valor, etiqueta) => `
                 <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:18px 28px; min-width:150px;">
                     <div style="font-size:28px; font-weight:bold; color:#1a3a5f;">${valor}</div>
                     <div style="font-size:12px; color:#64748b;">${etiqueta}</div>
                 </div>`;
 
-            // 1. ASISTENCIA Y PRESENTISMO (RRHH)
+            let html = `
+                <h3 style="margin-top:0; color:#1a3a5f;">Traslados de Camilleros — ${etiquetaPeriodo}</h3>
+                <div style="display:flex; gap:20px; justify-content:center; flex-wrap:wrap; margin-bottom:25px;">
+                    ${tarjeta(totalTraslados, 'Total traslados')}
+                    ${tarjeta(promedioDiario, 'Promedio diario')}
+                    ${tarjeta(trasladosEnEquipo, 'Traslados en equipo (2+ agentes)')}
+                    ${tarjeta(trasladosSolitario, 'Traslados en solitario')}
+                    ${tarjeta(promedioAgentesPorTraslado, 'Promedio de agentes por traslado')}
+                </div>
+                <div style="display:flex; gap:30px; flex-wrap:wrap; justify-content:center; margin-bottom:25px;">
+                    <div style="width:320px;">
+                        <div style="font-weight:bold; color:#1a3a5f; margin-bottom:8px; text-align:center;">Traslados por turno</div>
+                        <canvas id="graficoCamTurno"></canvas>
+                    </div>
+                    <div style="width:280px;">
+                        <div style="font-weight:bold; color:#1a3a5f; margin-bottom:8px; text-align:center;">Silla vs. Camilla</div>
+                        <canvas id="graficoCamMovilidad"></canvas>
+                    </div>
+                    <div style="width:380px;">
+                        <div style="font-weight:bold; color:#1a3a5f; margin-bottom:8px; text-align:center;">Destinos más frecuentes</div>
+                        <canvas id="graficoCamDestino"></canvas>
+                    </div>
+                </div>
+                <div style="max-width:520px; margin: 0 auto; text-align:left;">
+                    <div style="font-weight:bold; color:#1a3a5f; margin-bottom:10px; text-align:center;">Ranking de agentes (traslados realizados)</div>
+                    <table style="width:100%; border-collapse:collapse; font-size:13px;">
+                        <thead>
+                            <tr style="background:#1a3a5f; color:white;">
+                                <th style="padding:6px; border:1px solid #cbd5e1;">#</th>
+                                <th style="padding:6px; border:1px solid #cbd5e1; text-align:left;">Agente</th>
+                                <th style="padding:6px; border:1px solid #cbd5e1;">Traslados</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rankingAgentes.map((a, i) => `
+                                <tr>
+                                    <td style="padding:6px; border:1px solid #cbd5e1; text-align:center;">${i + 1}</td>
+                                    <td style="padding:6px; border:1px solid #cbd5e1;">${a[0]}</td>
+                                    <td style="padding:6px; border:1px solid #cbd5e1; text-align:center;">${a[1]}</td>
+                                </tr>`).join('')}
+                        </tbody>
+                    </table>
+                </div>`;
+
+            visor.innerHTML = html;
+
+            destruirGraficoEstadistica('graficoCamTurno');
+            chartInstancesEstadisticas['graficoCamTurno'] = new Chart(document.getElementById('graficoCamTurno'), {
+                type: 'bar',
+                data: { labels: Object.keys(porTurno), datasets: [{ label: 'Traslados', data: Object.values(porTurno), backgroundColor: '#1a3a5f' }] },
+                options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+            });
+
+            destruirGraficoEstadistica('graficoCamMovilidad');
+            chartInstancesEstadisticas['graficoCamMovilidad'] = new Chart(document.getElementById('graficoCamMovilidad'), {
+                type: 'doughnut',
+                data: { labels: ['Sillas de ruedas', 'Camillas', 'Otro/Sin dato'], datasets: [{ data: [sillas, camillas, otrosMov], backgroundColor: ['#06b6d4', '#1a3a5f', '#94a3b8'] }] }
+            });
+
+            destruirGraficoEstadistica('graficoCamDestino');
+            chartInstancesEstadisticas['graficoCamDestino'] = new Chart(document.getElementById('graficoCamDestino'), {
+                type: 'bar',
+                data: { labels: topDestinos.map(d => d[0]), datasets: [{ label: 'Traslados', data: topDestinos.map(d => d[1]), backgroundColor: '#2d5a8e' }] },
+                options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+            });
+        }
+
+        async function generarReporteMensual() {
+            const tipo = document.getElementById('est-tipo').value;
+            const deptoSeleccionado = document.getElementById('est-depto').value;
+            const turnoSeleccionado = document.getElementById('est-turno').value;
+            const mes = document.getElementById('est-mes').value;
+            const anio = document.getElementById('est-anio').value;
+            const visor = document.getElementById('visor-estadisticas');
+            
+            visor.innerHTML = "<p>Cargando datos desde la nube...</p>";
+
+            if (tipo === 'camilleros') {
+                await renderEstadisticasCamilleros();
+                return;
+            }
+
             if (tipo === 'rrhh') {
                 let p = 0, a = 0, l = 0;
                 const { data: asistData } = await db.from('rrhh_asistencia').select('*');
                 if (asistData) {
                     asistData.forEach(ag => {
-                        if (!ag.fecha) return;
-                        const f = new Date(ag.fecha + 'T12:00:00');
-                        const matchFecha = f >= fechaDesde && f <= fechaHasta;
+                        const f = new Date(ag.fecha);
+                        const matchFecha = (f.getMonth() + 1) == mes && f.getFullYear() == anio;
                         const matchTurno = (turnoSeleccionado === 'Todos' || ag.turno === turnoSeleccionado);
                         const matchDepto = (deptoSeleccionado === 'Todos' || ag.departamento === deptoSeleccionado);
 
@@ -1249,179 +1371,34 @@
                         }
                     });
                 }
-                const totalReg = p + a + l;
-                if (totalReg === 0) { visor.innerHTML = `<p>No hay registros de asistencia para ${etiquetaPeriodo}.</p>`; return; }
                 
-                visor.innerHTML = `
-                    <h3 style="color:#1a3a5f; margin-top:0;">1. Presentismo y Asistencia (RRHH) — ${etiquetaPeriodo}</h3>
-                    <div style="display:flex; gap:20px; justify-content:center; flex-wrap:wrap; margin-bottom:20px;">
-                        ${tarjeta(p, 'Presentes')}
-                        ${tarjeta(a, 'Ausentes')}
-                        ${tarjeta(l, 'Licencias')}
-                        ${tarjeta(((p/totalReg)*100).toFixed(1) + '%', 'Índice de Presentismo')}
-                    </div>
-                    <div style="width:280px; height:280px; margin:auto;"><canvas id="graficoEstRrhh"></canvas></div>`;
-                
-                destruirGraficoEstadistica('graficoEstRrhh');
-                chartInstancesEstadisticas['graficoEstRrhh'] = new Chart(document.getElementById('graficoEstRrhh'), {
-                    type: 'doughnut',
-                    data: { labels: ['Presentes', 'Ausentes', 'Licencias'], datasets: [{ data: [p, a, l], backgroundColor: ['#28a745', '#dc3545', '#ffc107'] }] },
-                    options: { plugins: { legend: { position: 'bottom' } } }
-                });
-
-            // 2. ESTADO DE ASCENSORES / OPERATIVIDAD
+                if (p+a+l === 0) { visor.innerHTML = "No hay datos para esta selección."; return; }
+                visor.innerHTML = `<h3>Asistencia (${deptoSeleccionado}) ${mes}/${anio}</h3><div style="width:300px; height:300px; margin:auto;"><canvas id="graficoMes"></canvas></div><p><b>Presentismo:</b> ${((p/(p+a+l))*100).toFixed(1)}%</p>`;
+                destruirGraficoEstadistica('graficoMes');
+                chartInstancesEstadisticas['graficoMes'] = new Chart(document.getElementById('graficoMes'), { type: 'doughnut', data: { labels: ['Presentes', 'Ausentes', 'Licencias'], datasets: [{ data: [p, a, l], backgroundColor: ['#28a745', '#dc3545', '#ffc107'] }] } });
+            
             } else if (tipo === 'ascensores') {
                 const { data: ascData } = await db.from('registros_ascensores').select('*');
-                let func = 0, mant = 0, fuera = 0, ascens = 0;
+                let func = 0, falla = 0;
                 if (ascData) {
                     ascData.forEach(item => {
-                        if (!item.fecha_cierre) return;
-                        const f = new Date(item.fecha_cierre + 'T12:00:00');
-                        const matchFecha = f >= fechaDesde && f <= fechaHasta;
+                        const f = new Date(item.fecha_cierre);
+                        const matchFecha = (f.getMonth() + 1) == mes && f.getFullYear() == anio;
                         const matchTurno = (turnoSeleccionado === 'Todos' || item.turno === turnoSeleccionado);
                         const matchDepto = (deptoSeleccionado === 'Todos' || item.departamento === deptoSeleccionado);
 
                         if (matchFecha && matchTurno && matchDepto) {
                             const txt = String(item.estado || '').trim().toLowerCase();
-                            if (txt.includes('funcionando') && !txt.includes('ascensorista')) func++;
-                            else if (txt.includes('mantenimiento')) mant++;
-                            else if (txt.includes('fuera') || txt.includes('servicio')) fuera++;
-                            else if (txt.includes('ascensorista') || txt.includes('mixto')) ascens++;
-                            else func++;
-                        }
-                    });
-                }
-                const totalAsc = func + mant + fuera + ascens;
-                if (totalAsc === 0) { visor.innerHTML = `<p>No hay registros de ascensores para ${etiquetaPeriodo}.</p>`; return; }
-
-                visor.innerHTML = `
-                    <h3 style="color:#1a3a5f; margin-top:0;">2. Estado de Ascensores / Operatividad — ${etiquetaPeriodo}</h3>
-                    <div style="display:flex; gap:20px; justify-content:center; flex-wrap:wrap; margin-bottom:20px;">
-                        ${tarjeta(func, 'En Servicio')}
-                        ${tarjeta(mant, 'Mantenimiento')}
-                        ${tarjeta(fuera, 'Fuera de Servicio')}
-                        ${tarjeta(ascens, 'Con Ascensorista')}
-                    </div>
-                    <div style="width:280px; height:280px; margin:auto;"><canvas id="graficoEstAsc"></canvas></div>`;
-
-                destruirGraficoEstadistica('graficoEstAsc');
-                chartInstancesEstadisticas['graficoEstAsc'] = new Chart(document.getElementById('graficoEstAsc'), {
-                    type: 'pie',
-                    data: { labels: ['Funcionando', 'Mantenimiento', 'Fuera de Servicio', 'Ascensoristas'], datasets: [{ data: [func, mant, fuera, ascens], backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#007bff'] }] },
-                    options: { plugins: { legend: { position: 'bottom' } } }
-                });
-
-            // 3. TRASLADOS DE CAMILLEROS
-            } else if (tipo === 'camilleros') {
-                const { data, error } = await db.from('registros_camilleros').select('*');
-                if (error) { visor.innerHTML = "<p style='color:red;'>Error al consultar registros_camilleros.</p>"; return; }
-
-                const filtrados = (data || []).filter(row => {
-                    if (!row.fecha_cierre) return false;
-                    const f = new Date(row.fecha_cierre + 'T12:00:00');
-                    return f >= fechaDesde && f <= fechaHasta && (turnoSeleccionado === 'Todos' || row.turno === turnoSeleccionado);
-                });
-
-                if (filtrados.length === 0) { visor.innerHTML = `<p>No hay traslados registrados para ${etiquetaPeriodo}.</p>`; return; }
-
-                const totalTraslados = filtrados.length;
-                let sillas = 0, camillas = 0, otrosMov = 0;
-                let porDestino = {};
-                filtrados.forEach(r => {
-                    const m = (r.tipo_movilidad || '').toLowerCase();
-                    if (m.includes('silla')) sillas++;
-                    else if (m.includes('camilla')) camillas++;
-                    else otrosMov++;
-                    const d = (r.destino || 'Sin destino').trim();
-                    porDestino[d] = (porDestino[d] || 0) + 1;
-                });
-                const topDestinos = Object.entries(porDestino).sort((a, b) => b[1] - a[1]).slice(0, 6);
-
-                visor.innerHTML = `
-                    <h3 style="color:#1a3a5f; margin-top:0;">3. Traslados de Camilleros — ${etiquetaPeriodo}</h3>
-                    <div style="display:flex; gap:20px; justify-content:center; flex-wrap:wrap; margin-bottom:25px;">
-                        ${tarjeta(totalTraslados, 'Total Traslados')}
-                        ${tarjeta(sillas, 'En Silla de Ruedas')}
-                        ${tarjeta(camillas, 'En Camilla')}
-                    </div>
-                    <div style="display:flex; gap:30px; justify-content:center; flex-wrap:wrap;">
-                        <div style="width:280px; height:280px;"><canvas id="graficoEstCamMov"></canvas></div>
-                        <div style="width:360px;"><canvas id="graficoEstCamDest"></canvas></div>
-                    </div>`;
-
-                destruirGraficoEstadistica('graficoEstCamMov');
-                chartInstancesEstadisticas['graficoEstCamMov'] = new Chart(document.getElementById('graficoEstCamMov'), {
-                    type: 'doughnut',
-                    data: { labels: ['Sillas', 'Camillas', 'Otros'], datasets: [{ data: [sillas, camillas, otrosMov], backgroundColor: ['#06b6d4', '#1a3a5f', '#94a3b8'] }] },
-                    options: { plugins: { legend: { position: 'bottom' } } }
-                });
-
-                destruirGraficoEstadistica('graficoEstCamDest');
-                chartInstancesEstadisticas['graficoEstCamDest'] = new Chart(document.getElementById('graficoEstCamDest'), {
-                    type: 'bar',
-                    data: { labels: topDestinos.map(d => d[0]), datasets: [{ label: 'Traslados', data: topDestinos.map(d => d[1]), backgroundColor: '#2d5a8e' }] },
-                    options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true } } }
-                });
-
-            // 4. CONSUMO Y AUDITORÍA DE INSUMOS
-            } else if (tipo === 'insumos') {
-                const { data, error } = await db.from('comunicados_memos').select('*').ilike('id_clave', '%insumos%');
-                let totalReportes = 0;
-                let porDeptoInsumos = {};
-                
-                if (data) {
-                    data.forEach(item => {
-                        let f = new Date(item.created_at);
-                        if (f >= fechaDesde && f <= fechaHasta) {
-                            totalReportes++;
-                            let depto = item.departamento_origen || 'General';
-                            porDeptoInsumos[depto] = (porDeptoInsumos[depto] || 0) + 1;
+                            if (txt.includes('funciona') || txt.includes('ok') || txt === 'p') func++;
+                            else if (txt.includes('falla') || txt.includes('fuera') || txt === 'a' || txt === 'l') falla++;
                         }
                     });
                 }
 
-                visor.innerHTML = `
-                    <h3 style="color:#1a3a5f; margin-top:0;">4. Consumo y Auditoría de Insumos — ${etiquetaPeriodo}</h3>
-                    <div style="display:flex; gap:20px; justify-content:center; flex-wrap:wrap; margin-bottom:25px;">
-                        ${tarjeta(totalReportes, 'Reportes de Insumos Emitidos')}
-                    </div>
-                    <div style="max-width:500px; margin:0 auto; background:#f8fafc; padding:20px; border-radius:8px; border:1px solid #e2e8f0; text-align:left;">
-                        <p style="margin:0 0 10px 0; font-weight:bold; color:#1a3a5f;">Distribución por Departamento:</p>
-                        <ul style="margin:0; padding-left:20px; color:#334155; font-size:14px; line-height:1.6;">
-                            ${Object.entries(porDeptoInsumos).length > 0 ? Object.entries(porDeptoInsumos).map(([d, c]) => `<li><b>${d}:</b>${c} registros</li>`).join('') : '<li>No se registraron movimientos de insumos en este periodo.</li>'}
-                        </ul>
-                    </div>`;
-
-            // 5. MAPEO Y FLUJO DE NOVEDADES
-            } else if (tipo === 'novedades') {
-                const { data, error } = await db.from('comunicados_memos').select('*').ilike('id_clave', 'comunicado_novedades_%');
-                let totalNovedades = 0;
-                let porDestinoNov = {};
-
-                if (data) {
-                    data.forEach(item => {
-                        let f = new Date(item.created_at);
-                        if (f >= fechaDesde && f <= fechaHasta) {
-                            totalNovedades++;
-                            let dest = item.departamento_destino || 'Todos';
-                            porDestinoNov[dest] = (porDestinoNov[dest] || 0) + 1;
-                        }
-                    });
-                }
-
-                visor.innerHTML = `
-                    <h3 style="color:#1a3a5f; margin-top:0;">5. Mapeo y Flujo de Novedades — ${etiquetaPeriodo}</h3>
-                    <div style="display:flex; gap:20px; justify-content:center; flex-wrap:wrap; margin-bottom:25px;">
-                        ${tarjeta(totalNovedades, 'Novedades Totales Emitidas')}
-                    </div>
-                    <div style="width:320px; height:320px; margin:auto;"><canvas id="graficoEstNov"></canvas></div>`;
-
-                destruirGraficoEstadistica('graficoEstNov');
-                chartInstancesEstadisticas['graficoEstNov'] = new Chart(document.getElementById('graficoEstNov'), {
-                    type: 'bar',
-                    data: { labels: Object.keys(porDestinoNov), datasets: [{ label: 'Novedades', data: Object.values(porDestinoNov), backgroundColor: '#1a3a5f' }] },
-                    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
-                });
+                if (func+falla === 0) { visor.innerHTML = "No hay registros para esta selección."; return; }
+                visor.innerHTML = `<h3>Estado Ascensores (${deptoSeleccionado}) ${mes}/${anio}</h3><div style="width:300px; height:300px; margin:auto;"><canvas id="graficoMes"></canvas></div><p><b>% Funcionamiento:</b> ${((func/(func+falla))*100).toFixed(1)}%</p>`;
+                destruirGraficoEstadistica('graficoMes');
+                chartInstancesEstadisticas['graficoMes'] = new Chart(document.getElementById('graficoMes'), { type: 'pie', data: { labels: ['En Servicio', 'En Falla'], datasets: [{ data: [func, falla], backgroundColor: ['#28a745', '#dc3545'] }] } });
             }
         }
 
@@ -1785,4 +1762,6 @@
     </script>
 </body>
 </html>
+
+
 
