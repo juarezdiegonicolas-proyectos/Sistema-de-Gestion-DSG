@@ -729,7 +729,7 @@
                     const remitenteDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
                     const deptoDestinoValor = item.departamento_destino || contenidoObj.departamento || 'Todos';
 
-                    const deptoUsuarioActual = "camilleros";
+                    const deptoUsuarioActual = "camilleros-central";
 
                     let tipoBadge = '';
                     let claseMuroItem = '';
@@ -833,7 +833,7 @@
                 return;
             }
 
-            const deptoOrigenNormalizado = "camilleros";
+            const deptoOrigenNormalizado = "camilleros-central";
             const deptoDestinoNormalizado = toKebabCase(destinoVisual);
             const supervisorOrigenVal = localStorage.getItem('usuario_nombre') || 'Administrador';
 
