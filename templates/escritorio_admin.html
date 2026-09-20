@@ -1156,7 +1156,6 @@
             }
         }
 
-        // Registro de instancias de Chart.js para poder destruirlas antes de regenerar (evita error "Canvas is already in use")
         let chartInstancesEstadisticas = {};
         function destruirGraficoEstadistica(idCanvas) {
             if (chartInstancesEstadisticas[idCanvas]) {
@@ -1171,7 +1170,7 @@
             const deptoSelect = document.getElementById('est-depto');
             if (tipo === 'camilleros') {
                 periodoSelect.style.display = 'inline-block';
-                deptoSelect.style.display = 'none'; // Camilleros es un único departamento, no aplica el filtro
+                deptoSelect.style.display = 'none';
             } else {
                 periodoSelect.style.display = 'none';
                 deptoSelect.style.display = 'inline-block';
