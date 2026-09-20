@@ -157,7 +157,6 @@
 
         #rrhh .tabla-camilleros { width: 99.5% !important; border-right: 1px solid #cbd5e1 !important; }
 
-        /* Estilos específicos añadidos para la sección de Novedades mejorada */
         .input-select, .input-fecha { 
             background-color: #f8fafc;
             border: 1px solid #cbd5e1;
@@ -245,7 +244,7 @@
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
         }
         .muro-item.recibido { border-left-color: #06b6d4; }
-        .muro-item.enviado { border-left-color: #28a745; } 
+        .muro-item.enviado { border-left-color: #28a745; }
         .muro-item.terceros { border-left-color: #64748b; }
 
         .muro-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px; }
@@ -257,7 +256,7 @@
 
         .badge-estado { font-size: 0.7rem; padding: 5px 10px; border-radius: 6px; font-weight: 700; color: white; text-transform: uppercase; letter-spacing: 0.8px; white-space: nowrap; display: inline-block; vertical-align: middle; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
         .badge-recibido { background-color: #06b6d4; }
-        .badge-enviado { background-color: #28a745; } 
+        .badge-enviado { background-color: #28a745; }
         .badge-terceros { background-color: #64748b; }
 
         @media print {
@@ -628,6 +627,28 @@
             document.getElementById('print-header-' + id).innerText = `Dirigido a: ${depto} | Turno: ${turno}${textoSup}`;
         }
 
+        async function marcarComoLeido(idMemo) {
+            const usuarioActual = (localStorage.getItem('usuario_nombre') || "invitado").trim();
+
+            try {
+                const { error } = await supabaseClient
+                    .from('comunicados_lecturas')
+                    .upsert({
+                        comunicado_id: idMemo,
+                        user_id: usuarioActual,
+                        leido_at: new Date().toISOString()
+                    }, { onConflict: 'comunicado_id, user_id' });
+
+                if (error) {
+                    console.error("Error al registrar lectura en comunicados_lecturas:", error);
+                } else {
+                    verificarNovedadesNoLeidas();
+                }
+            } catch (err) {
+                console.error("Excepción al marcar como leído:", err);
+            }
+        }
+
         async function verificarNovedadesNoLeidas() {
             try {
                 const { data, error } = await supabaseClient
@@ -639,7 +660,7 @@
                 if (error || !data) return;
 
                 const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim();
-                const usuarioActual = (localStorage.getItem('usuario_nombre') || "invitado").trim().toLowerCase();
+                const usuarioActual = (localStorage.getItem('usuario_nombre') || "invitado").trim();
 
                 const novedadesFiltradas = data.filter(item => {
                     const contenidoObj = item.contenido || {};
@@ -661,18 +682,16 @@
 
                 if (novedadesFiltradas.length === 0) return;
 
-                const claveStorage = `dsg_camilleros_ultimo_novedad_leida_${usuarioActual}`;
-                const ultimoIdLeido = localStorage.getItem(claveStorage);
-                let noLeidasCount = 0;
+                // Consultar cuáles de estos IDs ya fueron leídos por el usuario actual en la tabla comunicados_lecturas
+                const idsMemos = novedadesFiltradas.map(m => m.id);
+                const { data: lecturasData } = await supabaseClient
+                    .from('comunicados_lecturas')
+                    .select('comunicado_id')
+                    .eq('user_id', usuarioActual)
+                    .in('comunicado_id', idsMemos);
 
-                if (!ultimoIdLeido) {
-                    noLeidasCount = novedadesFiltradas.length;
-                } else {
-                    for (let item of novedadesFiltradas) {
-                        if (String(item.id) === String(ultimoIdLeido)) break;
-                        noLeidasCount++;
-                    }
-                }
+                const idsLeidos = new Set((lecturasData || []).map(l => l.comunicado_id));
+                let noLeidasCount = novedadesFiltradas.filter(item => !idsLeidos.has(item.id)).length;
 
                 const badge = document.getElementById('badge-novedades');
                 if (badge) {
@@ -726,8 +745,20 @@
                     return;
                 }
 
+                // Obtener lecturas del usuario actual para marcar elementos leídos automáticamente al visualizar
+                const usuarioActual = (localStorage.getItem('usuario_nombre') || "invitado").trim();
+                const idsMemos = dataFiltrada.map(m => m.id);
+                const { data: lecturasData } = await supabaseClient
+                    .from('comunicados_lecturas')
+                    .select('comunicado_id')
+                    .eq('user_id', usuarioActual)
+                    .in('comunicado_id', idsMemos);
+
+                const idsLeidos = new Set((lecturasData || []).map(l => l.comunicado_id));
+
                 let html = '';
                 dataFiltrada.forEach(item => {
+                    const memoId = item.id;
                     const contenidoObj = item.contenido || {};
                     const texto = contenidoObj.texto || 'Sin contenido';
                     let fecha = contenidoObj.fecha || item.created_at || 'Sin fecha';
@@ -744,7 +775,7 @@
                     }
 
                     const turnoMsg = item.turno_destino || contenidoObj.turno || 'Todos';
-                    const supervisorOrigenMsg = item.supervisor_origen || contenidoObj.supervisor_origen || contenidoObj.supervisor || (typeof localStorage.getItem('usuario_nombre') !== 'undefined' ? localStorage.getItem('usuario_nombre') : 'Administrador');
+                    const supervisorOrigenMsg = item.supervisor_origen || contenidoObj.supervisor_origen || contenidoObj.supervisor || 'Administrador';
                     const supervisorDestinoMsg = item.supervisor_destino || contenidoObj.supervisor || 'General (Todos)';
                     const remitenteDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
                     const deptoDestinoValor = item.departamento_destino || contenidoObj.departamento || 'Todos';
@@ -765,6 +796,11 @@
                         tipoBadge = `ENVIADO DESDE`;
                         claseMuroItem = 'terceros';
                         claseBadgeEstado = 'badge-terceros';
+                    }
+
+                    const yaLeido = idsLeidos.has(memoId);
+                    if (!yaLeido) {
+                        marcarComoLeido(memoId);
                     }
 
                     let infoDetalleCabecera = `
@@ -1532,3 +1568,4 @@
     </script>
 </body>
 </html>
+
