@@ -1323,36 +1323,24 @@
             cont.style.display = "block";
 
             if (tipo === 'planilla') {
-                let obsTexto = "";
-                if (reg.observaciones) {
-                    if (typeof reg.observaciones === 'object' && reg.observaciones.texto) {
-                        obsTexto = reg.observaciones.texto;
-                    } else if (typeof reg.observaciones === 'string') {
-                        obsTexto = reg.observaciones;
-                    }
-                }
-                
-                // Limpiamos y aseguramos que el HTML de la tabla renderice los valores y estados seleccionados exactamente igual
-                let tablaHtmlModificada = reg.tabla || '';
-                
+                const obsTexto = reg.observaciones ? (typeof reg.observaciones === 'object' ? reg.observaciones.texto : reg.observaciones) : "";
                 cont.innerHTML = `
                     <style>
                         #contenedor-historicos .tabla-camilleros th:first-child, 
                         #contenedor-historicos .tabla-camilleros td:first-child { display: none !important; }
                         #contenedor-historicos input, #contenedor-historicos select { border: none !important; background: transparent !important; pointer-events: none !important; font-size: 13px !important; -webkit-appearance: none; -moz-appearance: none; appearance: none; }
+                        #contenedor-historicos .multiselect-btn { background: transparent !important; border: none !important; pointer-events: none !important; padding: 0 !important; }
+                        #contenedor-historicos .multiselect-content { display: none !important; }
                         #contenedor-historicos .tabla-camilleros { table-layout: auto !important; font-size: 13px !important; }
                         #contenedor-historicos .tabla-camilleros th, 
                         #contenedor-historicos .tabla-camilleros td { font-size: 13px !important; }
-                        #contenedor-historicos .custom-multiselect .multiselect-btn { border: none !important; background: transparent !important; padding: 0 !important; cursor: default !important; }
-                        #contenedor-historicos .custom-multiselect .multiselect-btn span:last-child { display: none !important; }
-                        #contenedor-historicos .multiselect-content { display: none !important; }
                     </style>
                     <div style="border: 2px solid #1a3a5f; padding: 20px; font-size: 13px; background: #fff; border-radius: 8px;">
                         <table class="tabla-camilleros" style="width: 100%; font-size: 13px;">
                             <thead>
                                 <tr><th></th><th>HORA</th><th>PISO/SALA/CAMA</th><th>APELLIDO Y NOMBRE</th><th>DESTINO</th><th>HORA ESTADÍA</th><th>MOVILIDAD</th><th>CAMILLERO</th><th>HORA FINALIZACIÓN</th></tr>
                             </thead>
-                            <tbody>${tablaHtmlModificada}</tbody>
+                            <tbody>${reg.tabla}</tbody>
                         </table>
                         <div style="margin-top: 20px; border: 1px solid #1a3a5f; border-radius: 4px; overflow: hidden;">
                             <div style="background-color: #1a3a5f; color: white; padding: 8px 12px; font-weight: bold; font-size: 13px; letter-spacing: 0.5px;">Observaciones:</div>
