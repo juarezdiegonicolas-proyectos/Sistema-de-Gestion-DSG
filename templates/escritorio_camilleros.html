@@ -642,14 +642,17 @@
                 const usuarioActual = (localStorage.getItem('usuario_nombre') || "invitado").trim().toLowerCase();
 
                 const novedadesFiltradas = data.filter(item => {
-                    const clave = (item.id_clave || '').toLowerCase();
                     const contenidoObj = item.contenido || {};
+                    const deptoDestinoValor = (item.departamento_destino || contenidoObj.departamento || '').trim().toLowerCase();
+                    const remitenteDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
                     const turnoMsg = (contenidoObj.turno || "").toLowerCase();
 
-                    const esParaTodos = clave.includes('todos') || clave.includes('general') || turnoMsg === 'todos' || turnoMsg === 'general';
-                    const esParaDepto = clave.includes('camilleros');
+                    const esParaTodos = deptoDestinoValor === 'todos' || deptoDestinoValor === 'todos los departamentos' || turnoMsg === 'todos' || turnoMsg === 'general';
+                    const esDestinoCamilleros = deptoDestinoValor === 'camilleros-central';
+                    const esOrigenCamilleros = remitenteDepto === 'camilleros-central';
 
-                    if (!esParaDepto && !esParaTodos) return false;
+                    // Lógica del filtro: Mostrar lo recibido (destino camilleros), lo enviado por camilleros, o para todos.
+                    if (!esDestinoCamilleros && !esOrigenCamilleros && !esParaTodos) return false;
                     if (esParaTodos) return true;
                     if (turnoMsg && turnoMsg !== "todos" && turnoMsg !== "general") {
                         if (turnoMsg !== turnoActual.toLowerCase()) return false;
@@ -706,8 +709,29 @@
                     return;
                 }
 
+                // APLICACIÓN DE LA NUEVA LÓGICA DE FILTRADO PARA EL MURO DE NOVEDADES
+                const deptoUsuarioActual = "camilleros-central";
+                const dataFiltrada = data.filter(item => {
+                    const contenidoObj = item.contenido || {};
+                    const deptoDestinoValor = (item.departamento_destino || contenidoObj.departamento || '').trim().toLowerCase();
+                    const remitenteDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
+
+                    const esParaTodos = deptoDestinoValor === 'todos' || deptoDestinoValor === 'todos los departamentos' || deptoDestinoValor === 'todos-los-departamentos';
+                    const esDestinoCamilleros = deptoDestinoValor === deptoUsuarioActual;
+                    const esOrigenCamilleros = remitenteDepto === deptoUsuarioActual;
+
+                    // Debe mostrar: lo enviado a camilleros, lo recibido de camilleros, o lo enviado a todos.
+                    // Se omiten los mensajes que se envían entre otros departamentos ajenos.
+                    return esDestinoCamilleros || esOrigenCamilleros || esParaTodos;
+                });
+
+                if (dataFiltrada.length === 0) {
+                    contenedorNov.innerHTML = '<p style="color: #666; font-style: italic;">No hay novedades para mostrar en este muro.</p>';
+                    return;
+                }
+
                 let html = '';
-                data.forEach(item => {
+                dataFiltrada.forEach(item => {
                     const contenidoObj = item.contenido || {};
                     const texto = contenidoObj.texto || 'Sin contenido';
                     let fecha = contenidoObj.fecha || item.created_at || 'Sin fecha';
@@ -728,8 +752,6 @@
                     const supervisorDestinoMsg = item.supervisor_destino || contenidoObj.supervisor || 'General (Todos)';
                     const remitenteDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
                     const deptoDestinoValor = item.departamento_destino || contenidoObj.departamento || 'Todos';
-
-                    const deptoUsuarioActual = "camilleros-central";
 
                     let tipoBadge = '';
                     let claseMuroItem = '';
