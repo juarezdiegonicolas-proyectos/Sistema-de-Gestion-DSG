@@ -245,7 +245,7 @@
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
         }
         .muro-item.recibido { border-left-color: #06b6d4; }
-        .muro-item.enviado { border-left-color: #28a745; } /* Actualizado a verde */
+        .muro-item.enviado { border-left-color: #28a745; }
         .muro-item.terceros { border-left-color: #64748b; }
 
         .muro-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px; }
@@ -257,7 +257,7 @@
 
         .badge-estado { font-size: 0.7rem; padding: 5px 10px; border-radius: 6px; font-weight: 700; color: white; text-transform: uppercase; letter-spacing: 0.8px; white-space: nowrap; display: inline-block; vertical-align: middle; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
         .badge-recibido { background-color: #06b6d4; }
-        .badge-enviado { background-color: #28a745; } /* Actualizado a verde */
+        .badge-enviado { background-color: #28a745; }
         .badge-terceros { background-color: #64748b; }
 
         @media print {
@@ -661,17 +661,18 @@
 
                 if (novedadesFiltradas.length === 0) return;
 
-                // Lógica incorporada: Verificar en comunicados_lecturas qué mensajes ya leyó el usuario actual
-                const { data: lecturasData } = await supabaseClient
-                    .from('comunicados_lecturas')
-                    .select('id_clave')
-                    .eq('usuario', usuarioActual);
+                const claveStorage = `dsg_camilleros_ultimo_novedad_leida_${usuarioActual}`;
+                const ultimoIdLeido = localStorage.getItem(claveStorage);
+                let noLeidasCount = 0;
 
-                const idsLeidos = new Set((lecturasData || []).map(l => l.id_clave));
-
-                // Filtrar solo las novedades que NO han sido registradas como leídas en comunicados_lecturas
-                const noLeidas = novedadesFiltradas.filter(item => !idsLeidos.has(item.id_clave));
-                const noLeidasCount = noLeidas.length;
+                if (!ultimoIdLeido) {
+                    noLeidasCount = novedadesFiltradas.length;
+                } else {
+                    for (let item of novedadesFiltradas) {
+                        if (String(item.id) === String(ultimoIdLeido)) break;
+                        noLeidasCount++;
+                    }
+                }
 
                 const badge = document.getElementById('badge-novedades');
                 if (badge) {
@@ -724,23 +725,6 @@
                     contenedorNov.innerHTML = '<p style="color: #666; font-style: italic;">No hay novedades para mostrar en este muro.</p>';
                     return;
                 }
-
-                // Lógica extraída: Registrar automáticamente la lectura en la tabla comunicados_lecturas para cada novedad visualizada
-                const usuarioActual = (localStorage.getItem('usuario_nombre') || "invitado").trim().toLowerCase();
-                for (let item of dataFiltrada) {
-                    if (item.id_clave) {
-                        await supabaseClient
-                            .from('comunicados_lecturas')
-                            .upsert({
-                                id_clave: item.id_clave,
-                                usuario: usuarioActual,
-                                leido_at: new Date().toISOString()
-                            }, { onConflict: 'id_clave, usuario' });
-                    }
-                }
-
-                // Actualizar estado del badge tras marcar como leídas
-                verificarNovedadesNoLeidas();
 
                 let html = '';
                 dataFiltrada.forEach(item => {
@@ -845,6 +829,24 @@
                 });
 
                 contenedorNov.innerHTML = html;
+
+                // Registro automático de lecturas y envío del batch de notificación corregido
+                try {
+                    const usuarioLectura = localStorage.getItem('usuario_nombre') || "Sistema";
+                    const deptoLectura = "camilleros-central";
+                    const batchLecturas = dataFiltrada.map(item => ({
+                        comunicado_id: item.id,
+                        usuario: usuarioLectura,
+                        departamento: deptoLectura,
+                        leido_at: new Date().toISOString()
+                    }));
+
+                    if (batchLecturas.length > 0) {
+                        await db.from('comunicados_lecturas').upsert(batchLecturas, { onConflict: 'comunicado_id, usuario' });
+                    }
+                } catch (lecturaErr) {
+                    console.error("Error al registrar lecturas en batch:", lecturaErr);
+                }
 
             } catch (err) {
                 console.error("Error al cargar registros del muro:", err);
