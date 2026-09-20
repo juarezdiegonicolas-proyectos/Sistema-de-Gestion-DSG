@@ -1153,6 +1153,25 @@
             }
         }
 
+        async function marcarComoLeido(idComunicado) {
+            const usuarioNombreReal = (localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario') || 'invitado').trim();
+            try {
+                const { error } = await db
+                    .from('comunicados_lecturas')
+                    .upsert({
+                        comunicado_id: idComunicado,
+                        user_id: usuarioNombreReal,
+                        leido_at: new Date().toISOString()
+                    }, { onConflict: 'comunicado_id,user_id' });
+
+                if (error) {
+                    console.error("Error al registrar lectura en comunicados_lecturas:", error);
+                }
+            } catch (err) {
+                console.error("Excepción al marcar como leído:", err);
+            }
+        }
+
         async function verificarNovedadesNoLeidas() {
             try {
                 const { data, error } = await db
@@ -1164,7 +1183,6 @@
 
                 const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim().toLowerCase();
                 const usuarioActual = (localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario') || "invitado").trim().toLowerCase();
-                const claveStoragePersonal = `dsg_novedades_ultimo_id_${usuarioActual}`;
 
                 const novedadesFiltradas = data.filter(item => {
                     const deptoDestino = (item.departamento_destino || "").trim().toLowerCase();
@@ -1194,17 +1212,16 @@
 
                 if (novedadesFiltradas.length === 0) return;
 
-                const ultimoIdLeido = localStorage.getItem(claveStoragePersonal);
-                let noLeidasCount = 0;
+                const usuarioNombreReal = (localStorage.getItem('usuario_nombre') || localStorage.getItem('usuario') || 'invitado').trim();
+                const idsMemos = novedadesFiltradas.map(m => m.id);
+                const { data: lecturasData } = await db
+                    .from('comunicados_lecturas')
+                    .select('comunicado_id')
+                    .eq('user_id', usuarioNombreReal)
+                    .in('comunicado_id', idsMemos);
 
-                if (!ultimoIdLeido) {
-                    noLeidasCount = novedadesFiltradas.length;
-                } else {
-                    for (let item of novedadesFiltradas) {
-                        if (String(item.id_clave || item.id) === String(ultimoIdLeido)) break;
-                        noLeidasCount++;
-                    }
-                }
+                const idsLeidos = new Set((lecturasData || []).map(l => l.comunicado_id));
+                let noLeidasCount = novedadesFiltradas.filter(item => !idsLeidos.has(item.id)).length;
 
                 const badge = document.getElementById('badge-novedades');
                 if (badge) {
@@ -1264,11 +1281,14 @@
                     return matchDirecto;
                 });
 
-                if (data.length > 0) {
-                    const claveStoragePersonal = `dsg_novedades_ultimo_id_${usuarioActual}`;
-                    localStorage.setItem(claveStoragePersonal, data[0].id_clave || data[0].id);
-                    const badge = document.getElementById('badge-novedades');
-                    if (badge) badge.style.display = 'none';
+                const recibidosNoLeidos = dataFiltradaSupervisor.filter(item => {
+                    const origenMsg = (item.departamento_origen || (item.contenido && item.contenido.origen) || "").trim().toLowerCase();
+                    return origenMsg !== 'intendencia';
+                });
+
+                if (recibidosNoLeidos.length > 0) {
+                    await Promise.all(recibidosNoLeidos.map(item => marcarComoLeido(item.id)));
+                    verificarNovedadesNoLeidas();
                 }
 
                 if (dataFiltradaSupervisor.length === 0) {
@@ -1483,6 +1503,17 @@
     </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
 
 
 
