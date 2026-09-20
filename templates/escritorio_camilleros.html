@@ -245,7 +245,7 @@
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
         }
         .muro-item.recibido { border-left-color: #06b6d4; }
-        .muro-item.enviado { border-left-color: #28a745; } /* Actualizado a verde */
+        .muro-item.enviado { border-left-color: #28a745; } 
         .muro-item.terceros { border-left-color: #64748b; }
 
         .muro-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px; }
@@ -257,7 +257,7 @@
 
         .badge-estado { font-size: 0.7rem; padding: 5px 10px; border-radius: 6px; font-weight: 700; color: white; text-transform: uppercase; letter-spacing: 0.8px; white-space: nowrap; display: inline-block; vertical-align: middle; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
         .badge-recibido { background-color: #06b6d4; }
-        .badge-enviado { background-color: #28a745; } /* Actualizado a verde */
+        .badge-enviado { background-color: #28a745; } 
         .badge-terceros { background-color: #64748b; }
 
         @media print {
@@ -724,6 +724,15 @@
                 if (dataFiltrada.length === 0) {
                     contenedorNov.innerHTML = '<p style="color: #666; font-style: italic;">No hay novedades para mostrar en este muro.</p>';
                     return;
+                }
+
+                // Marcar automáticamente la última novedad como leída al abrir la solapa de Novedades
+                if (dataFiltrada.length > 0) {
+                    const usuarioActual = (localStorage.getItem('usuario_nombre') || "invitado").trim().toLowerCase();
+                    const claveStorage = `dsg_camilleros_ultimo_novedad_leida_${usuarioActual}`;
+                    localStorage.setItem(claveStorage, String(dataFiltrada[0].id));
+                    const badge = document.getElementById('badge-novedades');
+                    if (badge) badge.style.display = 'none';
                 }
 
                 let html = '';
