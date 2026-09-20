@@ -699,13 +699,13 @@
                 </select>
                 <select id="est-depto" class="input-select">
                     <option value="Todos">Todos los departamentos</option>
-                    <option value="direccion-servicios-generales">Dirección Servicios Generales</option>
-                    <option value="intendencia">Intendencia</option>
-                    <option value="division-ascensores">Ascensores</option>
-                    <option value="lavadero-central">Lavadero Central</option>
-                    <option value="camilleros-central">Camilleros</option>
-                    <option value="higiene-y-seguridad">Higiene y Seguridad</option>
-                    <option value="dalo">DALO</option>
+                    <option value="Intendencia">Intendencia</option>
+                    <option value="Ascensores">Ascensores</option>
+                    <option value="Lavadero Central">Lavadero Central</option>
+                    <option value="Camilleros">Camilleros</option>
+                    <option value="Higiene y Seguridad">Higiene y Seguridad</option>
+                    <option value="DALO">DALO</option>
+                    <option value="Dirección Servicios Generales">Dirección Servicios Generales</option>
                 </select>
                 <select id="est-turno" class="input-select">
                     <option value="Todos">Todos los turnos</option>
@@ -723,7 +723,7 @@
                 <select id="est-mes" class="input-select">
                     <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
                     <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
-                    <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
+                    <option value="7">Julio</option><option value="8" selected>Agosto</option><option value="9">Septiembre</option>
                     <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
                 </select>
                 <input type="number" id="est-anio" class="input-fecha" value="2026" style="width:100px;">
@@ -1189,24 +1189,6 @@
             mesSelect.style.display = (periodo === 'mes') ? 'inline-block' : 'none';
         }
 
-        // ============================================================================
-        // Utilidad: normaliza texto libre (nombres de agentes, destinos) para que
-        // variaciones de mayúsculas/espacios no se cuenten como valores distintos.
-        // ============================================================================
-        function normalizarTexto(s) {
-            return (s || '').trim().toUpperCase().replace(/\s+/g, ' ');
-        }
-
-        // Convierte "HH:MM" a minutos desde medianoche. Devuelve null si no es parseable.
-        function horaAMinutos(horaStr) {
-            if (!horaStr || typeof horaStr !== 'string') return null;
-            const m = horaStr.trim().match(/^(\d{1,2}):(\d{2})/);
-            if (!m) return null;
-            const h = parseInt(m[1], 10), min = parseInt(m[2], 10);
-            if (isNaN(h) || isNaN(min) || h > 23 || min > 59) return null;
-            return h * 60 + min;
-        }
-
         async function renderEstadisticasCamilleros() {
             const periodo = document.getElementById('est-periodo').value;
             const turnoSeleccionado = document.getElementById('est-turno').value;
@@ -1220,42 +1202,31 @@
                 return;
             }
 
-            // --- Rango del período seleccionado, y rango del período INMEDIATO ANTERIOR (misma duración) ---
-            let fechaDesde, fechaHasta, fechaDesdeAnt, fechaHastaAnt, etiquetaPeriodo, etiquetaPeriodoAnt;
+            let fechaDesde, fechaHasta, etiquetaPeriodo;
             const hoy = new Date();
             if (periodo === 'semana') {
                 fechaHasta = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate(), 23, 59, 59);
-                fechaDesde = new Date(hoy); fechaDesde.setDate(fechaDesde.getDate() - 6); fechaDesde.setHours(0,0,0,0);
-                fechaHastaAnt = new Date(fechaDesde); fechaHastaAnt.setDate(fechaHastaAnt.getDate() - 1); fechaHastaAnt.setHours(23,59,59,0);
-                fechaDesdeAnt = new Date(fechaHastaAnt); fechaDesdeAnt.setDate(fechaDesdeAnt.getDate() - 6); fechaDesdeAnt.setHours(0,0,0,0);
+                fechaDesde = new Date(hoy);
+                fechaDesde.setDate(fechaDesde.getDate() - 6);
+                fechaDesde.setHours(0,0,0,0);
                 etiquetaPeriodo = `Últimos 7 días (${fechaDesde.toLocaleDateString('es-AR')} al ${fechaHasta.toLocaleDateString('es-AR')})`;
-                etiquetaPeriodoAnt = '7 días anteriores';
             } else if (periodo === 'anio') {
                 fechaDesde = new Date(anio, 0, 1);
                 fechaHasta = new Date(anio, 11, 31, 23, 59, 59);
-                fechaDesdeAnt = new Date(anio - 1, 0, 1);
-                fechaHastaAnt = new Date(anio - 1, 11, 31, 23, 59, 59);
                 etiquetaPeriodo = `Año ${anio}`;
-                etiquetaPeriodoAnt = `Año ${anio - 1}`;
             } else {
                 fechaDesde = new Date(anio, mes - 1, 1);
                 fechaHasta = new Date(anio, mes, 0, 23, 59, 59);
-                fechaDesdeAnt = new Date(anio, mes - 2, 1);
-                fechaHastaAnt = new Date(anio, mes - 1, 0, 23, 59, 59);
                 etiquetaPeriodo = `${document.getElementById('est-mes').selectedOptions[0].text} ${anio}`;
-                etiquetaPeriodoAnt = 'mes anterior';
             }
 
-            const enRango = (row, desde, hasta) => {
+            const filtrados = (data || []).filter(row => {
                 if (!row.fecha_cierre) return false;
                 const f = new Date(row.fecha_cierre + 'T12:00:00');
-                const matchFecha = f >= desde && f <= hasta;
+                const matchFecha = f >= fechaDesde && f <= fechaHasta;
                 const matchTurno = (turnoSeleccionado === 'Todos' || row.turno === turnoSeleccionado);
                 return matchFecha && matchTurno;
-            };
-
-            const filtrados = (data || []).filter(r => enRango(r, fechaDesde, fechaHasta));
-            const filtradosAnt = (data || []).filter(r => enRango(r, fechaDesdeAnt, fechaHastaAnt));
+            });
 
             if (filtrados.length === 0) {
                 visor.innerHTML = `<p>No hay traslados registrados para ${etiquetaPeriodo}.</p>`;
@@ -1263,21 +1234,14 @@
             }
 
             const totalTraslados = filtrados.length;
-            const totalTrasladosAnt = filtradosAnt.length;
-            const variacionPct = totalTrasladosAnt > 0
-                ? (((totalTraslados - totalTrasladosAnt) / totalTrasladosAnt) * 100).toFixed(1)
-                : null;
 
-            // --- Por turno ---
             const porTurno = {};
             filtrados.forEach(r => { const t = r.turno || 'Sin turno'; porTurno[t] = (porTurno[t] || 0) + 1; });
 
-            // --- Por destino (normalizado) ---
             const porDestino = {};
-            filtrados.forEach(r => { const d = normalizarTexto(r.destino) || 'SIN DESTINO'; porDestino[d] = (porDestino[d] || 0) + 1; });
+            filtrados.forEach(r => { const d = (r.destino || 'Sin destino').trim(); porDestino[d] = (porDestino[d] || 0) + 1; });
             const topDestinos = Object.entries(porDestino).sort((a, b) => b[1] - a[1]).slice(0, 8);
 
-            // --- Movilidad ---
             let sillas = 0, camillas = 0, otrosMov = 0;
             filtrados.forEach(r => {
                 const m = (r.tipo_movilidad || '').toLowerCase();
@@ -1286,13 +1250,12 @@
                 else otrosMov++;
             });
 
-            // --- Agentes (normalizados) ---
             const porAgente = {};
             let trasladosEnEquipo = 0, trasladosSolitario = 0, sumaAgentesPorTraslado = 0;
             filtrados.forEach(r => {
                 const raw = (r.personal_asignado || '').trim();
                 if (!raw) return;
-                const nombres = raw.split(',').map(n => normalizarTexto(n)).filter(n => n.length > 0);
+                const nombres = raw.split(',').map(n => n.trim()).filter(n => n.length > 0);
                 if (nombres.length >= 2) trasladosEnEquipo++;
                 else if (nombres.length === 1) trasladosSolitario++;
                 sumaAgentesPorTraslado += nombres.length;
@@ -1301,74 +1264,23 @@
             const rankingAgentes = Object.entries(porAgente).sort((a, b) => b[1] - a[1]).slice(0, 10);
             const promedioAgentesPorTraslado = totalTraslados > 0 ? (sumaAgentesPorTraslado / totalTraslados).toFixed(2) : '0';
 
-            // --- Promedio diario (sobre días con datos) ---
             const diasDistintos = new Set(filtrados.map(r => r.fecha_cierre)).size;
             const promedioDiario = diasDistintos > 0 ? (totalTraslados / diasDistintos).toFixed(1) : '0';
 
-            // --- Duración promedio del traslado (hora -> hora_finalizacion), contemplando cruce de medianoche ---
-            let sumaDuraciones = 0, cantValidas = 0, cantInvalidas = 0;
-            filtrados.forEach(r => {
-                const ini = horaAMinutos(r.hora);
-                const fin = horaAMinutos(r.hora_finalizacion);
-                if (ini === null || fin === null) { cantInvalidas++; return; }
-                let diff = fin - ini;
-                if (diff < 0) diff += 24 * 60; // cruzó medianoche
-                if (diff > 8 * 60) { cantInvalidas++; return; } // descarta outliers imposibles (>8hs, dato mal cargado)
-                sumaDuraciones += diff;
-                cantValidas++;
-            });
-            const duracionPromedioMin = cantValidas > 0 ? Math.round(sumaDuraciones / cantValidas) : null;
-            const duracionPromedioTxt = duracionPromedioMin !== null
-                ? `${Math.floor(duracionPromedioMin / 60)}h ${duracionPromedioMin % 60}m`
-                : 'Sin datos válidos';
-
-            // --- Traslados con incidencia (observaciones cargadas) ---
-            const conIncidencia = filtrados.filter(r => r.observaciones && String(r.observaciones).trim() !== '');
-
-            // --- Serie temporal: diaria si el período es semana/mes, mensual si es año ---
-            let serieLabels = [], serieValores = [];
-            if (periodo === 'anio') {
-                const porMes = new Array(12).fill(0);
-                filtrados.forEach(r => { const f = new Date(r.fecha_cierre + 'T12:00:00'); porMes[f.getMonth()]++; });
-                serieLabels = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-                serieValores = porMes;
-            } else {
-                const porDia = {};
-                filtrados.forEach(r => { porDia[r.fecha_cierre] = (porDia[r.fecha_cierre] || 0) + 1; });
-                const fechasOrdenadas = Object.keys(porDia).sort();
-                serieLabels = fechasOrdenadas.map(f => new Date(f + 'T12:00:00').toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' }));
-                serieValores = fechasOrdenadas.map(f => porDia[f]);
-            }
-
-            // --- Render ---
             const tarjeta = (valor, etiqueta) => `
-                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:18px 24px; min-width:150px;">
-                    <div style="font-size:26px; font-weight:bold; color:#1a3a5f;">${valor}</div>
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:18px 28px; min-width:150px;">
+                    <div style="font-size:28px; font-weight:bold; color:#1a3a5f;">${valor}</div>
                     <div style="font-size:12px; color:#64748b;">${etiqueta}</div>
                 </div>`;
 
-            const variacionHtml = variacionPct !== null
-                ? `<span style="color:${variacionPct >= 0 ? '#28a745' : '#dc3545'}; font-weight:bold;">${variacionPct >= 0 ? '▲' : '▼'} ${Math.abs(variacionPct)}%</span> vs. ${etiquetaPeriodoAnt} (${totalTrasladosAnt})`
-                : `Sin datos del ${etiquetaPeriodoAnt} para comparar`;
-
             let html = `
                 <h3 style="margin-top:0; color:#1a3a5f;">Traslados de Camilleros — ${etiquetaPeriodo}</h3>
-                <div style="display:flex; gap:20px; justify-content:center; flex-wrap:wrap; margin-bottom:10px;">
+                <div style="display:flex; gap:20px; justify-content:center; flex-wrap:wrap; margin-bottom:25px;">
                     ${tarjeta(totalTraslados, 'Total traslados')}
-                    ${tarjeta(promedioDiario, 'Promedio diario (sobre días con datos)')}
+                    ${tarjeta(promedioDiario, 'Promedio diario')}
                     ${tarjeta(trasladosEnEquipo, 'Traslados en equipo (2+ agentes)')}
                     ${tarjeta(trasladosSolitario, 'Traslados en solitario')}
                     ${tarjeta(promedioAgentesPorTraslado, 'Promedio de agentes por traslado')}
-                    ${tarjeta(duracionPromedioTxt, `Duración promedio del traslado (${cantValidas} válidos${cantInvalidas > 0 ? ', ' + cantInvalidas + ' sin dato/descartados' : ''})`)}
-                    ${tarjeta(conIncidencia.length, 'Traslados con incidencia registrada')}
-                </div>
-                <div style="text-align:center; margin-bottom:25px; font-size:13px; color:#475569;">${variacionHtml}</div>
-
-                <div style="display:flex; gap:30px; flex-wrap:wrap; justify-content:center; margin-bottom:25px;">
-                    <div style="width:100%; max-width:700px;">
-                        <div style="font-weight:bold; color:#1a3a5f; margin-bottom:8px; text-align:center;">${periodo === 'anio' ? 'Traslados por mes' : 'Evolución diaria'}</div>
-                        <canvas id="graficoCamSerie"></canvas>
-                    </div>
                 </div>
                 <div style="display:flex; gap:30px; flex-wrap:wrap; justify-content:center; margin-bottom:25px;">
                     <div style="width:320px;">
@@ -1407,13 +1319,6 @@
 
             visor.innerHTML = html;
 
-            destruirGraficoEstadistica('graficoCamSerie');
-            chartInstancesEstadisticas['graficoCamSerie'] = new Chart(document.getElementById('graficoCamSerie'), {
-                type: periodo === 'anio' ? 'bar' : 'line',
-                data: { labels: serieLabels, datasets: [{ label: 'Traslados', data: serieValores, backgroundColor: '#1a3a5f', borderColor: '#1a3a5f', tension: 0.25, fill: false }] },
-                options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
-            });
-
             destruirGraficoEstadistica('graficoCamTurno');
             chartInstancesEstadisticas['graficoCamTurno'] = new Chart(document.getElementById('graficoCamTurno'), {
                 type: 'bar',
@@ -1435,97 +1340,12 @@
             });
         }
 
-        /* ============================================================================
-         * DESGLOSE MATEMÁTICO — Estadísticas de "Traslados de Camilleros"
-         * (referencia para quien tenga que auditar o explicar estos números)
-         * ============================================================================
-         *
-         * FUENTE: SELECT * FROM registros_camilleros (sin filtro en SQL; todo el
-         * filtrado y cálculo se hace en el navegador sobre el array completo).
-         *
-         * RANGO DE FECHAS SEGÚN PERÍODO:
-         *   - Semanal : hoy-6 días  hasta  hoy (7 días corridos, incluye hoy).
-         *   - Mensual : primer día del mes seleccionado  hasta  último día de ese mes.
-         *   - Anual   : 1/enero  hasta  31/diciembre del año seleccionado.
-         *   - "Período anterior" (para la comparativa) = mismo tamaño de rango,
-         *     inmediatamente antes del rango principal (semana previa / mes previo /
-         *     año previo). Se recalcula un segundo filtro `filtradosAnt` con el mismo
-         *     criterio de turno.
-         *
-         * FILTRO POR FILA: fecha_cierre dentro del rango  Y  (turno === seleccionado
-         * O selección = "Todos"). Ambos deben cumplirse (AND).
-         *
-         * Total traslados            = filtrados.length                     → conteo simple.
-         * Total período anterior      = filtradosAnt.length                  → mismo conteo, otro rango.
-         * % variación                 = ((actual - anterior) / anterior) × 100
-         *                               (null si el período anterior no tiene datos, para no dividir por 0).
-         *
-         * Promedio diario             = total ÷ cantidad de fechas DISTINTAS con al
-         *                               menos un registro (Set de fecha_cierre) — NO
-         *                               se divide por los días del calendario.
-         *
-         * Traslados por turno         = conteo agrupado por la columna turno (texto
-         *                               exacto, sin normalizar — turno es un campo
-         *                               controlado por <select>, no texto libre).
-         *
-         * Destinos más frecuentes     = conteo agrupado por destino, PERO normalizado
-         *                               primero con normalizarTexto() (mayúsculas +
-         *                               trim + espacios múltiples colapsados) para que
-         *                               "Eco Cardio" y "ECO CARDIO " cuenten igual.
-         *                               Se muestran los 8 valores con más ocurrencias.
-         *
-         * Silla vs. Camilla           = se busca la subcadena "silla" o "camilla"
-         *                               (en minúsculas) dentro de tipo_movilidad.
-         *                               No usa el número de unidad (Silla 001 vs 002
-         *                               cuentan igual como "silla"). Lo que no matchea
-         *                               ninguna de las dos entra en "Otro/Sin dato".
-         *
-         * Agentes (ranking, en equipo/solitario, promedio):
-         *   1. Se toma personal_asignado y se separa por coma: split(',').
-         *   2. Cada nombre resultante se normaliza con normalizarTexto().
-         *   3. Si la fila tiene 2+ nombres → "en equipo"; si tiene 1 → "solitario";
-         *      si personal_asignado está vacío, la fila no suma a ninguna de las dos.
-         *   4. Ranking: por cada nombre encontrado (en cualquier fila), +1 en su
-         *      contador individual. Se ordena de mayor a menor, top 10.
-         *   5. Promedio de agentes por traslado = (suma de la cantidad de nombres de
-         *      TODAS las filas) ÷ total de traslados del período.
-         *   LIMITACIÓN CONOCIDA: filas con el texto corrupto "2 agentes seleccionados"
-         *   (carga masiva del 21/08/2026, sin coma) se cuentan como 1 solo "agente"
-         *   llamado así, distorsionando estos 4 números para los períodos que incluyan
-         *   esas fechas, hasta que se decida cómo tratar esas filas.
-         *
-         * Duración promedio del traslado:
-         *   1. horaAMinutos() convierte "HH:MM" a minutos desde las 00:00 (regex,
-         *      valida rango 0-23h / 0-59min; si no matchea, devuelve null).
-         *   2. diferencia = minutos(hora_finalizacion) − minutos(hora).
-         *   3. Si la diferencia da negativa, se asume que cruzó medianoche y se le
-         *      suman 24×60 minutos.
-         *   4. Si la diferencia resultante supera 8 horas (480 min), se descarta como
-         *      dato mal cargado (outlier), no entra en el promedio.
-         *   5. Filas sin hora u hora_finalizacion válida se cuentan aparte como
-         *      "inválidas/sin dato" (se muestra la cantidad junto al promedio, para
-         *      que se sepa sobre cuántos registros realmente se calculó).
-         *   6. Promedio = suma de diferencias válidas ÷ cantidad de válidas, mostrado
-         *      como horas y minutos.
-         *
-         * Traslados con incidencia    = cantidad de filas donde observaciones no es
-         *                               null/vacío. No categoriza el TIPO de
-         *                               incidencia, solo cuenta si hay texto cargado.
-         *
-         * Serie temporal (gráfico superior):
-         *   - Período semanal o mensual → un punto por cada fecha_cierre distinta
-         *     dentro del rango, ordenadas cronológicamente (gráfico de línea).
-         *   - Período anual → un total por cada uno de los 12 meses del año
-         *     seleccionado (gráfico de barras), agrupando por el mes de fecha_cierre.
-         * ============================================================================
-         */
-
         async function generarReporteMensual() {
             const tipo = document.getElementById('est-tipo').value;
             const deptoSeleccionado = document.getElementById('est-depto').value;
             const turnoSeleccionado = document.getElementById('est-turno').value;
-            const mes = document.getElementById('est-mes').value;
-            const anio = document.getElementById('est-anio').value;
+            const mesSeleccionado = String(document.getElementById('est-mes').value).padStart(2, '0');
+            const anioSeleccionado = String(document.getElementById('est-anio').value);
             const visor = document.getElementById('visor-estadisticas');
             
             visor.innerHTML = "<p>Cargando datos desde la nube...</p>";
@@ -1537,39 +1357,129 @@
 
             if (tipo === 'rrhh') {
                 let p = 0, a = 0, l = 0;
-                const { data: asistData } = await db.from('rrhh_asistencia').select('*');
-                if (asistData) {
+                let listaDetalleRrhh = [];
+
+                const { data: asistData, error: errAsist } = await db.from('rrhh_asistencia').select('*');
+                if (!errAsist && asistData) {
                     asistData.forEach(ag => {
-                        const f = new Date(ag.fecha);
-                        const matchFecha = (f.getMonth() + 1) == mes && f.getFullYear() == anio;
+                        if (!ag.fecha) return;
+                        // Manejo exacto de fecha desglosada en formato YYYY-MM-DD
+                        const partesFecha = ag.fecha.split('-');
+                        if (partesFecha.length < 3) return;
+                        const anioItem = partesFecha[0];
+                        const mesItem = partesFecha[1];
+
+                        const matchAnio = (anioItem === anioSeleccionado);
+                        const matchMes = (mesItem === mesSeleccionado);
                         const matchTurno = (turnoSeleccionado === 'Todos' || ag.turno === turnoSeleccionado);
                         const matchDepto = (deptoSeleccionado === 'Todos' || ag.departamento === deptoSeleccionado);
 
-                        if (matchFecha && matchTurno && matchDepto) {
-                            const est = String(ag.estado_asistencia || '').trim().toLowerCase();
-                            if (est === 'presente' || est === 'p') p++;
-                            else if (est === 'ausente' || est === 'a') a++;
-                            else if (est === 'licencia' || est === 'l') l++;
+                        if (matchAnio && matchMes && matchTurno && matchDepto) {
+                            const est = String(ag.estado_asistencia || '').trim().toUpperCase();
+                            if (est === 'P' || est === 'PRESENTE') p++;
+                            else if (est === 'L' || est === 'LICENCIA') l++;
+                            else a++; // Ausente o EMPTY
+
+                            listaDetalleRrhh.push({
+                                fecha: ag.fecha,
+                                legajo: ag.legajo_empleado || ag.legajo || '-',
+                                nombre: ag.nombre || ag.apellido_y_nombre || `Legajo ${ag.legajo_empleado || ag.legajo || '-'}`,
+                                turno: ag.turno || '-',
+                                departamento: ag.departamento || '-',
+                                estado: (est === 'P' || est === 'PRESENTE') ? 'Presente' : ((est === 'L' || est === 'LICENCIA') ? 'Licencia' : 'Ausente')
+                            });
                         }
                     });
                 }
-                
-                if (p+a+l === 0) { visor.innerHTML = "No hay datos para esta selección."; return; }
-                visor.innerHTML = `<h3>Asistencia (${deptoSeleccionado}) ${mes}/${anio}</h3><div style="width:300px; height:300px; margin:auto;"><canvas id="graficoMes"></canvas></div><p><b>Presentismo:</b> ${((p/(p+a+l))*100).toFixed(1)}%</p>`;
-                destruirGraficoEstadistica('graficoMes');
-                chartInstancesEstadisticas['graficoMes'] = new Chart(document.getElementById('graficoMes'), { type: 'doughnut', data: { labels: ['Presentes', 'Ausentes', 'Licencias'], datasets: [{ data: [p, a, l], backgroundColor: ['#28a745', '#dc3545', '#ffc107'] }] } });
+
+                let totalRegs = p + a + l;
+                if (totalRegs === 0) { 
+                    visor.innerHTML = "<p>No hay datos de asistencia registrados en rrhh_asistencia para esta selección.</p>"; 
+                    return; 
+                }
+
+                const etiquetaPeriodoMensual = `${document.getElementById('est-mes').selectedOptions[0].text} ${anioSeleccionado}`;
+                const presentismoPorc = ((p / totalRegs) * 100).toFixed(1);
+
+                const tarjetaEst = (valor, etiqueta) => `
+                    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:18px 28px; min-width:150px;">
+                        <div style="font-size:28px; font-weight:bold; color:#1a3a5f;">${valor}</div>
+                        <div style="font-size:12px; color:#64748b;">${etiqueta}</div>
+                    </div>`;
+
+                visor.innerHTML = `
+                    <h3 style="margin-top:0; color:#1a3a5f;">Estadísticas de Asistencia (RRHH) — ${etiquetaPeriodoMensual}</h3>
+                    <div style="display:flex; gap:20px; justify-content:center; flex-wrap:wrap; margin-bottom:25px;">
+                        ${tarjetaEst(totalRegs, 'Total registros evaluados')}
+                        ${tarjetaEst(p, 'Presentes')}
+                        ${tarjetaEst(a, 'Ausentes')}
+                        ${tarjetaEst(l, 'Licencias')}
+                        ${tarjetaEst(presentismoPorc + '%', 'Índice de Presentismo')}
+                    </div>
+                    <div style="display:flex; gap:30px; flex-wrap:wrap; justify-content:center; margin-bottom:25px;">
+                        <div style="width:320px;">
+                            <div style="font-weight:bold; color:#1a3a5f; margin-bottom:8px; text-align:center;">Distribución de Asistencia</div>
+                            <canvas id="graficoMesRrhhBar"></canvas>
+                        </div>
+                        <div style="width:280px;">
+                            <div style="font-weight:bold; color:#1a3a5f; margin-bottom:8px; text-align:center;">Porcentaje General</div>
+                            <canvas id="graficoMesRrhhDoughnut"></canvas>
+                        </div>
+                    </div>
+                    <div style="margin-top: 30px; text-align: left;">
+                        <div style="font-weight:bold; color:#1a3a5f; margin-bottom:10px; text-align:center;">Detalle de Registros de Asistencia</div>
+                        <table style="width:100%; border-collapse:collapse; font-size:13px;">
+                            <thead>
+                                <tr style="background:#1a3a5f; color:white;">
+                                    <th style="padding:8px; border:1px solid #cbd5e1;">Fecha</th>
+                                    <th style="padding:8px; border:1px solid #cbd5e1;">Legajo</th>
+                                    <th style="padding:8px; border:1px solid #cbd5e1; text-align:left;">Agente</th>
+                                    <th style="padding:8px; border:1px solid #cbd5e1;">Turno</th>
+                                    <th style="padding:8px; border:1px solid #cbd5e1;">Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${listaDetalleRrhh.slice(0, 50).map(item => `
+                                    <tr>
+                                        <td style="padding:6px; border:1px solid #cbd5e1; text-align:center;">${item.fecha}</td>
+                                        <td style="padding:6px; border:1px solid #cbd5e1; text-align:center;">${item.legajo}</td>
+                                        <td style="padding:6px; border:1px solid #cbd5e1;">${item.nombre}</td>
+                                        <td style="padding:6px; border:1px solid #cbd5e1; text-align:center;">${item.turno}</td>
+                                        <td style="padding:6px; border:1px solid #cbd5e1; text-align:center; font-weight:bold; color:${item.estado === 'Presente' ? '#28a745' : (item.estado === 'Ausente' ? '#dc3545' : '#ffc107')};">${item.estado}</td>
+                                    </tr>`).join('')}
+                            </tbody>
+                        </table>
+                        ${listaDetalleRrhh.length > 50 ? `<p style="font-size:12px; color:#64748b; text-align:center; margin-top:8px;">Mostrando los primeros 50 registros del periodo consolidado.</p>` : ''}
+                    </div>`;
+
+                destruirGraficoEstadistica('graficoMesRrhhBar');
+                chartInstancesEstadisticas['graficoMesRrhhBar'] = new Chart(document.getElementById('graficoMesRrhhBar'), {
+                    type: 'bar',
+                    data: { labels: ['Presentes', 'Ausentes', 'Licencias'], datasets: [{ label: 'Cantidad', data: [p, a, l], backgroundColor: ['#28a745', '#dc3545', '#ffc107'] }] },
+                    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+                });
+
+                destruirGraficoEstadistica('graficoMesRrhhDoughnut');
+                chartInstancesEstadisticas['graficoMesRrhhDoughnut'] = new Chart(document.getElementById('graficoMesRrhhDoughnut'), {
+                    type: 'doughnut',
+                    data: { labels: ['Presentes', 'Ausentes', 'Licencias'], datasets: [{ data: [p, a, l], backgroundColor: ['#28a745', '#dc3545', '#ffc107'] }] },
+                    options: { plugins: { legend: { position: 'bottom' } } }
+                });
             
             } else if (tipo === 'ascensores') {
                 const { data: ascData } = await db.from('registros_ascensores').select('*');
                 let func = 0, falla = 0;
                 if (ascData) {
                     ascData.forEach(item => {
-                        const f = new Date(item.fecha_cierre);
-                        const matchFecha = (f.getMonth() + 1) == mes && f.getFullYear() == anio;
+                        if (!item.fecha_cierre) return;
+                        const partes = item.fecha_cierre.split('-');
+                        if (partes.length < 3) return;
+                        const matchAnio = (partes[0] === anioSeleccionado);
+                        const matchMes = (partes[1] === mesSeleccionado);
                         const matchTurno = (turnoSeleccionado === 'Todos' || item.turno === turnoSeleccionado);
                         const matchDepto = (deptoSeleccionado === 'Todos' || item.departamento === deptoSeleccionado);
 
-                        if (matchFecha && matchTurno && matchDepto) {
+                        if (matchAnio && matchMes && matchTurno && matchDepto) {
                             const txt = String(item.estado || '').trim().toLowerCase();
                             if (txt.includes('funciona') || txt.includes('ok') || txt === 'p') func++;
                             else if (txt.includes('falla') || txt.includes('fuera') || txt === 'a' || txt === 'l') falla++;
@@ -1578,7 +1488,7 @@
                 }
 
                 if (func+falla === 0) { visor.innerHTML = "No hay registros para esta selección."; return; }
-                visor.innerHTML = `<h3>Estado Ascensores (${deptoSeleccionado}) ${mes}/${anio}</h3><div style="width:300px; height:300px; margin:auto;"><canvas id="graficoMes"></canvas></div><p><b>% Funcionamiento:</b> ${((func/(func+falla))*100).toFixed(1)}%</p>`;
+                visor.innerHTML = `<h3>Estado Ascensores (${deptoSeleccionado}) ${document.getElementById('est-mes').selectedOptions[0].text} ${anioSeleccionado}</h3><div style="width:300px; height:300px; margin:auto;"><canvas id="graficoMes"></canvas></div><p><b>% Funcionamiento:</b> ${((func/(func+falla))*100).toFixed(1)}%</p>`;
                 destruirGraficoEstadistica('graficoMes');
                 chartInstancesEstadisticas['graficoMes'] = new Chart(document.getElementById('graficoMes'), { type: 'pie', data: { labels: ['En Servicio', 'En Falla'], datasets: [{ data: [func, falla], backgroundColor: ['#28a745', '#dc3545'] }] } });
             }
@@ -1909,38 +1819,10 @@
                             <p style="margin: 0; padding: 0; white-space: pre-wrap;">${obsCamilleros || 'Sin observaciones registradas.'}</p>
                         </div>
                     </div>`;
-
-                    visor.innerHTML = tablaDinamica;
-
-                } else {
-                    if (error || !reg) {
-                        visor.innerHTML = `<p style='color: red; font-weight: bold;'>No se encontraron registros para ${deptoFiltro} en el turno ${turno} (${fechaBusqueda}).</p>`;
-                        return;
-                    }
-
-                    let tablaDinamica = `
-                        <div style="background: #fff; width: 100%; box-sizing: border-box;">
-                            <div style="font-size: 16px; font-weight: bold; color: #1a3a5f; margin-bottom: 10px;">Planilla Operativa (${reg.departamento})</div>
-                            <div style="background-color: #1a3a5f; color: white; padding: 8px 12px; font-weight: bold; font-size: 14px; margin-top: 15px; border: 1px solid #cbd5e1;">Observaciones y Contenido:</div>
-                            <div style="padding: 0px 15px; min-height: 100px; background: #fff; border: 1px solid #cbd5e1; border-top: none; font-family: 'Courier New', Courier, monospace; font-size: 16px; line-height: 30px; background-image: linear-gradient(#e0e0e0 1px, transparent 1px); background-size: 100% 30px;">
-                                <p style="margin: 0; padding: 0; white-space: pre-wrap;">${reg.observaciones || 'Sin datos adicionales.'}</p>
-                            </div>
-                        </div>
-                    `;
                     visor.innerHTML = tablaDinamica;
                 }
-
-            } else if (tipo === 'reportes' || tipo === 'insumos') {
-                if (error || !reg) {
-                    visor.innerHTML = `<p style='color: red; font-weight: bold;'>No se encontraron registros para ${deptoFiltro} en el turno ${turno} (${fechaBusqueda}).</p>`;
-                    return;
-                }
-                visor.innerHTML = `<h3>Reporte Diario - Vista de Auditoría</h3><style>.hoja-modelo-limpio { width: 100% !important; background-color: #fff !important; border: 1px solid #cbd5e1 !important; padding: 30px !important; position: relative !important; min-height: 800px !important; font-family: 'Courier New', Courier, monospace !important; font-size: 16px !important; line-height: 30px !important; box-sizing: border-box !important; background-image: linear-gradient(to right, transparent 0px, transparent 0px), linear-gradient(#e0e0e0 1px, transparent 1px) !important; background-size: 100% 30px !important; white-space: pre-wrap !important; }</style><div class="hoja-modelo-limpio">${reg.reporte_diario || 'No hay contenido de reporte.'}</div>`;
             }
         }
-        
-        document.getElementById('reportes').classList.add('activo');
-        cargarNovedades();
     </script>
 </body>
 </html>
