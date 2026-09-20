@@ -108,8 +108,20 @@
         #novedades .btn-gestion:hover { opacity: 1; filter: brightness(1.12); }
         #novedades .btn-imprimir { background: #1a3a5f; color: white; }
         
-        /* Modificación para hacer el textarea de novedades estático (sin cambiar de tamaño) */
-        #novedades textarea { background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 10px; padding: 18px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.02); transition: border-color 0.2s; min-height: 350px; resize: none; }
+        /* Modificación para hacer el textarea de novedades estático y con ancho completo */
+        #novedades textarea { 
+            width: 100% !important; 
+            max-width: 100% !important; 
+            box-sizing: border-box !important; 
+            background-color: #ffffff; 
+            border: 1px solid #cbd5e1; 
+            border-radius: 10px; 
+            padding: 18px; 
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.02); 
+            transition: border-color 0.2s; 
+            min-height: 350px; 
+            resize: none; 
+        }
         
         #novedades textarea:focus { outline: none; border-color: #1a3a5f; box-shadow: 0 0 0 3px rgba(26, 58, 95, 0.1), inset 0 1px 2px rgba(0,0,0,0.02); }
         #novedades .preview-adjunto { border: 2px dashed #cbd5e1 !important; border-radius: 8px; background: #ffffff; color: #475569; font-size: 13px; }
@@ -1522,4 +1534,3 @@
     </script>
 </body>
 </html>
-
