@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<html lang="es"><!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -24,29 +23,8 @@
         /* Badge para Novedades */
         .badge-novedades { background-color: #dc3545; color: white; font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 10px; display: none; }
 
-        .btn-accion-global { 
-            width: 100%; 
-            padding: 12px; 
-            margin-bottom: 10px;
-            background: linear-gradient(135deg, #28a745, #218838); 
-            color: white; 
-            border: none; 
-            border-radius: 8px; 
-            font-weight: bold; 
-            cursor: pointer; 
-            font-size: 13px; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.15); 
-            transition: all 0.2s ease; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 6px; 
-            box-sizing: border-box;
-        }
-        .btn-accion-global:hover { 
-            background: linear-gradient(135deg, #218838, #1e7e34);
-        }
-        
+        .btn-accion-global { width: 100%; padding: 12px; margin-bottom: 10px; background: linear-gradient(135deg, #28a745, #218838); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; box-shadow: 0 4px 6px rgba(0,0,0,0.15); transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-accion-global:hover { background: linear-gradient(135deg, #218838, #1e7e34); }
         .btn-cerrar { margin-top: 5px; padding: 12px; background: linear-gradient(135deg, #d32f2f, #c62828); color: white; text-align: center; text-decoration: none; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; width: 100%; box-sizing: border-box; box-shadow: 0 4px 6px rgba(0,0,0,0.15); }
         
         .contenido { flex: 1; padding: 40px; overflow-y: auto; }
@@ -411,6 +389,25 @@
             }
         }
 
+        async function marcarComoLeido(idComunicado) {
+            const usuarioNombreReal = (localStorage.getItem('usuario_nombre') || 'invitado').trim();
+            try {
+                const { error } = await supabaseClient
+                    .from('comunicados_lecturas')
+                    .upsert({
+                        comunicado_id: idComunicado,
+                        user_id: usuarioNombreReal,
+                        leido_at: new Date().toISOString()
+                    }, { onConflict: 'comunicado_id,user_id' });
+
+                if (error) {
+                    console.error("Error al registrar lectura en comunicados_lecturas:", error);
+                }
+            } catch (err) {
+                console.error("Excepción al marcar como leído:", err);
+            }
+        }
+
         async function verificarNovedadesNoLeidas() {
             try {
                 const { data, error } = await supabaseClient
@@ -443,18 +440,16 @@
 
                 if (novedadesFiltradas.length === 0) return;
 
-                const claveStorage = `dsg_hyc_ultimo_novedad_leida_${usuarioActual}`;
-                const ultimoIdLeido = localStorage.getItem(claveStorage);
-                let noLeidasCount = 0;
+                const usuarioNombreReal = (localStorage.getItem('usuario_nombre') || 'invitado').trim();
+                const idsMemos = novedadesFiltradas.map(m => m.id);
+                const { data: lecturasData } = await supabaseClient
+                    .from('comunicados_lecturas')
+                    .select('comunicado_id')
+                    .eq('user_id', usuarioNombreReal)
+                    .in('comunicado_id', idsMemos);
 
-                if (!ultimoIdLeido) {
-                    noLeidasCount = novedadesFiltradas.length;
-                } else {
-                    for (let item of novedadesFiltradas) {
-                        if (String(item.id) === String(ultimoIdLeido)) break;
-                        noLeidasCount++;
-                    }
-                }
+                const idsLeidos = new Set((lecturasData || []).map(l => l.comunicado_id));
+                let noLeidasCount = novedadesFiltradas.filter(item => !idsLeidos.has(item.id)).length;
 
                 const badge = document.getElementById('badge-novedades');
                 if (badge) {
@@ -587,9 +582,8 @@
                 });
 
                 if (recibidosNoLeidos.length > 0) {
-                    localStorage.setItem(`dsg_hyc_ultimo_novedad_leida_${usuarioActual}`, recibidosNoLeidos[0].id);
-                    const badge = document.getElementById('badge-novedades');
-                    if (badge) badge.style.display = 'none';
+                    await Promise.all(recibidosNoLeidos.map(item => marcarComoLeido(item.id)));
+                    verificarNovedadesNoLeidas();
                 }
 
                 let html = '';
@@ -879,3 +873,4 @@
     </script>
 </body>
 </html>
+
