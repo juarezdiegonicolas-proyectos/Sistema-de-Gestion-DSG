@@ -682,7 +682,6 @@
 
                 if (novedadesFiltradas.length === 0) return;
 
-                // Consultar cuáles de estos IDs ya fueron leídos por el usuario actual en la tabla comunicados_lecturas
                 const idsMemos = novedadesFiltradas.map(m => m.id);
                 const { data: lecturasData } = await supabaseClient
                     .from('comunicados_lecturas')
@@ -745,7 +744,6 @@
                     return;
                 }
 
-                // Obtener lecturas del usuario actual para marcar elementos leídos automáticamente al visualizar
                 const usuarioActual = (localStorage.getItem('usuario_nombre') || "invitado").trim();
                 const idsMemos = dataFiltrada.map(m => m.id);
                 const { data: lecturasData } = await supabaseClient
@@ -1325,7 +1323,7 @@
             cont.style.display = "block";
 
             if (tipo === 'planilla') {
-                const obsTexto = reg.observaciones ? reg.observaciones : "";
+                const obsTexto = reg.observaciones ? (typeof reg.observaciones === 'object' ? reg.observaciones.texto : reg.observaciones) : "";
                 cont.innerHTML = `
                     <style>
                         #contenedor-historicos .tabla-camilleros th:first-child, 
