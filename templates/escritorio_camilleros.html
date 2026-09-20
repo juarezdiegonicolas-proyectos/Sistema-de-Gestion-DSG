@@ -661,18 +661,17 @@
 
                 if (novedadesFiltradas.length === 0) return;
 
-                const claveStorage = `dsg_camilleros_ultimo_novedad_leida_${usuarioActual}`;
-                const ultimoIdLeido = localStorage.getItem(claveStorage);
-                let noLeidasCount = 0;
+                // Lógica incorporada: Verificar en comunicados_lecturas qué mensajes ya leyó el usuario actual
+                const { data: lecturasData } = await supabaseClient
+                    .from('comunicados_lecturas')
+                    .select('id_clave')
+                    .eq('usuario', usuarioActual);
 
-                if (!ultimoIdLeido) {
-                    noLeidasCount = novedadesFiltradas.length;
-                } else {
-                    for (let item of novedadesFiltradas) {
-                        if (String(item.id) === String(ultimoIdLeido)) break;
-                        noLeidasCount++;
-                    }
-                }
+                const idsLeidos = new Set((lecturasData || []).map(l => l.id_clave));
+
+                // Filtrar solo las novedades que NO han sido registradas como leídas en comunicados_lecturas
+                const noLeidas = novedadesFiltradas.filter(item => !idsLeidos.has(item.id_clave));
+                const noLeidasCount = noLeidas.length;
 
                 const badge = document.getElementById('badge-novedades');
                 if (badge) {
@@ -725,6 +724,23 @@
                     contenedorNov.innerHTML = '<p style="color: #666; font-style: italic;">No hay novedades para mostrar en este muro.</p>';
                     return;
                 }
+
+                // Lógica extraída: Registrar automáticamente la lectura en la tabla comunicados_lecturas para cada novedad visualizada
+                const usuarioActual = (localStorage.getItem('usuario_nombre') || "invitado").trim().toLowerCase();
+                for (let item of dataFiltrada) {
+                    if (item.id_clave) {
+                        await supabaseClient
+                            .from('comunicados_lecturas')
+                            .upsert({
+                                id_clave: item.id_clave,
+                                usuario: usuarioActual,
+                                leido_at: new Date().toISOString()
+                            }, { onConflict: 'id_clave, usuario' });
+                    }
+                }
+
+                // Actualizar estado del badge tras marcar como leídas
+                verificarNovedadesNoLeidas();
 
                 let html = '';
                 dataFiltrada.forEach(item => {
