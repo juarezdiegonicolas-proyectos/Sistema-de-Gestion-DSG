@@ -245,7 +245,7 @@
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
         }
         .muro-item.recibido { border-left-color: #06b6d4; }
-        .muro-item.enviado { border-left-color: #28a745; }
+        .muro-item.enviado { border-left-color: #28a745; } /* Actualizado a verde */
         .muro-item.terceros { border-left-color: #64748b; }
 
         .muro-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px; }
@@ -257,7 +257,7 @@
 
         .badge-estado { font-size: 0.7rem; padding: 5px 10px; border-radius: 6px; font-weight: 700; color: white; text-transform: uppercase; letter-spacing: 0.8px; white-space: nowrap; display: inline-block; vertical-align: middle; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
         .badge-recibido { background-color: #06b6d4; }
-        .badge-enviado { background-color: #28a745; }
+        .badge-enviado { background-color: #28a745; } /* Actualizado a verde */
         .badge-terceros { background-color: #64748b; }
 
         @media print {
@@ -688,6 +688,49 @@
             }
         }
 
+        async function marcarNovedadesComoLeidas() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('comunicados_memos')
+                    .select('*')
+                    .ilike('id_clave', 'comunicado_novedades_%')
+                    .order('created_at', { ascending: false })
+                    .limit(1);
+
+                if (error || !data || data.length === 0) return;
+
+                const usuarioActual = (localStorage.getItem('usuario_nombre') || "invitado").trim().toLowerCase();
+                const claveStorage = `dsg_camilleros_ultimo_novedad_leida_${usuarioActual}`;
+                
+                localStorage.setItem(claveStorage, String(data[0].id));
+
+                // INSERCIÓN NUEVA SOLICITADA EN comunicados_lecturas
+                try {
+                    const deptoActualStr = "camilleros-central";
+                    const turnoActualStr = (localStorage.getItem('usuario_turno') || "Mañana").trim();
+                    const supervisorActualStr = (localStorage.getItem('usuario_nombre') || "Invitado").trim();
+
+                    await supabaseClient.from('comunicados_lecturas').upsert({
+                        id_comunicado: String(data[0].id),
+                        departamento: deptoActualStr,
+                        turno: turnoActualStr,
+                        leido_por: supervisorActualStr,
+                        leido_at: new Date().toISOString()
+                    }, { onConflict: 'id_comunicado, departamento, turno, leido_por' });
+                } catch (lecturaErr) {
+                    console.error("Error al insertar en comunicados_lecturas:", lecturaErr);
+                }
+
+                const badge = document.getElementById('badge-novedades');
+                if (badge) {
+                    badge.style.display = 'none';
+                    badge.innerText = '0';
+                }
+            } catch (err) {
+                console.error("Error al marcar novedades como leídas:", err);
+            }
+        }
+
         async function cargarNovedades() {
             const contenedorNov = document.getElementById('contenedor-novedades');
             if (!contenedorNov) return;
@@ -829,24 +872,6 @@
                 });
 
                 contenedorNov.innerHTML = html;
-
-                // Registro automático de lecturas y envío del batch de notificación corregido
-                try {
-                    const usuarioLectura = localStorage.getItem('usuario_nombre') || "Sistema";
-                    const deptoLectura = "camilleros-central";
-                    const batchLecturas = dataFiltrada.map(item => ({
-                        comunicado_id: item.id,
-                        usuario: usuarioLectura,
-                        departamento: deptoLectura,
-                        leido_at: new Date().toISOString()
-                    }));
-
-                    if (batchLecturas.length > 0) {
-                        await db.from('comunicados_lecturas').upsert(batchLecturas, { onConflict: 'comunicado_id, usuario' });
-                    }
-                } catch (lecturaErr) {
-                    console.error("Error al registrar lecturas en batch:", lecturaErr);
-                }
 
             } catch (err) {
                 console.error("Error al cargar registros del muro:", err);
@@ -1544,6 +1569,7 @@
             document.getElementById(id).classList.add('activo'); 
             document.getElementById('titulo-panel').innerText = titulo; 
             if(id === 'novedades') {
+                marcarNovedadesComoLeidas();
                 cargarNovedades();
             }
         }
