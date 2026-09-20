@@ -682,6 +682,7 @@
 
                 if (novedadesFiltradas.length === 0) return;
 
+                // Consultar cuáles de estos IDs ya fueron leídos por el usuario actual en la tabla comunicados_lecturas
                 const idsMemos = novedadesFiltradas.map(m => m.id);
                 const { data: lecturasData } = await supabaseClient
                     .from('comunicados_lecturas')
@@ -744,6 +745,7 @@
                     return;
                 }
 
+                // Obtener lecturas del usuario actual para marcar elementos leídos automáticamente al visualizar
                 const usuarioActual = (localStorage.getItem('usuario_nombre') || "invitado").trim();
                 const idsMemos = dataFiltrada.map(m => m.id);
                 const { data: lecturasData } = await supabaseClient
@@ -1323,7 +1325,16 @@
             cont.style.display = "block";
 
             if (tipo === 'planilla') {
-                const obsTexto = reg.observaciones ? (typeof reg.observaciones === 'object' ? reg.observaciones.texto : reg.observaciones) : "";
+                // MODIFICACIÓN CLAVE: Se renderiza idéntico al admin.html estructurando la planilla operativa histórica
+                let obsTexto = "";
+                if (reg.observaciones) {
+                    if (typeof reg.observaciones === 'object' && reg.observaciones.texto) {
+                        obsTexto = reg.observaciones.texto;
+                    } else if (typeof reg.observaciones === 'string') {
+                        obsTexto = reg.observaciones;
+                    }
+                }
+
                 cont.innerHTML = `
                     <style>
                         #contenedor-historicos .tabla-camilleros th:first-child, 
@@ -1333,16 +1344,26 @@
                         #contenedor-historicos .tabla-camilleros th, 
                         #contenedor-historicos .tabla-camilleros td { font-size: 13px !important; }
                     </style>
-                    <div style="border: 2px solid #1a3a5f; padding: 20px; font-size: 13px;">
+                    <div style="border: 2px solid #1a3a5f; padding: 20px; font-size: 13px; background: #fff; border-radius: 8px;">
                         <table class="tabla-camilleros" style="width: 100%; font-size: 13px;">
                             <thead>
-                                <tr><th></th><th>HORA</th><th>PISO/SALA/CAMA</th><th>APELLIDO Y NOMBRE</th><th>DESTINO</th><th>HORA ESTADÍA</th><th>MOVILIDAD</th><th>CAMILLERO</th><th>HORA FINALIZACIÓN</th></tr>
+                                <tr>
+                                    <th style="width:30px; display:none;"></th>
+                                    <th class="col-hora">HORA</th>
+                                    <th>PISO/SALA/CAMA</th>
+                                    <th>APELLIDO Y NOMBRE</th>
+                                    <th>DESTINO</th>
+                                    <th class="col-hora">HORA ESTADÍA</th>
+                                    <th>MOVILIDAD</th>
+                                    <th>CAMILLERO</th>
+                                    <th>HORA DE FINALIZACION</th>
+                                </tr>
                             </thead>
                             <tbody>${reg.tabla}</tbody>
                         </table>
-                        <div style="margin-top: 20px; border: 1px solid #1a3a5f; border-radius: 4px; overflow: hidden;">
-                            <div style="background-color: #1a3a5f; color: white; padding: 8px 12px; font-weight: bold; font-size: 13px; letter-spacing: 0.5px;">Observaciones:</div>
-                            <div style="background-image: linear-gradient(#e0e0e0 1px, transparent 1px); background-size: 100% 30px; line-height: 30px; padding: 0 10px; min-height: 90px; white-space: pre-wrap; font-family: 'Courier New', Courier, monospace; font-size: 13px; background-color: #fafafa;">${obsTexto}</div>
+                        <div class="contenedor-observaciones" style="margin-top: 20px;">
+                            <div class="titulo-observaciones">Observaciones:</div>
+                            <div style="width: 100%; min-height: 180px; border: 1px solid #cbd5e1; border-top: none; font-size: 18px; line-height: 30px; font-family: 'Courier New', Courier, monospace; white-space: pre-wrap; word-wrap: break-word; background-image: linear-gradient(#e0e0e0 1px, transparent 1px); background-size: 100% 30px; padding-top: 30px; padding-left: 10px; padding-right: 10px; border-radius: 0 0 6px 6px; box-sizing: border-box; background-color: #f8fafc; color: #334155;">${obsTexto}</div>
                         </div>
                     </div>`;
             } else if (tipo === 'asistencia') {
