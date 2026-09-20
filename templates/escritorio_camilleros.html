@@ -414,7 +414,6 @@
                     <option value="division-ascensores">Ascensores</option>
                     <option value="lavadero-central">Lavadero Central</option>
                     <option value="casilleros-central">Casilleros Central</option>
-                    <option value="camilleros-central" selected>Camilleros Central</option>
                     <option value="conmutador">Conmutador</option>
                     <option value="dalo">DALO</option>
                     <option value="higiene-y-seguridad">Higiene y Seguridad</option>
@@ -440,7 +439,7 @@
                 <button class="btn-gestion" style="background: #1a3a5f; color: white;" onclick="guardarRedaccion('novedades')">Guardar y Enviar</button>
             </div>
             
-            <div id="print-header-novedades" class="print-header">Dirigido a: camilleros-central | Turno: Todos los turnos</div>
+            <div id="print-header-novedades" class="print-header">Dirigido a: Todos los departamentos | Turno: Todos los turnos</div>
             <textarea id="txt-novedades" oninput="document.getElementById('print-novedades').innerText = this.value" placeholder="Escriba aquí el contenido de la novedad..."></textarea>
             <div id="print-novedades" class="print-only"></div>
             <div id="preview-novedades" class="preview-adjunto"></div>
@@ -646,10 +645,9 @@
                     const clave = (item.id_clave || '').toLowerCase();
                     const contenidoObj = item.contenido || {};
                     const turnoMsg = (contenidoObj.turno || "").toLowerCase();
-                    const deptoDestinoItem = (item.departamento_destino || contenidoObj.departamento || '').toLowerCase();
 
                     const esParaTodos = clave.includes('todos') || clave.includes('general') || turnoMsg === 'todos' || turnoMsg === 'general';
-                    const esParaDepto = deptoDestinoItem.includes('camilleros-central') || clave.includes('camilleros-central');
+                    const esParaDepto = clave.includes('casilleros-central');
 
                     if (!esParaDepto && !esParaTodos) return false;
                     if (esParaTodos) return true;
@@ -729,9 +727,9 @@
                     const supervisorOrigenMsg = item.supervisor_origen || contenidoObj.supervisor_origen || contenidoObj.supervisor || (typeof localStorage.getItem('usuario_nombre') !== 'undefined' ? localStorage.getItem('usuario_nombre') : 'Administrador');
                     const supervisorDestinoMsg = item.supervisor_destino || contenidoObj.supervisor || 'General (Todos)';
                     const remitenteDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
-                    const deptoDestinoValor = (item.departamento_destino || contenidoObj.departamento || '').trim().toLowerCase();
+                    const deptoDestinoValor = item.departamento_destino || contenidoObj.departamento || 'Todos';
 
-                    const deptoUsuarioActual = "camilleros-central";
+                    const deptoUsuarioActual = "casilleros-central";
 
                     let tipoBadge = '';
                     let claseMuroItem = '';
@@ -741,7 +739,7 @@
                         tipoBadge = 'ENVIADO';
                         claseMuroItem = 'enviado';
                         claseBadgeEstado = 'badge-enviado';
-                    } else if (deptoDestinoValor.includes(deptoUsuarioActual) || deptoDestinoValor === 'todos' || deptoDestinoValor === 'todos los departamentos') {
+                    } else if (deptoDestinoValor === deptoUsuarioActual || deptoDestinoValor === 'todos' || deptoDestinoValor === 'todos los departamentos') {
                         tipoBadge = 'RECIBIDO';
                         claseMuroItem = 'recibido';
                         claseBadgeEstado = 'badge-recibido';
@@ -835,7 +833,7 @@
                 return;
             }
 
-            const deptoOrigenNormalizado = "camilleros-central";
+            const deptoOrigenNormalizado = "casilleros-central";
             const deptoDestinoNormalizado = toKebabCase(destinoVisual);
             const supervisorOrigenVal = localStorage.getItem('usuario_nombre') || 'Administrador';
 
@@ -878,7 +876,7 @@
                 document.getElementById('print-' + id).innerText = '';
                 document.getElementById('preview-' + id).style.display = 'none';
                 document.getElementById('preview-' + id).innerHTML = '';
-                document.getElementById('depto-destino-' + id).value = 'camilleros-central';
+                document.getElementById('depto-destino-' + id).value = 'Todos';
                 document.getElementById('turno-destino-' + id).value = 'Todos';
                 
                 const supElem = document.getElementById('supervisor-destino-' + id);
@@ -1009,7 +1007,7 @@
             const body = document.getElementById('cuerpo-rrhh');
             const nombreActual = localStorage.getItem('usuario_nombre') || "Invitado";
             const turnoActual = localStorage.getItem('usuario_turno') || "Mañana";
-            const deptoActual = "Camilleros Central";
+            const deptoActual = "Casilleros Central";
 
             document.getElementById('display-nombre-rrhh').innerText = nombreActual;
             document.getElementById('display-turno-rrhh').innerText = turnoActual;
@@ -1085,7 +1083,7 @@
 
             const fechaActual = inputFecha.value;
             const supervisorActual = localStorage.getItem('usuario_nombre') || "Sistema";
-            const departamentoActual = "camilleros-central";
+            const departamentoActual = "casilleros-central";
 
             for (const a of agentesTurno) {
                 const estadoVal = registro[a.legajo];
@@ -1132,7 +1130,7 @@
         async function cerrarJornadaGlobal() {
             const fechaVal = inputFecha.value;
             const turnoVal = localStorage.getItem('usuario_turno') || "Mañana";
-            const deptoVal = "camilleros-central";
+            const deptoVal = "casilleros-central";
             const supervisorVal = localStorage.getItem('usuario_nombre') || "Sistema";
 
             const { data: existente, error: errExistente } = await supabaseClient
@@ -1247,7 +1245,7 @@
                 .select('*')
                 .eq('fecha_cierre', f)
                 .eq('turno', t)
-                .eq('departamento', 'camilleros-central')
+                .eq('departamento', 'casilleros-central')
                 .maybeSingle();
 
             let reg = regSupabase ? {
@@ -1262,7 +1260,7 @@
 
             if (!reg) {
                 const hist = JSON.parse(localStorage.getItem('historial_jornadas') || "[]");
-                reg = hist.find(r => r.fecha === f && r.turno === t && r.depto === "camilleros-central");
+                reg = hist.find(r => r.fecha === f && r.turno === t && r.depto === "casilleros-central");
             }
             
             if (!reg) {
@@ -1352,19 +1350,19 @@
         window.onload = async () => {
             const nombre = localStorage.getItem('usuario_nombre') || "Invitado"; 
             const turno = localStorage.getItem('usuario_turno') || "Mañana"; 
-            const depto = "camilleros-central";
+            const depto = "casilleros-central";
             
             document.getElementById('nombre-supervisor-sidebar').innerText = nombre;
             document.getElementById('display-nombre').innerText = nombre; 
             document.getElementById('display-turno').innerText = turno; 
-            document.getElementById('display-depto').innerText = "Camilleros Central";
+            document.getElementById('display-depto').innerText = "Casilleros Central";
             document.getElementById('display-nombre-rep').innerText = nombre; 
             document.getElementById('display-turno-rep').innerText = turno; 
-            document.getElementById('display-depto-rep').innerText = "Camilleros Central";
+            document.getElementById('display-depto-rep').innerText = "Casilleros Central";
             document.getElementById('display-nombre-asc').innerText = nombre;
             document.getElementById('display-turno-asc').innerText = turno;
-            document.getElementById('display-depto-asc').innerText = "Camilleros Central";
-            document.getElementById('depto-hist-label').innerText = "Camilleros Central";
+            document.getElementById('display-depto-asc').innerText = "Casilleros Central";
+            document.getElementById('depto-hist-label').innerText = "Casilleros Central";
             
             let numeroHojaReal = 1;
             try {
@@ -1516,6 +1514,9 @@
     </script>
 </body>
 </html>
+
+
+
 
 
 
