@@ -684,7 +684,7 @@
             crearSeccion('novedades', 'Novedades', 'redaccion');
         </script>
 
-        <!-- SECCIÓN ESTADÍSTICAS -->
+        <!-- SECCIÓN ESTADÍSTICAS INTEGRADA -->
         <div id="estadisticas" class="seccion">
             <div class="header-logos">
                 <img src="/static/logo_hospi.png" alt="Logo">
@@ -731,6 +731,9 @@
             </div>
             <div id="visor-estadisticas" style="padding: 20px; border: 1px solid #cbd5e1; border-radius: 8px; text-align: center; background: #fff;">
                 <p>Seleccione tipo de reporte, mes y año para consolidar.</p>
+            </div>
+            <div class="area-acciones">
+                <button id="btn-print-estadisticas" class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
             </div>
         </div>
     </div>
