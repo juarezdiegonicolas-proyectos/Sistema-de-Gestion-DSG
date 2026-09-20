@@ -108,8 +108,23 @@
         #novedades .btn-gestion:hover { opacity: 1; filter: brightness(1.12); }
         #novedades .btn-imprimir { background: #1a3a5f; color: white; }
         
-        /* Modificación para hacer el textarea de novedades estático (sin cambiar de tamaño) */
-        #novedades textarea { background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 10px; padding: 18px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.02); transition: border-color 0.2s; min-height: 350px; resize: none; }
+        /* Modificación para fuente de máquina de escribir, tamaño 18px, interlineado y renglones guía en el textarea de novedades */
+        #novedades textarea { 
+            width: 100%;
+            background-color: #ffffff; 
+            border: 1px solid #cbd5e1; 
+            border-radius: 10px; 
+            padding: 18px; 
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.02); 
+            transition: border-color 0.2s; 
+            min-height: 350px; 
+            resize: none; 
+            font-family: 'Courier New', Courier, monospace; 
+            font-size: 18px; 
+            line-height: 30px; 
+            background-image: linear-gradient(#e0e0e0 1px, transparent 1px); 
+            background-size: 100% 30px; 
+        }
         
         #novedades textarea:focus { outline: none; border-color: #1a3a5f; box-shadow: 0 0 0 3px rgba(26, 58, 95, 0.1), inset 0 1px 2px rgba(0,0,0,0.02); }
         #novedades .preview-adjunto { border: 2px dashed #cbd5e1 !important; border-radius: 8px; background: #ffffff; color: #475569; font-size: 13px; }
