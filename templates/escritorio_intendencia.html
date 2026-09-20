@@ -29,7 +29,7 @@
         .btn-cerrar:hover { opacity: 0.9; }
 
         .contenido { flex: 1; padding: 40px; overflow-y: auto; background-color: #f8fafc; }
-        .seccion { display: none; background: #ffffff; padding: 40px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
+        .seccion { display: none; background: white; padding: 40px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
         .seccion.activo { display: block; } 
         .info-hoja { display: flex; justify-content: space-between; margin-bottom: 15px; font-weight: bold; color: #1a3a5f; align-items: center; background: #f9f9f9; padding: 10px 15px; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         
@@ -60,61 +60,31 @@
         .input-select-tabla { width: 100%; border: none; text-align: center; font-family: inherit; font-size: 13px; background: transparent; outline: none; box-sizing: border-box; cursor: pointer; padding: 2px; }
         .input-c { width: 100%; border: none; text-align: center; font-family: inherit; font-size: 13px; background: transparent; outline: none; box-sizing: border-box; cursor: pointer; }
         
-        .input-fecha { border: 1px solid #ccc; padding: 8px; border-radius: 4px; font-family: inherit; cursor: pointer; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); }
-        
-        .input-select { 
-            background-color: #f8fafc;
-            border: 1px solid #cbd5e1;
-            color: #334155;
-            padding: 10px 14px;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: 500;
-            font-family: inherit; 
-            cursor: pointer; 
-            transition: all 0.2s ease;
-        }
-        .input-select:focus {
-            outline: none;
-            border-color: #1a3a5f;
-            box-shadow: 0 0 0 3px rgba(26, 58, 95, 0.1);
-            background-color: #fff;
-        }
-
+        .input-fecha, .input-select { border: 1px solid #ccc; padding: 8px; border-radius: 4px; font-family: inherit; cursor: pointer; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); }
         .btn-borrar { background: red; color: white; border: none; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
         .area-acciones { margin-top: 20px; display: flex; gap: 10px; }
-        
-        .btn-gestion { padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px; background: #1a3a5f; color: white; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .btn-gestion:hover { background: #2d5a8e; }
-        
-        .btn-adjuntar { background: #1a3a5f; color: white; }
-        .btn-adjuntar:hover { background: #2d5a8e; }
-
-        .btn-imprimir { background: #1a3a5f; color: white; }
-        .btn-imprimir:hover { background: #2d5a8e; }
-
+        .btn-gestion { padding: 10px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: opacity 0.2s; }
+        .btn-gestion:hover { opacity: 0.9; }
+        .btn-imprimir { background: #6c757d; color: white; }
         #info-supervisor { margin-bottom: 20px; color: #1a3a5f; font-weight: bold; border: 1px solid #ddd; padding: 12px; border-radius: 6px; background: #f9f9f9; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        
-        .header-logos { display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px; background: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.02); border: 1px solid #edf2f7; }
+        .header-logos { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; background: #fff; padding: 10px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
         .header-logos img { height: 110px; width: auto; object-fit: contain; }
-        
-        .filtros-historicos { display: flex; gap: 12px; background: #ffffff; padding: 18px 22px; border-radius: 10px; margin-bottom: 25px; border: 1px solid #e2e8f0; align-items: center; flex-wrap: wrap; box-shadow: 0 2px 4px rgba(0,0,0,0.01); }
-        
+        .filtros-historicos { display: flex; gap: 15px; background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #eee; align-items: center; flex-wrap: wrap; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .celda-asistencia { cursor: pointer; width: 25px; height: 25px; border: 2px solid #333; display: inline-block; transition: background 0.3s; margin: auto; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         .estado-P { background-color: #28a745 !important; }
         .estado-A { background-color: #dc3545 !important; }
         .estado-L { background-color: #ffc107 !important; }
         .botonera-porcentaje { background-color: #1a3a5f; color: white; padding: 12px 20px; border-radius: 8px; font-weight: bold; margin-bottom: 10px; display: inline-block; width: 250px; text-align: left; box-shadow: 0 2px 5px rgba(0,0,0,0.15); }
 
-        /* Estilos para el Muro de Novedades sincronizado */
+        /* Estilos para el Muro de Novedades sincronizado (diseño replicado de escritorio_camilleros) */
         .historial-muro-container { margin-top: 35px; border-top: 2px solid #e2e8f0; padding-top: 25px; }
         .historial-muro-titulo { font-size: 18px; font-weight: 700; color: #1e293b; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
 
         .muro-item { background: #ffffff; border: 1px solid #e2e8f0; border-left: 6px solid #1a3a5f; padding: 22px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); transition: transform 0.2s, box-shadow 0.2s; }
         .muro-item:hover { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025); }
-        .muro-item.recibido { border-left-color: #06b6d4; }   
-        .muro-item.enviado { border-left-color: #28a745; }    
-        .muro-item.terceros { border-left-color: #64748b; }   
+        .muro-item.recibido { border-left-color: #06b6d4; }   /* Celeste: Mensaje recibido */
+        .muro-item.enviado { border-left-color: #28a745; }    /* Verde: Mensaje enviado por el depto */
+        .muro-item.terceros { border-left-color: #64748b; }   /* Gris: Terceros / Cruzados */
 
         .muro-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px; }
         .novedad-meta { font-size: 0.85rem; color: #475569; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; line-height: 1.6; }
@@ -123,45 +93,31 @@
         .muro-adjuntos a { display: inline-flex; align-items: center; gap: 6px; margin-right: 10px; color: #1a3a5f; text-decoration: none; font-weight: 600; background: #f1f5f9; padding: 6px 12px; border-radius: 6px; border: 1px solid #cbd5e1; transition: background 0.2s; }
         .muro-adjuntos a:hover { background: #e2e8f0; text-decoration: none; }
 
+        /* Badges de Estado y Corrección de solapamiento con la línea superior/inferior */
         .badge-estado { font-size: 0.7rem; padding: 5px 10px; border-radius: 6px; font-weight: 700; color: white; text-transform: uppercase; letter-spacing: 0.8px; white-space: nowrap; display: inline-block; vertical-align: middle; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
         .badge-recibido { background-color: #06b6d4; }
         .badge-enviado { background-color: #28a745; }
         .badge-terceros { background-color: #64748b; }
 
-        textarea { 
-            width: 100%; 
-            height: 350px; 
-            padding: 18px; 
-            background-color: #ffffff;
-            border: 1px solid #cbd5e1;
-            border-radius: 10px;
-            font-family: 'Roboto', sans-serif; 
-            font-size: 14px; 
-            box-sizing: border-box; 
-            line-height: 1.6; 
-            resize: none; 
-            box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);
-            transition: border-color 0.2s;
-        }
-        textarea:focus {
-            outline: none;
-            border-color: #1a3a5f;
-            box-shadow: 0 0 0 3px rgba(26, 58, 95, 0.1), inset 0 1px 2px rgba(0,0,0,0.02);
-        }
+        /* Overrides SOLO dentro de #novedades, para que el resto del sistema no cambie */
+        #novedades .header-logos { background: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.02); border: 1px solid #edf2f7; margin-bottom: 25px; }
+        #novedades .filtros-historicos { background: #ffffff; padding: 18px 22px; border-radius: 10px; margin-bottom: 25px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.01); }
+        #novedades .input-select, #novedades .input-fecha { background-color: #f8fafc; border: 1px solid #cbd5e1; color: #334155; padding: 10px 14px; border-radius: 6px; font-size: 13px; font-weight: 500; box-shadow: none; transition: all 0.2s ease; }
+        #novedades .input-select:focus, #novedades .input-fecha:focus { outline: none; border-color: #1a3a5f; box-shadow: 0 0 0 3px rgba(26, 58, 95, 0.1); background-color: #fff; }
+        #novedades .btn-gestion { padding: 10px 16px; border-radius: 6px; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: all 0.2s ease; opacity: 1; }
+        #novedades .btn-gestion:hover { opacity: 1; filter: brightness(1.12); }
+        #novedades .btn-imprimir { background: #1a3a5f; color: white; }
+        
+        /* Modificación para hacer el textarea de novedades estático (sin cambiar de tamaño) */
+        #novedades textarea { background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 10px; padding: 18px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.02); transition: border-color 0.2s; min-height: 350px; resize: none; }
+        
+        #novedades textarea:focus { outline: none; border-color: #1a3a5f; box-shadow: 0 0 0 3px rgba(26, 58, 95, 0.1), inset 0 1px 2px rgba(0,0,0,0.02); }
+        #novedades .preview-adjunto { border: 2px dashed #cbd5e1 !important; border-radius: 8px; background: #ffffff; color: #475569; font-size: 13px; }
 
-        .preview-adjunto { 
-            margin-top: 10px; 
-            padding: 15px; 
-            border: 2px dashed #cbd5e1 !important; 
-            border-radius: 8px; 
-            display: none; 
-            background: #ffffff; 
-            color: #475569; 
-            font-size: 13px; 
-        }
 
-        .print-header { display: none; font-weight: bold; margin-bottom: 20px; border-bottom: 2px solid #333; padding-bottom: 10px; color: #1a3a5f; }
+        .print-header { display: none; font-weight: bold; margin-bottom: 10px; color: #1a3a5f; }
         .print-only { display: none; }
+        .preview-adjunto { display: none; background: #f8f9fa; border: 1px dashed #ccc; padding: 10px; border-radius: 6px; margin-top: 10px; font-size: 13px; }
 
         @media print {
             .sidebar, .btn-accion-global, .btn-cerrar, .menu-item, .no-imprimir, .btn-imprimir, .btn-borrar { display: none !important; }
@@ -304,18 +260,16 @@
             <div class="area-acciones"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir Resultados</button></div>
         </div>
         
-        <!-- SECCIÓN DE NOVEDADES Y BOTONERAS -->
         <div id="novedades" class="seccion">
-            <!-- Cabecera de Logos y Título -->
             <div class="header-logos">
-                <img src="static/logo_hospi.png" alt="Logo Hospital" onerror="this.src='https://via.placeholder.com/150?text=Hospital'">
-                <h1 style="margin: 0; text-align: center; flex: 1; color: #1a3a5f;">Novedades</h1>
-                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
+                <img src="static/logo_hospi.png" alt="Logo Hospital">
+                <h1 style="margin: 0; text-align: center; flex: 1; color: #1a3a5f;">Novedades - Intendencia</h1>
+                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
             
-            <!-- Filtros y Botonera Superior -->
+            <!-- Filtros y Controles de Envío -->
             <div class="filtros-historicos">
-                <select id="depto-destino-novedades" class="input-select" onchange="manejarCambioDepto('novedades'); actualizarPrint('novedades');">
+                <select id="depto-destino-novedades-intendencia" class="input-select" onchange="manejarCambioDepto('destino-novedades-intendencia'); actualizarPrint('novedades-intendencia');">
                     <option value="Todos">Todos los departamentos</option>
                     <option value="direccion-servicios-generales">Dirección Servicios Generales</option>
                     <option value="intendencia">Intendencia</option>
@@ -327,13 +281,13 @@
                     <option value="higiene-y-seguridad">Higiene y Seguridad</option>
                 </select>
                 
-                <div id="contenedor-supervisor-destino-novedades" style="display: none;">
-                    <select id="supervisor-destino-novedades" class="input-select" onchange="actualizarPrint('novedades')">
+                <div id="contenedor-supervisor-destino-novedades-intendencia" style="display: none;">
+                    <select id="supervisor-destino-novedades-intendencia" class="input-select" onchange="actualizarPrint('novedades-intendencia')">
                         <option value="">-- Todos los supervisores --</option>
                     </select>
                 </div>
                 
-                <select id="turno-destino-novedades" class="input-select" onchange="actualizarPrint('novedades')">
+                <select id="turno-destino-novedades-intendencia" class="input-select" onchange="actualizarPrint('novedades-intendencia')">
                     <option value="Todos">Todos los turnos</option>
                     <option value="Mañana">Mañana</option>
                     <option value="Tarde">Tarde</option>
@@ -342,28 +296,24 @@
                     <option value="Sadofe">Sadofe</option>
                 </select>
                 
-                <button class="btn-gestion btn-adjuntar" onclick="document.getElementById('file-novedades').click()">📎 Adjuntar Archivos</button>
-                <input type="file" id="file-novedades" style="display:none" multiple onchange="previsualizarMultiples(this, 'novedades')">
-                <button class="btn-gestion" style="background: #1a3a5f; color: white; margin-left: auto;" onclick="guardarRedaccionIntendencia()">Guardar y Enviar</button>
+                <button class="btn-gestion btn-adjuntar" style="background: #1a3a5f; color: white;" onclick="document.getElementById('file-novedades-intendencia').click()">📎 Adjuntar Archivos</button>
+                <input type="file" id="file-novedades-intendencia" style="display:none" multiple onchange="previsualizarMultiples(this, 'novedades-intendencia')">
+                <button class="btn-gestion" style="background: #1a3a5f; color: white;" onclick="guardarRedaccionIntendencia()">Guardar y Enviar</button>
             </div>
             
-            <div id="print-header-novedades" class="print-header">Dirigido a: Todos los departamentos | Turno: Todos los turnos</div>
+            <div id="print-header-novedades-intendencia" class="print-header">Dirigido a: Todos los departamentos | Turno: Todos los turnos</div>
+            <textarea id="txt-novedades-intendencia" oninput="document.getElementById('print-novedades-intendencia').innerText = this.value" placeholder="Escriba aquí el contenido de novedades..."></textarea>
+            <div id="print-novedades-intendencia" class="print-only"></div>
+            <div id="preview-novedades-intendencia" class="preview-adjunto"></div>
             
-            <!-- Área de Texto para la Novedad -->
-            <textarea id="txt-novedades" oninput="document.getElementById('print-novedades').innerText = this.value" placeholder="Escriba aquí el contenido de la novedad..."></textarea>
-            <div id="print-novedades" class="print-only"></div>
-            <div id="preview-novedades" class="preview-adjunto"></div>
-            
-            <!-- Botonera Inferior -->
             <div class="area-acciones">
-                <button id="btn-print-novedades" class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
-                <button class="btn-gestion btn-imprimir" style="background: #dc3545;" onclick="limpiarPantalla('novedades')">🧹 Limpiar Pantalla</button>
+                <button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
             </div>
 
             <!-- Contenedor del Historial del Muro -->
             <div class="historial-muro-container">
-                <div class="historial-muro-titulo">📌 Historial de Envíos en Muro (Novedades)</div>
-                <div id="contenedor-novedades">Cargando registros históricos...</div>
+                <div class="historial-muro-titulo">📌 Historial de Envíos en Muro (Novedades Intendencia)</div>
+                <div id="contenedor-novedades-intendencia">Cargando registros históricos...</div>
             </div>
         </div>
 
@@ -421,6 +371,9 @@
                                      localStorage.getItem('usuario_usuario') || "";
             
             const nombreBusqueda = nombreEnPantalla.trim();
+            
+            console.log("=== DEBUGGING FILTRO SECTORES Y PISOS ===");
+            console.log("Nombre en pantalla evaluado:", nombreBusqueda);
 
             try {
                 if (!nombreBusqueda) {
@@ -428,6 +381,7 @@
                     return;
                 }
 
+                // 1. Consultar la tabla usuarios
                 const { data: todosLosUsuarios, error: errUsuario } = await db
                     .from('usuarios')
                     .select('*');
@@ -465,6 +419,9 @@
                     return;
                 }
 
+                console.log("Pisos estrictos para filtrar:", pisosSupervisor);
+
+                // 2. Consultar personal de intendencia
                 let queryPersonal = db
                     .from('intendencia_personal')
                     .select('*')
@@ -491,6 +448,7 @@
                     listaAgentes = ["- Seleccionar Agente -", ...agentesUnicos];
                 }
 
+                // 3. Consultar sectores de intendencia
                 let querySectores = db
                     .from('intendencia_sectores')
                     .select('*');
@@ -507,6 +465,9 @@
                     const sectoresUnicos = [...new Set(sectoresFiltrados.map(item => item.nombre_sector).filter(Boolean))];
                     listaSectores = ["- Seleccionar Sector -", ...sectoresUnicos];
                 }
+
+                console.log("Lista final de sectores generada:", listaSectores);
+                console.log("Lista final de agentes generada:", listaAgentes);
 
             } catch (err) {
                 console.error("Excepción al conectar con Supabase para filtrar por pisos:", err);
@@ -1072,8 +1033,8 @@
         }
 
         function manejarCambioDepto(idSufijo) {
-            const selectDepto = document.getElementById('depto-destino-' + idSufijo);
-            const contenedorSup = document.getElementById('contenedor-supervisor-destino-' + idSufijo);
+            const selectDepto = document.getElementById('depto-' + idSufijo);
+            const contenedorSup = document.getElementById('contenedor-supervisor-' + idSufijo);
             if (!selectDepto || !contenedorSup) return;
 
             if (selectDepto.value !== 'Todos') {
@@ -1085,8 +1046,8 @@
         }
 
         async function cargarSupervisoresIntendencia(idSufijo) {
-            const selectDepto = document.getElementById('depto-destino-' + idSufijo);
-            const selectSup = document.getElementById('supervisor-destino-' + idSufijo);
+            const selectDepto = document.getElementById('depto-' + idSufijo);
+            const selectSup = document.getElementById('supervisor-' + idSufijo);
             if (!selectSup || !selectDepto) return;
             
             selectSup.innerHTML = '<option value="">-- Todos los supervisores --</option>';
@@ -1151,17 +1112,17 @@
             }
             const fileInput = document.getElementById('file-' + id);
             if (fileInput) fileInput.value = '';
-            if (id === 'novedades') {
+            if (id === 'novedades-intendencia') {
                 archivosMultiplesNovedadesIntendencia = [];
             }
         }
 
         async function guardarRedaccionIntendencia() {
-            const destinoVisual = document.getElementById('depto-destino-novedades').value;
-            const turno = document.getElementById('turno-destino-novedades').value;
-            const supervisorElem = document.getElementById('supervisor-destino-novedades');
+            const destinoVisual = document.getElementById('depto-destino-novedades-intendencia').value;
+            const turno = document.getElementById('turno-destino-novedades-intendencia').value;
+            const supervisorElem = document.getElementById('supervisor-destino-novedades-intendencia');
             const supervisor = supervisorElem ? supervisorElem.value : '';
-            const textoEscrito = document.getElementById('txt-novedades').value;
+            const textoEscrito = document.getElementById('txt-novedades-intendencia').value;
 
             if (!textoEscrito.trim() && archivosMultiplesNovedadesIntendencia.length === 0) {
                 alert("Escriba un texto o adjunte algún archivo antes de guardar y enviar.");
@@ -1204,8 +1165,8 @@
             if (error) {
                 alert("Error al enviar a la base de datos: " + error.message);
             } else {
-                alert("Novedad enviada correctamente.");
-                limpiarPantalla('novedades');
+                alert("Novedad de Intendencia enviada correctamente.");
+                limpiarPantalla('novedades-intendencia');
                 cargarNovedadesVivo();
                 archivosMultiplesNovedadesIntendencia = [];
             }
@@ -1296,7 +1257,7 @@
         }
 
         async function cargarNovedadesVivo() {
-            const contenedorNov = document.getElementById('contenedor-novedades');
+            const contenedorNov = document.getElementById('contenedor-novedades-intendencia');
             if (!contenedorNov) return;
             
             contenedorNov.innerHTML = "<p>Buscando registros históricos en el muro...</p>";
@@ -1561,3 +1522,4 @@
     </script>
 </body>
 </html>
+
