@@ -413,7 +413,7 @@
                     <option value="intendencia">Intendencia</option>
                     <option value="division-ascensores">Ascensores</option>
                     <option value="lavadero-central">Lavadero Central</option>
-                    <option value="casilleros-central">Casilleros Central</option>
+                    <option value="camilleros-central">Camilleros</option>
                     <option value="conmutador">Conmutador</option>
                     <option value="dalo">DALO</option>
                     <option value="higiene-y-seguridad">Higiene y Seguridad</option>
@@ -647,7 +647,7 @@
                     const turnoMsg = (contenidoObj.turno || "").toLowerCase();
 
                     const esParaTodos = clave.includes('todos') || clave.includes('general') || turnoMsg === 'todos' || turnoMsg === 'general';
-                    const esParaDepto = clave.includes('casilleros-central');
+                    const esParaDepto = clave.includes('camilleros');
 
                     if (!esParaDepto && !esParaTodos) return false;
                     if (esParaTodos) return true;
@@ -729,7 +729,7 @@
                     const remitenteDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
                     const deptoDestinoValor = item.departamento_destino || contenidoObj.departamento || 'Todos';
 
-                    const deptoUsuarioActual = "casilleros-central";
+                    const deptoUsuarioActual = "camilleros";
 
                     let tipoBadge = '';
                     let claseMuroItem = '';
@@ -833,7 +833,7 @@
                 return;
             }
 
-            const deptoOrigenNormalizado = "casilleros-central";
+            const deptoOrigenNormalizado = "camilleros";
             const deptoDestinoNormalizado = toKebabCase(destinoVisual);
             const supervisorOrigenVal = localStorage.getItem('usuario_nombre') || 'Administrador';
 
@@ -1007,7 +1007,7 @@
             const body = document.getElementById('cuerpo-rrhh');
             const nombreActual = localStorage.getItem('usuario_nombre') || "Invitado";
             const turnoActual = localStorage.getItem('usuario_turno') || "Mañana";
-            const deptoActual = "Casilleros Central";
+            const deptoActual = "Camilleros";
 
             document.getElementById('display-nombre-rrhh').innerText = nombreActual;
             document.getElementById('display-turno-rrhh').innerText = turnoActual;
@@ -1083,7 +1083,7 @@
 
             const fechaActual = inputFecha.value;
             const supervisorActual = localStorage.getItem('usuario_nombre') || "Sistema";
-            const departamentoActual = "casilleros-central";
+            const departamentoActual = "Camilleros";
 
             for (const a of agentesTurno) {
                 const estadoVal = registro[a.legajo];
@@ -1130,7 +1130,7 @@
         async function cerrarJornadaGlobal() {
             const fechaVal = inputFecha.value;
             const turnoVal = localStorage.getItem('usuario_turno') || "Mañana";
-            const deptoVal = "casilleros-central";
+            const deptoVal = "Camilleros";
             const supervisorVal = localStorage.getItem('usuario_nombre') || "Sistema";
 
             const { data: existente, error: errExistente } = await supabaseClient
@@ -1245,7 +1245,7 @@
                 .select('*')
                 .eq('fecha_cierre', f)
                 .eq('turno', t)
-                .eq('departamento', 'casilleros-central')
+                .eq('departamento', 'Camilleros')
                 .maybeSingle();
 
             let reg = regSupabase ? {
@@ -1260,7 +1260,7 @@
 
             if (!reg) {
                 const hist = JSON.parse(localStorage.getItem('historial_jornadas') || "[]");
-                reg = hist.find(r => r.fecha === f && r.turno === t && r.depto === "casilleros-central");
+                reg = hist.find(r => r.fecha === f && r.turno === t && r.depto === "Camilleros");
             }
             
             if (!reg) {
@@ -1350,19 +1350,19 @@
         window.onload = async () => {
             const nombre = localStorage.getItem('usuario_nombre') || "Invitado"; 
             const turno = localStorage.getItem('usuario_turno') || "Mañana"; 
-            const depto = "casilleros-central";
+            const depto = "Camilleros";
             
             document.getElementById('nombre-supervisor-sidebar').innerText = nombre;
             document.getElementById('display-nombre').innerText = nombre; 
             document.getElementById('display-turno').innerText = turno; 
-            document.getElementById('display-depto').innerText = "Casilleros Central";
+            document.getElementById('display-depto').innerText = depto;
             document.getElementById('display-nombre-rep').innerText = nombre; 
             document.getElementById('display-turno-rep').innerText = turno; 
-            document.getElementById('display-depto-rep').innerText = "Casilleros Central";
+            document.getElementById('display-depto-rep').innerText = depto;
             document.getElementById('display-nombre-asc').innerText = nombre;
             document.getElementById('display-turno-asc').innerText = turno;
-            document.getElementById('display-depto-asc').innerText = "Casilleros Central";
-            document.getElementById('depto-hist-label').innerText = "Casilleros Central";
+            document.getElementById('display-depto-asc').innerText = depto;
+            document.getElementById('depto-hist-label').innerText = depto;
             
             let numeroHojaReal = 1;
             try {
@@ -1514,7 +1514,6 @@
     </script>
 </body>
 </html>
-
 
 
 
