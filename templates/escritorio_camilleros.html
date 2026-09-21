@@ -1577,13 +1577,13 @@
 
         function crearFilaHTML() { 
             return '<td><button class="btn-borrar" onclick="borrarFila(this)">X</button></td>' +
-                     '<td><input class="input-c input-hora" type="time" onchange="guardarDatos()"></td>' +
-                     '<td><input class="input-c input-cama" type="text" oninput="guardarDatos()"></td>' +
-                     '<td><input class="input-c input-paciente" type="text" oninput="guardarDatos()"></td>' +
-                     '<td><input class="input-c input-destino" type="text" oninput="guardarDatos()"></td>' +
-                     '<td><input class="input-c input-estancia" type="time" onchange="guardarDatos()"></td>' +
+                     '<td><input class="input-c input-hora" type="time" onchange="guardarDatos()" onkeydown="manejarFlechasPlanilla(event)"></td>' +
+                     '<td><input class="input-c input-cama" type="text" oninput="guardarDatos()" onkeydown="manejarFlechasPlanilla(event)"></td>' +
+                     '<td><input class="input-c input-paciente" type="text" oninput="guardarDatos()" onkeydown="manejarFlechasPlanilla(event)"></td>' +
+                     '<td><input class="input-c input-destino" type="text" oninput="guardarDatos()" onkeydown="manejarFlechasPlanilla(event)"></td>' +
+                     '<td><input class="input-c input-estancia" type="time" onchange="guardarDatos()" onkeydown="manejarFlechasPlanilla(event)"></td>' +
                      '<td>' +
-                         '<select class="input-c input-movilidad" onchange="guardarDatos()" style="width: 100%; height: 100%; border: none; background: transparent; font-size: 13px; font-family: inherit;">' +
+                         '<select class="input-c input-movilidad" onchange="guardarDatos()" onkeydown="manejarFlechasPlanilla(event)" style="width: 100%; height: 100%; border: none; background: transparent; font-size: 13px; font-family: inherit;">' +
                              '<option value="">Seleccionar Movilidad...</option>' +
                              '<optgroup label="SILLA DE RUEDAS">' +
                                  '<option value="Silla 001">Silla 001</option>' +
@@ -1603,7 +1603,7 @@
                     '</td>' +
                     '<td style="position: relative; overflow: visible;">' +
                          '<div class="custom-multiselect" style="position: relative; width: 100%; text-align: left;">' +
-                             '<div class="multiselect-btn" onclick="toggleDropdown(this)" style="background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 8px; font-size: 11px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; justify-content: space-between; align-items: center;">' +
+                             '<div class="multiselect-btn" onclick="toggleDropdown(this)" onkeydown="manejarFlechasPlanilla(event)" tabindex="0" style="background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 8px; font-size: 11px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; justify-content: space-between; align-items: center;">' +
                                  '<span class="multiselect-label">Seleccionar...</span>' +
                                  '<span style="font-size: 9px; margin-left: 2px;">▼</span>' +
                              '</div>' +
@@ -1612,7 +1612,7 @@
                              '</div>' +
                          '</div>' +
                     '</td>' +
-                    '<td><input class="input-c input-finalizacion" type="time" onchange="guardarDatos()"></td>'; 
+                    '<td><input class="input-c input-finalizacion" type="time" onchange="guardarDatos()" onkeydown="manejarFlechasPlanilla(event)"></td>'; 
         }
 
         function registrarHora(input) { 
@@ -1621,6 +1621,63 @@
         function borrarFila(btn) { const tr = btn.closest('tr'); if (cuerpoTabla.getElementsByTagName('tr').length > 1) tr.remove(); else { tr.querySelectorAll('input, select').forEach(i => { i.value = ''; i.removeAttribute('readonly'); }); } guardarDatos(); }
         function detectarEnter(e) { if (e.key === 'Enter') { e.preventDefault(); const tr = document.createElement('tr'); tr.innerHTML = crearFilaHTML(); cuerpoTabla.appendChild(tr); tr.querySelectorAll('input')[1].focus(); } }
         
+        // --- LÓGICA DE MOVIMIENTO LIBRE CON FLECHAS DENTRO DE TEXTOS Y CELDAS ---
+        function manejarFlechasPlanilla(e) {
+            if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+
+            const el = e.target;
+            const tag = el.tagName.toLowerCase();
+            let esAlBorde = false;
+
+            if (tag === 'input' || tag === 'textarea') {
+                const tipo = (el.type || '').toLowerCase();
+                // Permitir movimiento libre dentro del texto para inputs de texto genéricos
+                if (tipo === 'text' || tipo === '') {
+                    const pos = el.selectionStart;
+                    const len = el.value.length;
+                    if (e.key === 'ArrowLeft' && pos > 0) return; // Mover cursor interno hacia la izquierda
+                    if (e.key === 'ArrowRight' && pos < len) return; // Mover cursor interno hacia la derecha
+                }
+            }
+
+            // Buscar todos los elementos navegables de la planilla operativa
+            const elementosFila = Array.from(document.querySelectorAll('#cuerpo-tabla tr input:not([type="hidden"]), #cuerpo-tabla tr select, #cuerpo-tabla tr .multiselect-btn'));
+            const indexActual = elementosFila.indexOf(el);
+            if (indexActual === -1) return;
+
+            // Calcular celdas por fila (excluyendo el botón borrar) para navegación vertical
+            const inputsPorFila = 8; 
+            const filaActual = Math.floor(indexActual / inputsPorFila);
+            const colActual = indexActual % inputsPorFila;
+            const totalFilas = cuerpoTabla.querySelectorAll('tr').length;
+
+            let nuevoIndex = indexActual;
+
+            if (e.key === 'ArrowRight') {
+                nuevoIndex = indexActual + 1;
+            } else if (e.key === 'ArrowLeft') {
+                nuevoIndex = indexActual - 1;
+            } else if (e.key === 'ArrowDown') {
+                let sigFila = filaActual + 1;
+                if (sigFila < totalFilas) {
+                    nuevoIndex = (sigFila * inputsPorFila) + colActual;
+                }
+            } else if (e.key === 'ArrowUp') {
+                let antFila = filaActual - 1;
+                if (antFila >= 0) {
+                    nuevoIndex = (antFila * inputsPorFila) + colActual;
+                }
+            }
+
+            if (nuevoIndex >= 0 && nuevoIndex < elementosFila.length && nuevoIndex !== indexActual) {
+                e.preventDefault();
+                elementosFila[nuevoIndex].focus();
+                if (elementosFila[nuevoIndex].tagName.toLowerCase() === 'input' && elementosFila[nuevoIndex].type === 'text') {
+                    elementosFila[nuevoIndex].select();
+                }
+            }
+        }
+
         function mostrar(id, titulo) { 
             document.querySelectorAll('.seccion').forEach(s => s.classList.remove('activo')); 
             document.getElementById(id).classList.add('activo'); 
@@ -1629,72 +1686,6 @@
                 cargarNovedades();
             }
         }
-
-        // --- LÓGICA DE NAVEGACIÓN CON FLECHAS EN PLANILLA OPERATIVA ---
-        document.addEventListener('keydown', function(e) {
-            const activeEl = document.activeElement;
-            if (!activeEl) return;
-
-            // Verificar si el elemento activo está dentro de la tabla operativa (#tabla-exportar)
-            const td = activeEl.closest('#tabla-exportar td');
-            if (!td) return;
-
-            const tr = td.closest('tr');
-            if (!tr) return;
-
-            const celdasFila = Array.from(tr.querySelectorAll('td'));
-            const colIndex = celdasFila.indexOf(td);
-            if (colIndex === -1) return;
-
-            let targetCell = null;
-
-            if (e.key === 'ArrowRight') {
-                e.preventDefault();
-                // Buscar siguiente celda con elementos interactivos en la misma fila
-                for (let i = colIndex + 1; i < celdasFila.length; i++) {
-                    const focusable = celdasFila[i].querySelector('input, select, .multiselect-btn');
-                    if (focusable) {
-                        targetCell = focusable;
-                        break;
-                    }
-                }
-            } else if (e.key === 'ArrowLeft') {
-                e.preventDefault();
-                // Buscar celda anterior con elementos interactivos en la misma fila
-                for (let i = colIndex - 1; i >= 0; i--) {
-                    const focusable = celdasFila[i].querySelector('input, select, .multiselect-btn');
-                    if (focusable) {
-                        targetCell = focusable;
-                        break;
-                    }
-                }
-            } else if (e.key === 'ArrowDown') {
-                e.preventDefault();
-                const siguienteTr = tr.nextElementSibling;
-                if (siguienteTr) {
-                    const celdasSiguiente = Array.from(siguienteTr.querySelectorAll('td'));
-                    if (celdasSiguiente[colIndex]) {
-                        targetCell = celdasSiguiente[colIndex].querySelector('input, select, .multiselect-btn');
-                    }
-                }
-            } else if (e.key === 'ArrowUp') {
-                e.preventDefault();
-                const anteriorTr = tr.previousElementSibling;
-                if (anteriorTr) {
-                    const celdasAnterior = Array.from(anteriorTr.querySelectorAll('td'));
-                    if (celdasAnterior[colIndex]) {
-                        targetCell = celdasAnterior[colIndex].querySelector('input, select, .multiselect-btn');
-                    }
-                }
-            }
-
-            if (targetCell) {
-                targetCell.focus();
-                if (targetCell.tagName === 'INPUT' && typeof targetCell.select === 'function') {
-                    targetCell.select();
-                }
-            }
-        });
     </script>
 </body>
 </html>
