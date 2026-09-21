@@ -1629,8 +1629,73 @@
                 cargarNovedades();
             }
         }
+
+        // --- LÓGICA DE NAVEGACIÓN CON FLECHAS EN PLANILLA OPERATIVA ---
+        document.addEventListener('keydown', function(e) {
+            const activeEl = document.activeElement;
+            if (!activeEl) return;
+
+            // Verificar si el elemento activo está dentro de la tabla operativa (#tabla-exportar)
+            const td = activeEl.closest('#tabla-exportar td');
+            if (!td) return;
+
+            const tr = td.closest('tr');
+            if (!tr) return;
+
+            const celdasFila = Array.from(tr.querySelectorAll('td'));
+            const colIndex = celdasFila.indexOf(td);
+            if (colIndex === -1) return;
+
+            let targetCell = null;
+
+            if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                // Buscar siguiente celda con elementos interactivos en la misma fila
+                for (let i = colIndex + 1; i < celdasFila.length; i++) {
+                    const focusable = celdasFila[i].querySelector('input, select, .multiselect-btn');
+                    if (focusable) {
+                        targetCell = focusable;
+                        break;
+                    }
+                }
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                // Buscar celda anterior con elementos interactivos en la misma fila
+                for (let i = colIndex - 1; i >= 0; i--) {
+                    const focusable = celdasFila[i].querySelector('input, select, .multiselect-btn');
+                    if (focusable) {
+                        targetCell = focusable;
+                        break;
+                    }
+                }
+            } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                const siguienteTr = tr.nextElementSibling;
+                if (siguienteTr) {
+                    const celdasSiguiente = Array.from(siguienteTr.querySelectorAll('td'));
+                    if (celdasSiguiente[colIndex]) {
+                        targetCell = celdasSiguiente[colIndex].querySelector('input, select, .multiselect-btn');
+                    }
+                }
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                const anteriorTr = tr.previousElementSibling;
+                if (anteriorTr) {
+                    const celdasAnterior = Array.from(anteriorTr.querySelectorAll('td'));
+                    if (celdasAnterior[colIndex]) {
+                        targetCell = celdasAnterior[colIndex].querySelector('input, select, .multiselect-btn');
+                    }
+                }
+            }
+
+            if (targetCell) {
+                targetCell.focus();
+                if (targetCell.tagName === 'INPUT' && typeof targetCell.select === 'function') {
+                    targetCell.select();
+                }
+            }
+        });
     </script>
 </body>
 </html>
-
 
