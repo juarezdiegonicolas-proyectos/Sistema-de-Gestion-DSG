@@ -7,7 +7,7 @@
     <!-- Incluir Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { margin: 0; font-family: 'Roboto', sans-serif; display: flex; height: 100vh; background-color: #f8fafc; overflow: hidden; }
+        body { margin: 0; font-family: 'Roboto', sans-serif; display: flex; height: 100vh; background-color: #f4f1ea; overflow: hidden; }
         .sidebar { width: 260px; background-color: #1a3a5f; color: white; padding: 15px 15px; display: flex; flex-direction: column; flex-shrink: 0; height: 100vh; box-sizing: border-box; overflow: hidden; }
         
         .bienvenida-box { background-color: #2d5a8e; padding: 10px; border-radius: 8px; margin-bottom: 12px; text-align: center; border: 1px solid #5d8dbb; flex-shrink: 0; }
@@ -24,40 +24,17 @@
         .badge-novedades { background-color: #dc3545; color: white; font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 10px; display: none; }
 
         .sidebar-footer { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; padding-top: 5px; }
-        
-        .btn-accion-global { 
-            width: 100%; 
-            padding: 12px; 
-            margin-bottom: 0px; 
-            background: linear-gradient(135deg, #28a745, #218838); 
-            color: white; 
-            border: none; 
-            border-radius: 8px; 
-            font-weight: bold; 
-            cursor: pointer; 
-            font-size: 14px; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.15); 
-            transition: all 0.2s ease; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 8px; 
-        }
-        .btn-accion-global:hover { 
-            background: linear-gradient(135deg, #218838, #1e7e34); 
-        }
-        
+        .btn-accion-global { width: 100%; padding: 10px; background: linear-gradient(135deg, #28a745, #218838); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: opacity 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .btn-accion-global:hover { opacity: 0.9; }
         .btn-cerrar { width: 100%; padding: 10px; background: linear-gradient(135deg, #d32f2f, #c62828); color: white; text-align: center; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); box-sizing: border-box; display: flex; align-items: center; justify-content: center; gap: 6px; transition: opacity 0.2s; border: none; cursor: pointer; }
         .btn-cerrar:hover { opacity: 0.9; }
 
-        .contenido { flex: 1; padding: 40px; overflow-y: auto; height: 100vh; box-sizing: border-box; background-color: #f8fafc; }
-        
-        .seccion { display: none; background: #ffffff; padding: 40px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
+        .contenido { flex: 1; padding: 40px; overflow-y: auto; height: 100vh; box-sizing: border-box; }
+        .seccion { display: none; background: white; padding: 40px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         .seccion.activo { display: block; } 
-        
         .info-hoja { display: flex; justify-content: space-between; margin-bottom: 15px; font-weight: bold; color: #1a3a5f; align-items: center;}
         
-        .hoja { background-color: #fff; padding: 0 40px; border: 1px solid #e2e8f0; min-height: 900px; position: relative; border-radius: 8px; }
+        .hoja { background-color: #fff; padding: 0 40px; border: 1px solid #ccc; min-height: 900px; position: relative; }
         
         #editor-reporte { 
             width: 100%; 
@@ -79,7 +56,7 @@
         #editor-observaciones { 
             width: 100%; 
             min-height: 180px; 
-            border: 1px solid #cbd5e1; 
+            border: 1px solid #000; 
             border-top: none; 
             font-size: 18px; 
             line-height: 30px; 
@@ -95,17 +72,15 @@
             border-radius: 0 0 6px 6px; 
             box-sizing: border-box; 
             overflow-y: auto; 
-            background-color: #f8fafc;
         }
         
         .tabla-camilleros { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; table-layout: fixed; }
-        .tabla-camilleros th, .tabla-camilleros td { border: 1px solid #cbd5e1; padding: 8px 6px; text-align: center; word-wrap: break-word; vertical-align: middle; }
+        .tabla-camilleros th, .tabla-camilleros td { border: 1px solid #000; padding: 8px 6px; text-align: center; word-wrap: break-word; vertical-align: middle; }
         .tabla-camilleros th { background-color: #1a3a5f; color: white; height: 40px; font-size: 13px; }
         .col-hora { width: 95px; }
         
-        .input-c { width: 95%; border: none; text-align: center; background: transparent; outline: none; font-family: inherit; font-size: 13px; color: #334155; }
-        .input-fecha, .input-select { border: 1px solid #cbd5e1; padding: 10px 14px; border-radius: 6px; font-family: inherit; cursor: pointer; background: #f8fafc; color: #334155; transition: all 0.2s ease; }
-        .input-fecha:focus, .input-select:focus { border-color: #1a3a5f; outline: none; box-shadow: 0 0 0 3px rgba(26, 58, 95, 0.1); }
+        .input-c { width: 95%; border: none; text-align: center; background: transparent; outline: none; font-family: inherit; font-size: 13px; }
+        .input-fecha, .input-select { border: 1px solid #ccc; padding: 8px; border-radius: 4px; font-family: inherit; cursor: pointer; }
         
         .tabla-camilleros select.input-movilidad, 
         .tabla-camilleros select.input-personal {
@@ -113,10 +88,9 @@
             font-size: 13px;
             text-overflow: ellipsis;
             width: 100%;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            background: #f8fafc;
-            color: #334155;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background: #fff;
         }
         
         .input-estancia, .input-finalizacion {
@@ -130,141 +104,28 @@
             text-align: center;
         }
 
-        .btn-borrar { background: #d32f2f; color: white; border: none; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; }
+        .btn-borrar { background: red; color: white; border: none; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; }
         .area-acciones { margin-top: 20px; display: flex; gap: 10px; }
-        .btn-gestion { padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px; background: #1a3a5f; color: white; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .btn-gestion:hover { background: #2d5a8e; }
-        .btn-imprimir { background: #1a3a5f; color: white; }
-        .btn-imprimir:hover { background: #2d5a8e; }
-        
-        #info-supervisor { margin-bottom: 20px; color: #1a3a5f; font-weight: bold; border: 1px solid #e2e8f0; padding: 12px 15px; border-radius: 8px; background: #f8fafc; }
-        
-        .header-logos { display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px; background: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.02); border: 1px solid #edf2f7; }
+        .btn-gestion { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; }
+        .btn-imprimir { background: #6c757d; color: white; }
+        #info-supervisor { margin-bottom: 20px; color: #1a3a5f; font-weight: bold; border: 1px solid #ddd; padding: 10px; border-radius: 6px; background: #f9f9f9; }
+        .header-logos { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
         .header-logos img { height: 110px; width: auto; object-fit: contain; }
-        
-        .filtros-historicos { display: flex; gap: 12px; background: #ffffff; padding: 18px 22px; border-radius: 10px; margin-bottom: 25px; border: 1px solid #e2e8f0; align-items: center; flex-wrap: wrap; box-shadow: 0 2px 4px rgba(0,0,0,0.01); }
-        
-        .tabla-intendencia { width: 100%; border-collapse: collapse; margin-top: 10px; table-layout: auto; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .tabla-intendencia th, .tabla-intendencia td { border: 1px solid #000; padding: 6px; text-align: center; word-wrap: break-word; overflow: hidden; }
-        .tabla-intendencia th { background-color: #1a3a5f; color: white; height: 22px; font-size: 14px; font-weight: 500; letter-spacing: 0.5px; }
+        .filtros-historicos { display: flex; gap: 15px; background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #eee; align-items: center; }
+        .celda-asistencia { cursor: pointer; width: 25px; height: 25px; border: 2px solid #333; display: inline-block; transition: background 0.3s; margin: auto; }
+        .estado-P { background-color: #28a745 !important; }
+        .estado-A { background-color: #dc3545 !important; }
+        .estado-L { background-color: #ffc107 !important; }
+        .botonera-porcentaje { background-color: #1a3a5f; color: white; padding: 12px 20px; border-radius: 8px; font-weight: bold; margin-bottom: 10px; display: inline-block; width: 250px; text-align: left; }
 
-        .celda-asistencia { cursor: pointer; width: 25px; height: 25px; border: 2px solid #333 !important; display: inline-block; transition: background 0.3s; margin: auto; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .estado-P { background-color: #28a745 !important; border: 2px solid #333 !important; }
-        .estado-A { background-color: #dc3545 !important; border: 2px solid #333 !important; }
-        .estado-L { background-color: #ffc107 !important; border: 2px solid #333 !important; }
-        
-        .botonera-porcentaje { background-color: #1a3a5f; color: white; padding: 12px 20px; border-radius: 8px; font-weight: bold; margin-bottom: 10px; display: inline-block; width: 250px; text-align: left; box-shadow: 0 2px 5px rgba(0,0,0,0.15); }
-
-        #rrhh .tabla-camilleros { width: 99.5% !important; border-right: 1px solid #cbd5e1 !important; }
-
-        .input-select, .input-fecha { 
-            background-color: #f8fafc;
-            border: 1px solid #cbd5e1;
-            color: #334155;
-            padding: 10px 14px;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: 500;
-            font-family: inherit; 
-            cursor: pointer; 
-            transition: all 0.2s ease;
-        }
-        .input-select:focus, .input-fecha:focus {
-            outline: none;
-            border-color: #1a3a5f;
-            box-shadow: 0 0 0 3px rgba(26, 58, 95, 0.1);
-            background-color: #fff;
-        }
-
-        .btn-adjuntar { background: #1a3a5f; color: white; }
-        .btn-adjuntar:hover { background: #2d5a8e; }
-
-        textarea { 
-            width: 100%; 
-            height: 350px; 
-            padding: 18px; 
-            background-color: #ffffff;
-            border: 1px solid #cbd5e1;
-            border-radius: 10px;
-            font-family: 'Roboto', sans-serif; 
-            font-size: 14px; 
-            box-sizing: border-box; 
-            line-height: 1.6; 
-            resize: none; 
-            box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);
-            transition: border-color 0.2s;
-        }
-        textarea:focus {
-            outline: none;
-            border-color: #1a3a5f;
-            box-shadow: 0 0 0 3px rgba(26, 58, 95, 0.1), inset 0 1px 2px rgba(0,0,0,0.02);
-        }
-
-        .preview-adjunto { 
-            margin-top: 10px; 
-            padding: 15px; 
-            border: 2px dashed #cbd5e1 !important; 
-            border-radius: 8px; 
-            display: none; 
-            background: #ffffff; 
-            color: #475569; 
-            font-size: 13px; 
-        }
-
-        .print-only { display: none; }
-        .print-header { display: none; font-weight: bold; margin-bottom: 20px; border-bottom: 2px solid #333; padding-bottom: 10px; }
-
-        /* --- MURO DE NOVEDADES --- */
-        .historial-muro-container { 
-            margin-top: 35px; 
-            border-top: 2px solid #e2e8f0; 
-            padding-top: 25px; 
-        }
-        .historial-muro-titulo { 
-            font-size: 18px; 
-            font-weight: 700; 
-            color: #1e293b; 
-            margin-bottom: 20px; 
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .muro-item { 
-            background: #ffffff; 
-            border: 1px solid #e2e8f0; 
-            border-left: 6px solid #1a3a5f; 
-            padding: 22px; 
-            border-radius: 10px; 
-            margin-bottom: 20px; 
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); 
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .muro-item:hover {
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
-        }
-        .muro-item.recibido { border-left-color: #06b6d4; }
-        .muro-item.enviado { border-left-color: #28a745; }
-        .muro-item.terceros { border-left-color: #64748b; }
-
-        .muro-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px; }
-        .novedad-meta { font-size: 0.85rem; color: #475569; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; line-height: 1.6; }
-        .novedad-texto { font-size: 0.95rem; color: #1e293b; white-space: pre-wrap; word-break: break-word; line-height: 1.6; margin-top: 12px; font-family: inherit; }
-        .muro-adjuntos { margin-top: 15px; font-size: 13px; }
-        .muro-adjuntos a { display: inline-flex; align-items: center; gap: 6px; margin-right: 10px; color: #1a3a5f; text-decoration: none; font-weight: 600; background: #f1f5f9; padding: 6px 12px; border-radius: 6px; border: 1px solid #cbd5e1; transition: background 0.2s; }
-        .muro-adjuntos a:hover { background: #e2e8f0; text-decoration: none; }
-
-        .badge-estado { font-size: 0.7rem; padding: 5px 10px; border-radius: 6px; font-weight: 700; color: white; text-transform: uppercase; letter-spacing: 0.8px; white-space: nowrap; display: inline-block; vertical-align: middle; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-        .badge-recibido { background-color: #06b6d4; }
-        .badge-enviado { background-color: #28a745; }
-        .badge-terceros { background-color: #64748b; }
+        #rrhh .tabla-camilleros { width: 99.5% !important; border-right: 1px solid #000 !important; }
 
         @media print {
             .sidebar, .btn-accion-global, .btn-cerrar, .menu-item, .no-imprimir, .btn-imprimir, .btn-borrar { display: none !important; }
             #planillas .tabla-camilleros th:first-child, 
             #planillas .tabla-camilleros td:first-child { display: none !important; }
             body, html, .contenido, .seccion.activo, .hoja { background-color: white !important; margin: 0 !important; padding: 0 !important; width: 100% !important; height: auto !important; overflow: visible !important; box-shadow: none !important; display: block !important; }
-            .seccion { display: none !important; border: none !important; box-shadow: none !important; }
+            .seccion { display: none !important; }
             .seccion.activo { display: block !important; } 
             .hoja { border: none !important; min-height: auto !important; }
             #editor-reporte, #editor-observaciones { 
@@ -296,11 +157,11 @@
         <div class="menu-links">
             <div class="menu-item" onclick="mostrar('reportes', 'Reportes')"><span>📊 Reportes</span></div>
             <div class="menu-item" onclick="mostrar('planillas', 'Planillas (Operativa)')"><span>🛠 Planillas (Operativa)</span></div>
-            <div class="menu-item" onclick="mostrar('ascensores', 'Estado de Ascensores')"><span>🛗 Estado de Ascensores</span></div>
             <div class="menu-item" onclick="mostrar('historicos', 'Registros Históricos')"><span>📂 Registros Históricos</span></div>
             <div class="menu-item" onclick="mostrar('novedades', 'Novedades')"><span>📢 Novedades</span><span id="badge-novedades" class="badge-novedades">0</span></div>
+            <div class="menu-item" onclick="mostrar('ascensores', 'Estado de Ascensores')"><span>🛗 Estado de Ascensores</span></div>
             <div class="menu-item" onclick="mostrar('rrhh', '👥 RR.HH.')"><span>👥 RR.HH.</span></div>
-            <div class="menu-item" onclick="mostrar('resoluciones', 'Formularios Licencias')"><span>⚖️ Formularios Licencias</span></div>
+            <div class="menu-item" onclick="mostrar('resoluciones', 'Resoluciones')"><span>⚖️ Resoluciones</span></div>
         </div>
 
         <div class="sidebar-footer">
@@ -310,11 +171,10 @@
     </div>
 
     <div class="contenido">
-        <!-- SOLAPA 1: REPORTES -->
         <div id="reportes" class="seccion activo">
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo Hospital">
-                <h1 style="margin: 0; text-align: center; flex: 1; color: #1a3a5f;">Reportes</h1>
+                <h1 style="margin: 0; text-align: center; flex: 1;">Reportes</h1>
                 <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
             <div id="info-supervisor">Supervisor: <span id="display-nombre-rep">---</span> | Turno: <span id="display-turno-rep">---</span> | Depto: <span id="display-depto-rep">---</span></div>
@@ -328,11 +188,10 @@
             <div class="area-acciones"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button></div>
         </div>
 
-        <!-- SOLAPA 2: PLANILLAS -->
         <div id="planillas" class="seccion">
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo Hospital">
-                <h1 style="margin: 0; text-align: center; flex: 1; font-size: 30px; color: #1a3a5f;">Auxiliares Técnicos</h1>
+                <h1 style="margin: 0; text-align: center; flex: 1; font-size: 30px;">Auxiliares Técnicos</h1>
                 <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
             <div id="info-supervisor">Supervisor: <span id="display-nombre">---</span> | Turno: <span id="display-turno">---</span> | Depto: <span id="display-depto">---</span></div>
@@ -351,27 +210,10 @@
             <div class="area-acciones"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button></div>
         </div>
 
-        <!-- SOLAPA 3: ASCENSORES -->
-        <div id="ascensores" class="seccion">
-            <div class="header-logos">
-                <img src="static/logo_hospi.png" alt="Logo Hospital">
-                <h1 style="margin: 0; text-align: center; flex: 1; color: #1a3a5f;">Estado Actual de Ascensores</h1>
-                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
-            </div>
-            <div id="info-supervisor" style="margin-bottom: 20px; color: #1a3a5f; font-weight: bold; border: 1px solid #ddd; padding: 10px; border-radius: 6px; background: #f9f9f9;">
-                Supervisor: <span id="display-nombre-asc">---</span> | Turno: <span id="display-turno-asc">---</span> | Depto: <span id="display-depto-asc">---</span>
-            </div>
-            <div id="contenedor-ascensores" style="border: 1px solid #ccc; padding: 20px; border-radius: 8px; background: #fafafa;">
-                <p>Cargando estado actual de ascensores...</p>
-            </div>
-            <div class="area-acciones"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button></div>
-        </div>
-
-        <!-- SOLAPA 4: HISTÓRICOS -->
         <div id="historicos" class="seccion">
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo Hospital">
-                <h1 style="margin: 0; text-align: center; flex: 1; color: #1a3a5f;">Registros Históricos</h1>
+                <h1 style="margin: 0; text-align: center; flex: 1;">Registros Históricos</h1>
                 <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
             <div id="info-supervisor">Departamento: <span id="depto-hist-label">---</span></div>
@@ -389,88 +231,50 @@
                     <option value="Sadofe">Sadofe</option>
                 </select>
                 <input type="date" id="filtro-fecha-hist" class="input-fecha">
-                <button class="btn-gestion no-imprimir" onclick="cargarHistoricos()">Buscar Registros</button>
+                <button class="btn-gestion no-imprimir" style="background: #1a3a5f; color: white;" onclick="cargarHistoricos()">Buscar Registros</button>
             </div>
-            <div id="contenedor-historicos" style="border: 1px solid #cbd5e1; padding: 20px; border-radius: 8px; background: #f8fafc;">
+            <div id="contenedor-historicos" style="border: 1px solid #ccc; padding: 20px; border-radius: 8px;">
                 <p>Selecciona filtros y presiona "Buscar" para visualizar registros.</p>
             </div>
             <div class="area-acciones"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir Resultados</button></div>
         </div>
         
-        <!-- SOLAPA 5: NOVEDADES (ACTUALIZADA) -->
         <div id="novedades" class="seccion">
             <div class="header-logos">
-                <img src="static/logo_hospi.png" alt="Logo Hospital" onerror="this.src='https://via.placeholder.com/150?text=Hospital'">
-                <h1>Novedades</h1>
-                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;" onerror="this.src='https://via.placeholder.com/150?text=DSG'">
+                <img src="static/logo_hospi.png" alt="Logo Hospital">
+                <h1 style="margin: 0; text-align: center; flex: 1;">Novedades y Comunicados</h1>
+                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
-            
-            <div class="filtros-historicos">
-                <select id="depto-destino-novedades" class="input-select" onchange="manejarCambioDepto('destino-novedades'); actualizarPrint('novedades');">
-                    <option value="Todos">Todos los departamentos</option>
-                    <option value="direccion-servicios-generales">Dirección Servicios Generales</option>
-                    <option value="intendencia">Intendencia</option>
-                    <option value="division-ascensores">Ascensores</option>
-                    <option value="lavadero-central">Lavadero Central</option>
-                    <option value="camilleros-central">Camilleros</option>
-                    <option value="conmutador">Conmutador</option>
-                    <option value="dalo">DALO</option>
-                    <option value="higiene-y-seguridad">Higiene y Seguridad</option>
-                </select>
-                
-                <div id="contenedor-supervisor-destino-novedades" style="display: none;">
-                    <select id="supervisor-destino-novedades" class="input-select" onchange="actualizarPrint('novedades')">
-                        <option value="">-- Todos los supervisores --</option>
-                    </select>
-                </div>
-                
-                <select id="turno-destino-novedades" class="input-select" onchange="actualizarPrint('novedades')">
-                    <option value="Todos">Todos los turnos</option>
-                    <option value="Mañana">Mañana</option>
-                    <option value="Tarde">Tarde</option>
-                    <option value="Noche A">Noche A</option>
-                    <option value="Noche B">Noche B</option>
-                    <option value="Sadofe">Sadofe</option>
-                </select>
-                
-                <button class="btn-gestion btn-adjuntar" onclick="document.getElementById('file-novedades').click()">📎 Adjuntar Archivos</button>
-                <input type="file" id="file-novedades" style="display:none" multiple onchange="previsualizarMultiples(this, 'novedades')">
-                <button class="btn-gestion" style="background: #1a3a5f; color: white;" onclick="guardarRedaccion('novedades')">Guardar y Enviar</button>
+            <div id="contenedor-novedades" style="margin-top: 20px;">
+                <p>Cargando novedades desde la base de datos...</p>
             </div>
-            
-            <div id="print-header-novedades" class="print-header">Dirigido a: Todos los departamentos | Turno: Todos los turnos</div>
-            <textarea id="txt-novedades" oninput="document.getElementById('print-novedades').innerText = this.value" placeholder="Escriba aquí el contenido de la novedad..."></textarea>
-            <div id="print-novedades" class="print-only"></div>
-            <div id="preview-novedades" class="preview-adjunto"></div>
-            
-            <div class="area-acciones">
-                <button id="btn-print-novedades" class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
-            </div>
-
-            <div class="historial-muro-container">
-                <div class="historial-muro-titulo">📌 Historial de Envíos en Muro (Novedades)</div>
-                <div id="contenedor-novedades">Cargando registros históricos...</div>
-            </div>
+            <div class="area-acciones" style="margin-top: 20px;"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button></div>
         </div>
 
-        <!-- SOLAPA 6: RR.HH. -->
+        <div id="ascensores" class="seccion">
+            <div class="header-logos">
+                <img src="static/logo_hospi.png" alt="Logo Hospital">
+                <h1 style="margin: 0; text-align: center; flex: 1;">Estado Actual de Ascensores</h1>
+                <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
+            </div>
+            <div id="info-supervisor" style="margin-bottom: 20px; color: #1a3a5f; font-weight: bold; border: 1px solid #ddd; padding: 10px; border-radius: 6px; background: #f9f9f9;">
+                Supervisor: <span id="display-nombre-asc">---</span> | Turno: <span id="display-turno-asc">---</span> | Depto: <span id="display-depto-asc">---</span>
+            </div>
+            <div id="contenedor-ascensores" style="border: 1px solid #ccc; padding: 20px; border-radius: 8px; background: #fafafa;">
+                <p>Cargando estado actual de ascensores...</p>
+            </div>
+            <div class="area-acciones"><button class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button></div>
+        </div>
+
         <div id="rrhh" class="seccion">
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo Hospital">
-                <h1 style="margin: 0; text-align: center; flex: 1; color: #1a3a5f;">Personal - Turno: <span id="display-turno-rrhh">Mañana</span></h1>
+                <h1 style="margin: 0; text-align: center; flex: 1;">Personal</h1>
                 <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
-            <div id="info-supervisor">Supervisor: <span id="display-nombre-rrhh">---</span> | Turno: <span id="display-turno-rrhh-sub">---</span> | Depto: <span id="display-depto-rrhh">---</span></div>
-            <table class="tabla-intendencia" style="table-layout: auto;">
-                <thead>
-                    <tr>
-                        <th>LEGAJO</th>
-                        <th>APELLIDO Y NOMBRE</th>
-                        <th>PRESENTE</th>
-                        <th>AUSENTE</th>
-                        <th>LICENCIA</th>
-                    </tr>
-                </thead>
+            <div id="info-supervisor">Supervisor: <span id="display-nombre-rrhh">---</span> | Turno: <span id="display-turno-rrhh">---</span> | Depto: <span id="display-depto-rrhh">---</span></div>
+            <table class="tabla-camilleros" style="table-layout: auto;">
+                <thead><tr><th>LEGAJO</th><th>APELLIDO Y NOMBRE</th><th>PRESENTE</th><th>AUSENTE</th><th>LICENCIA</th></tr></thead>
                 <tbody id="cuerpo-rrhh"></tbody>
             </table>
             <div class="area-acciones">
@@ -487,11 +291,10 @@
             </div>
         </div>
 
-        <!-- SOLAPA 7: RESOLUCIONES (FORMULARIOS LICENCIAS) -->
         <div id="resoluciones" class="seccion">
             <div class="header-logos">
                 <img src="static/logo_hospi.png" alt="Logo Hospital">
-                <h1 style="margin: 0; text-align: center; flex: 1; color: #1a3a5f;">Formularios Licencias</h1>
+                <h1 style="margin: 0; text-align: center; flex: 1;">Resoluciones</h1>
                 <img src="static/logo_dsg.png" alt="Logo DSG" style="height: 135px;">
             </div>
         </div>
@@ -502,7 +305,6 @@
         const SUPABASE_URL = 'https://ydcbdvosxbwcutddxaze.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_EvvZ8n7Ve2cF9FB4SXA0Ug_7q6qWh9f';
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        const db = supabaseClient; // Alias requerido para funciones de novedades
 
         const cuerpoTabla = document.getElementById('cuerpo-tabla');
         const editorReporte = document.getElementById('editor-reporte');
@@ -512,7 +314,6 @@
         let chartRRHH;
         
         let agentes = [];
-        let archivosMultiplesNovedades = [];
 
         function obtenerFechaHoyISO() { return new Date().toISOString().split('T')[0]; }
 
@@ -542,137 +343,27 @@
             window.location.href = './';
         }
 
-        function toKebabCase(nombreVisual) {
-            if (!nombreVisual || nombreVisual === 'Todos') return 'Todos';
-            return nombreVisual
-                .toLowerCase()
-                .trim()
-                .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "")
-                .replace(/\s+/g, '-');
-        }
-
-        async function manejarCambioDepto(idSeccion) {
-            const selectDepto = document.getElementById('depto-' + idSeccion);
-            const contenedorSup = document.getElementById('contenedor-supervisor-' + idSeccion);
-            const selectSup = document.getElementById('supervisor-' + idSeccion);
-
-            if (!selectDepto || !contenedorSup || !selectSup) return;
-            const deptoVal = selectDepto.value;
-
-            if (deptoVal && deptoVal !== 'Todos') {
-                contenedorSup.style.display = 'inline-block';
-                try {
-                    const { data, error } = await db
-                        .from('usuarios')
-                        .select('nombre_completo')
-                        .eq('departamento', deptoVal);
-
-                    if (error) throw error;
-                    selectSup.innerHTML = '<option value="">-- Todos los supervisores --</option>';
-                    const unicos = [...new Set((data || []).map(item => item.nombre_completo))].filter(Boolean).sort();
-                    unicos.forEach(nombre => {
-                        const opt = document.createElement('option');
-                        opt.value = nombre;
-                        opt.textContent = nombre;
-                        selectSup.appendChild(opt);
-                    });
-                } catch (err) {
-                    console.error("Error al cargar supervisores desde usuarios:", err);
-                }
-            } else {
-                contenedorSup.style.display = 'none';
-                selectSup.value = '';
-            }
-            actualizarPrint('novedades');
-        }
-
-        async function previsualizarMultiples(input, id) {
-            if (!input.files || input.files.length === 0) return;
-            let targetArray = archivosMultiplesNovedades;
-            targetArray.length = 0;
-            
-            const prev = document.getElementById('preview-' + id);
-            prev.style.display = 'block';
-            prev.innerHTML = '<b>Archivos seleccionados:</b><ul style="margin: 5px 0 0 20px; padding:0;"></ul>';
-            const listaUl = prev.querySelector('ul');
-
-            for (let i = 0; i < input.files.length; i++) {
-                const file = input.files[i];
-                const reader = new FileReader();
-                
-                (function(f) {
-                    reader.onload = function(e) {
-                        targetArray.push({
-                            name: f.name,
-                            type: f.type,
-                            data: e.target.result
-                        });
-                        const li = document.createElement('li');
-                        li.textContent = f.name;
-                        listaUl.appendChild(li);
-                    };
-                    reader.readAsDataURL(f);
-                })(file);
-            }
-        }
-
-        function actualizarPrint(id) {
-            const depto = document.getElementById('depto-destino-' + id).value;
-            const turno = document.getElementById('turno-destino-' + id).value;
-            const supElem = document.getElementById('supervisor-destino-' + id);
-            const supVal = supElem ? supElem.value : '';
-            
-            let textoSup = supVal ? ` | Supervisor Destino: ${supVal}` : '';
-            document.getElementById('print-header-' + id).innerText = `Dirigido a: ${depto} | Turno: ${turno}${textoSup}`;
-        }
-
-        async function marcarComoLeido(idMemo) {
-            const usuarioActual = (localStorage.getItem('usuario_nombre') || "invitado").trim();
-
-            try {
-                const { error } = await supabaseClient
-                    .from('comunicados_lecturas')
-                    .upsert({
-                        comunicado_id: idMemo,
-                        user_id: usuarioActual,
-                        leido_at: new Date().toISOString()
-                    }, { onConflict: 'comunicado_id, user_id' });
-
-                if (error) {
-                    console.error("Error al registrar lectura en comunicados_lecturas:", error);
-                } else {
-                    verificarNovedadesNoLeidas();
-                }
-            } catch (err) {
-                console.error("Excepción al marcar como leído:", err);
-            }
-        }
-
         async function verificarNovedadesNoLeidas() {
             try {
                 const { data, error } = await supabaseClient
                     .from('comunicados_memos')
                     .select('*')
-                    .ilike('id_clave', 'comunicado_novedades_%')
                     .order('created_at', { ascending: false });
 
                 if (error || !data) return;
 
                 const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim();
-                const usuarioActual = (localStorage.getItem('usuario_nombre') || "invitado").trim();
+                const usuarioActual = (localStorage.getItem('usuario_nombre') || "invitado").trim().toLowerCase();
 
                 const novedadesFiltradas = data.filter(item => {
+                    const clave = (item.id_clave || '').toLowerCase();
                     const contenidoObj = item.contenido || {};
-                    const deptoDestinoValor = (item.departamento_destino || contenidoObj.departamento || '').trim().toLowerCase();
-                    const remitenteDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
                     const turnoMsg = (contenidoObj.turno || "").toLowerCase();
 
-                    const esParaTodos = deptoDestinoValor === 'todos' || deptoDestinoValor === 'todos los departamentos' || turnoMsg === 'todos' || turnoMsg === 'general';
-                    const esDestinoCamilleros = deptoDestinoValor === 'camilleros-central';
-                    const esOrigenCamilleros = remitenteDepto === 'camilleros-central';
+                    const esParaTodos = clave.includes('todos') || clave.includes('general') || turnoMsg === 'todos' || turnoMsg === 'general';
+                    const esParaDepto = clave.includes('camilleros');
 
-                    if (!esDestinoCamilleros && !esOrigenCamilleros && !esParaTodos) return false;
+                    if (!esParaDepto && !esParaTodos) return false;
                     if (esParaTodos) return true;
                     if (turnoMsg && turnoMsg !== "todos" && turnoMsg !== "general") {
                         if (turnoMsg !== turnoActual.toLowerCase()) return false;
@@ -682,16 +373,18 @@
 
                 if (novedadesFiltradas.length === 0) return;
 
-                // Consultar cuáles de estos IDs ya fueron leídos por el usuario actual en la tabla comunicados_lecturas
-                const idsMemos = novedadesFiltradas.map(m => m.id);
-                const { data: lecturasData } = await supabaseClient
-                    .from('comunicados_lecturas')
-                    .select('comunicado_id')
-                    .eq('user_id', usuarioActual)
-                    .in('comunicado_id', idsMemos);
+                const claveStorage = `dsg_camilleros_ultimo_novedad_leida_${usuarioActual}`;
+                const ultimoIdLeido = localStorage.getItem(claveStorage);
+                let noLeidasCount = 0;
 
-                const idsLeidos = new Set((lecturasData || []).map(l => l.comunicado_id));
-                let noLeidasCount = novedadesFiltradas.filter(item => !idsLeidos.has(item.id)).length;
+                if (!ultimoIdLeido) {
+                    noLeidasCount = novedadesFiltradas.length;
+                } else {
+                    for (let item of novedadesFiltradas) {
+                        if (String(item.id) === String(ultimoIdLeido)) break;
+                        noLeidasCount++;
+                    }
+                }
 
                 const badge = document.getElementById('badge-novedades');
                 if (badge) {
@@ -711,106 +404,62 @@
             const contenedorNov = document.getElementById('contenedor-novedades');
             if (!contenedorNov) return;
             
-            contenedorNov.innerHTML = "<p>Buscando registros en Supabase...</p>";
+            contenedorNov.innerHTML = "<p>Buscando comunicados y novedades en Supabase...</p>";
 
             try {
-                const { data, error } = await db
+                if (!supabaseClient) {
+                    contenedorNov.innerHTML = '<p style="color: #666;">No hay conexión a Supabase.</p>';
+                    return;
+                }
+
+                const { data, error } = await supabaseClient
                     .from('comunicados_memos')
                     .select('*')
-                    .ilike('id_clave', 'comunicado_novedades_%')
                     .order('created_at', { ascending: false });
 
                 if (error) throw error;
 
                 if (!data || data.length === 0) {
-                    contenedorNov.innerHTML = '<p style="color: #666; font-style: italic;">No hay registros disponibles en el muro.</p>';
+                    contenedorNov.innerHTML = '<p style="color: #666;">No hay registros disponibles.</p>';
                     return;
                 }
 
-                const deptoUsuarioActual = "camilleros-central";
-                const dataFiltrada = data.filter(item => {
+                const filtrados = data.filter(item => {
+                    const clave = (item.id_clave || '').toLowerCase();
                     const contenidoObj = item.contenido || {};
-                    const deptoDestinoValor = (item.departamento_destino || contenidoObj.departamento || '').trim().toLowerCase();
-                    const remitenteDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
+                    const turnoMsg = (contenidoObj.turno || "").toLowerCase();
+                    const turnoActual = (localStorage.getItem('usuario_turno') || "Mañana").trim();
 
-                    const esParaTodos = deptoDestinoValor === 'todos' || deptoDestinoValor === 'todos los departamentos' || deptoDestinoValor === 'todos-los-departamentos';
-                    const esDestinoCamilleros = deptoDestinoValor === deptoUsuarioActual;
-                    const esOrigenCamilleros = remitenteDepto === deptoUsuarioActual;
+                    const esParaTodos = clave.includes('todos') || clave.includes('general') || turnoMsg === 'todos' || turnoMsg === 'general';
+                    const esParaDepto = clave.includes('camilleros');
 
-                    return esDestinoCamilleros || esOrigenCamilleros || esParaTodos;
+                    if (!esParaDepto && !esParaTodos) return false;
+                    if (esParaTodos) return true;
+                    if (turnoMsg && turnoMsg !== "todos" && turnoMsg !== "general") {
+                        if (turnoMsg !== turnoActual.toLowerCase()) return false;
+                    }
+                    return true;
                 });
 
-                if (dataFiltrada.length === 0) {
-                    contenedorNov.innerHTML = '<p style="color: #666; font-style: italic;">No hay novedades para mostrar en este muro.</p>';
+                if (filtrados.length === 0) {
+                    contenedorNov.innerHTML = '<p style="color: #666;">No hay comunicaciones dirigidas a este sector.</p>';
                     return;
                 }
 
-                // Obtener lecturas del usuario actual para marcar elementos leídos automáticamente al visualizar
-                const usuarioActual = (localStorage.getItem('usuario_nombre') || "invitado").trim();
-                const idsMemos = dataFiltrada.map(m => m.id);
-                const { data: lecturasData } = await supabaseClient
-                    .from('comunicados_lecturas')
-                    .select('comunicado_id')
-                    .eq('user_id', usuarioActual)
-                    .in('comunicado_id', idsMemos);
-
-                const idsLeidos = new Set((lecturasData || []).map(l => l.comunicado_id));
+                // Marcar como leído el último elemento (el más reciente) exclusivamente para este usuario
+                if (filtrados.length > 0) {
+                    const usuarioActual = (localStorage.getItem('usuario_nombre') || "invitado").trim().toLowerCase();
+                    localStorage.setItem(`dsg_camilleros_ultimo_novedad_leida_${usuarioActual}`, filtrados[0].id);
+                    const badge = document.getElementById('badge-novedades');
+                    if (badge) badge.style.display = 'none';
+                }
 
                 let html = '';
-                dataFiltrada.forEach(item => {
-                    const memoId = item.id;
+                filtrados.forEach(item => {
                     const contenidoObj = item.contenido || {};
                     const texto = contenidoObj.texto || 'Sin contenido';
-                    let fecha = contenidoObj.fecha || item.created_at || 'Sin fecha';
-                    
-                    if (item.created_at) {
-                        try {
-                            let fObj = new Date(item.created_at);
-                            fecha = fObj.toLocaleString('es-AR', {
-                                day: '2-digit', month: '2-digit', year: 'numeric',
-                                hour: '2-digit', minute: '2-digit', second: '2-digit',
-                                hour12: false
-                            });
-                        } catch(e) {}
-                    }
-
-                    const turnoMsg = item.turno_destino || contenidoObj.turno || 'Todos';
-                    const supervisorOrigenMsg = item.supervisor_origen || contenidoObj.supervisor_origen || contenidoObj.supervisor || 'Administrador';
-                    const supervisorDestinoMsg = item.supervisor_destino || contenidoObj.supervisor || 'General (Todos)';
-                    const remitenteDepto = (item.departamento_origen || contenidoObj.origen || '').trim().toLowerCase();
-                    const deptoDestinoValor = item.departamento_destino || contenidoObj.departamento || 'Todos';
-
-                    let tipoBadge = '';
-                    let claseMuroItem = '';
-                    let claseBadgeEstado = '';
-
-                    if (remitenteDepto === deptoUsuarioActual) {
-                        tipoBadge = 'ENVIADO';
-                        claseMuroItem = 'enviado';
-                        claseBadgeEstado = 'badge-enviado';
-                    } else if (deptoDestinoValor === deptoUsuarioActual || deptoDestinoValor === 'todos' || deptoDestinoValor === 'todos los departamentos') {
-                        tipoBadge = 'RECIBIDO';
-                        claseMuroItem = 'recibido';
-                        claseBadgeEstado = 'badge-recibido';
-                    } else {
-                        tipoBadge = `ENVIADO DESDE`;
-                        claseMuroItem = 'terceros';
-                        claseBadgeEstado = 'badge-terceros';
-                    }
-
-                    const yaLeido = idsLeidos.has(memoId);
-                    if (!yaLeido) {
-                        marcarComoLeido(memoId);
-                    }
-
-                    let infoDetalleCabecera = `
-                        <div>
-                            <span class="badge-estado ${claseBadgeEstado}">${tipoBadge}</span> &nbsp;<strong>Origen:</strong> ${remitenteDepto} &rarr; 
-                            <strong>Destino:</strong> ${deptoDestinoValor} | 
-                            <strong>Turno:</strong> ${turnoMsg} | 
-                            <strong>Sup. Origen:</strong> ${supervisorOrigenMsg} | 
-                            <strong>Sup. Destino:</strong> ${supervisorDestinoMsg}
-                        </div>`;
+                    const fecha = contenidoObj.fecha || 'Sin fecha';
+                    const turnoMsg = contenidoObj.turno || 'General';
 
                     let archivosArr = [];
                     if (Array.isArray(contenidoObj.archivos)) {
@@ -821,7 +470,7 @@
 
                     let archivosHtml = "";
                     if (archivosArr.length > 0) {
-                        archivosHtml = '<div class="muro-adjuntos" style="margin-top: 15px; display: flex; flex-direction: column; gap: 10px;"><b style="color: #334155; font-size: 13px;">Archivos Adjuntos:</b>';
+                        archivosHtml = '<div style="margin-top: 15px; display: flex; flex-direction: column; gap: 10px;">';
                         archivosArr.forEach(arch => {
                             if (!arch || !arch.data) return;
                             let base64Data = arch.data;
@@ -830,36 +479,42 @@
 
                             if (esImagen) {
                                 archivosHtml += `
-                                    <div style="text-align: center; background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px; border-radius: 8px;">
+                                    <div style="text-align: center; background: #fafafa; border: 1px solid #ddd; padding: 10px; border-radius: 6px;">
                                         <div style="margin-bottom: 8px;">
-                                            <img src="${base64Data}" alt="Archivo adjunto" style="max-width: 100%; max-height: 350px; border-radius: 6px; border: 1px solid #cbd5e1; object-fit: contain;" />
+                                            <img src="${base64Data}" alt="Archivo adjunto" style="max-width: 100%; max-height: 350px; border-radius: 4px; border: 1px solid #ddd; object-fit: contain;" />
                                         </div>
-                                        <a href="${base64Data}" download="${nombreArchivo}">📥 Descargar Imagen (${nombreArchivo})</a>
-                                    </div>`;
+                                        <a href="${base64Data}" download="${nombreArchivo}" style="display: inline-block; background: #1a3a5f; color: #fff; padding: 6px 14px; border-radius: 4px; text-decoration: none; font-size: 13px; font-weight: 500;">
+                                            📥 Descargar Imagen (${nombreArchivo})
+                                        </a>
+                                    </div>
+                                `;
                             } else {
                                 archivosHtml += `
-                                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 10px 14px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                                    <div style="background: #f8f9fa; border: 1px solid #ddd; padding: 10px 14px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
                                         <div style="display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1;">
-                                            <span style="font-size: 24px; flex-shrink: 0; line-height: 1;">📄</span>
+                                            <span style="font-size: 26px; flex-shrink: 0; line-height: 1;">📄</span>
                                             <div style="min-width: 0; display: flex; flex-direction: column; gap: 2px;">
-                                                <strong style="font-size: 13px; color: #1e293b; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${nombreArchivo}">${nombreArchivo}</strong>
-                                                <span style="font-size: 11px; color: #64748b; display: block;">Documento adjunto</span>
+                                                <strong style="font-size: 13px; color: #333; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${nombreArchivo}">${nombreArchivo}</strong>
+                                                <span style="font-size: 11px; color: #666; display: block;">Documento adjunto</span>
                                             </div>
                                         </div>
-                                        <a href="${base64Data}" download="${nombreArchivo}">📥 Descargar Archivo</a>
-                                    </div>`;
+                                        <a href="${base64Data}" download="${nombreArchivo}" style="background: #1a3a5f; color: #fff; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 13px; font-weight: 500; display: inline-flex; align-items: center; gap: 55px; white-space: nowrap; flex-shrink: 0;">
+                                            📥 Descargar Archivo
+                                        </a>
+                                    </div>
+                                `;
                             }
                         });
                         archivosHtml += '</div>';
                     }
 
                     html += `
-                        <div class="muro-item ${claseMuroItem}">
-                            <div class="muro-header">
-                                <div class="novedad-meta">${infoDetalleCabecera}</div>
-                                <div style="font-size: 0.8rem; color: #64748b; white-space: nowrap; font-weight: 500;">🕒 ${fecha}</div>
+                        <div style="background: #fff; border-left: 5px solid #1a3a5f; border-top: 1px solid #ddd; border-right: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 20px; border-radius: 6px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 8px; flex-wrap: wrap; gap: 8px;">
+                                <strong style="color: #1a3a5f; font-size: 16px;">📢 Comunicado Oficial</strong>
+                                <span style="font-size: 12px; color: #666; background: #f1f1f1; padding: 4px 10px; border-radius: 4px;">Turno: ${turnoMsg} | Fecha: ${fecha} | <strong>Enviado por:</strong> Dirección de Servicios Generales</span>
                             </div>
-                            <div class="novedad-texto">${texto}</div>
+                            <div style="font-size: 15px; color: #333; white-space: pre-wrap; line-height: 1.5; font-family: inherit;">${texto}</div>
                             ${archivosHtml}
                         </div>`;
                 });
@@ -867,79 +522,8 @@
                 contenedorNov.innerHTML = html;
 
             } catch (err) {
-                console.error("Error al cargar registros del muro:", err);
+                console.error("Error al cargar comunicados:", err);
                 contenedorNov.innerHTML = '<p style="color: red;">Error al sincronizar con la base de datos.</p>';
-            }
-        }
-
-        async function guardarRedaccion(id) {
-            const destinoVisual = document.getElementById('depto-destino-' + id).value;
-            const turno = document.getElementById('turno-destino-' + id).value;
-            const supervisorElem = document.getElementById('supervisor-destino-' + id);
-            const supervisorDestino = supervisorElem ? supervisorElem.value : '';
-            const textoEscrito = document.getElementById('txt-' + id).value;
-
-            let listaArchivos = archivosMultiplesNovedades;
-            let primerArchivo = listaArchivos.length > 0 ? listaArchivos[0] : null;
-
-            if (!textoEscrito.trim() && listaArchivos.length === 0) {
-                alert("Escriba un texto o adjunte algún archivo antes de guardar y enviar.");
-                return;
-            }
-
-            const deptoOrigenNormalizado = "camilleros-central";
-            const deptoDestinoNormalizado = toKebabCase(destinoVisual);
-            const supervisorOrigenVal = localStorage.getItem('usuario_nombre') || 'Administrador';
-
-            const data = {
-                texto: textoEscrito,
-                archivos: listaArchivos,
-                archivo: primerArchivo,
-                fecha: new Date().toLocaleString(),
-                departamento: deptoDestinoNormalizado,
-                origen: deptoOrigenNormalizado,
-                turno: turno,
-                supervisor_origen: supervisorOrigenVal,
-                supervisor: supervisorDestino || 'General (Todos)'
-            };
-
-            let sufijoSupervisor = supervisorDestino ? `_${supervisorDestino.replace(/\s+/g, '_')}` : '_todos';
-            const claveUnica = `comunicado_novedades_${deptoDestinoNormalizado}_${turno}${sufijoSupervisor}_${Date.now()}`;
-            
-            const { error } = await db
-                .from('comunicados_memos')
-                .upsert(
-                    { 
-                        id_clave: claveUnica, 
-                        contenido: data,
-                        departamento_destino: deptoDestinoNormalizado,
-                        departamento_origen: deptoOrigenNormalizado,
-                        turno_destino: turno === 'Todos' ? 'Todos' : turno,
-                        supervisor_origen: supervisorOrigenVal,
-                        supervisor_destino: supervisorDestino || 'General (Todos)'
-                    },
-                    { onConflict: 'id_clave' }
-                );
-
-            if (error) {
-                console.error("Error al guardar en Supabase:", error);
-                alert("Error al enviar a la base de datos: " + error.message);
-            } else {
-                alert("Novedad enviada y guardada correctamente.");
-                document.getElementById('txt-' + id).value = '';
-                document.getElementById('print-' + id).innerText = '';
-                document.getElementById('preview-' + id).style.display = 'none';
-                document.getElementById('preview-' + id).innerHTML = '';
-                document.getElementById('depto-destino-' + id).value = 'Todos';
-                document.getElementById('turno-destino-' + id).value = 'Todos';
-                
-                const supElem = document.getElementById('supervisor-destino-' + id);
-                if (supElem) supElem.value = '';
-                const contSup = document.getElementById('contenedor-supervisor-destino-' + id);
-                if (contSup) contSup.style.display = 'none';
-                
-                cargarNovedades();
-                archivosMultiplesNovedades = [];
             }
         }
 
@@ -1065,7 +649,6 @@
 
             document.getElementById('display-nombre-rrhh').innerText = nombreActual;
             document.getElementById('display-turno-rrhh').innerText = turnoActual;
-            document.getElementById('display-turno-rrhh-sub').innerText = turnoActual;
             document.getElementById('display-depto-rrhh').innerText = deptoActual;
             
             const filtrados = agentes.filter(a => a.turno === turnoActual);
@@ -1089,12 +672,6 @@
                      <div class="botonera-porcentaje">Ausentismo: ${((a/(p+a+l))*100).toFixed(1)}% (${a})</div>
                      <div class="botonera-porcentaje">Licencias: ${((l/(p+a+l))*100).toFixed(1)}% (${l})</div>`;
                 actualizarGrafico(p, a, l);
-            } else {
-                document.getElementById('resumen-rrhh').innerHTML = 
-                    `<div class="botonera-porcentaje">Presentismo: 0.0% (0)</div>
-                     <div class="botonera-porcentaje">Ausentismo: 0.0% (0)</div>
-                     <div class="botonera-porcentaje">Licencias: 0.0% (0)</div>`;
-                actualizarGrafico(0, 0, 0);
             }
         }
 
@@ -1255,6 +832,7 @@
                 const inputHora = tr.querySelector('.input-hora');
                 
                 if (inputHora && inputHora.value.trim() !== '') {
+                    // MODIFICACIÓN REALIZADA AQUÍ: Extrae los nombres reales de los checkboxes tildados
                     let personalSeleccionadosArr = [];
                     tr.querySelectorAll('.custom-multiselect input[type="checkbox"]:checked').forEach(chk => {
                         personalSeleccionadosArr.push(chk.value);
@@ -1270,7 +848,7 @@
                         destino: tr.querySelector('.input-destino')?.value || '',
                         duracion_estancia: tr.querySelector('.input-estancia')?.value || '',
                         tipo_movilidad: tr.querySelector('.input-movilidad')?.value || '',
-                        personal_asignado: personalSeleccionadoStr,
+                        personal_asignado: personalSeleccionadoStr, // Se guardan los nombres reales separados por coma
                         hora_finalizacion: tr.querySelector('.input-finalizacion')?.value || '',
                         observaciones: observacionesVal
                     });
@@ -1293,71 +871,6 @@
             const cont = document.getElementById('contenedor-historicos');
             
             cont.innerHTML = "<p>Buscando registros en Supabase...</p>";
-
-            // Corrección integrada: Consultar en la tabla correcta 'registros_camilleros' en lugar de 'cierres_jornada' cuando se trata de la planilla operativa
-            if (tipo === 'planilla') {
-                try {
-                    const { data: regsCamilleros, error: errCamilleros } = await supabaseClient
-                        .from('registros_camilleros')
-                        .select('*')
-                        .eq('fecha_cierre', f)
-                        .eq('turno', t);
-
-                    if (errCamilleros) throw errCamilleros;
-
-                    if (!regsCamilleros || regsCamilleros.length === 0) {
-                        cont.innerHTML = "<p style='color:red; font-size: 20px;'>NO SE ENCONTRÓ NADA.</p>";
-                        return;
-                    }
-
-                    let filasHtml = '';
-                    let obsTexto = '';
-
-                    regsCamilleros.forEach((regItem, index) => {
-                        if (regItem.observaciones && !obsTexto) {
-                            obsTexto = regItem.observaciones;
-                        }
-                        filasHtml += `
-                            <tr>
-                                <td>${index + 1}</td>
-                                <td>${regItem.hora || ''}</td>
-                                <td>${regItem.numero_cama || ''}</td>
-                                <td>${regItem.nombre_paciente || ''}</td>
-                                <td>${regItem.destino || ''}</td>
-                                <td>${regItem.duracion_estancia || ''}</td>
-                                <td>${regItem.tipo_movilidad || ''}</td>
-                                <td>${regItem.personal_asignado || ''}</td>
-                                <td>${regItem.hora_finalizacion || ''}</td>
-                            </tr>`;
-                    });
-
-                    cont.style.display = 'block';
-                    cont.innerHTML = `
-                        <style>
-                            #contenedor-historicos .tabla-camilleros th:first-child, 
-                            #contenedor-historicos .tabla-camilleros td:first-child { display: none !important; }
-                            #contenedor-historicos input, #contenedor-historicos select { border: none !important; background: transparent !important; pointer-events: none !important; font-size: 13px !important; -webkit-appearance: none; -moz-appearance: none; appearance: none; }
-                            #contenedor-historicos .tabla-camilleros { table-layout: auto !important; font-size: 13px !important; }
-                            #contenedor-historicos .tabla-camilleros th, 
-                            #contenedor-historicos .tabla-camilleros td { font-size: 13px !important; }
-                        </style>
-                        <div style="border: 2px solid #1a3a5f; padding: 20px; font-size: 13px;">
-                            <table class="tabla-camilleros" style="width: 100%; font-size: 13px;">
-                                <thead>
-                                    <tr><th></th><th>HORA</th><th>PISO/SALA/CAMA</th><th>APELLIDO Y NOMBRE</th><th>DESTINO</th><th>HORA ESTADÍA</th><th>MOVILIDAD</th><th>CAMILLERO</th><th>HORA FINALIZACIÓN</th></tr>
-                                </thead>
-                                <tbody>${filasHtml}</tbody>
-                            </table>
-                            <div style="margin-top: 20px; border: 1px solid #1a3a5f; border-radius: 4px; overflow: hidden;">
-                                <div style="background-color: #1a3a5f; color: white; padding: 8px 12px; font-weight: bold; font-size: 13px; letter-spacing: 0.5px;">Observaciones:</div>
-                                <div style="background-image: linear-gradient(#e0e0e0 1px, transparent 1px); background-size: 100% 30px; line-height: 30px; padding: 0 10px; min-height: 90px; white-space: pre-wrap; font-family: 'Courier New', Courier, monospace; font-size: 13px; background-color: #fafafa;">${obsTexto}</div>
-                            </div>
-                        </div>`;
-                    return;
-                } catch (e) {
-                    console.error("Error al consultar registros_camilleros:", e);
-                }
-            }
 
             const { data: regSupabase, error } = await supabaseClient
                 .from('cierres_jornada')
@@ -1577,7 +1090,7 @@
 
         function crearFilaHTML() { 
             return '<td><button class="btn-borrar" onclick="borrarFila(this)">X</button></td>' +
-                     '<td><input class="input-c input-hora" type="time" onchange="guardarDatos()"></td>' +
+                     '<td><input class="input-c input-hora" type="text" onclick="registrarHora(this)"></td>' +
                      '<td><input class="input-c input-cama" type="text" oninput="guardarDatos()"></td>' +
                      '<td><input class="input-c input-paciente" type="text" oninput="guardarDatos()"></td>' +
                      '<td><input class="input-c input-destino" type="text" oninput="guardarDatos()"></td>' +
@@ -1603,11 +1116,11 @@
                     '</td>' +
                     '<td style="position: relative; overflow: visible;">' +
                          '<div class="custom-multiselect" style="position: relative; width: 100%; text-align: left;">' +
-                             '<div class="multiselect-btn" onclick="toggleDropdown(this)" style="background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 8px; font-size: 11px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; justify-content: space-between; align-items: center;">' +
+                             '<div class="multiselect-btn" onclick="toggleDropdown(this)" style="background: #fff; border: 1px solid #ccc; border-radius: 4px; padding: 4px 6px; font-size: 11px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; justify-content: space-between; align-items: center;">' +
                                  '<span class="multiselect-label">Seleccionar...</span>' +
                                  '<span style="font-size: 9px; margin-left: 2px;">▼</span>' +
                              '</div>' +
-                             '<div class="multiselect-content" style="display: none; position: absolute; left: 0; top: 100%; z-index: 9999; background: #fff; border: 1px solid #1a3a5f; box-shadow: 0 4px 8px rgba(0,0,0,0.15); border-radius: 6px; max-height: 180px; overflow-y: auto; width: 220px; padding: 5px;">' +
+                             '<div class="multiselect-content" style="display: none; position: absolute; left: 0; top: 100%; z-index: 9999; background: #fff; border: 1px solid #1a3a5f; box-shadow: 0 4px 8px rgba(0,0,0,0.15); border-radius: 4px; max-height: 180px; overflow-y: auto; width: 220px; padding: 5px;">' +
                                  obtenerOpcionesCamillerosCheck() +
                              '</div>' +
                          '</div>' +
@@ -1615,9 +1128,7 @@
                     '<td><input class="input-c input-finalizacion" type="time" onchange="guardarDatos()"></td>'; 
         }
 
-        function registrarHora(input) { 
-            guardarDatos(); 
-        }
+        function registrarHora(input) { if (input.value === "") { const ahora = new Date(); input.value = ahora.getHours().toString().padStart(2, '0') + ":" + ahora.getMinutes().toString().padStart(2, '0'); input.setAttribute('readonly', 'readonly'); guardarDatos(); } }
         function borrarFila(btn) { const tr = btn.closest('tr'); if (cuerpoTabla.getElementsByTagName('tr').length > 1) tr.remove(); else { tr.querySelectorAll('input, select').forEach(i => { i.value = ''; i.removeAttribute('readonly'); }); } guardarDatos(); }
         function detectarEnter(e) { if (e.key === 'Enter') { e.preventDefault(); const tr = document.createElement('tr'); tr.innerHTML = crearFilaHTML(); cuerpoTabla.appendChild(tr); tr.querySelectorAll('input')[1].focus(); } }
         
