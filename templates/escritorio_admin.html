@@ -695,9 +695,9 @@
                 <select id="est-tipo" class="input-select" onchange="manejarCambioTipoEstadistica()">
                     <option value="rrhh">Asistencia (RRHH)</option>
                     <option value="ascensores">Estado de Ascensores</option>
-                    <option value="camilleros">Traslados de Camilleros</option>
+                    <option value="camilleros" selected>Traslados de Camilleros</option>
                 </select>
-                <select id="est-depto" class="input-select">
+                <select id="est-depto" class="input-select" style="display:none;">
                     <option value="Todos">Todos los departamentos</option>
                     <option value="direccion-servicios-generales">Dirección Servicios Generales</option>
                     <option value="intendencia">Intendencia</option>
@@ -715,7 +715,7 @@
                     <option value="Noche B">Noche B</option>
                     <option value="Sadofe">Sadofe</option>
                 </select>
-                <select id="est-periodo" class="input-select" style="display:none;" onchange="manejarCambioPeriodoEstadistica()">
+                <select id="est-periodo" class="input-select" onchange="manejarCambioPeriodoEstadistica()">
                     <option value="semana">Semanal (últimos 7 días)</option>
                     <option value="mes" selected>Mensual</option>
                     <option value="anio">Anual</option>
@@ -730,7 +730,7 @@
                 <button class="btn-gestion" style="background: #1a3a5f; color: white;" onclick="generarReporteMensual()">Generar Reporte</button>
             </div>
             <div id="visor-estadisticas" style="padding: 20px; border: 1px solid #cbd5e1; border-radius: 8px; text-align: center; background: #fff;">
-                <p>Seleccione tipo de reporte, mes y año para consolidar.</p>
+                <p>Cargando estadísticas de camilleros...</p>
             </div>
             <div class="area-acciones">
                 <button id="btn-print-estadisticas" class="btn-gestion btn-imprimir" onclick="window.print()">🖨 Imprimir</button>
@@ -753,6 +753,9 @@
                 cargarNovedades();
                 manejarCambioDepto('destino-novedades');
                 marcarComoLeidas('novedades');
+            }
+            if (id === 'estadisticas') {
+                generarReporteMensual();
             }
         }
 
@@ -1189,15 +1192,10 @@
             mesSelect.style.display = (periodo === 'mes') ? 'inline-block' : 'none';
         }
 
-        // ============================================================================
-        // Utilidad: normaliza texto libre (nombres de agentes, destinos) para que
-        // variaciones de mayúsculas/espacios no se cuenten como valores distintos.
-        // ============================================================================
         function normalizarTexto(s) {
             return (s || '').trim().toUpperCase().replace(/\s+/g, ' ');
         }
 
-        // Convierte "HH:MM" a minutos desde medianoche. Devuelve null si no es parseable.
         function horaAMinutos(horaStr) {
             if (!horaStr || typeof horaStr !== 'string') return null;
             const m = horaStr.trim().match(/^(\d{1,2}):(\d{2})/);
@@ -1220,7 +1218,6 @@
                 return;
             }
 
-            // --- Rango del período seleccionado, y rango del período INMEDIATO ANTERIOR (misma duración) ---
             let fechaDesde, fechaHasta, fechaDesdeAnt, fechaHastaAnt, etiquetaPeriodo, etiquetaPeriodoAnt;
             const hoy = new Date();
             if (periodo === 'semana') {
@@ -1268,16 +1265,13 @@
                 ? (((totalTraslados - totalTrasladosAnt) / totalTrasladosAnt) * 100).toFixed(1)
                 : null;
 
-            // --- Por turno ---
             const porTurno = {};
             filtrados.forEach(r => { const t = r.turno || 'Sin turno'; porTurno[t] = (porTurno[t] || 0) + 1; });
 
-            // --- Por destino (normalizado) ---
             const porDestino = {};
             filtrados.forEach(r => { const d = normalizarTexto(r.destino) || 'SIN DESTINO'; porDestino[d] = (porDestino[d] || 0) + 1; });
             const topDestinos = Object.entries(porDestino).sort((a, b) => b[1] - a[1]).slice(0, 8);
 
-            // --- Movilidad ---
             let sillas = 0, camillas = 0, otrosMov = 0;
             filtrados.forEach(r => {
                 const m = (r.tipo_movilidad || '').toLowerCase();
@@ -1286,7 +1280,6 @@
                 else otrosMov++;
             });
 
-            // --- Agentes (normalizados) ---
             const porAgente = {};
             let trasladosEnEquipo = 0, trasladosSolitario = 0, sumaAgentesPorTraslado = 0;
             filtrados.forEach(r => {
@@ -1301,19 +1294,17 @@
             const rankingAgentes = Object.entries(porAgente).sort((a, b) => b[1] - a[1]).slice(0, 10);
             const promedioAgentesPorTraslado = totalTraslados > 0 ? (sumaAgentesPorTraslado / totalTraslados).toFixed(2) : '0';
 
-            // --- Promedio diario (sobre días con datos) ---
             const diasDistintos = new Set(filtrados.map(r => r.fecha_cierre)).size;
             const promedioDiario = diasDistintos > 0 ? (totalTraslados / diasDistintos).toFixed(1) : '0';
 
-            // --- Duración promedio del traslado (hora -> hora_finalizacion), contemplando cruce de medianoche ---
             let sumaDuraciones = 0, cantValidas = 0, cantInvalidas = 0;
             filtrados.forEach(r => {
                 const ini = horaAMinutos(r.hora);
                 const fin = horaAMinutos(r.hora_finalizacion);
                 if (ini === null || fin === null) { cantInvalidas++; return; }
                 let diff = fin - ini;
-                if (diff < 0) diff += 24 * 60; // cruzó medianoche
-                if (diff > 8 * 60) { cantInvalidas++; return; } // descarta outliers imposibles (>8hs, dato mal cargado)
+                if (diff < 0) diff += 24 * 60;
+                if (diff > 8 * 60) { cantInvalidas++; return; }
                 sumaDuraciones += diff;
                 cantValidas++;
             });
@@ -1322,25 +1313,53 @@
                 ? `${Math.floor(duracionPromedioMin / 60)}h ${duracionPromedioMin % 60}m`
                 : 'Sin datos válidos';
 
-            // --- Traslados con incidencia (observaciones cargadas) ---
             const conIncidencia = filtrados.filter(r => r.observaciones && String(r.observaciones).trim() !== '');
 
-            // --- Serie temporal: diaria si el período es semana/mes, mensual si es año ---
-            let serieLabels = [], serieValores = [];
+            let serieLabels = [], serieValores = [], seriePromediosAgentesDia = [];
             if (periodo === 'anio') {
                 const porMes = new Array(12).fill(0);
-                filtrados.forEach(r => { const f = new Date(r.fecha_cierre + 'T12:00:00'); porMes[f.getMonth()]++; });
+                const agentesPorMes = new Array(12).fill(0);
+                const trasladosPorMesAgentes = new Array(12).fill(0);
+                
+                filtrados.forEach(r => { 
+                    const f = new Date(r.fecha_cierre + 'T12:00:00'); 
+                    const mIdx = f.getMonth();
+                    porMes[mIdx]++; 
+                    const raw = (r.personal_asignado || '').trim();
+                    if (raw) {
+                        const nombres = raw.split(',').map(n => normalizarTexto(n)).filter(n => n.length > 0);
+                        agentesPorMes[mIdx] += nombres.length;
+                        trasladosPorMesAgentes[mIdx]++;
+                    }
+                });
                 serieLabels = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
                 serieValores = porMes;
+                seriePromediosAgentesDia = porMes.map((val, idx) => trasladosPorMesAgentes[idx] > 0 ? (agentesPorMes[idx] / trasladosPorMesAgentes[idx]).toFixed(1) : '0');
             } else {
                 const porDia = {};
-                filtrados.forEach(r => { porDia[r.fecha_cierre] = (porDia[r.fecha_cierre] || 0) + 1; });
+                const agentesPorDia = {};
+                const trasladosConAgentesDia = {};
+                
+                filtrados.forEach(r => { 
+                    const dia = r.fecha_cierre;
+                    porDia[dia] = (porDia[dia] || 0) + 1; 
+                    const raw = (r.personal_asignado || '').trim();
+                    if (raw) {
+                        const nombres = raw.split(',').map(n => normalizarTexto(n)).filter(n => n.length > 0);
+                        agentesPorDia[dia] = (agentesPorDia[dia] || 0) + nombres.length;
+                        trasladosConAgentesDia[dia] = (trasladosConAgentesDia[dia] || 0) + 1;
+                    }
+                });
                 const fechasOrdenadas = Object.keys(porDia).sort();
                 serieLabels = fechasOrdenadas.map(f => new Date(f + 'T12:00:00').toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' }));
                 serieValores = fechasOrdenadas.map(f => porDia[f]);
+                seriePromediosAgentesDia = fechasOrdenadas.map(f => {
+                    const cTr = trasladosConAgentesDia[f] || 0;
+                    const cAg = agentesPorDia[f] || 0;
+                    return cTr > 0 ? (cAg / cTr).toFixed(1) : '0';
+                });
             }
 
-            // --- Render ---
             const tarjeta = (valor, etiqueta) => `
                 <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:18px 24px; min-width:150px;">
                     <div style="font-size:26px; font-weight:bold; color:#1a3a5f;">${valor}</div>
@@ -1366,7 +1385,7 @@
 
                 <div style="display:flex; gap:30px; flex-wrap:wrap; justify-content:center; margin-bottom:25px;">
                     <div style="width:100%; max-width:700px;">
-                        <div style="font-weight:bold; color:#1a3a5f; margin-bottom:8px; text-align:center;">${periodo === 'anio' ? 'Traslados por mes' : 'Evolución diaria'}</div>
+                        <div style="font-weight:bold; color:#1a3a5f; margin-bottom:8px; text-align:center;">${periodo === 'anio' ? 'Traslados por mes' : 'Evolución diaria (con promedio de agentes arriba)'}</div>
                         <canvas id="graficoCamSerie"></canvas>
                     </div>
                 </div>
@@ -1410,8 +1429,51 @@
             destruirGraficoEstadistica('graficoCamSerie');
             chartInstancesEstadisticas['graficoCamSerie'] = new Chart(document.getElementById('graficoCamSerie'), {
                 type: periodo === 'anio' ? 'bar' : 'line',
-                data: { labels: serieLabels, datasets: [{ label: 'Traslados', data: serieValores, backgroundColor: '#1a3a5f', borderColor: '#1a3a5f', tension: 0.25, fill: false }] },
-                options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+                data: { 
+                    labels: serieLabels, 
+                    datasets: [{ 
+                        label: 'Traslados', 
+                        data: serieValores, 
+                        backgroundColor: '#1a3a5f', 
+                        borderColor: '#1a3a5f', 
+                        tension: 0.25, 
+                        fill: false 
+                    }] 
+                },
+                options: { 
+                    responsive: true,
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                footer: function(tooltipItems) {
+                                    const idx = tooltipItems[0].dataIndex;
+                                    return 'Prom. agentes: ' + seriePromediosAgentesDia[idx];
+                                }
+                            }
+                        }
+                    }, 
+                    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
+                    animation: {
+                        onComplete: function() {
+                            const chartInstance = this;
+                            const ctx = chartInstance.ctx;
+                            ctx.font = 'bold 11px Roboto';
+                            ctx.fillStyle = '#1a3a5f';
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'bottom';
+
+                            chartInstance.data.datasets.forEach(function(dataset, i) {
+                                const meta = chartInstance.getDatasetMeta(i);
+                                meta.data.forEach(function(bar, index) {
+                                    const dataVal = seriePromediosAgentesDia[index];
+                                    const positionY = bar.y - 8;
+                                    ctx.fillText('Prom: ' + dataVal, bar.x, positionY);
+                                });
+                            });
+                        }
+                    }
+                }
             });
 
             destruirGraficoEstadistica('graficoCamTurno');
@@ -1434,91 +1496,6 @@
                 options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } } }
             });
         }
-
-        /* ============================================================================
-         * DESGLOSE MATEMÁTICO — Estadísticas de "Traslados de Camilleros"
-         * (referencia para quien tenga que auditar o explicar estos números)
-         * ============================================================================
-         *
-         * FUENTE: SELECT * FROM registros_camilleros (sin filtro en SQL; todo el
-         * filtrado y cálculo se hace en el navegador sobre el array completo).
-         *
-         * RANGO DE FECHAS SEGÚN PERÍODO:
-         *   - Semanal : hoy-6 días  hasta  hoy (7 días corridos, incluye hoy).
-         *   - Mensual : primer día del mes seleccionado  hasta  último día de ese mes.
-         *   - Anual   : 1/enero  hasta  31/diciembre del año seleccionado.
-         *   - "Período anterior" (para la comparativa) = mismo tamaño de rango,
-         *     inmediatamente antes del rango principal (semana previa / mes previo /
-         *     año previo). Se recalcula un segundo filtro `filtradosAnt` con el mismo
-         *     criterio de turno.
-         *
-         * FILTRO POR FILA: fecha_cierre dentro del rango  Y  (turno === seleccionado
-         * O selección = "Todos"). Ambos deben cumplirse (AND).
-         *
-         * Total traslados            = filtrados.length                     → conteo simple.
-         * Total período anterior      = filtradosAnt.length                  → mismo conteo, otro rango.
-         * % variación                 = ((actual - anterior) / anterior) × 100
-         *                               (null si el período anterior no tiene datos, para no dividir por 0).
-         *
-         * Promedio diario             = total ÷ cantidad de fechas DISTINTAS con al
-         *                               menos un registro (Set de fecha_cierre) — NO
-         *                               se divide por los días del calendario.
-         *
-         * Traslados por turno         = conteo agrupado por la columna turno (texto
-         *                               exacto, sin normalizar — turno es un campo
-         *                               controlado por <select>, no texto libre).
-         *
-         * Destinos más frecuentes     = conteo agrupado por destino, PERO normalizado
-         *                               primero con normalizarTexto() (mayúsculas +
-         *                               trim + espacios múltiples colapsados) para que
-         *                               "Eco Cardio" y "ECO CARDIO " cuenten igual.
-         *                               Se muestran los 8 valores con más ocurrencias.
-         *
-         * Silla vs. Camilla           = se busca la subcadena "silla" o "camilla"
-         *                               (en minúsculas) dentro de tipo_movilidad.
-         *                               No usa el número de unidad (Silla 001 vs 002
-         *                               cuentan igual como "silla"). Lo que no matchea
-         *                               ninguna de las dos entra en "Otro/Sin dato".
-         *
-         * Agentes (ranking, en equipo/solitario, promedio):
-         *   1. Se toma personal_asignado y se separa por coma: split(',').
-         *   2. Cada nombre resultante se normaliza con normalizarTexto().
-         *   3. Si la fila tiene 2+ nombres → "en equipo"; si tiene 1 → "solitario";
-         *      si personal_asignado está vacío, la fila no suma a ninguna de las dos.
-         *   4. Ranking: por cada nombre encontrado (en cualquier fila), +1 en su
-         *      contador individual. Se ordena de mayor a menor, top 10.
-         *   5. Promedio de agentes por traslado = (suma de la cantidad de nombres de
-         *      TODAS las filas) ÷ total de traslados del período.
-         *   LIMITACIÓN CONOCIDA: filas con el texto corrupto "2 agentes seleccionados"
-         *   (carga masiva del 21/08/2026, sin coma) se cuentan como 1 solo "agente"
-         *   llamado así, distorsionando estos 4 números para los períodos que incluyan
-         *   esas fechas, hasta que se decida cómo tratar esas filas.
-         *
-         * Duración promedio del traslado:
-         *   1. horaAMinutos() convierte "HH:MM" a minutos desde las 00:00 (regex,
-         *      valida rango 0-23h / 0-59min; si no matchea, devuelve null).
-         *   2. diferencia = minutos(hora_finalizacion) − minutos(hora).
-         *   3. Si la diferencia da negativa, se asume que cruzó medianoche y se le
-         *      suman 24×60 minutos.
-         *   4. Si la diferencia resultante supera 8 horas (480 min), se descarta como
-         *      dato mal cargado (outlier), no entra en el promedio.
-         *   5. Filas sin hora u hora_finalizacion válida se cuentan aparte como
-         *      "inválidas/sin dato" (se muestra la cantidad junto al promedio, para
-         *      que se sepa sobre cuántos registros realmente se calculó).
-         *   6. Promedio = suma de diferencias válidas ÷ cantidad de válidas, mostrado
-         *      como horas y minutos.
-         *
-         * Traslados con incidencia    = cantidad de filas donde observaciones no es
-         *                               null/vacío. No categoriza el TIPO de
-         *                               incidencia, solo cuenta si hay texto cargado.
-         *
-         * Serie temporal (gráfico superior):
-         *   - Período semanal o mensual → un punto por cada fecha_cierre distinta
-         *     dentro del rango, ordenadas cronológicamente (gráfico de línea).
-         *   - Período anual → un total por cada uno de los 12 meses del año
-         *     seleccionado (gráfico de barras), agrupando por el mes de fecha_cierre.
-         * ============================================================================
-         */
 
         async function generarReporteMensual() {
             const tipo = document.getElementById('est-tipo').value;
@@ -1833,114 +1810,23 @@
                             tablaDinamica += `<tr>
                                 <td style="border: 1px solid #cbd5e1; padding: 10px; text-align: center;">${row.sector || ''}</td>
                                 <td style="border: 1px solid #cbd5e1; padding: 10px; text-align: center;">${row.agentes_asignados || ''}</td>
-                                <td style="border: 1px solid #cbd5e1; padding: 10px; text-align: center;">${row.hora_desde || ''}</td>
-                                <td style="border: 1px solid #cbd5e1; padding: 10px; text-align: center;">${row.hora_hasta || ''}</td>
+                                <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;">${row.hora_desde || ''}</td>
+                                <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;">${row.hora_hasta || ''}</td>
                             </tr>`;
                         });
                     } else {
-                        tablaDinamica += `<tr><td colspan="4" style="border: 1px solid #cbd5e1; padding: 12px; text-align: center;">No hay registros detallados de Intendencia para esta fecha y turno con este supervisor.</td></tr>`;
+                        tablaDinamica += `<tr><td colspan="4" style="border: 1px solid #cbd5e1; padding: 12px; text-align: center;">No hay registros de intendencia para esta fecha.</td></tr>`;
                     }
-                    tablaDinamica += `</tbody></table>`;
-                    
-                    let obsFinal = '';
-                    if (reg && reg.observaciones) obsFinal = reg.observaciones;
-                    else if (intData && intData.length > 0) {
-                        const encontrada = intData.find(r => r.observaciones && r.observaciones.trim() !== '');
-                        obsFinal = encontrada ? encontrada.observaciones : '';
-                    }
-
-                    tablaDinamica += `
-                        <div style="background-color: #1a3a5f; color: white; padding: 8px 12px; font-weight: bold; font-size: 14px; margin-top: 15px; border: 1px solid #cbd5e1;">Observaciones:</div>
-                        <div style="padding: 10px 15px; min-height: 120px; background: #fff; border: 1px solid #cbd5e1; border-top: none; font-family: 'Courier New', Courier, monospace; font-size: 16px; line-height: 30px; background-image: linear-gradient(#e0e0e0 1px, transparent 1px); background-size: 100% 30px;">
-                            <p style="margin: 0; padding: 0; white-space: pre-wrap;">${obsFinal || 'Sin observaciones registradas.'}</p>
-                        </div>
-                    </div>`;
-                    visor.innerHTML = tablaDinamica;
-
-                } else if (deptoFiltro === 'Camilleros') {
-                    const { data: camData } = await db.from('registros_camilleros').select('*').eq('fecha_cierre', fechaBusqueda).eq('turno', turno);
-
-                    let tablaDinamica = `
-                        <div style="background: #fff; width: 100%; box-sizing: border-box;">
-                            <div style="font-size: 16px; font-weight: bold; color: #1a3a5f; margin-bottom: 10px;">Planilla Operativa - Camilleros</div>
-                            <table style="width: 100%; border-collapse: collapse; margin-bottom: 0; font-size: 12px;">
-                                <thead>
-                                    <tr style="background-color: #1a3a5f; color: white;">
-                                        <th style="border: 1px solid #cbd5e1; padding: 8px 4px; text-align: center; width: 10%;">HORA</th>
-                                        <th style="border: 1px solid #cbd5e1; padding: 8px 4px; text-align: center; width: 15%;">PISO/SALA/CAMA</th>
-                                        <th style="border: 1px solid #cbd5e1; padding: 8px 4px; text-align: center; width: 20%;">APELLIDO Y NOMBRE</th>
-                                        <th style="border: 1px solid #cbd5e1; padding: 8px 4px; text-align: center; width: 15%;">DESTINO</th>
-                                        <th style="border: 1px solid #cbd5e1; padding: 8px 4px; text-align: center; width: 10%;">HORA ESTADÍA</th>
-                                        <th style="border: 1px solid #cbd5e1; padding: 8px 4px; text-align: center; width: 10%;">MOVILIDAD</th>
-                                        <th style="border: 1px solid #cbd5e1; padding: 8px 4px; text-align: center; width: 11%;">CAMILLERO</th>
-                                        <th style="border: 1px solid #cbd5e1; padding: 8px 4px; text-align: center; width: 9%;">HORA DE FINALIZACION</th>
-                                    </tr>
-                                </thead>
-                                <tbody>`;
-                    
-                    if (camData && camData.length > 0) {
-                        camData.forEach((row) => {
-                            tablaDinamica += `<tr>
-                                <td style="border: 1px solid #cbd5e1; padding: 6px 4px; text-align: center;">${row.hora || ''}</td>
-                                <td style="border: 1px solid #cbd5e1; padding: 6px 4px; text-align: center;">${row.numero_cama || ''}</td>
-                                <td style="border: 1px solid #cbd5e1; padding: 6px 4px; text-align: center;">${row.nombre_paciente || ''}</td>
-                                <td style="border: 1px solid #cbd5e1; padding: 6px 4px; text-align: center;">${row.destino || ''}</td>
-                                <td style="border: 1px solid #cbd5e1; padding: 6px 4px; text-align: center;">${row.duracion_estancia || ''}</td>
-                                <td style="border: 1px solid #cbd5e1; padding: 6px 4px; text-align: center;">${row.tipo_movilidad || ''}</td>
-                                <td style="border: 1px solid #cbd5e1; padding: 6px 4px; text-align: center;">${row.personal_asignado || ''}</td>
-                                <td style="border: 1px solid #cbd5e1; padding: 6px 4px; text-align: center;">${row.hora_finalizacion || ''}</td>
-                            </tr>`;
-                        });
-                    } else {
-                        tablaDinamica += `<tr><td colspan="8" style="border: 1px solid #cbd5e1; padding: 12px; text-align: center;">No hay registros de movimientos de camilleros para esta fecha.</td></tr>`;
-                    }
-                    tablaDinamica += `</tbody></table>`;
-
-                    let obsCamilleros = '';
-                    if (reg && reg.observaciones) obsCamilleros = reg.observaciones;
-                    else if (camData && camData.length > 0) {
-                        const obsEncontrada = camData.find(r => r.observaciones && r.observaciones.trim() !== '');
-                        obsCamilleros = obsEncontrada ? obsEncontrada.observaciones : '';
-                    }
-
-                    tablaDinamica += `
-                        <div style="background-color: #1a3a5f; color: white; padding: 8px 12px; font-weight: bold; font-size: 14px; margin-top: 15px; border: 1px solid #cbd5e1;">Observaciones de la Jornada:</div>
-                        <div style="padding: 0px 15px; min-height: 120px; background: #fff; border: 1px solid #cbd5e1; border-top: none; font-family: 'Courier New', Courier, monospace; font-size: 16px; line-height: 30px; background-image: linear-gradient(#e0e0e0 1px, transparent 1px); background-size: 100% 30px;">
-                            <p style="margin: 0; padding: 0; white-space: pre-wrap;">${obsCamilleros || 'Sin observaciones registradas.'}</p>
-                        </div>
-                    </div>`;
-
-                    visor.innerHTML = tablaDinamica;
-
-                } else {
-                    if (error || !reg) {
-                        visor.innerHTML = `<p style='color: red; font-weight: bold;'>No se encontraron registros para ${deptoFiltro} en el turno ${turno} (${fechaBusqueda}).</p>`;
-                        return;
-                    }
-
-                    let tablaDinamica = `
-                        <div style="background: #fff; width: 100%; box-sizing: border-box;">
-                            <div style="font-size: 16px; font-weight: bold; color: #1a3a5f; margin-bottom: 10px;">Planilla Operativa (${reg.departamento})</div>
-                            <div style="background-color: #1a3a5f; color: white; padding: 8px 12px; font-weight: bold; font-size: 14px; margin-top: 15px; border: 1px solid #cbd5e1;">Observaciones y Contenido:</div>
-                            <div style="padding: 0px 15px; min-height: 100px; background: #fff; border: 1px solid #cbd5e1; border-top: none; font-family: 'Courier New', Courier, monospace; font-size: 16px; line-height: 30px; background-image: linear-gradient(#e0e0e0 1px, transparent 1px); background-size: 100% 30px;">
-                                <p style="margin: 0; padding: 0; white-space: pre-wrap;">${reg.observaciones || 'Sin datos adicionales.'}</p>
-                            </div>
-                        </div>
-                    `;
+                    tablaDinamica += `</tbody></table></div>`;
                     visor.innerHTML = tablaDinamica;
                 }
-
-            } else if (tipo === 'reportes' || tipo === 'insumos') {
-                if (error || !reg) {
-                    visor.innerHTML = `<p style='color: red; font-weight: bold;'>No se encontraron registros para ${deptoFiltro} en el turno ${turno} (${fechaBusqueda}).</p>`;
-                    return;
-                }
-                visor.innerHTML = `<h3>Reporte Diario - Vista de Auditoría</h3><style>.hoja-modelo-limpio { width: 100% !important; background-color: #fff !important; border: 1px solid #cbd5e1 !important; padding: 30px !important; position: relative !important; min-height: 800px !important; font-family: 'Courier New', Courier, monospace !important; font-size: 16px !important; line-height: 30px !important; box-sizing: border-box !important; background-image: linear-gradient(to right, transparent 0px, transparent 0px), linear-gradient(#e0e0e0 1px, transparent 1px) !important; background-size: 100% 30px !important; white-space: pre-wrap !important; }</style><div class="hoja-modelo-limpio">${reg.reporte_diario || 'No hay contenido de reporte.'}</div>`;
             }
         }
-        
-        document.getElementById('reportes').classList.add('activo');
-        cargarNovedades();
+
+        // Cargar reporte inicial al iniciar la página si se entra en la pestaña por defecto
+        window.addEventListener('load', () => {
+            generarReporteMensual();
+        });
     </script>
 </body>
 </html>
