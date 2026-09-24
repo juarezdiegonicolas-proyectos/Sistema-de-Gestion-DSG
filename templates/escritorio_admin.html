@@ -1227,7 +1227,6 @@
                 return;
             }
 
-            // --- Rango del período seleccionado, y rango del período INMEDIATO ANTERIOR (misma duración) ---
             let fechaDesde, fechaHasta, fechaDesdeAnt, fechaHastaAnt, etiquetaPeriodo, etiquetaPeriodoAnt;
             const hoy = new Date();
             if (periodo === 'semana') {
@@ -1275,16 +1274,13 @@
                 ? (((totalTraslados - totalTrasladosAnt) / totalTrasladosAnt) * 100).toFixed(1)
                 : null;
 
-            // --- Por turno ---
             const porTurno = {};
             filtrados.forEach(r => { const t = r.turno || 'Sin turno'; porTurno[t] = (porTurno[t] || 0) + 1; });
 
-            // --- Por destino (normalizado) ---
             const porDestino = {};
             filtrados.forEach(r => { const d = normalizarTexto(r.destino) || 'SIN DESTINO'; porDestino[d] = (porDestino[d] || 0) + 1; });
             const topDestinos = Object.entries(porDestino).sort((a, b) => b[1] - a[1]).slice(0, 8);
 
-            // --- Movilidad ---
             let sillas = 0, camillas = 0, otrosMov = 0;
             filtrados.forEach(r => {
                 const m = (r.tipo_movilidad || '').toLowerCase();
@@ -1293,7 +1289,6 @@
                 else otrosMov++;
             });
 
-            // --- Agentes (normalizados) ---
             const porAgente = {};
             let trasladosEnEquipo = 0, trasladosSolitario = 0, sumaAgentesPorTraslado = 0;
             filtrados.forEach(r => {
@@ -1308,19 +1303,17 @@
             const rankingAgentes = Object.entries(porAgente).sort((a, b) => b[1] - a[1]).slice(0, 10);
             const promedioAgentesPorTraslado = totalTraslados > 0 ? (sumaAgentesPorTraslado / totalTraslados).toFixed(2) : '0';
 
-            // --- Promedio diario (sobre días con datos) ---
             const diasDistintos = new Set(filtrados.map(r => r.fecha_cierre)).size;
             const promedioDiario = diasDistintos > 0 ? (totalTraslados / diasDistintos).toFixed(1) : '0';
 
-            // --- Duración promedio del traslado (hora -> hora_finalizacion), contemplando cruce de medianoche ---
             let sumaDuraciones = 0, cantValidas = 0, cantInvalidas = 0;
             filtrados.forEach(r => {
                 const ini = horaAMinutos(r.hora);
                 const fin = horaAMinutos(r.hora_finalizacion);
                 if (ini === null || fin === null) { cantInvalidas++; return; }
                 let diff = fin - ini;
-                if (diff < 0) diff += 24 * 60; // cruzó medianoche
-                if (diff > 8 * 60) { cantInvalidas++; return; } // descarta outliers imposibles (>8hs, dato mal cargado)
+                if (diff < 0) diff += 24 * 60;
+                if (diff > 8 * 60) { cantInvalidas++; return; }
                 sumaDuraciones += diff;
                 cantValidas++;
             });
@@ -1329,10 +1322,8 @@
                 ? `${Math.floor(duracionPromedioMin / 60)}h ${duracionPromedioMin % 60}m`
                 : 'Sin datos válidos';
 
-            // --- Traslados con incidencia (observaciones cargadas) ---
             const conIncidencia = filtrados.filter(r => r.observaciones && String(r.observaciones).trim() !== '');
 
-            // --- Serie temporal: diaria si el período es semana/mes, mensual si es año ---
             let serieLabels = [], serieValores = [];
             if (periodo === 'anio') {
                 const porMes = new Array(12).fill(0);
@@ -1347,9 +1338,71 @@
                 serieValores = fechasOrdenadas.map(f => porDia[f]);
             }
 
-            // --- Render ---
+            const trasladosPorFecha = {};
+            filtrados.forEach(r => {
+                const f = r.fecha_cierre;
+                if (!f) return;
+                if (!trasladosPorFecha[f]) trasladosPorFecha[f] = 0;
+                trasladosPorFecha[f]++;
+            });
+
+            let agentesPorFechaMap = {};
+            try {
+                let queryAsist = db.from('rrhh_asistencia')
+                    .select('fecha, turno, legajo_empleado, estado_asistencia')
+                    .eq('departamento', 'Camilleros');
+                if (turnoSeleccionado !== 'Todos') {
+                    queryAsist = queryAsist.eq('turno', turnoSeleccionado);
+                }
+                const { data: asistData } = await queryAsist;
+                if (asistData) {
+                    asistData.forEach(reg => {
+                        const f = reg.fecha;
+                        if (!f) return;
+                        const fDate = new Date(f + 'T12:00:00');
+                        if (fDate >= fechaDesde && fDate <= fechaHasta) {
+                            const est = String(reg.estado_asistencia || '').trim().toUpperCase();
+                            if (est === 'P' || est === 'PRESENTE') {
+                                if (!agentesPorFechaMap[f]) agentesPorFechaMap[f] = new Set();
+                                agentesPorFechaMap[f].add(String(reg.legajo_empleado).trim());
+                            }
+                        }
+                    });
+                }
+            } catch (e) {
+                console.error("Error obteniendo asistencia desde rrhh_asistencia:", e);
+            }
+
+            const todasLasFechas = Array.from(new Set([...Object.keys(trasladosPorFecha), ...Object.keys(agentesPorFechaMap)])).sort();
+
+            let filasNuevaTablaHtml = '';
+            if (todasLasFechas.length > 0) {
+                todasLasFechas.forEach(f => {
+                    const cantTraslados = trasladosPorFecha[f] || 0;
+                    const setAgentes = agentesPorFechaMap[f];
+                    const cantAgentes = setAgentes ? setAgentes.size : 0;
+                    const promedioAgente = cantAgentes > 0 ? (cantTraslados / cantAgentes).toFixed(2) : '0.00';
+                    
+                    let fechaDisplay = f;
+                    try {
+                        const partes = f.split('-');
+                        if (partes.length === 3) fechaDisplay = `${partes[2]}/${partes[1]}/${partes[0]}`;
+                    } catch(err) {}
+
+                    filasNuevaTablaHtml += `
+                        <tr>
+                            <td style="padding:6px; border:1px solid #cbd5e1; text-align:center;">${fechaDisplay}</td>
+                            <td style="padding:6px; border:1px solid #cbd5e1; text-align:center;">${cantAgentes}</td>
+                            <td style="padding:6px; border:1px solid #cbd5e1; text-align:center;">${cantTraslados}</td>
+                            <td style="padding:6px; border:1px solid #cbd5e1; text-align:center;">${promedioAgente}</td>
+                        </tr>`;
+                });
+            } else {
+                filasNuevaTablaHtml = `<tr><td colspan="4" style="padding:10px; border:1px solid #cbd5e1; text-align:center;">No hay datos suficientes para este período.</td></tr>`;
+            }
+
             const tarjeta = (valor, etiqueta) => `
-                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:18px 24px; min-width:150px; page-break-inside: avoid; break-inside: avoid;">
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:18px 24px; min-width:150px;">
                     <div style="font-size:26px; font-weight:bold; color:#1a3a5f;">${valor}</div>
                     <div style="font-size:12px; color:#64748b;">${etiqueta}</div>
                 </div>`;
@@ -1371,27 +1424,44 @@
                 </div>
                 <div style="text-align:center; margin-bottom:25px; font-size:13px; color:#475569;">${variacionHtml}</div>
 
-                <div style="display:flex; gap:30px; flex-wrap:wrap; justify-content:center; margin-bottom:25px; page-break-inside: avoid; break-inside: avoid;">
-                    <div style="width:100%; max-width:700px; page-break-inside: avoid; break-inside: avoid;">
+                <div style="max-width:700px; margin: 0 auto 25px auto; text-align:left;">
+                    <div style="font-weight:bold; color:#1a3a5f; margin-bottom:10px; text-align:center;">Resumen diario: Agentes presentes y promedio de traslados</div>
+                    <table style="width:100%; border-collapse:collapse; font-size:13px;">
+                        <thead>
+                            <tr style="background:#1a3a5f; color:white;">
+                                <th style="padding:6px; border:1px solid #cbd5e1; text-align:center;">Fecha</th>
+                                <th style="padding:6px; border:1px solid #cbd5e1; text-align:center;">Agentes Presentes</th>
+                                <th style="padding:6px; border:1px solid #cbd5e1; text-align:center;">Cantidad de Traslados</th>
+                                <th style="padding:6px; border:1px solid #cbd5e1; text-align:center;">Promedio Traslados / Agente</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${filasNuevaTablaHtml}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style="display:flex; gap:30px; flex-wrap:wrap; justify-content:center; margin-bottom:25px;">
+                    <div style="width:100%; max-width:700px;">
                         <div style="font-weight:bold; color:#1a3a5f; margin-bottom:8px; text-align:center;">${periodo === 'anio' ? 'Traslados por mes' : 'Evolución diaria'}</div>
                         <canvas id="graficoCamSerie"></canvas>
                     </div>
                 </div>
-                <div style="display:flex; gap:30px; flex-wrap:wrap; justify-content:center; margin-bottom:25px; page-break-inside: avoid; break-inside: avoid;">
-                    <div class="cam-chart-block" style="width:320px; page-break-inside: avoid; break-inside: avoid;">
+                <div style="display:flex; gap:30px; flex-wrap:wrap; justify-content:center; margin-bottom:25px;">
+                    <div style="width:320px;">
                         <div style="font-weight:bold; color:#1a3a5f; margin-bottom:8px; text-align:center;">Traslados por turno</div>
                         <canvas id="graficoCamTurno"></canvas>
                     </div>
-                    <div class="cam-chart-block" style="width:280px; page-break-inside: avoid; break-inside: avoid;">
+                    <div style="width:280px;">
                         <div style="font-weight:bold; color:#1a3a5f; margin-bottom:8px; text-align:center;">Silla vs. Camilla</div>
                         <canvas id="graficoCamMovilidad"></canvas>
                     </div>
-                    <div class="cam-chart-block" style="width:380px; page-break-inside: avoid; break-inside: avoid;">
+                    <div style="width:380px;">
                         <div style="font-weight:bold; color:#1a3a5f; margin-bottom:8px; text-align:center;">Destinos más frecuentes</div>
                         <canvas id="graficoCamDestino"></canvas>
                     </div>
                 </div>
-                <div style="max-width:520px; margin: 0 auto; text-align:left; page-break-inside: avoid; break-inside: avoid;">
+                <div style="max-width:520px; margin: 0 auto; text-align:left;">
                     <div style="font-weight:bold; color:#1a3a5f; margin-bottom:10px; text-align:center;">Ranking de agentes (traslados realizados)</div>
                     <table style="width:100%; border-collapse:collapse; font-size:13px;">
                         <thead>
@@ -1441,91 +1511,6 @@
                 options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } } }
             });
         }
-
-        /* ============================================================================
-         * DESGLOSE MATEMÁTICO — Estadísticas de "Traslados de Camilleros"
-         * (referencia para quien tenga que auditar o explicar estos números)
-         * ============================================================================
-         *
-         * FUENTE: SELECT * FROM registros_camilleros (sin filtro en SQL; todo el
-         * filtrado y cálculo se hace en el navegador sobre el array completo).
-         *
-         * RANGO DE FECHAS SEGÚN PERÍODO:
-         *   - Semanal : hoy-6 días  hasta  hoy (7 días corridos, incluye hoy).
-         *   - Mensual : primer día del mes seleccionado  hasta  último día de ese mes.
-         *   - Anual   : 1/enero  hasta  31/diciembre del año seleccionado.
-         *   - "Período anterior" (para la comparativa) = mismo tamaño de rango,
-         *     inmediatamente antes del rango principal (semana previa / mes previo /
-         *     año previo). Se recalcula un segundo filtro `filtradosAnt` con el mismo
-         *     criterio de turno.
-         *
-         * FILTRO POR FILA: fecha_cierre dentro del rango  Y  (turno === seleccionado
-         * O selección = "Todos"). Ambos deben cumplirse (AND).
-         *
-         * Total traslados            = filtrados.length                     → conteo simple.
-         * Total período anterior      = filtradosAnt.length                  → mismo conteo, otro rango.
-         * % variación                 = ((actual - anterior) / anterior) × 100
-         *                               (null si el período anterior no tiene datos, para no dividir por 0).
-         *
-         * Promedio diario             = total ÷ cantidad de fechas DISTINTAS con al
-         *                               menos un registro (Set de fecha_cierre) — NO
-         *                               se divide por los días del calendario.
-         *
-         * Traslados por turno         = conteo agrupado por la columna turno (texto
-         *                               exacto, sin normalizar — turno es un campo
-         *                               controlado por <select>, no texto libre).
-         *
-         * Destinos más frecuentes     = conteo agrupado por destino, PERO normalizado
-         *                               primero con normalizarTexto() (mayúsculas +
-         *                               trim + espacios múltiples colapsados) para que
-         *                               "Eco Cardio" y "ECO CARDIO " cuenten igual.
-         *                               Se muestran los 8 valores con más ocurrencias.
-         *
-         * Silla vs. Camilla           = se busca la subcadena "silla" o "camilla"
-         *                               (en minúsculas) dentro de tipo_movilidad.
-         *                               No usa el número de unidad (Silla 001 vs 002
-         *                               cuentan igual como "silla"). Lo que no matchea
-         *                               ninguna de las dos entra en "Otro/Sin dato".
-         *
-         * Agentes (ranking, en equipo/solitario, promedio):
-         *   1. Se toma personal_asignado y se separa por coma: split(',').
-         *   2. Cada nombre resultante se normaliza con normalizarTexto().
-         *   3. Si la fila tiene 2+ nombres → "en equipo"; si tiene 1 → "solitario";
-         *      si personal_asignado está vacío, la fila no suma a ninguna de las dos.
-         *   4. Ranking: por cada nombre encontrado (en cualquier fila), +1 en su
-         *      contador individual. Se ordena de mayor a menor, top 10.
-         *   5. Promedio de agentes por traslado = (suma de la cantidad de nombres de
-         *      TODAS las filas) ÷ total de traslados del período.
-         *   LIMITACIÓN CONOCIDA: filas con el texto corrupto "2 agentes seleccionados"
-         *   (carga masiva del 21/08/2026, sin coma) se cuentan como 1 solo "agente"
-         *   llamado así, distorsionando estos 4 números para los períodos que incluyan
-         *   esas fechas, hasta que se decida cómo tratar esas filas.
-         *
-         * Duración promedio del traslado:
-         *   1. horaAMinutos() convierte "HH:MM" a minutos desde las 00:00 (regex,
-         *      valida rango 0-23h / 0-59min; si no matchea, devuelve null).
-         *   2. diferencia = minutos(hora_finalizacion) − minutos(hora).
-         *   3. Si la diferencia da negativa, se asume que cruzó medianoche y se le
-         *      suman 24×60 minutos.
-         *   4. Si la diferencia resultante supera 8 horas (480 min), se descarta como
-         *      dato mal cargado (outlier), no entra en el promedio.
-         *   5. Filas sin hora u hora_finalizacion válida se cuentan aparte como
-         *      "inválidas/sin dato" (se muestra la cantidad junto al promedio, para
-         *      que se sepa sobre cuántos registros realmente se calculó).
-         *   6. Promedio = suma de diferencias válidas ÷ cantidad de válidas, mostrado
-         *      como horas y minutos.
-         *
-         * Traslados con incidencia    = cantidad de filas donde observaciones no es
-         *                               null/vacío. No categoriza el TIPO de
-         *                               incidencia, solo cuenta si hay texto cargado.
-         *
-         * Serie temporal (gráfico superior):
-         *   - Período semanal o mensual → un punto por cada fecha_cierre distinta
-         *     dentro del rango, ordenadas cronológicamente (gráfico de línea).
-         *   - Período anual → un total por cada uno de los 12 meses del año
-         *     seleccionado (gráfico de barras), agrupando por el mes de fecha_cierre.
-         * ============================================================================
-         */
 
         async function generarReporteMensual() {
             const tipo = document.getElementById('est-tipo').value;
@@ -1951,6 +1936,14 @@
     </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
 
 
 
