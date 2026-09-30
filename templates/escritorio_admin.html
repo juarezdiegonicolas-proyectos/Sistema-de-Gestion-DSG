@@ -1200,6 +1200,20 @@
         // Utilidad: normaliza texto libre (nombres de agentes, destinos) para que
         // variaciones de mayúsculas/espacios no se cuenten como valores distintos.
         // ============================================================================
+        // Supabase devuelve como máximo 1000 filas por consulta. Esta función pagina hasta traer todo.
+        async function traerTodo(armarConsulta, tamPagina = 1000, columnaOrden = 'id') {
+            let todas = [];
+            let desde = 0;
+            while (true) {
+                const { data, error } = await armarConsulta().order(columnaOrden, { ascending: true }).range(desde, desde + tamPagina - 1);
+                if (error) return { data: null, error };
+                todas = todas.concat(data || []);
+                if (!data || data.length < tamPagina) break;
+                desde += tamPagina;
+            }
+            return { data: todas, error: null };
+        }
+
         function normalizarTexto(s) {
             return (s || '').trim().toUpperCase().replace(/\s+/g, ' ');
         }
@@ -1221,7 +1235,7 @@
             const anio = document.getElementById('est-anio').value;
             const visor = document.getElementById('visor-estadisticas');
 
-            const { data, error } = await db.from('registros_camilleros').select('*');
+            const { data, error } = await traerTodo(() => db.from('registros_camilleros').select('*'));
             if (error) {
                 visor.innerHTML = "<p style='color:red;'>Error al consultar registros_camilleros: " + error.message + "</p>";
                 return;
@@ -1348,13 +1362,13 @@
 
             let agentesPorFechaMap = {};
             try {
-                let queryAsist = db.from('rrhh_asistencia')
-                    .select('fecha, turno, legajo_empleado, estado_asistencia')
-                    .eq('departamento', 'Camilleros');
-                if (turnoSeleccionado !== 'Todos') {
-                    queryAsist = queryAsist.eq('turno', turnoSeleccionado);
-                }
-                const { data: asistData } = await queryAsist;
+                const { data: asistData } = await traerTodo(() => {
+                    let q = db.from('rrhh_asistencia')
+                        .select('id, fecha, turno, legajo_empleado, estado_asistencia')
+                        .eq('departamento', 'Camilleros');
+                    if (turnoSeleccionado !== 'Todos') q = q.eq('turno', turnoSeleccionado);
+                    return q;
+                });
                 if (asistData) {
                     asistData.forEach(reg => {
                         const f = reg.fecha;
@@ -1371,6 +1385,43 @@
                 }
             } catch (e) {
                 console.error("Error obteniendo asistencia desde rrhh_asistencia:", e);
+            }
+
+            // Respaldo: si un día con traslados no tiene asistencia en rrhh_asistencia,
+            // se toma la asistencia guardada (JSON asistencia_personal) en cierres_jornada.
+            const fechasDesdeCierre = new Set();
+            try {
+                const fmt = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                const fechasSinAsistencia = Object.keys(trasladosPorFecha).filter(f => !agentesPorFechaMap[f] || agentesPorFechaMap[f].size === 0);
+                if (fechasSinAsistencia.length > 0) {
+                    const { data: cierres, error: errCierres } = await traerTodo(() => {
+                        let q = db.from('cierres_jornada')
+                            .select('id, fecha_cierre, turno, asistencia_personal')
+                            .eq('departamento', 'Camilleros')
+                            .gte('fecha_cierre', fmt(fechaDesde))
+                            .lte('fecha_cierre', fmt(fechaHasta));
+                        if (turnoSeleccionado !== 'Todos') q = q.eq('turno', turnoSeleccionado);
+                        return q;
+                    });
+                    if (errCierres) console.error("Error leyendo cierres_jornada:", errCierres);
+                    (cierres || []).forEach(c => {
+                        const f = c.fecha_cierre;
+                        if (!f || !fechasSinAsistencia.includes(f)) return;
+                        let json = c.asistencia_personal;
+                        if (typeof json === 'string') { try { json = JSON.parse(json); } catch (e) { json = null; } }
+                        if (!json || typeof json !== 'object') return;
+                        Object.entries(json).forEach(([legajo, estado]) => {
+                            const est = String(estado || '').trim().toUpperCase();
+                            if (est === 'P' || est === 'PRESENTE') {
+                                if (!agentesPorFechaMap[f]) agentesPorFechaMap[f] = new Set();
+                                agentesPorFechaMap[f].add(String(legajo).trim());
+                                fechasDesdeCierre.add(f);
+                            }
+                        });
+                    });
+                }
+            } catch (e) {
+                console.error("Error usando cierres_jornada como respaldo de asistencia:", e);
             }
 
             const todasLasFechas = Array.from(new Set([...Object.keys(trasladosPorFecha), ...Object.keys(agentesPorFechaMap)])).sort();
@@ -1529,7 +1580,7 @@
 
             if (tipo === 'rrhh') {
                 let p = 0, a = 0, l = 0;
-                const { data: asistData } = await db.from('rrhh_asistencia').select('*');
+                const { data: asistData } = await traerTodo(() => db.from('rrhh_asistencia').select('*'));
                 if (asistData) {
                     asistData.forEach(ag => {
                         const f = new Date(ag.fecha);
@@ -1552,7 +1603,7 @@
                 chartInstancesEstadisticas['graficoMes'] = new Chart(document.getElementById('graficoMes'), { type: 'doughnut', data: { labels: ['Presentes', 'Ausentes', 'Licencias'], datasets: [{ data: [p, a, l], backgroundColor: ['#28a745', '#dc3545', '#ffc107'] }] } });
             
             } else if (tipo === 'ascensores') {
-                const { data: ascData } = await db.from('registros_ascensores').select('*');
+                const { data: ascData } = await traerTodo(() => db.from('registros_ascensores').select('*'));
                 let func = 0, falla = 0;
                 if (ascData) {
                     ascData.forEach(item => {
@@ -1936,6 +1987,23 @@
     </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
