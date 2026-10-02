@@ -1643,8 +1643,8 @@
             
             let deptoFiltro = obtenerNombreDepartamentoLargo(depto);
             if (!deptoFiltro) deptoFiltro = depto;
-            
-            let queryReg = db
+
+            let queryCierre = db
                 .from('cierres_jornada')
                 .select('*')
                 .eq('fecha_cierre', fechaBusqueda)
@@ -1652,22 +1652,33 @@
                 .eq('departamento', deptoFiltro);
 
             if (supervisorSeleccionado) {
-                queryReg = queryReg.eq('supervisor', supervisorSeleccionado);
+                queryCierre = queryCierre.eq('supervisor', supervisorSeleccionado);
             }
-
-            const { data: reg, error } = await queryReg.maybeSingle();
+            const { data: regCierre } = await queryCierre.maybeSingle();
             
             if (tipo === 'rrhh') {
-                if (error || !reg || !reg.asistencia_personal) {
-                    visor.innerHTML = `<p style='color: red; font-weight: bold;'>No se encontraron registros de asistencia en la nube para esta selección.</p>`;
-                    return;
+                let queryAsist = db
+                    .from('rrhh_asistencia')
+                    .select('*')
+                    .eq('fecha', fechaBusqueda)
+                    .eq('turno', turno)
+                    .eq('departamento', deptoFiltro);
+
+                const { data: asistData } = await queryAsist;
+                
+                let jsonAsistencia = {};
+
+                if (asistData && asistData.length > 0) {
+                    asistData.forEach(item => {
+                        jsonAsistencia[item.legajo_empleado] = item.estado_asistencia;
+                    });
+                } else if (regCierre && regCierre.asistencia_personal) {
+                    jsonAsistencia = regCierre.asistencia_personal;
                 }
 
-                const jsonAsistencia = reg.asistencia_personal;
                 const legajos = Object.keys(jsonAsistencia);
-
                 if (legajos.length === 0) {
-                    visor.innerHTML = "<p style='color: red; font-weight: bold;'>El registro de asistencia está vacío.</p>";
+                    visor.innerHTML = `<p style='color: red; font-weight: bold;'>No se encontraron registros de asistencia en la nube para esta selección.</p>`;
                     return;
                 }
 
@@ -1774,16 +1785,21 @@
                 if (deptoFiltro === 'Ascensores') {
                     const { data: dispData } = await db.from('registros_ascensores').select('*').eq('fecha_cierre', fechaBusqueda).eq('turno', turno);
 
-                    let tablaDinamica = `<table style="width: 100%; border-collapse: collapse; margin-top: 15px;"><thead><tr><th style="border: 1px solid #cbd5e1; padding: 10px; background-color: #1a3a5f; color: white;">N° de Ascensor</th><th style="border: 1px solid #cbd5e1; padding: 10px; background-color: #1a3a5f; color: white;">Estado</th><th style="border: 1px solid #cbd5e1; padding: 10px; background-color: #1a3a5f; color: white;">Uso Asignado</th><th style="border: 1px solid #cbd5e1; padding: 10px; background-color: #1a3a5f; color: white;">Observaciones / Detalle</th></tr></thead><tbody>`;
+                    let listaAscensores = dispData || [];
+                    if (listaAscensores.length === 0 && regCierre && regCierre.estados_ascensores) {
+                        listaAscensores = Array.isArray(regCierre.estados_ascensores) ? regCierre.estados_ascensores : [];
+                    }
+
+                    let tablaDinamica = `<table style="width: 100%; border-collapse: collapse; margin-top: 5px;"><thead><tr><th style="border: 1px solid #cbd5e1; padding: 10px; background-color: #1a3a5f; color: white;">N° de Ascensor</th><th style="border: 1px solid #cbd5e1; padding: 10px; background-color: #1a3a5f; color: white;">Estado</th><th style="border: 1px solid #cbd5e1; padding: 10px; background-color: #1a3a5f; color: white;">Uso Asignado</th><th style="border: 1px solid #cbd5e1; padding: 10px; background-color: #1a3a5f; color: white;">Observaciones / Detalle</th></tr></thead><tbody>`;
                     
                     let cVerde = 0, cAmarillo = 0, cRojo = 0, cMixto = 0;
-                    let totalAscensores = dispData ? dispData.length : 0;
+                    let totalAscensores = listaAscensores.length;
 
-                    if (dispData && dispData.length > 0) {
-                        dispData.forEach(item => {
+                    if (totalAscensores > 0) {
+                        listaAscensores.forEach(item => {
                             let estadoNormalizado = String(item.estado || '').trim();
                             let textoOriginal = item.observaciones || '-';
-                            let usoAsignado = textoOriginal;
+                            let usoAsignado = item.uso || textoOriginal;
                             let detalleObs = '-';
 
                             if (textoOriginal.includes('(')) {
@@ -1805,7 +1821,7 @@
                                 cVerde++;
                             }
 
-                            tablaDinamica += `<tr><td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;">${item.identificador_dispositivo}</td><td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;">${estadoNormalizado}</td><td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;">${usoAsignado}</td><td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;">${detalleObs}</td></tr>`;
+                            tablaDinamica += `<tr><td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;">${item.identificador_dispositivo || item.id}</td><td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;">${estadoNormalizado}</td><td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;">${usoAsignado}</td><td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;">${detalleObs}</td></tr>`;
                         });
                     } else {
                         tablaDinamica += `<tr><td colspan="4" style="border: 1px solid #cbd5e1; padding: 12px; text-align: center;">No hay registros detallados de ascensores para esta fecha.</td></tr>`;
@@ -1854,6 +1870,13 @@
                     if (supervisorSeleccionado) queryInt = queryInt.eq('supervisor', supervisorSeleccionado);
                     const { data: intData } = await queryInt;
 
+                    let usarDatos = intData;
+                    if ((!intData || intData.length === 0) && regCierre && regCierre.tabla_operativa) {
+                        try {
+                            usarDatos = typeof regCierre.tabla_operativa === 'string' ? JSON.parse(regCierre.tabla_operativa) : regCierre.tabla_operativa;
+                        } catch(e) { usarDatos = []; }
+                    }
+
                     let tablaDinamica = `
                         <div style="background: #fff; width: 100%; box-sizing: border-box;">
                             <div style="font-size: 16px; font-weight: bold; color: #1a3a5f; margin-bottom: 10px;">Planilla Operativa - Intendencia ${supervisorSeleccionado ? '(' + supervisorSeleccionado + ')' : ''}</div>
@@ -1871,8 +1894,8 @@
                                 </thead>
                                <tbody>`;
                     
-                    if (intData && intData.length > 0) {
-                        intData.forEach(row => {
+                    if (Array.isArray(usarDatos) && usarDatos.length > 0) {
+                        usarDatos.forEach(row => {
                             tablaDinamica += `<tr>
                                 <td style="border: 1px solid #cbd5e1; padding: 10px; text-align: center;">${row.sector || ''}</td>
                                 <td style="border: 1px solid #cbd5e1; padding: 10px; text-align: center;">${row.agentes_asignados || ''}</td>
@@ -1885,10 +1908,9 @@
                     }
                     tablaDinamica += `</tbody></table>`;
                     
-                    let obsFinal = '';
-                    if (reg && reg.observaciones) obsFinal = reg.observaciones;
-                    else if (intData && intData.length > 0) {
-                        const encontrada = intData.find(r => r.observaciones && r.observaciones.trim() !== '');
+                    let obsFinal = regCierre?.observaciones || '';
+                    if (!obsFinal && Array.isArray(usarDatos)) {
+                        const encontrada = usarDatos.find(r => r.observaciones && r.observaciones.trim() !== '');
                         obsFinal = encontrada ? encontrada.observaciones : '';
                     }
 
@@ -1902,6 +1924,13 @@
 
                 } else if (deptoFiltro === 'Camilleros') {
                     const { data: camData } = await db.from('registros_camilleros').select('*').eq('fecha_cierre', fechaBusqueda).eq('turno', turno);
+
+                    let usarCam = camData;
+                    if ((!camData || camData.length === 0) && regCierre && regCierre.tabla_operativa) {
+                        try {
+                            usarCam = typeof regCierre.tabla_operativa === 'string' ? JSON.parse(regCierre.tabla_operativa) : regCierre.tabla_operativa;
+                        } catch(e) { usarCam = []; }
+                    }
 
                     let tablaDinamica = `
                         <div style="background: #fff; width: 100%; box-sizing: border-box;">
@@ -1921,8 +1950,8 @@
                                 </thead>
                                 <tbody>`;
                     
-                    if (camData && camData.length > 0) {
-                        camData.forEach((row) => {
+                    if (Array.isArray(usarCam) && usarCam.length > 0) {
+                        usarCam.forEach((row) => {
                             tablaDinamica += `<tr>
                                 <td style="border: 1px solid #cbd5e1; padding: 6px 4px; text-align: center;">${row.hora || ''}</td>
                                 <td style="border: 1px solid #cbd5e1; padding: 6px 4px; text-align: center;">${row.numero_cama || ''}</td>
@@ -1939,10 +1968,9 @@
                     }
                     tablaDinamica += `</tbody></table>`;
 
-                    let obsCamilleros = '';
-                    if (reg && reg.observaciones) obsCamilleros = reg.observaciones;
-                    else if (camData && camData.length > 0) {
-                        const obsEncontrada = camData.find(r => r.observaciones && r.observaciones.trim() !== '');
+                    let obsCamilleros = regCierre?.observaciones || '';
+                    if (!obsCamilleros && Array.isArray(usarCam)) {
+                        const obsEncontrada = usarCam.find(r => r.observaciones && r.observaciones.trim() !== '');
                         obsCamilleros = obsEncontrada ? obsEncontrada.observaciones : '';
                     }
 
@@ -1956,17 +1984,17 @@
                     visor.innerHTML = tablaDinamica;
 
                 } else {
-                    if (error || !reg) {
+                    if (!regCierre) {
                         visor.innerHTML = `<p style='color: red; font-weight: bold;'>No se encontraron registros para ${deptoFiltro} en el turno ${turno} (${fechaBusqueda}).</p>`;
                         return;
                     }
 
                     let tablaDinamica = `
                         <div style="background: #fff; width: 100%; box-sizing: border-box;">
-                            <div style="font-size: 16px; font-weight: bold; color: #1a3a5f; margin-bottom: 10px;">Planilla Operativa (${reg.departamento})</div>
+                            <div style="font-size: 16px; font-weight: bold; color: #1a3a5f; margin-bottom: 10px;">Planilla Operativa (${regCierre.departamento})</div>
                             <div style="background-color: #1a3a5f; color: white; padding: 8px 12px; font-weight: bold; font-size: 14px; margin-top: 15px; border: 1px solid #cbd5e1;">Observaciones y Contenido:</div>
                             <div style="padding: 0px 15px; min-height: 100px; background: #fff; border: 1px solid #cbd5e1; border-top: none; font-family: 'Courier New', Courier, monospace; font-size: 16px; line-height: 30px; background-image: linear-gradient(#e0e0e0 1px, transparent 1px); background-size: 100% 30px;">
-                                <p style="margin: 0; padding: 0; white-space: pre-wrap;">${reg.observaciones || 'Sin datos adicionales.'}</p>
+                                <p style="margin: 0; padding: 0; white-space: pre-wrap;">${regCierre.observaciones || regCierre.tabla_operativa || 'Sin datos adicionales.'}</p>
                             </div>
                         </div>
                     `;
@@ -1974,11 +2002,11 @@
                 }
 
             } else if (tipo === 'reportes' || tipo === 'insumos') {
-                if (error || !reg) {
-                    visor.innerHTML = `<p style='color: red; font-weight: bold;'>No se encontraron registros para ${deptoFiltro} en el turno ${turno} (${fechaBusqueda}).</p>`;
+                if (!regCierre || !regCierre.reporte_diario) {
+                    visor.innerHTML = `<p style='color: red; font-weight: bold;'>No se encontraron reportes o cierres registrados para ${deptoFiltro} en el turno ${turno} (${fechaBusqueda}).</p>`;
                     return;
                 }
-                visor.innerHTML = `<h3>Reporte Diario - Vista de Auditoría</h3><style>.hoja-modelo-limpio { width: 100% !important; background-color: #fff !important; border: 1px solid #cbd5e1 !important; padding: 30px !important; position: relative !important; min-height: 800px !important; font-family: 'Courier New', Courier, monospace !important; font-size: 16px !important; line-height: 30px !important; box-sizing: border-box !important; background-image: linear-gradient(to right, transparent 0px, transparent 0px), linear-gradient(#e0e0e0 1px, transparent 1px) !important; background-size: 100% 30px !important; white-space: pre-wrap !important; }</style><div class="hoja-modelo-limpio">${reg.reporte_diario || 'No hay contenido de reporte.'}</div>`;
+                visor.innerHTML = `<h3>Reporte Diario - Vista de Auditoría</h3><style>.hoja-modelo-limpio { width: 100% !important; background-color: #fff !important; border: 1px solid #cbd5e1 !important; padding: 30px !important; position: relative !important; min-height: 800px !important; font-family: 'Courier New', Courier, monospace !important; font-size: 16px !important; line-height: 30px !important; box-sizing: border-box !important; background-image: linear-gradient(to right, transparent 0px, transparent 0px), linear-gradient(#e0e0e0 1px, transparent 1px) !important; background-size: 100% 30px !important; white-space: pre-wrap !important; }</style><div class="hoja-modelo-limpio">${regCierre.reporte_diario || 'No hay contenido de reporte.'}</div>`;
             }
         }
         
@@ -1987,36 +2015,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
