@@ -108,8 +108,8 @@
         #novedades .btn-gestion:hover { opacity: 1; filter: brightness(1.12); }
         #novedades .btn-imprimir { background: #1a3a5f; color: white; }
         
-        /* Modificación para hacer el textarea de novedades estático (sin cambiar de tamaño) */
-        #novedades textarea { background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 10px; padding: 18px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.02); transition: border-color 0.2s; min-height: 350px; resize: none; }
+        /* Modificación para hacer el textarea de novedades estático y con ancho completo de pantalla (sin recortes) */
+        #novedades textarea { width: 100%; box-sizing: border-box; background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 10px; padding: 18px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.02); transition: border-color 0.2s; min-height: 350px; resize: none; }
         
         #novedades textarea:focus { outline: none; border-color: #1a3a5f; box-shadow: 0 0 0 3px rgba(26, 58, 95, 0.1), inset 0 1px 2px rgba(0,0,0,0.02); }
         #novedades .preview-adjunto { border: 2px dashed #cbd5e1 !important; border-radius: 8px; background: #ffffff; color: #475569; font-size: 13px; }
@@ -504,19 +504,37 @@
             const filtrados = agentes.filter(a => a.turno === turnoActual);
             
             let asistenciasGuardadas = {};
-            const { data: dbAsist } = await db
+            
+            // 1. Consultar primero en la tabla rrhh_asistencia
+            const { data: dbAsist, error: errDbAsist } = await db
                 .from('rrhh_asistencia')
                 .select('*')
                 .eq('fecha', fechaActual)
                 .eq('turno', turnoActual)
                 .eq('departamento', 'Intendencia');
 
-            if (dbAsist && dbAsist.length > 0) {
+            if (!errDbAsist && dbAsist && dbAsist.length > 0) {
                 dbAsist.forEach(item => {
                     asistenciasGuardadas[item.legajo_empleado] = (item.estado_asistencia === 'Presente' ? 'P' : (item.estado_asistencia === 'Ausente' ? 'A' : 'L'));
                 });
             } else {
-                asistenciasGuardadas = JSON.parse(localStorage.getItem('dsg_intendencia_asistencia_rrhh') || "{}");
+                // 2. Si no encuentra nada en rrhh_asistencia, consultar directamente a cierres_jornada
+                const supervisorActual = (localStorage.getItem('usuario_nombre') || "").trim();
+                const { data: dbCierres, error: errDbCierres } = await db
+                    .from('cierres_jornada')
+                    .select('asistencia_personal')
+                    .eq('fecha_cierre', fechaActual)
+                    .eq('turno', turnoActual)
+                    .eq('departamento', 'Intendencia')
+                    .eq('supervisor', supervisorActual)
+                    .maybeSingle();
+
+                if (!errDbCierres && dbCierres && dbCierres.asistencia_personal) {
+                    asistenciasGuardadas = dbCierres.asistencia_personal;
+                } else {
+                    // Respaldo secundario local si la nube tampoco devuelve registros
+                    asistenciasGuardadas = JSON.parse(localStorage.getItem('dsg_intendencia_asistencia_rrhh') || "{}");
+                }
             }
 
             body.innerHTML = '';
@@ -795,45 +813,14 @@
                     </div>`;
             } 
             else if (tipo === 'planilla') {
-                const { data: intData } = await db
+                // Consulta principal en registros_intendencia
+                let { data: intData } = await db
                     .from('registros_intendencia')
                     .select('*')
                     .eq('fecha_cierre', f)
                     .eq('turno', t)
                     .eq('supervisor', supervisorVal);
 
-                let tablaDinamica = `
-                    <div style="background: #fff; padding: 15px; border-radius: 6px;">
-                        <div style="font-size: 16px; font-weight: bold; color: #1a3a5f; margin-bottom: 10px;">Planilla Operativa - Intendencia</div>
-                        
-                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 0;">
-                            <thead>
-                                <tr style="background-color: #1a3a5f; color: white;">
-                                    <th style="border: 1px solid #333; padding: 10px; text-align: center;" rowspan="2">SECTOR</th>
-                                    <th style="border: 1px solid #333; padding: 10px; text-align: center;" rowspan="2">AGENTES ASIGNADOS</th>
-                                    <th style="border: 1px solid #333; padding: 8px; text-align: center;" colspan="2">HORARIO</th>
-                                </tr>
-                                <tr style="background-color: #1a3a5f; color: white;">
-                                    <th style="border: 1px solid #333; padding: 8px; text-align: center; width: 100px;">DESDE</th>
-                                    <th style="border: 1px solid #333; padding: 8px; text-align: center; width: 100px;">HASTA</th>
-                                </tr>
-                            </thead>
-                            <tbody>`;
-                
-                if (intData && intData.length > 0) {
-                    intData.forEach(row => {
-                        tablaDinamica += `<tr>
-                            <td style="border: 1px solid #333; padding: 10px; text-align: center;">${row.sector || ''}</td>
-                            <td style="border: 1px solid #333; padding: 10px; text-align: center;">${row.agentes_asignados || ''}</td>
-                            <td style="border: 1px solid #333; padding: 10px; text-align: center;">${row.hora_desde || ''}</td>
-                            <td style="border: 1px solid #333; padding: 10px; text-align: center;">${row.hora_hasta || ''}</td>
-                        </tr>`;
-                    });
-                } else {
-                    tablaDinamica += `<tr><td colspan="4" style="border: 1px solid #333; padding: 12px; text-align: center;">No hay registros detallados de Intendencia para esta fecha, turno y supervisor.</td></tr>`;
-                }
-                tablaDinamica += `</tbody></table>`;
-                
                 let obsFinal = '';
                 if (reg && reg.observaciones) {
                     obsFinal = reg.observaciones;
@@ -842,16 +829,62 @@
                     obsFinal = encontrada ? encontrada.observaciones : '';
                 }
 
-                tablaDinamica += `
-                    <div style="background-color: #1a3a5f; color: white; padding: 8px 12px; font-weight: bold; font-size: 14px; margin-top: 15px; border: 1px solid #333;">
-                        Observaciones:
-                    </div>
-                    <div style="padding: 15px; min-height: 120px; background: #fff; border: 1px solid #333; border-top: none;">
-                        <p style="margin: 0; padding: 0; font-family: 'Courier New', monospace; font-size: 16px; line-height: 24px; white-space: pre-wrap; text-align: left !important;">${obsFinal || 'Sin observaciones registradas.'}</p>
-                    </div>
-                </div>`;
-                
-                visor.innerHTML = tablaDinamica;
+                // Respaldo automático: Si no encuentra nada, busca en cierres_jornada
+                let usandoRespaldoCierres = false;
+                if ((!intData || intData.length === 0) && reg && reg.tabla_operativa) {
+                    usandoRespaldoCierres = true;
+                }
+
+                if (usandoRespaldoCierres) {
+                    visor.innerHTML = `
+                        <div style="background: #fff; padding: 15px; border-radius: 6px;">
+                            <div style="font-size: 16px; font-weight: bold; color: #1a3a5f; margin-bottom: 10px;">Planilla Operativa - Intendencia (Respaldo Cierres de Jornada)</div>
+                            <div>${reg.tabla_operativa}</div>
+                        </div>`;
+                } else {
+                    let tablaDinamica = `
+                        <div style="background: #fff; padding: 15px; border-radius: 6px;">
+                            <div style="font-size: 16px; font-weight: bold; color: #1a3a5f; margin-bottom: 10px;">Planilla Operativa - Intendencia</div>
+                            
+                            <table style="width: 100%; border-collapse: collapse; margin-bottom: 0;">
+                                <thead>
+                                    <tr style="background-color: #1a3a5f; color: white;">
+                                        <th style="border: 1px solid #333; padding: 10px; text-align: center;" rowspan="2">SECTOR</th>
+                                        <th style="border: 1px solid #333; padding: 10px; text-align: center;" rowspan="2">AGENTES ASIGNADOS</th>
+                                        <th style="border: 1px solid #333; padding: 8px; text-align: center;" colspan="2">HORARIO</th>
+                                    </tr>
+                                    <tr style="background-color: #1a3a5f; color: white;">
+                                        <th style="border: 1px solid #333; padding: 8px; text-align: center; width: 100px;">DESDE</th>
+                                        <th style="border: 1px solid #333; padding: 8px; text-align: center; width: 100px;">HASTA</th>
+                                    </tr>
+                                </thead>
+                                <tbody>`;
+                    
+                    if (intData && intData.length > 0) {
+                        intData.forEach(row => {
+                            tablaDinamica += `<tr>
+                                <td style="border: 1px solid #333; padding: 10px; text-align: center;">${row.sector || ''}</td>
+                                <td style="border: 1px solid #333; padding: 10px; text-align: center;">${row.agentes_asignados || ''}</td>
+                                <td style="border: 1px solid #333; padding: 10px; text-align: center;">${row.hora_desde || ''}</td>
+                                <td style="border: 1px solid #333; padding: 10px; text-align: center;">${row.hora_hasta || ''}</td>
+                            </tr>`;
+                        });
+                    } else {
+                        tablaDinamica += `<tr><td colspan="4" style="border: 1px solid #333; padding: 12px; text-align: center;">No hay registros detallados de Intendencia ni respaldo en cierres para esta fecha, turno y supervisor.</td></tr>`;
+                    }
+                    tablaDinamica += `</tbody></table>`;
+
+                    tablaDinamica += `
+                        <div style="background-color: #1a3a5f; color: white; padding: 8px 12px; font-weight: bold; font-size: 14px; margin-top: 15px; border: 1px solid #333;">
+                            Observaciones:
+                        </div>
+                        <div style="padding: 15px; min-height: 120px; background: #fff; border: 1px solid #333; border-top: none;">
+                            <p style="margin: 0; padding: 0; font-family: 'Courier New', monospace; font-size: 16px; line-height: 24px; white-space: pre-wrap; text-align: left !important;">${obsFinal || 'Sin observaciones registradas.'}</p>
+                        </div>
+                    </div>`;
+                    
+                    visor.innerHTML = tablaDinamica;
+                }
             } 
             else if (tipo === 'asistencia') {
                 if (reg && reg.asistencia_personal) {
