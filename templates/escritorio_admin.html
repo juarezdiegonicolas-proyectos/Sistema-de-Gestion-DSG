@@ -1666,15 +1666,78 @@
 
                 const { data: asistData } = await queryAsist;
                 
-                let jsonAsistencia = {};
+                // Normaliza un estado a 'P', 'A' o 'L'. Acepta P/A/L y Presente/Ausente/Licencia(s).
+                // Devuelve null si el valor no es un estado válido.
+                const normalizarEstadoAsistencia = (valor) => {
+                    const v = String(valor == null ? '' : valor).trim().toUpperCase()
+                        .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                    if (v === 'P' || v === 'PRESENTE' || v === 'PRESENTES') return 'P';
+                    if (v === 'A' || v === 'AUSENTE' || v === 'AUSENTES') return 'A';
+                    if (v === 'L' || v === 'LICENCIA' || v === 'LICENCIAS') return 'L';
+                    return null;
+                };
 
+                // 1) Primero se toma lo que haya en rrhh_asistencia (solo estados válidos).
+                let jsonAsistencia = {};
+                const legajosSinEstadoValido = {};
                 if (asistData && asistData.length > 0) {
                     asistData.forEach(item => {
-                        jsonAsistencia[item.legajo_empleado] = item.estado_asistencia;
+                        const leg = String(item.legajo_empleado).trim();
+                        const est = normalizarEstadoAsistencia(item.estado_asistencia);
+                        if (est) {
+                            jsonAsistencia[leg] = est;
+                        } else {
+                            legajosSinEstadoValido[leg] = item.estado_asistencia;
+                        }
                     });
-                } else if (regCierre && regCierre.asistencia_personal) {
-                    jsonAsistencia = regCierre.asistencia_personal;
                 }
+
+                // 2) Si falta algún legajo, o no tiene un estado válido (P/A/L/Presente/Ausente/Licencia),
+                //    se busca en la asistencia guardada en cierres_jornada.
+                let asistenciaCierre = regCierre ? regCierre.asistencia_personal : null;
+                if (!asistenciaCierre) {
+                    // Respaldo: puede haber más de un cierre para la misma fecha/turno/departamento
+                    // (en ese caso maybeSingle() falla), se toma el más reciente que tenga asistencia.
+                    try {
+                        let qCierres = db
+                            .from('cierres_jornada')
+                            .select('id, asistencia_personal')
+                            .eq('fecha_cierre', fechaBusqueda)
+                            .eq('turno', turno)
+                            .eq('departamento', deptoFiltro)
+                            .order('id', { ascending: false });
+                        if (supervisorSeleccionado) qCierres = qCierres.eq('supervisor', supervisorSeleccionado);
+                        const { data: cierresAsist } = await qCierres;
+                        const conAsistencia = (cierresAsist || []).find(c => c.asistencia_personal);
+                        if (conAsistencia) asistenciaCierre = conAsistencia.asistencia_personal;
+                    } catch (e) {
+                        console.error("Error buscando asistencia en cierres_jornada:", e);
+                    }
+                }
+                if (typeof asistenciaCierre === 'string') {
+                    try { asistenciaCierre = JSON.parse(asistenciaCierre); } catch (e) { asistenciaCierre = null; }
+                }
+                if (asistenciaCierre && typeof asistenciaCierre === 'object') {
+                    const paresCierre = Array.isArray(asistenciaCierre)
+                        ? asistenciaCierre.map(it => [it && (it.legajo ?? it.legajo_empleado), it && (it.estado ?? it.estado_asistencia)])
+                        : Object.entries(asistenciaCierre);
+                    paresCierre.forEach(([leg, estRaw]) => {
+                        if (leg == null) return;
+                        const legTrim = String(leg).trim();
+                        if (jsonAsistencia[legTrim]) return; // ya resuelto desde rrhh_asistencia
+                        const est = normalizarEstadoAsistencia(estRaw);
+                        if (est) {
+                            jsonAsistencia[legTrim] = est;
+                            delete legajosSinEstadoValido[legTrim];
+                        }
+                    });
+                }
+
+                // 3) Legajos que existen en rrhh_asistencia pero sin estado válido en ninguna fuente
+                //    se conservan como estaban (se mostraban como PRESENTE por defecto).
+                Object.keys(legajosSinEstadoValido).forEach(leg => {
+                    if (!jsonAsistencia[leg]) jsonAsistencia[leg] = legajosSinEstadoValido[leg];
+                });
 
                 const legajos = Object.keys(jsonAsistencia);
                 if (legajos.length === 0) {
@@ -1727,8 +1790,7 @@
                     }
                     if (!nombre) nombre = `Legajo N° ${legTrim}`;
                     
-                    const estRaw = String(jsonAsistencia[legajo] || 'P').trim().toUpperCase();
-                    let estadoChar = (estRaw === 'A' || estRaw === 'L' || estRaw === 'P') ? estRaw : 'P';
+                    let estadoChar = normalizarEstadoAsistencia(jsonAsistencia[legajo]) || 'P';
 
                     if (estadoChar === 'P') presentes++; 
                     else if (estadoChar === 'A') ausentes++; 
